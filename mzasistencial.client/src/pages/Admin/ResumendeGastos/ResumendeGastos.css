@@ -1,0 +1,156 @@
+/* HOME */
+#home-page {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0 0 0;
+    gap: 10px;
+}
+
+/* COLUMNAS */
+.columnsLayout{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    gap:10px;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.cover-shedule {
+    border: 1px solid #ddd;
+}
+
+.icon-header {
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.icon-header .icon-title {
+    font-size: 16px;
+    color: var(--main-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    /* width: 25%; */
+}
+
+.icon-header .icon {
+    font-size: 16px;
+    color: var(--main-color);
+    align-items: center;
+    height: 100%;
+    width: 5%;
+}
+
+
+.grafico {
+    border: 1px solid #d8d8d8;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.grafico2 {
+    border: 1px solid #d8d8d8;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding:10px;
+}
+
+/* ----------------------------- */
+/* GRAFICO */
+/* ----------------------------- */
+.grafico-selector-container{
+    width:100%;
+    display:flex;
+    justify-content:flex-end;
+    padding:5px 10px;
+}
+
+.grafico-selector{
+    border:none;
+    outline:none;
+    background:transparent;
+    font-size:14px;
+    cursor:pointer;
+    padding:4px 8px;
+}
+
+.grafico-area{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.grafico-placeholder{
+    width:90%;
+    height:80%;
+    border:2px dashed #d8d8d8;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    color:#9a9a9a;
+}
+
+/* ----------------------------- */
+/* TABLA */
+/* ----------------------------- */
+.tabla-container{
+    width:100%;
+    height:100%;
+    overflow:auto;
+}
+
+.tabla-resumen{
+    width:100%;
+    height: 100%;
+    border-collapse:collapse;
+    font-size:13px;
+    background:white;
+    flex:1;
+}
+
+.tabla-resumen thead{
+    background:#f0f1f5;
+}
+
+.tabla-resumen th{
+    text-align:left;
+    padding:10px;
+    font-weight:600;
+    border-bottom:2px solid #e5e5e5;
+}
+
+.tabla-resumen td{
+    padding:8px 10px;
+    border-bottom:1px solid #eaeaea;
+}
+
+
+.tabla-resumen tbody tr td:not(:first-child) {
+    text-align: center;
+}
+
+.tabla-resumen tbody tr:hover{
+    background:#f8f9fc;
+}
+
+.tabla-resumen tbody tr:last-child td{
+    border-bottom:none;
+}

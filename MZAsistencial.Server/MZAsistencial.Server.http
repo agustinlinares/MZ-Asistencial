@@ -1,0 +1,6 @@
+@MZAsistencial.Server_HostAddress = http://localhost:5118
+
+GET {{MZAsistencial.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

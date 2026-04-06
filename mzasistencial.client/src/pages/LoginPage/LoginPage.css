@@ -1,0 +1,378 @@
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {}
+
+/* Smartphones (landscape) ----------- */
+@media only screen and (min-width : 321px) {
+    .login-page-container {
+        width: 100vw;
+        height: 100vh;
+        background: url('/assets/img/Fondo-Web-001.jpg') no-repeat center;
+        background-size: cover;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #login-header {
+        width: 100%;
+        height: 150px;
+        min-height: 150px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        position: relative;
+        gap: 10px;
+        z-index: 1;
+    }
+
+    #login-header #logo-cliente {
+        height: 100%;
+        width: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #login-header #logo-cliente>img {
+        height: 80%;
+        width: auto;
+    }
+
+    #login-header .item-admin-header {
+        margin-left: auto;
+    }
+
+    #login-header .item-admin-header .LanguageSwitcher {
+        padding: 6px 12px;
+        background: var(--main-color);
+        border-radius: 6px;
+        margin-left: 30px;
+    }
+
+    #login-header .item-admin-header .LanguageSwitcher button {
+        border: none;
+        background-color: transparent;
+        color: #fff;
+        margin: 0 4px;
+        border-radius: 6px;
+        font-size: .8rem;
+        padding: 4px 8px;
+    }
+
+    #login-header .item-admin-header .LanguageSwitcher button:focus,
+    #login-header .item-admin-header .LanguageSwitcher button:active {
+        outline: none;
+    }
+
+    #login-header .item-admin-header .LanguageSwitcher button.active {
+        background-color: var(--second-color);
+    }
+
+    #login-body {
+        width: 100%;
+        height: 100%;
+        padding: 15px 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-instance {
+        width: 100%;
+        min-width: 300px;
+        max-width: 380px;
+        height: auto;
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.60);
+        border-radius: 8px;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        padding: 20px;
+    }
+
+    .login-leyend {
+        width: 100%;
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .login-leyend>img {
+        width: 80%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+
+    /* /~ Formulariuo Login ~/ */
+    .login-instance .input-form {
+        height: 50px;
+        width: 100%;
+        margin-bottom: 15px;
+        background: transparent !important;
+        border: 1px solid #000000 !important;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    .login-instance .input-form.dx-texteditor::after,
+    .login-instance .input-form.dx-texteditor::before {
+        content: none !important;
+    }
+
+    .login-instance .input-form .dx-texteditor-input {
+        color: #000000;
+    }
+
+    .login-instance .input-form .dx-placeholder {
+        color: #000000;
+        font-size: .8rem;
+        letter-spacing: .5px;
+    }
+
+    .dx-checkbox-icon {
+        border-color: #000000 !important;
+    }
+    .dx-checkbox-checked .dx-checkbox-icon{
+        background-color: var(--bg-menu-color) !important;
+    }
+
+    .dx-checkbox-text{
+        color: #000000 ;
+    }
+
+    .relative-box {
+        position: relative;
+        display: flex;
+    }
+
+    .btn-absolute {
+        position: absolute !important;
+        z-index: 1;
+        top: 12px;
+        right: 20px;
+    }
+
+    .btn-absolute .dx-icon {
+        color: #000000 !important;
+        font-size: 1.2rem !important;
+    }
+
+    .input-form-password .dx-texteditor-input {
+        width: calc(100% - 30px);
+    }
+
+    .login-instance .dx-button.dx-button-default.btn-form {
+        width: 100%;
+        height: 50px;
+        margin-bottom: 15px;
+        box-shadow: none;
+        background: transparent;
+        text-decoration: underline;
+        text-decoration: none;
+        border: none;
+        background-color: var(--bg-menu-color);
+        font-size: 1.3rem;
+        color: #fff;
+    }
+
+    .login-instance .dx-button.dx-button-default.btn-form.dx-state-hover,
+    .login-instance .dx-button.dx-button-default.btn-form.dx-state-focused {
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        color: #fff;
+    }
+
+    .login-instance .btn-form-50 {
+        width: 100%;
+        height: 50px;
+        margin-bottom: 15px;
+        box-shadow: none;
+        background: transparent;
+        text-decoration: underline;
+        text-decoration: none;
+        border: none;
+        background-color: var(--e-global-color-primary);
+        font-size: 1.3rem;
+        color: #fff;
+    }
+
+    .login-instance .btn-form-50.dx-state-hover,
+    .login-instance .btn-form-50.dx-state-focused {
+        background-color: var(--e-global-color-primary);
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        color: #fff;
+    }
+    
+    .reset_password {
+        width: 100%;
+        display: block;
+        font-size: .9rem;
+        color: #000000;
+        /* margin-top: 15px; */
+        background: transparent;
+        border: none;
+    }
+
+    .reset_password:active,
+    .reset_password:focus {
+        background: transparent;
+        border: none;
+        outline: none;
+    }
+
+    .reset_password:hover {
+        color: var(--e-global-color-accent);
+    }
+
+    .messages-error {
+        padding: 15px;
+        background: #7d1d1d;
+        color: #fff;
+        font-size: .8rem;
+        letter-spacing: .25px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        text-align: center;
+    }
+
+    .messages-success {
+        padding: 15px;
+        background: var(--main-color);
+        width: 25%;
+        min-width: 380px;
+        color: #fff;
+        font-size: .8rem;
+        letter-spacing: .25px;
+    }
+
+    .LoadIndicatorCover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .LoadIndicatorCoverSocios {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .LoadIndicatorCover .dx-loadindicator-icon .dx-loadindicator-segment {
+        background: #fff;
+    }
+
+    .progress-cover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 8px;
+        background: #eee;
+        z-index: 1000;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: transparent;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background-color: #2196f3;
+        color: white;
+        text-align: center;
+        line-height: 8px;
+        font-size: 10px;
+        transition: width 0.2s ease-in-out;
+    }
+}
+
+/* Smartphones (portrait) ----------- */
+@media only screen and (max-width : 320px) {}
+
+@media only screen and (min-device-width : 481px) and (max-device-width : 767px) {}
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) {}
+
+/* iPads (landscape) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape) {}
+
+/* iPads (portrait) ----------- */
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait) {}
+
+
+
+/* iPhone 4 ----------- */
+@media only screen and (-webkit-min-device-pixel-ratio : 1.5),
+only screen and (min-device-pixel-ratio : 1.5) {}
+
+
+/*====================================================
+Desktops and laptops
+======================================================*/
+@media only screen and (min-width : 320px) and (max-width : 1023px) {}
+
+
+@media only screen and (min-width : 0px) and (max-width : 992px) {}
+
+@media only screen and (min-device-width : 0px) and (max-device-width : 992px) {}
+
+@media only screen and (min-width : 481px) and (max-width : 767px) {}
+
+/* iPads (portrait and landscape) ----------- */
+@media only screen and (min-width : 768px) and (max-width : 1024px) {}
+
+/* Desktops and laptops ----------- */
+@media only screen and (min-width : 1024px) {}
+
+@media only screen and (min-width : 1224px) {}
+
+@media only screen and (min-width : 1367px) {
+    #login-header {
+        padding: 15px 60px;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    #login-body {
+        padding: 15px 60px 150px 60px;
+    }
+
+    .login-instance {
+        width: 25%;
+        min-width: 380px;
+        height: 450px;
+        max-width: none;
+    }
+
+    .login-leyend {
+        padding: 15px;
+    }
+
+    .messages-error {
+        top: 100%;
+        bottom: inherit;
+    }
+}
+
+/* Large screens ----------- */
+@media only screen and (min-width : 1824px) {}

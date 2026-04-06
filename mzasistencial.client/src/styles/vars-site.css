@@ -1,0 +1,30 @@
+﻿
+:root {
+    --font-family: 'Outfit' , system-ui, Avenir, Helvetica, Arial, sans-serif;
+    --bg-body-color: #ffffff;
+    --bg-menu-color:#19397e;
+    --bg-header-color:#19397e;
+    --main-color: #2e3435;
+    --second-color: #FFA027;
+    --e-global-color-primary: #4f90cc;
+    --e-global-color-secondary: #FFA027;
+    --e-global-color-text: #ffffff;
+    --e-global-color-accent: rgb(63, 135, 184);
+    --e-global-color-accent-hover: rgb(32, 94, 136);
+
+    --bg: #0f1117;
+    --surface: #333d53;
+    --surface2: #1e2535;
+    --border: #252d40;
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #cacaca;
+    --muted2: #f59e34;
+
+    
+
+}

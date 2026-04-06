@@ -1,0 +1,89 @@
+.title {
+    font-size: 20px;
+    padding: 5px;
+}
+
+/* Caja filtros */
+.filtros-box {
+    width: 100%;
+    background: #f7f7f7;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Cabecera */
+.filtros-title {
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #2f5da8;
+    border-bottom: 1px solid #dcdcdc;
+}
+
+/* Contenido */
+.filtros-content {
+    display: flex;
+    gap: 40px;
+    padding: 20px;
+}
+
+/* Cada filtro */
+.filtro-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+}
+
+/* Label */
+.filtro-item label {
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.tabla-contenedor {
+    position: relative; /* importante para posicionamiento absoluto del popup */
+}
+
+/* Select estilo línea (como tu imagen) */
+.filtro-item select {
+    border: none;
+    border-bottom: 2px solid #3f51b5;
+    padding: 5px 0;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+
+/* PLANTILA ACUERDOS */
+.BotonesCombo{
+    display: flex;
+    flex-direction: row;
+}
+.boton-action {
+    width: 15%;
+    margin-right: 5px;
+}
+
+.mz-table .dx-data-row:hover {
+    cursor: pointer; /* muestra el icono de click */
+    background-color: #f5f5f5; /* opcional: efecto hover */
+}
+
+.ficha-overlay {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%;  /* ocupa todo el ancho de la tabla */
+    height: 100%; /* ocupa todo el alto de la tabla */
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.DatosUtilizacion .radio-group label {
+    margin-bottom: 0;
+}
