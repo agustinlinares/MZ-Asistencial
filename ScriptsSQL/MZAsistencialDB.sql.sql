@@ -1,239 +1,224 @@
 USE [MZAsistencial]
 GO
-/****** Object:  Table [dbo].[Citaciones]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Conciertos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CCAA')
-BEGIN
-CREATE TABLE [dbo].[CCAA](
-	[CCAA_id] [int] IDENTITY(1,1) NOT NULL,
-	[CCAA] [char](100) NULL,
- CONSTRAINT [PK_CCAA] PRIMARY KEY CLUSTERED 
-(
-	[CCAA_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Citaciones')
-BEGIN
-CREATE TABLE [dbo].[Citaciones](
-	[citacion_id] [int] IDENTITY(1,1) NOT NULL,
-	[MutaOferta] [int] NULL,
-	[MutuaDemandante] [int] NULL,
-	[Centro_id] [int] NULL,
-	[Provincia_id] [int] NULL,
-	[Localidad] [int] NULL,
-	[Especialidad_id] [int] NULL,
-	[Servicio_id] [int] NULL,
-	[Movimiento_id] [int] NULL,
-	[Demanda_id] [int] NULL,
-	[FechaAltaSolicitud] [datetime] NULL,
-	[FechaRespuestaCitacion] [datetime] NULL,
-	[Necesidad] [nvarchar](max) NULL,
-	[Contestacion] [nvarchar](max) NULL,
-	[Ene] [int] NULL,
-	[Feb] [int] NULL,
-	[Mar] [int] NULL,
-	[Abr] [int] NULL,
-	[May] [int] NULL,
-	[Jun] [int] NULL,
-	[Jul] [int] NULL,
-	[Ago] [int] NULL,
-	[Sep] [int] NULL,
-	[Oct] [int] NULL,
-	[Nov] [int] NULL,
-	[Diciembre] [int] NULL,
-	[Año] [int] NULL,
-	[Total] [int] NULL,
-	[Estado_id] [int] NULL,
-	[MotivoRechazo] [nvarchar](max) NULL,
-	[FechaRechazo] [datetime] NULL,
-	[UsuarioAlta_id] [int] NULL,
-	[FechaAlta] [datetime] NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
- CONSTRAINT [PK_Citaciones] PRIMARY KEY CLUSTERED 
-(
-	[citacion_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Aux_Citacion_Movimientos]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Citacion_Movimientos')
-BEGIN
-CREATE TABLE [dbo].[Aux_Citacion_Movimientos](
-	[Movimiento_id] [int] IDENTITY(1,1) NOT NULL,
-	[Movimiento] [nvarchar](max) NULL,
- CONSTRAINT [PK_aux_Movimientos] PRIMARY KEY CLUSTERED 
-(
-	[Movimiento_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Aux_Poblaciones]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Poblaciones')
-BEGIN
-CREATE TABLE [dbo].[Aux_Poblaciones](
-	[Poblacion_id] [int] IDENTITY(1,1) NOT NULL,
-	[Poblacion] [nvarchar](max) NULL,
-	[Provincia_id] [int] NOT NULL,
- CONSTRAINT [PK_Aux_Poblaciones] PRIMARY KEY CLUSTERED 
-(
-	[Poblacion_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Ofertas]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Ofertas')
-BEGIN
-CREATE TABLE [dbo].[Ofertas](
-	[Oferta_id] [int] IDENTITY(1,1) NOT NULL,
-	[Especialidad_id] [int] NULL,
-	[Servicio_id] [int] NULL,
-	[Centro_id] [int] NULL,
-	[Año] [int] NULL,
-	[Demanda_id] [int] NULL,
-	[Ene] [int] NULL,
-	[Feb] [int] NULL,
-	[Mar] [int] NULL,
-	[Abr] [int] NULL,
-	[May] [int] NULL,
-	[Jun] [int] NULL,
-	[Jul] [int] NULL,
-	[Ago] [int] NULL,
-	[Sep] [int] NULL,
-	[Oct] [int] NULL,
-	[Nov] [int] NULL,
-	[Dic] [int] NULL,
-	[Estado_id] [int] NULL,
-	[FechaConfirmacion] [datetime] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[NotaContestacion] [nvarchar](max) NULL,
-	[FechaAsignacion] [datetime] NULL,
-	[UsuarioAlta_id] [int] NULL,
-	[ContestacionPlazos] [nvarchar](max) NULL,
- CONSTRAINT [PK_Ofertas] PRIMARY KEY CLUSTERED 
-(
-	[Oferta_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Aux_Especialidades]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Especialidades')
-BEGIN
-CREATE TABLE [dbo].[Aux_Especialidades](
-	[Especialidad_id] [int] IDENTITY(68,1) NOT NULL,
-	[Especialidad] [nvarchar](150) NULL,
- CONSTRAINT [PK_Especialidades] PRIMARY KEY CLUSTERED 
-(
-	[Especialidad_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Aux_Provincias]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Provincias')
-BEGIN
-CREATE TABLE [dbo].[Aux_Provincias](
-	[Provincia_id] [int] NOT NULL,
-	[CCAA_id] [int] NOT NULL,
-	[Provincia] [char](200) NOT NULL,
- CONSTRAINT [PK_Aux_Provincias_1] PRIMARY KEY CLUSTERED 
-(
-	[Provincia_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Aux_Servicios]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Servicios')
-BEGIN
-CREATE TABLE [dbo].[Aux_Servicios](
-	[Servicio_id] [bigint] IDENTITY(445,1) NOT NULL,
-	[Servicio] [nvarchar](200) NULL,
-	[TipoServicio_id] [int] NULL,
- CONSTRAINT [PK_Aux_Servicios] PRIMARY KEY CLUSTERED 
-(
-	[Servicio_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[Mutuas]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Mutuas')
-BEGIN
-CREATE TABLE [dbo].[Mutuas](
+CREATE TABLE [dbo].[Conciertos](
+	[Concierto_id] [int] IDENTITY(49110,1) NOT NULL,
 	[Mutua_id] [int] NOT NULL,
-	[NumeroMutua] [varchar](3) NULL,
-	[Mutua] [varchar](100) NULL,
-	[RazonSocial] [varchar](100) NULL,
-	[Direccion] [varchar](100) NULL,
-	[CP] [char](5) NULL,
-	[Poblacion_id] [int] NULL,
-	[Telefono] [char](15) NULL,
-	[Fax] [char](15) NULL,
-	[DireccionElectronica] [varchar](100) NULL,
-	[PersonaContacto] [varchar](250) NULL,
-	[Logotipo] [varchar](100) NULL,
+	[Centro_id] [int] NOT NULL,
+	[CodigoCASA] [nvarchar](50) NULL,
+	[CodigoMZ] [nvarchar](50) NULL,
+	[CentroAsociado_id] [int] NULL,
+	[Localizador] [nvarchar](50) NULL,
+	[TipoAsistencia_id] [int] NULL,
+	[AmbitoCobertura] [int] NULL,
+	[Muniambito] [nvarchar](255) NULL,
+	[Autorizado] [bit] NULL,
+	[FechaAutorizacion] [datetime] NULL,
+	[UsuarioAutorizacion_id] [int] NULL,
+	[FechaSuscripcion] [datetime] NULL,
+	[FechaResolucion] [datetime] NULL,
+	[FechaVigencia] [datetime] NULL,
+	[FechaProrroga] [datetime] NULL,
 	[FechaAlta] [datetime] NULL,
 	[UsuarioAlta_id] [int] NULL,
 	[FechaModificacion] [datetime] NULL,
 	[UsuarioModificacion_id] [int] NULL,
 	[FechaBaja] [datetime] NULL,
 	[UsuarioBaja_id] [int] NULL,
-	[RatioConsultas] [decimal](18, 2) NULL,
-	[Usuario_id] [int] NULL,
- CONSTRAINT [PK_Mutuas] PRIMARY KEY CLUSTERED 
+	[Adhesion] [int] NULL,
+	[ClaveAcces] [int] NULL,
+ CONSTRAINT [PK_Conciertos_1] PRIMARY KEY CLUSTERED 
 (
-	[Mutua_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 100) ON [PRIMARY]
+	[Concierto_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[CentrosPropios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[ICG07]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CentrosPropios')
-BEGIN
+CREATE TABLE [dbo].[ICG07](
+	[Id_ICG] [int] IDENTITY(1,1) NOT NULL,
+	[Año] [int] NOT NULL,
+	[Concierto_id] [int] NOT NULL,
+	[Especialid] [nvarchar](max) NULL,
+	[Fautorizacion] [datetime] NULL,
+	[Fsuscrip] [nvarchar](max) NULL,
+	[Fresoluc] [nvarchar](max) NULL,
+	[Fprorroga] [nvarchar](max) NULL,
+	[FinVigencia] [nvarchar](max) NULL,
+	[Muniambito] [nvarchar](max) NULL,
+	[Costeassan] [numeric](10, 2) NULL,
+	[CosteIT] [numeric](10, 2) NULL,
+	[CostePRL] [nvarchar](max) NULL,
+	[TipConciert] [int] NULL,
+	[Provincia] [nvarchar](max) NULL,
+	[Localid] [nvarchar](max) NULL,
+	[CP] [nvarchar](max) NULL,
+	[Ubicac] [nvarchar](max) NULL,
+	[PAsinurg] [int] NULL,
+	[PAurgencias] [int] NULL,
+	[Pingresadas] [int] NULL,
+	[ASAMprimconsProg] [int] NULL,
+	[ASAMconssuc] [int] NULL,
+	[ASAMsesrehab] [int] NULL,
+	[ASAMplacrad(RADIO)] [int] NULL,
+	[ASAMintquir] [int] NULL,
+	[ASAMintquirmp] [int] NULL,
+	[ASAMotrasprueb] [int] NULL,
+	[ASHNprimconsProg] [int] NULL,
+	[ASHNconssuc] [int] NULL,
+	[ASHNestcaus] [int] NULL,
+	[ASHNsesrehab] [int] NULL,
+	[ASHNplacrad(RADIO)] [int] NULL,
+	[ASHNintquir] [int] NULL,
+	[ASHNintquirmp] [int] NULL,
+	[ASHNotrasprueb] [int] NULL,
+	[CITnºconsesp] [int] NULL,
+	[CITnºsesrehab] [int] NULL,
+	[CITnºintquir] [int] NULL,
+	[CITnºotrpru] [int] NULL,
+	[Dista25km] [int] NULL,
+	[Dista25-50km] [int] NULL,
+	[Masde50km] [int] NULL,
+	[Persfisica] [int] NULL,
+	[Persjurpriv] [int] NULL,
+	[Persjursist] [int] NULL,
+	[PersjurOSP] [int] NULL,
+	[PersjurOmutua] [int] NULL,
+	[Art2581] [numeric](10, 2) NULL,
+	[Art2582] [numeric](10, 2) NULL,
+	[RestoArticulo25SCon] [numeric](10, 2) NULL,
+	[GastoCentroNoConcert] [numeric](10, 2) NULL,
+	[Validado] [bit] NULL,
+	[UsuarioAlta_id] [int] NULL,
+	[FechaAlta] [datetime] NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[ICG07_2014] [int] NULL,
+	[Agrupacion_id] [int] NULL,
+	[ASAMprimconsProg(Video)] [int] NULL,
+	[ASAMprimconsNoProg] [int] NULL,
+	[ASAMprimconsNoProg(Video)] [int] NULL,
+	[ASAMconssuc(Video)] [int] NULL,
+	[ASAMconseenf] [int] NULL,
+	[ASAMestcaus] [int] NULL,
+	[ASAMplacrad(RM)] [int] NULL,
+	[ASAMplacrad(Eco)] [int] NULL,
+	[ASAMplacrad(TAC)] [int] NULL,
+	[ASHNprimconsProg(video)] [int] NULL,
+	[ASHNprimconsNoProg] [int] NULL,
+	[ASHNprimconsNoProg(video)] [int] NULL,
+	[ASHNconssuc(video)] [int] NULL,
+	[ASHNplacrad(RM)] [int] NULL,
+	[ASHNplacrad(Eco)] [int] NULL,
+	[ASHNplacrad(TAC)] [int] NULL,
+	[ASAMBiomec] [int] NULL,
+	[ASHNBiomec] [int] NULL,
+	[CITNIntervencionesQuirurjicas] [int] NULL,
+	[CITNOtrasPruebasControl] [int] NULL,
+	[ASHNConsultasEnfermeria] [int] NULL,
+	[GastoTransporte] [float] NULL,
+ CONSTRAINT [PK_ICG07_1] PRIMARY KEY CLUSTERED 
+(
+	[Id_ICG] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CentrosConcertados]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[CentrosConcertados](
+	[Centro_id] [int] IDENTITY(89809,1) NOT NULL,
+	[Centro] [nvarchar](150) NULL,
+	[Validado] [bit] NULL,
+	[Localizador] [nvarchar](50) NULL,
+	[Proveedor_id] [int] NULL,
+	[Delegacion_id] [int] NULL,
+	[CIFNIF] [char](15) NULL,
+	[Direccion] [varchar](100) NULL,
+	[Numero] [nvarchar](50) NULL,
+	[DireccionGIS] [varchar](100) NULL,
+	[Poblacion_id] [int] NULL,
+	[CP] [char](5) NULL,
+	[Telefono] [char](15) NULL,
+	[Fax] [char](15) NULL,
+	[DireccionElectronica] [varchar](100) NULL,
+	[PersonaContacto] [varchar](100) NULL,
+	[ServiciosEspeciales] [int] NULL,
+	[AsistenciaHospitalaria] [bit] NULL,
+	[AsistenciaAmbulatoria] [bit] NULL,
+	[Rehabilitacion] [bit] NULL,
+	[IncapacidadTransitoria] [bit] NULL,
+	[Prevencion] [bit] NULL,
+	[Administracion] [bit] NULL,
+	[OtrasActividades] [bit] NULL,
+	[AsistenciaSanitaria] [bit] NULL,
+	[MediosAjenos] [bit] NULL,
+	[FechaAlta] [datetime] NULL,
+	[UsuarioAlta_id] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[FechaBaja] [datetime] NULL,
+	[UsuarioBaja_id] [int] NULL,
+	[MotivoBaja] [nvarchar](500) NULL,
+	[TipoCentro] [int] NULL,
+	[TipoCentroAnt] [int] NULL,
+	[Observaciones] [varchar](500) NULL,
+	[TipoVia_id] [nvarchar](10) NULL,
+	[Piso] [nvarchar](15) NULL,
+	[Puerta] [nvarchar](15) NULL,
+	[OtrosDatos] [nvarchar](255) NULL,
+	[Traslado] [bit] NULL,
+	[Centro_idNuevo] [int] NULL,
+	[Fautocom] [datetime] NULL,
+	[Fpufuncio] [datetime] NULL,
+	[Fcalisuf] [datetime] NULL,
+	[FechaCarga] [datetime] NULL,
+	[MapaValidado] [bit] NULL,
+	[Latitud] [nvarchar](50) NULL,
+	[Longitud] [nvarchar](50) NULL,
+	[CodigoMZ] [nvarchar](50) NULL,
+	[id_ICG072013] [int] NULL,
+	[CIFNIFValido] [bit] NULL,
+	[NumRegistroSanitario] [bigint] NULL,
+ CONSTRAINT [PK_CentrosConcertados] PRIMARY KEY CLUSTERED 
+(
+	[Centro_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vw_Conciertos_Articulo25_Resto]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+create view [dbo].[vw_Conciertos_Articulo25_Resto] AS
+SELECT DISTINCT 
+TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
+'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(RestoArticulo25SCon,0)) AS Respuesta
+                      
+FROM  ICG07  
+INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
+INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
+
+GROUP BY dbo.CentrosConcertados.Centro_id, Año,
+dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  Table [dbo].[CentrosPropios]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[CentrosPropios](
 	[Centro_id] [int] IDENTITY(82592,1) NOT NULL,
 	[Mutua_id] [int] NOT NULL,
@@ -290,391 +275,87 @@ CREATE TABLE [dbo].[CentrosPropios](
 	[UsuarioDesactivacion] [int] NULL,
 	[Desactivado] [bit] NOT NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Estados_Citacion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Especialidades]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Estados_Citacion')
-BEGIN
-CREATE TABLE [dbo].[Aux_Estados_Citacion](
-	[Estado_id] [int] NOT NULL,
-	[Estado] [nvarchar](200) NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[Agrupacion] [int] NULL,
- CONSTRAINT [PK_Aux_Estados_Citacion] PRIMARY KEY CLUSTERED 
+CREATE TABLE [dbo].[Aux_Especialidades](
+	[Especialidad_id] [int] IDENTITY(68,1) NOT NULL,
+	[Especialidad] [nvarchar](150) NULL,
+ CONSTRAINT [PK_Especialidades] PRIMARY KEY CLUSTERED 
 (
-	[Estado_id] ASC
+	[Especialidad_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [dbo].[vwCitaciones]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[CentrosPropiosEspecialidades]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE OR ALTER VIEW [dbo].[vwCitaciones]
-AS
-SELECT        c.Demanda_id AS id, c.Año, mo.Mutua AS MutuaOfertante, ms.Mutua AS MutuaSolicitante, cp.Localizador + '' + cp.Centro AS Centro, p.Provincia, pob.Poblacion AS Localidad, esp.Especialidad, mov.Movimiento_id, 
-                         mov.Movimiento AS TipoMovimiento, serv.Servicio, c.Ene, c.Feb, c.Mar, c.Abr, c.May, c.Jun, c.Jul, c.Ago, c.Sep, c.Oct, c.Nov, c.Diciembre, c.Total, cp.DireccionGIS, cp.Telefono, ofe.FechaAsignacion, ofe.FechaConfirmacion, 
-                         c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.Estado_id, mo.Mutua_id AS MutuaOfertanteId, ms.Mutua_id AS MutuaDemandanteId, c.citacion_id, cp.Centro_id, esp.Especialidad_id, serv.Servicio_id, p.Provincia_id, 
-                         pob.Poblacion_id AS Localidad_id, ec.Estado, c.MotivoRechazo, c.FechaRechazo, c.FechaRespuestaCitacion
-FROM            dbo.Citaciones AS c INNER JOIN
-                         dbo.Mutuas AS mo ON mo.Mutua_id = c.MutaOferta INNER JOIN
-                         dbo.Mutuas AS ms ON ms.Mutua_id = c.MutuaDemandante INNER JOIN
-                         dbo.Aux_Provincias AS p ON p.Provincia_id = c.Provincia_id INNER JOIN
-                         dbo.Aux_Poblaciones AS pob ON pob.Poblacion_id = c.Localidad INNER JOIN
-                         dbo.Aux_Citacion_Movimientos AS mov ON mov.Movimiento_id = c.Movimiento_id INNER JOIN
-                         dbo.CentrosPropios AS cp ON cp.Centro_id = c.Centro_id INNER JOIN
-                         dbo.Aux_Especialidades AS esp ON esp.Especialidad_id = c.Especialidad_id INNER JOIN
-                         dbo.Aux_Servicios AS serv ON serv.Servicio_id = c.Servicio_id INNER JOIN
-                         dbo.Ofertas AS ofe ON ofe.Demanda_id = c.Demanda_id INNER JOIN
-                         dbo.Aux_Estados_Citacion AS ec ON ec.Estado_id = c.Estado_id
-GO
-/****** Object:  Table [dbo].[Demandas]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Demandas')
-BEGIN
-CREATE TABLE [dbo].[Demandas](
-	[Demanda_id] [int] IDENTITY(1,1) NOT NULL,
-	[Especialidad_id] [int] NULL,
-	[Servicio_id] [int] NULL,
-	[Centro_id] [int] NULL,
-	[Ene] [int] NULL,
-	[Feb] [int] NULL,
-	[Mar] [int] NULL,
-	[Abr] [int] NULL,
-	[May] [int] NULL,
-	[Jun] [int] NULL,
-	[Jul] [int] NULL,
-	[Ago] [int] NULL,
-	[Sep] [int] NULL,
-	[Oct] [int] NULL,
-	[Nov] [int] NULL,
-	[Dic] [int] NULL,
-	[Año] [int] NULL,
-	[MutuaDemanda_id] [int] NULL,
-	[UsuarioAlta_id] [int] NOT NULL,
-	[FechaAlta] [datetime] NULL,
-	[Estado_id] [int] NULL,
-	[Descripcion] [nvarchar](max) NULL,
-	[Tipo_id] [int] NULL,
-	[FechaRevision] [datetime] NULL,
-	[Localidad] [int] NULL,
-	[Plazos] [nvarchar](max) NULL,
-	[EnvioMail] [int] NULL,
-	[MotivoRechazo] [nvarchar](200) NULL,
-	[TipoRechazo] [int] NULL,
-	[TipoAnulacion] [int] NULL,
-	[MotivoAnulacion] [varchar](500) NULL,
-	[UsuarioAnulacion_id] [int] NULL,
- CONSTRAINT [PK_Demandas] PRIMARY KEY CLUSTERED 
-(
-	[Demanda_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  View [dbo].[vwDemandas_Citaciones]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE OR ALTER VIEW [dbo].[vwDemandas_Citaciones]
-AS
-SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, Provincia, 
-                         Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic, 
-                         Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id, Provincia_id, Poblacion_id, Estado, Estado_Citacion_id
-FROM            (SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, 
-                                                    Provincia, Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, SUM(Ene) AS Ene, SUM(Feb) AS Feb, 
-                                                    SUM(Mar) AS Mar, SUM(Abr) AS Abr, SUM(May) AS May, SUM(Jun) AS Jun, SUM(Jul) AS Jul, SUM(Ago) AS Ago, SUM(Sep) AS Sep, SUM(Oct) AS Oct, SUM(Nov) AS Nov, SUM(Dic) AS Dic, SUM(Ene) + SUM(Feb) 
-                                                    + SUM(Mar) + SUM(Abr) + SUM(May) + SUM(Jun) + SUM(Jul) + SUM(Ago) + SUM(Sep) + SUM(Oct) + SUM(Nov) + SUM(Dic) AS Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id, Provincia_id, 
-                                                    Poblacion_id, Estado, Estado_Citacion_id
-                          FROM            (SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS varchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) 
-                                                                              + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS varchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
-                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, MutuasOfertantes.Mutua AS MutuaOfertante, LTRIM(CAST(dbo.CentrosPropios.Localizador AS varchar)) 
-                                                                              + ' ' + LTRIM(CAST(ISNULL(dbo.CentrosPropios.Centro, 'Agrupación de Centros') AS varchar)) AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, dbo.Demandas.Centro_id, 
-                                                                              'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
-                                                                              + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
-                                                                              dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirmacion, dbo.Demandas.FechaRevision, 
-                                                                              dbo.Aux_Poblaciones.Poblacion AS Localidad, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 2 AS TipoMovimiento_id, 
-                                                                              'DEMANDA' AS TipoMovimiento,
-                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                    FROM            dbo.Demandas AS B
-                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
-                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                    FROM            dbo.Demandas AS B
-                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
-                                                                              dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, MAX(dbo.Ofertas.Ene) AS Ene, MAX(dbo.Ofertas.Feb) AS Feb, MAX(dbo.Ofertas.Mar) AS Mar, MAX(dbo.Ofertas.Abr) AS Abr, 
-                                                                              MAX(dbo.Ofertas.May) AS May, MAX(dbo.Ofertas.Jun) AS Jun, MAX(dbo.Ofertas.Jul) AS Jul, MAX(dbo.Ofertas.Ago) AS Ago, MAX(dbo.Ofertas.Sep) AS Sep, MAX(dbo.Ofertas.Oct) AS Oct, 
-                                                                              MAX(dbo.Ofertas.Nov) AS Nov, MAX(dbo.Ofertas.Dic) AS Dic, MAX(dbo.Ofertas.Ene) + MAX(dbo.Ofertas.Feb) + MAX(dbo.Ofertas.Mar) + MAX(dbo.Demandas.Abr) + MAX(dbo.Ofertas.May) 
-                                                                              + MAX(dbo.Ofertas.Jun) + MAX(dbo.Ofertas.Jul) + MAX(dbo.Ofertas.Ago) + MAX(dbo.Ofertas.Sep) + MAX(dbo.Ofertas.Oct) + MAX(dbo.Ofertas.Nov) + MAX(dbo.Ofertas.Dic) AS Total, c.FechaAltaSolicitud, 
-                                                                              c.Necesidad, c.Contestacion, c.citacion_id, dbo.Aux_Provincias.Provincia_id, dbo.Aux_Poblaciones.Poblacion_id, ec.Estado, ec.Estado_id AS Estado_Citacion_id
-                                                    FROM            dbo.Demandas LEFT OUTER JOIN
-                                                                              dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
-                                                                              dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
-                                                                              dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
-                                                                                  (SELECT        CentrosPropios_1.Centro_id, Mutuas_1.Mutua, CentrosPropios_1.Mutua_id AS MutuaOfertante_Id
-                                                                                    FROM            dbo.CentrosPropios AS CentrosPropios_1 LEFT OUTER JOIN
-                                                                                                              dbo.Mutuas AS Mutuas_1 ON CentrosPropios_1.Mutua_id = Mutuas_1.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
-                                                                              dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Estados_Citacion AS ec ON ec.Estado_id = c.Estado_id
-                                                    WHERE        (dbo.Demandas.Tipo_id = 1)
-                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, 
-                                                                              dbo.Aux_Servicios.Servicio, dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, 
-                                                                              dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
-                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id, dbo.Aux_Provincias.Provincia_id, dbo.Aux_Poblaciones.Poblacion_id, 
-                                                                              ec.Estado, ec.Estado_id) AS tab
-                          GROUP BY Mutua, Centro, Centro_id, Especialidad, Especialidad_id, Servicio_id, FechaRevision, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Tipo_id, Demanda_id, Localidad, Provincia, Anio, MutuaOfertante, 
-                                                    Servicio, Agrupacion, FechaConfirmacion, CodigoDemanda, Peticiones_Pendientes, Estado_id, Telefono, ID, DireccionGIS, FechaAsignacion, Mutua_id, MutuaOfertante_Id, FechaAltaSolicitud, Necesidad, 
-                                                    Contestacion, citacion_id, citacion_id, Provincia_id, Poblacion_id, Estado, Estado_Citacion_id) AS GestionDemanda
-WHERE        (TipoMovimiento_id = 2) AND (Tipo_id = 1) AND (Estado_id = 3) AND (ID IN
-                             (SELECT        Demanda_id
-                               FROM            dbo.Ofertas AS Ofertas_1
-                               WHERE        (FechaConfirmacion IS NOT NULL) AND (ISNULL(Ene, 0) + ISNULL(Feb, 0) + ISNULL(Mar, 0) + ISNULL(Abr, 0) + ISNULL(May, 0) + ISNULL(Jun, 0) + ISNULL(Jul, 0) + ISNULL(Ago, 0) + ISNULL(Sep, 0) + ISNULL(Oct, 0) 
-                                                         + ISNULL(Nov, 0) + ISNULL(Dic, 0) > 0)))
-GO
-/****** Object:  Table [dbo].[Demandas_SubSol]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Demandas_SubSol')
-BEGIN
-CREATE TABLE [dbo].[Demandas_SubSol](
-	[Demandas_SubSol_id] [int] IDENTITY(1,1) NOT NULL,
-	[Demanda_id] [int] NULL,
-	[Centro_id] [int] NULL,
-	[Ene] [int] NULL,
-	[Feb] [int] NULL,
-	[Mar] [int] NULL,
-	[Abr] [int] NULL,
-	[May] [int] NULL,
-	[Jun] [int] NULL,
-	[Jul] [int] NULL,
-	[Ago] [int] NULL,
-	[Sep] [int] NULL,
-	[Oct] [int] NULL,
-	[Nov] [int] NULL,
-	[Dic] [int] NULL,
-	[UsuarioAlta_id] [int] NOT NULL,
-	[FechaAlta] [datetime] NULL,
-	[Estado_id] [int] NULL,
-	[Oferta_id] [int] NULL,
-	[Doc] [bit] NULL,
- CONSTRAINT [PK_Demandas_SubSol] PRIMARY KEY CLUSTERED 
-(
-	[Demandas_SubSol_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  View [dbo].[vwDemandas_Citaciones_SinAgrupar]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-/*select * from [vwDemandas_Citaciones] where anio= 2017
-order by Demanda_id, mutua*/
-CREATE OR ALTER VIEW [dbo].[vwDemandas_Citaciones_SinAgrupar]
-AS
-SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, Provincia, 
-                         Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic, 
-                         Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id
-FROM            (SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, 
-                                                    Provincia, Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, COUNT(Ene) AS Ene, COUNT(Feb) 
-                                                    AS Feb, COUNT(Mar) AS Mar, COUNT(Abr) AS Abr, COUNT(May) AS May, COUNT(Jun) AS Jun, COUNT(Jul) AS Jul, COUNT(Ago) AS Ago, COUNT(Sep) AS Sep, COUNT(Oct) AS Oct, COUNT(Nov) AS Nov, COUNT(Dic) 
-                                                    AS Dic, COUNT(Ene) + COUNT(Feb) + COUNT(Mar) + COUNT(Abr) + COUNT(May) + COUNT(Jun) + COUNT(Jul) + COUNT(Ago) + COUNT(Sep) + COUNT(Oct) + COUNT(Nov) + COUNT(Dic) AS Total, FechaAltaSolicitud, 
-                                                    Necesidad, Contestacion, citacion_id
-                          FROM            (SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS varchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) 
-                                                                              + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS varchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
-                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, MutuasOfertantes.Mutua AS MutuaOfertante, LTRIM(CAST(dbo.CentrosPropios.Localizador AS varchar)) 
-                                                                              + ' ' + LTRIM(CAST(ISNULL(dbo.CentrosPropios.Centro, 'Agrupación de Centros') AS varchar)) AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, dbo.Demandas.Centro_id, 
-                                                                              'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
-                                                                              + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
-                                                                              dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirmacion, dbo.Demandas.FechaRevision, 
-                                                                              dbo.Aux_Poblaciones.Poblacion AS Localidad, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 2 AS TipoMovimiento_id, 
-                                                                              'DEMANDA' AS TipoMovimiento,
-                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                    FROM            dbo.Demandas AS B
-                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
-                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                    FROM            dbo.Demandas AS B
-                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
-                                                                              dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, COUNT(dbo.Demandas.Ene) AS Ene, COUNT(dbo.Demandas.Feb) AS Feb, COUNT(dbo.Demandas.Mar) AS Mar, COUNT(dbo.Demandas.Abr) 
-                                                                              AS Abr, COUNT(dbo.Demandas.May) AS May, COUNT(dbo.Demandas.Jun) AS Jun, COUNT(dbo.Demandas.Jul) AS Jul, COUNT(dbo.Demandas.Ago) AS Ago, COUNT(dbo.Demandas.Sep) AS Sep, 
-                                                                              COUNT(dbo.Demandas.Oct) AS Oct, COUNT(dbo.Demandas.Nov) AS Nov, COUNT(dbo.Demandas.Dic) AS Dic, COUNT(dbo.Demandas.Ene) + COUNT(dbo.Demandas.Feb) + MAX(dbo.Demandas.Mar) 
-                                                                              + COUNT(dbo.Demandas.Abr) + COUNT(dbo.Demandas.May) + COUNT(dbo.Demandas.Jun) + COUNT(dbo.Demandas.Jul) + COUNT(dbo.Demandas.Ago) + COUNT(dbo.Demandas.Sep) 
-                                                                              + COUNT(dbo.Demandas.Oct) + MAX(dbo.Demandas.Nov) + COUNT(dbo.Demandas.Dic) AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
-                                                    FROM            dbo.Demandas LEFT OUTER JOIN
-                                                                              dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
-                                                                              dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
-                                                                              dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
-                                                                                  (SELECT        dbo.CentrosPropios.Centro_id, dbo.Mutuas.Mutua, dbo.CentrosPropios.Mutua_id AS MutuaOfertante_Id
-                                                                                    FROM            dbo.CentrosPropios LEFT OUTER JOIN
-                                                                                                              dbo.Mutuas ON dbo.CentrosPropios.Mutua_id = dbo.Mutuas.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
-                                                                              dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
-                                                                              dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
-                                                    WHERE        (dbo.Demandas.Tipo_id = 1)
-                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, 
-                                                                              dbo.Aux_Servicios.Servicio, dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, 
-                                                                              dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
-                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
-                                                    UNION ALL
-                                                    SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS varchar) 
-                                                                             + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS nvarchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS varchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
-                                                                             dbo.Mutuas.Mutua_id, 0 AS MutuaOfertante_id, 'Mutuas Ofertantes' AS MutuaOfertante, 'Centros de demanda Individual' AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, 
-                                                                             dbo.Demandas.Centro_id, 'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
-                                                                             + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
-                                                                             dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirnmacion, dbo.Demandas.FechaRevision, 
-                                                                             ISNULL(dbo.Aux_Poblaciones.Poblacion, '') AS Localidad, ISNULL(dbo.Aux_Provincias.Provincia, '') AS Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 
-                                                                             2 AS TipoMovimiento_id, 'DEMANDA' AS TipoMovimiento,
-                                                                                 (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                   FROM            dbo.Demandas_SubSol AS B
-                                                                                   WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
-                                                                                 (SELECT        COUNT(Demanda_id) AS Expr1
-                                                                                   FROM            dbo.Demandas AS B
-                                                                                   WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
-                                                                             dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, COUNT(dbo.Demandas.Ene) AS Ene, COUNT(dbo.Demandas.Feb) AS Feb, COUNT(dbo.Demandas.Mar) AS Mar, COUNT(dbo.Demandas.Abr) 
-                                                                             AS Abr, COUNT(dbo.Demandas.May) AS May, COUNT(dbo.Demandas.Jun) AS Jun, COUNT(dbo.Demandas.Jul) AS Jul, COUNT(dbo.Demandas.Ago) AS Ago, COUNT(dbo.Demandas.Sep) AS Sep, 
-                                                                             COUNT(dbo.Demandas.Oct) AS Oct, COUNT(dbo.Demandas.Nov) AS Nov, COUNT(dbo.Demandas.Dic) AS Dic, COUNT(dbo.Demandas.Ene) + COUNT(dbo.Demandas.Feb) + MAX(dbo.Demandas.Mar) 
-                                                                             + COUNT(dbo.Demandas.Abr) + COUNT(dbo.Demandas.May) + COUNT(dbo.Demandas.Jun) + COUNT(dbo.Demandas.Jul) + COUNT(dbo.Demandas.Ago) + COUNT(dbo.Demandas.Sep) 
-                                                                             + COUNT(dbo.Demandas.Oct) + MAX(dbo.Demandas.Nov) + COUNT(dbo.Demandas.Dic) AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
-                                                    FROM            dbo.Demandas LEFT OUTER JOIN
-                                                                             dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
-                                                                             dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
-                                                                             dbo.Aux_Poblaciones ON dbo.Demandas.Localidad = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
-                                                                             dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
-                                                                             dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
-                                                                             dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
-                                                                             dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
-                                                                             dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
-                                                    WHERE        (dbo.Demandas.Tipo_id = 2)
-                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, dbo.Aux_Servicios.Servicio, 
-                                                                             dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id, 
-                                                                             dbo.CentrosPropios.Localizador, dbo.Demandas.Localidad, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
-                                                                             dbo.Mutuas.Mutua_id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id) AS tab
-                          GROUP BY Mutua, Centro, Centro_id, Especialidad, Especialidad_id, Servicio_id, FechaRevision, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Tipo_id, Demanda_id, Localidad, Provincia, Anio, MutuaOfertante, 
-                                                    Servicio, Agrupacion, FechaConfirmacion, CodigoDemanda, Peticiones_Pendientes, Estado_id, Telefono, ID, DireccionGIS, FechaAsignacion, Mutua_id, MutuaOfertante_Id, FechaAltaSolicitud, Necesidad, 
-                                                    Contestacion, citacion_id
-                          UNION ALL
-                          SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) 
-                                                   AS nvarchar) + ';1;' + CAST(ISNULL(dbo.Ofertas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, dbo.Mutuas.Mutua_id, 
-                                                   CASE WHEN Tipo_id = 1 THEN MutuasOfertantes.MutuaOfertante_id ELSE 0 END AS MutuaOfertante_id, CASE WHEN Tipo_id = 1 THEN MutuasOfertantes.Mutua ELSE 'Mutuas Ofertantes' END AS MutuaOfertante, 
-                                                   CASE WHEN tipo_id = 1 THEN ltrim(CAST(CentrosPropios.Localizador AS varchar)) + ' ' + ltrim(CAST(CentrosPropios.Centro AS varchar)) 
-                                                   ELSE CASE WHEN DemandasSub.Estado_id = 3 THEN DemandasSub.Centro ELSE 'Centros Demanda Individual' END END AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, 
-                                                   dbo.Demandas.Centro_id, 'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
-                                                   + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Agrupacion, 
-                                                   dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirnmacion, dbo.Demandas.FechaRevision, 
-                                                   CASE WHEN Tipo_id = 1 THEN isnull(Aux_Poblaciones.Poblacion, '') ELSE Poblaciones.Poblacion END AS Localidad, CASE WHEN Tipo_id = 1 THEN isnull(Aux_Provincias.Provincia, '') 
-                                                   ELSE Provincias.Provincia END AS Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 1 AS TipoMovimiento_id, 'OFERTA' AS TipoMovimiento, 
-                                                   CASE WHEN Tipo_id = 1 THEN
-                                                       (SELECT        COUNT(B.Demanda_id)
-                                                         FROM            Demandas B
-                                                         WHERE        B.Demanda_id = Demandas.Demanda_id AND b.Estado_id IN (1, 2, 3, 4)) ELSE
-                                                       (SELECT        COUNT(B.Demanda_id)
-                                                         FROM            Demandas_SubSol B
-                                                         WHERE        B.Demanda_id = Demandas.Demanda_id AND b.Estado_id IN (1, 2, 3, 4)) END AS Peticiones_Atendidas,
-                                                       (SELECT        COUNT(Demanda_id) AS Expr1
-                                                         FROM            dbo.Demandas AS B
-                                                         WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, 
-                                                   dbo.Ofertas.FechaAsignacion, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Ene), 0) ELSE isnull(MAX(Ofertas.Ene), 0) END AS Ene, CASE WHEN NOT MAX(FechaConfirmacion) 
-                                                   IS NULL THEN isnull(COUNT(Ofertas.Feb), 0) ELSE isnull(MAX(Ofertas.Feb), 0) END AS Feb, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Mar), 0) ELSE isnull(MAX(Ofertas.Mar), 0) 
-                                                   END AS Mar, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Abr), 0) ELSE isnull(MAX(Ofertas.Abr), 0) END AS Abr, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
-                                                   THEN isnull(COUNT(Ofertas.May), 0) ELSE isnull(MAX(Ofertas.May), 0) END AS May, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Jun), 0) ELSE isnull(MAX(Ofertas.Jun), 0) 
-                                                   END AS Jun, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Jul), 0) ELSE isnull(MAX(Ofertas.Jul), 0) END AS Jul, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
-                                                   THEN isnull(COUNT(Ofertas.Ago), 0) ELSE isnull(MAX(Ofertas.Ago), 0) END AS Ago, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Sep), 0) ELSE isnull(MAX(Ofertas.Sep), 0) 
-                                                   END AS Sep, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Oct), 0) ELSE isnull(MAX(Ofertas.Oct), 0) END AS Oct, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
-                                                   THEN isnull(COUNT(Ofertas.Nov), 0) ELSE isnull(MAX(Ofertas.Nov), 0) END AS Nov, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Dic), 0) ELSE isnull(MAX(Ofertas.Dic), 0) 
-                                                   END AS Dic, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Ene), 0) + isnull(COUNT(Ofertas.Feb), 0) + isnull(COUNT(Ofertas.Mar), 0) + isnull(COUNT(Ofertas.Abr), 0) 
-                                                   + isnull(COUNT(Ofertas.May), 0) + isnull(COUNT(Ofertas.Jun), 0) + isnull(COUNT(Ofertas.Jul), 0) + isnull(COUNT(Ofertas.Ago), 0) + isnull(COUNT(Ofertas.Sep), 0) + isnull(COUNT(Ofertas.Oct), 0) 
-                                                   + isnull(COUNT(Ofertas.Nov), 0) + isnull(COUNT(Ofertas.Dic), 0) ELSE isnull(MAX(Ofertas.Ene), 0) + isnull(MAX(Ofertas.Feb), 0) + isnull(MAX(Ofertas.Mar), 0) + isnull(MAX(Ofertas.Abr), 0) + isnull(MAX(Ofertas.May), 0) 
-                                                   + isnull(MAX(Ofertas.Jun), 0) + isnull(MAX(Ofertas.Jul), 0) + isnull(MAX(Ofertas.Ago), 0) + isnull(MAX(Ofertas.Sep), 0) + isnull(MAX(Ofertas.Oct), 0) + isnull(MAX(Ofertas.Nov), 0) + isnull(MAX(Ofertas.Dic), 0) 
-                                                   END AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
-                          FROM            dbo.Demandas LEFT OUTER JOIN
-                                                       (SELECT        CAST(dbo.CentrosPropios.Localizador AS nvarchar) + ' ' + CAST(dbo.CentrosPropios.Centro AS nvarchar) AS Centro, dbo.Demandas_SubSol.Centro_id, dbo.Demandas_SubSol.Demanda_id, 
-                                                                                   dbo.Demandas_SubSol.Estado_id
-                                                         FROM            dbo.Demandas_SubSol INNER JOIN
-                                                                                   dbo.CentrosPropios ON dbo.Demandas_SubSol.Centro_id = dbo.CentrosPropios.Centro_id
-                                                         WHERE        (dbo.Demandas_SubSol.Estado_id = 3)) AS DemandasSub ON dbo.Demandas.Demanda_id = DemandasSub.Demanda_id LEFT OUTER JOIN
-                                                   dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
-                                                   dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
-                                                   dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
-                                                   dbo.Aux_Poblaciones AS Poblaciones ON ISNULL(dbo.Demandas.Localidad, 0) = Poblaciones.Poblacion_id LEFT OUTER JOIN
-                                                   dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
-                                                   dbo.Aux_Provincias AS Provincias ON ISNULL(Poblaciones.Provincia_id, 0) = Provincias.Provincia_id LEFT OUTER JOIN
-                                                   dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
-                                                       (SELECT        dbo.CentrosPropios.Centro_id, dbo.Mutuas.Mutua, dbo.CentrosPropios.Mutua_id AS MutuaOfertante_id
-                                                         FROM            dbo.CentrosPropios LEFT OUTER JOIN
-                                                                                   dbo.Mutuas ON dbo.CentrosPropios.Mutua_id = dbo.Mutuas.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
-                                                   dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
-                                                   dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
-                                                   dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
-                          GROUP BY dbo.Demandas.Año, dbo.CentrosPropios.Centro, DemandasSub.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, dbo.Aux_Servicios.Servicio, 
-                                                   dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, Provincias.Provincia, dbo.Demandas.Tipo_id, 
-                                                   dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Ofertas.Demanda_id, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, DemandasSub.Estado_id, dbo.Demandas.Estado_id, 
-                                                   dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, MutuasOfertantes.MutuaOfertante_id, dbo.Mutuas.Mutua_id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, 
-                                                   c.citacion_id) AS GestionDemanda
-WHERE        (TipoMovimiento_id = 2) AND (Tipo_id = 1) AND (Estado_id = 3)
-GO
-/****** Object:  Table [dbo].[DisponibilidadCentrosPropios]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DisponibilidadCentrosPropios')
-BEGIN
-CREATE TABLE [dbo].[DisponibilidadCentrosPropios](
-	[DisponibilidadCentro_id] [int] IDENTITY(1,1) NOT NULL,
-	[Centro_id] [int] NULL,
-	[Servicio_id] [int] NULL,
-	[Especialidad_id] [int] NULL,
-	[Mes] [int] NULL,
-	[Año] [int] NULL,
+CREATE TABLE [dbo].[CentrosPropiosEspecialidades](
+	[CentroPropioEspecialidad_id] [int] IDENTITY(7975,1) NOT NULL,
+	[Centro_id] [int] NOT NULL,
+	[Año] [int] NOT NULL,
+	[Especialidad_id] [int] NOT NULL,
+	[Servicio] [nvarchar](150) NOT NULL,
 	[Cantidad] [int] NULL,
- CONSTRAINT [PK_DisponibilidadCentrosPropios] PRIMARY KEY CLUSTERED 
+	[ImporteConIVA] [float] NULL,
+	[Servicio_id] [bigint] NULL,
+	[FechaAlta] [datetime] NULL,
+	[FechaBaja] [datetime] NULL,
+	[Disponibilidad] [int] NULL,
+	[Plazo] [int] NULL,
+	[ActualizarDisponibilidad] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[FechaActualizarDisponibilidad] [datetime] NULL,
+	[FechaGeneracionAcreditacion] [datetime] NULL,
+ CONSTRAINT [PK_CentrosPropiosEspecialidades_1] PRIMARY KEY CLUSTERED 
 (
-	[DisponibilidadCentro_id] ASC
+	[CentroPropioEspecialidad_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  View [dbo].[vw_Disponibilidad]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_EspecialidadesPropios]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+create view [dbo].[vw_EspecialidadesPropios] AS
+SELECT     TOP (100) PERCENT dbo.CentrosPropiosEspecialidades.Año, dbo.CentrosPropiosEspecialidades.CentroPropioEspecialidad_id, 
+                      dbo.CentrosPropiosEspecialidades.Centro_id, dbo.CentrosPropios.Mutua_id, dbo.Aux_Especialidades.Especialidad_id, dbo.Aux_Especialidades.Especialidad, 
+                      dbo.CentrosPropiosEspecialidades.Servicio, dbo.CentrosPropiosEspecialidades.Cantidad, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Localizador
+FROM         dbo.Aux_Especialidades INNER JOIN
+                      dbo.CentrosPropiosEspecialidades ON dbo.Aux_Especialidades.Especialidad_id = dbo.CentrosPropiosEspecialidades.Especialidad_id INNER JOIN
+                      dbo.CentrosPropios ON dbo.CentrosPropiosEspecialidades.Centro_id = dbo.CentrosPropios.Centro_id
+ORDER BY dbo.CentrosPropiosEspecialidades.Año DESC, dbo.CentrosPropiosEspecialidades.Servicio, dbo.Aux_Especialidades.Especialidad
 
-CREATE OR ALTER VIEW [dbo].[vw_Disponibilidad] AS
-SELECT        Año, Centro_id, Especialidad_id, Servicio_id, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre, Total
-FROM            (SELECT        Año, Centro_id, Especialidad_id, Servicio_id, isnull([1], 0) AS Enero, isnull([2], 0) AS Febrero, isnull([3], 0) AS Marzo, isnull([4], 0) AS Abril, isnull([5], 0) AS Mayo, isnull([6], 0) AS Junio, isnull([7], 0) 
-                                                    AS Julio, isnull([8], 0) AS Agosto, isnull([9], 0) AS Septiembre, isnull([10], 0) AS Octubre, isnull([11], 0) AS Noviembre, isnull([12], 0) AS Diciembre, isnull([1], 0) + isnull([2], 0) + isnull([3], 0) + isnull([4], 0) 
-                                                    + isnull([5], 0) + isnull([6], 0) + isnull([7], 0) + isnull([8], 0) + isnull([9], 0) + isnull([10], 0) + isnull([11], 0) + isnull([12], 0) AS Total
-                          FROM            (SELECT        Cantidad, mes, Año, Centro_id, Servicio_id, Especialidad_id
-                                                    FROM            DisponibilidadCentrosPropios) AS tb1 PIVOT (Sum(Cantidad) FOR Mes IN ([1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12])) AS PivotTable) AS Disponibilidad
-   
+
 GO
-/****** Object:  Table [dbo].[ICG06]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Conciertos_Articulo25]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ICG06')
-BEGIN
+CREATE   VIEW [dbo].[vw_Conciertos_Articulo25]
+AS
+SELECT DISTINCT 
+                      TOP (100) PERCENT dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' AS CapituloCM, 
+                      'Costes' AS ConceptoCM, dbo.CentrosConcertados.Centro, SUM(ISNULL(dbo.ICG07.Costeassan, 0)) + SUM(ISNULL(dbo.ICG07.CosteIT, 0)) 
+                      + SUM(ISNULL(dbo.ICG07.GastoCentroNoConcert, 0)) AS Respuesta
+FROM         dbo.ICG07 INNER JOIN
+                      dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id INNER JOIN
+                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
+GROUP BY dbo.CentrosConcertados.Centro_id, dbo.ICG07.Año, dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  Table [dbo].[ICG06]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[ICG06](
 	[Id_ICG] [int] IDENTITY(1,1) NOT NULL,
 	[Año] [int] NOT NULL,
@@ -1348,9 +1029,8 @@ CREATE TABLE [dbo].[ICG06](
 	[PersNoAdminGastPersSustInt] [numeric](10, 2) NULL,
 	[PersNoAdminHorasPersSustInt] [numeric](10, 2) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  View [dbo].[vw_Propios_Validados]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Validados]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1363,350 +1043,28 @@ FROM         dbo.ICG06 INNER JOIN
                       dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 WHERE     (dbo.ICG06.Validado = 1) 
 GROUP BY dbo.CentrosPropios.Mutua_id, dbo.ICG06.Año
-GO
-/****** Object:  Table [dbo].[CentrosPropiosEspecialidades]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CentrosPropiosEspecialidades')
-BEGIN
-CREATE TABLE [dbo].[CentrosPropiosEspecialidades](
-	[CentroPropioEspecialidad_id] [int] IDENTITY(7975,1) NOT NULL,
-	[Centro_id] [int] NOT NULL,
-	[Año] [int] NOT NULL,
-	[Especialidad_id] [int] NOT NULL,
-	[Servicio] [nvarchar](150) NOT NULL,
-	[Cantidad] [int] NULL,
-	[ImporteConIVA] [float] NULL,
-	[Servicio_id] [bigint] NULL,
-	[FechaAlta] [datetime] NULL,
-	[FechaBaja] [datetime] NULL,
-	[Disponibilidad] [int] NULL,
-	[Plazo] [int] NULL,
-	[ActualizarDisponibilidad] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[FechaActualizarDisponibilidad] [datetime] NULL,
-	[FechaGeneracionAcreditacion] [datetime] NULL,
- CONSTRAINT [PK_CentrosPropiosEspecialidades_1] PRIMARY KEY CLUSTERED 
-(
-	[CentroPropioEspecialidad_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  View [dbo].[vw_DisponibilidadCentro]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
-create view [dbo].[vw_DisponibilidadCentro] as 
-Select 
-Año, Centro_id, Especialidad_id, Servicio_id, ActualizarDisponibilidad, FechaModificacion, FechaActualizarDisponibilidad, Enero,Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre, Total from (
- SELECT Año, Centro_id, Especialidad_id, Servicio_id, ActualizarDisponibilidad, FechaModificacion, FechaActualizarDisponibilidad, 
- 	isnull([1],0) as Enero, isnull([2],0) AS Febrero, isnull([3],0) as Marzo, isnull([4],0) as Abril, 
-    isnull([5],0) AS Mayo, isnull([6],0) as Junio, isnull([7],0) as Julio, isnull([8],0) as Agosto, 
-    isnull([9],0) as Septiembre, isnull([10],0) as Octubre, isnull([11],0) as Noviembre, isnull([12],0) as Diciembre, 
-    isnull([1],0) + isnull([2],0) + isnull([3],0) + isnull([4],0) + 
-    isnull([5],0) + isnull([6],0) + isnull([7],0) + isnull([8],0) + 
-    isnull([9],0) + isnull([10],0) + isnull([11],0) + isnull([12],0) as Total 
-    from (
-            Select a.Cantidad, mes, a.Año, a.Centro_id, a.Servicio_id, a.Especialidad_id, b.ActualizarDisponibilidad, b.FechaModificacion, b.FechaActualizarDisponibilidad from DisponibilidadCentrosPropios a
-			left join CentrosPropiosEspecialidades b on a.Centro_id=b.Centro_id and a.Especialidad_id=b.Especialidad_id and a.Servicio_id = b.Servicio_id and a.Año=b.Año  ) as tb1
-         PIVOT
-            (Sum(Cantidad)
-            FOR Mes IN ([1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12]) 
-         ) as PivotTable
- ) as Disponibilidad 
 GO
-/****** Object:  View [dbo].[vw_Propios_NoValidados]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_NoValidados]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE OR ALTER VIEW [dbo].[vw_Propios_NoValidados] AS
+CREATE   VIEW [dbo].[vw_Propios_NoValidados] AS
 SELECT     dbo.ICG06.Año, dbo.CentrosPropios.Mutua_id, COUNT(dbo.ICG06.Centro_id) AS Centro_id
 FROM         dbo.ICG06 INNER JOIN
                       dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 WHERE     (dbo.ICG06.Validado = 0 OR
                       dbo.ICG06.Validado IS NULL) 
 GROUP BY dbo.CentrosPropios.Mutua_id, dbo.ICG06.Año
-GO
-/****** Object:  Table [dbo].[Conciertos]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Conciertos')
-BEGIN
-CREATE TABLE [dbo].[Conciertos](
-	[Concierto_id] [int] IDENTITY(49110,1) NOT NULL,
-	[Mutua_id] [int] NOT NULL,
-	[Centro_id] [int] NOT NULL,
-	[CodigoCASA] [nvarchar](50) NULL,
-	[CodigoMZ] [nvarchar](50) NULL,
-	[CentroAsociado_id] [int] NULL,
-	[Localizador] [nvarchar](50) NULL,
-	[TipoAsistencia_id] [int] NULL,
-	[AmbitoCobertura] [int] NULL,
-	[Muniambito] [nvarchar](255) NULL,
-	[Autorizado] [bit] NULL,
-	[FechaAutorizacion] [datetime] NULL,
-	[UsuarioAutorizacion_id] [int] NULL,
-	[FechaSuscripcion] [datetime] NULL,
-	[FechaResolucion] [datetime] NULL,
-	[FechaVigencia] [datetime] NULL,
-	[FechaProrroga] [datetime] NULL,
-	[FechaAlta] [datetime] NULL,
-	[UsuarioAlta_id] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[FechaBaja] [datetime] NULL,
-	[UsuarioBaja_id] [int] NULL,
-	[Adhesion] [int] NULL,
-	[ClaveAcces] [int] NULL,
- CONSTRAINT [PK_Conciertos_1] PRIMARY KEY CLUSTERED 
-(
-	[Concierto_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[ICG07]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ICG07')
-BEGIN
-CREATE TABLE [dbo].[ICG07](
-	[Id_ICG] [int] IDENTITY(1,1) NOT NULL,
-	[Año] [int] NOT NULL,
-	[Concierto_id] [int] NOT NULL,
-	[Especialid] [nvarchar](max) NULL,
-	[Fautorizacion] [datetime] NULL,
-	[Fsuscrip] [nvarchar](max) NULL,
-	[Fresoluc] [nvarchar](max) NULL,
-	[Fprorroga] [nvarchar](max) NULL,
-	[FinVigencia] [nvarchar](max) NULL,
-	[Muniambito] [nvarchar](max) NULL,
-	[Costeassan] [numeric](10, 2) NULL,
-	[CosteIT] [numeric](10, 2) NULL,
-	[CostePRL] [nvarchar](max) NULL,
-	[TipConciert] [int] NULL,
-	[Provincia] [nvarchar](max) NULL,
-	[Localid] [nvarchar](max) NULL,
-	[CP] [nvarchar](max) NULL,
-	[Ubicac] [nvarchar](max) NULL,
-	[PAsinurg] [int] NULL,
-	[PAurgencias] [int] NULL,
-	[Pingresadas] [int] NULL,
-	[ASAMprimconsProg] [int] NULL,
-	[ASAMconssuc] [int] NULL,
-	[ASAMsesrehab] [int] NULL,
-	[ASAMplacrad(RADIO)] [int] NULL,
-	[ASAMintquir] [int] NULL,
-	[ASAMintquirmp] [int] NULL,
-	[ASAMotrasprueb] [int] NULL,
-	[ASHNprimconsProg] [int] NULL,
-	[ASHNconssuc] [int] NULL,
-	[ASHNestcaus] [int] NULL,
-	[ASHNsesrehab] [int] NULL,
-	[ASHNplacrad(RADIO)] [int] NULL,
-	[ASHNintquir] [int] NULL,
-	[ASHNintquirmp] [int] NULL,
-	[ASHNotrasprueb] [int] NULL,
-	[CITnºconsesp] [int] NULL,
-	[CITnºsesrehab] [int] NULL,
-	[CITnºintquir] [int] NULL,
-	[CITnºotrpru] [int] NULL,
-	[Dista25km] [int] NULL,
-	[Dista25-50km] [int] NULL,
-	[Masde50km] [int] NULL,
-	[Persfisica] [int] NULL,
-	[Persjurpriv] [int] NULL,
-	[Persjursist] [int] NULL,
-	[PersjurOSP] [int] NULL,
-	[PersjurOmutua] [int] NULL,
-	[Art2581] [numeric](10, 2) NULL,
-	[Art2582] [numeric](10, 2) NULL,
-	[RestoArticulo25SCon] [numeric](10, 2) NULL,
-	[GastoCentroNoConcert] [numeric](10, 2) NULL,
-	[Validado] [bit] NULL,
-	[UsuarioAlta_id] [int] NULL,
-	[FechaAlta] [datetime] NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[ICG07_2014] [int] NULL,
-	[Agrupacion_id] [int] NULL,
-	[ASAMprimconsProg(Video)] [int] NULL,
-	[ASAMprimconsNoProg] [int] NULL,
-	[ASAMprimconsNoProg(Video)] [int] NULL,
-	[ASAMconssuc(Video)] [int] NULL,
-	[ASAMconseenf] [int] NULL,
-	[ASAMestcaus] [int] NULL,
-	[ASAMplacrad(RM)] [int] NULL,
-	[ASAMplacrad(Eco)] [int] NULL,
-	[ASAMplacrad(TAC)] [int] NULL,
-	[ASHNprimconsProg(video)] [int] NULL,
-	[ASHNprimconsNoProg] [int] NULL,
-	[ASHNprimconsNoProg(video)] [int] NULL,
-	[ASHNconssuc(video)] [int] NULL,
-	[ASHNplacrad(RM)] [int] NULL,
-	[ASHNplacrad(Eco)] [int] NULL,
-	[ASHNplacrad(TAC)] [int] NULL,
-	[ASAMBiomec] [int] NULL,
-	[ASHNBiomec] [int] NULL,
-	[CITNIntervencionesQuirurjicas] [int] NULL,
-	[CITNOtrasPruebasControl] [int] NULL,
-	[ASHNConsultasEnfermeria] [int] NULL,
-	[GastoTransporte] [float] NULL,
- CONSTRAINT [PK_ICG07_1] PRIMARY KEY CLUSTERED 
-(
-	[Id_ICG] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
-GO
-/****** Object:  Table [dbo].[CentrosConcertados]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CentrosConcertados')
-BEGIN
-CREATE TABLE [dbo].[CentrosConcertados](
-	[Centro_id] [int] IDENTITY(89809,1) NOT NULL,
-	[Centro] [nvarchar](150) NULL,
-	[Validado] [bit] NULL,
-	[Localizador] [nvarchar](50) NULL,
-	[Proveedor_id] [int] NULL,
-	[Delegacion_id] [int] NULL,
-	[CIFNIF] [char](15) NULL,
-	[Direccion] [varchar](100) NULL,
-	[Numero] [nvarchar](50) NULL,
-	[DireccionGIS] [varchar](100) NULL,
-	[Poblacion_id] [int] NULL,
-	[CP] [char](5) NULL,
-	[Telefono] [char](15) NULL,
-	[Fax] [char](15) NULL,
-	[DireccionElectronica] [varchar](100) NULL,
-	[PersonaContacto] [varchar](100) NULL,
-	[ServiciosEspeciales] [int] NULL,
-	[AsistenciaHospitalaria] [bit] NULL,
-	[AsistenciaAmbulatoria] [bit] NULL,
-	[Rehabilitacion] [bit] NULL,
-	[IncapacidadTransitoria] [bit] NULL,
-	[Prevencion] [bit] NULL,
-	[Administracion] [bit] NULL,
-	[OtrasActividades] [bit] NULL,
-	[AsistenciaSanitaria] [bit] NULL,
-	[MediosAjenos] [bit] NULL,
-	[FechaAlta] [datetime] NULL,
-	[UsuarioAlta_id] [int] NULL,
-	[FechaModificacion] [datetime] NULL,
-	[UsuarioModificacion_id] [int] NULL,
-	[FechaBaja] [datetime] NULL,
-	[UsuarioBaja_id] [int] NULL,
-	[MotivoBaja] [nvarchar](500) NULL,
-	[TipoCentro] [int] NULL,
-	[TipoCentroAnt] [int] NULL,
-	[Observaciones] [varchar](500) NULL,
-	[TipoVia_id] [nvarchar](10) NULL,
-	[Piso] [nvarchar](15) NULL,
-	[Puerta] [nvarchar](15) NULL,
-	[OtrosDatos] [nvarchar](255) NULL,
-	[Traslado] [bit] NULL,
-	[Centro_idNuevo] [int] NULL,
-	[Fautocom] [datetime] NULL,
-	[Fpufuncio] [datetime] NULL,
-	[Fcalisuf] [datetime] NULL,
-	[FechaCarga] [datetime] NULL,
-	[MapaValidado] [bit] NULL,
-	[Latitud] [nvarchar](50) NULL,
-	[Longitud] [nvarchar](50) NULL,
-	[CodigoMZ] [nvarchar](50) NULL,
-	[id_ICG072013] [int] NULL,
-	[CIFNIFValido] [bit] NULL,
-	[NumRegistroSanitario] [bigint] NULL,
- CONSTRAINT [PK_CentrosConcertados] PRIMARY KEY CLUSTERED 
-(
-	[Centro_id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-END
-GO
-/****** Object:  View [dbo].[vw_Concertados_Validados]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
-CREATE OR ALTER VIEW [dbo].[vw_Concertados_Validados] AS
-SELECT     dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, COUNT(dbo.Conciertos.Centro_id) AS Centro_id
-FROM         dbo.Conciertos INNER JOIN
-                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
-                      dbo.ICG07 ON dbo.Conciertos.Concierto_id = dbo.ICG07.Concierto_id
-WHERE     (dbo.ICG07.Validado = 1) 
-GROUP BY dbo.Conciertos.Mutua_id, dbo.ICG07.Año, dbo.Conciertos.Concierto_id
 GO
-/****** Object:  View [dbo].[vw_Concertados_NoValidados]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Capitulo1]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-
-CREATE OR ALTER VIEW [dbo].[vw_Concertados_NoValidados] AS
-SELECT     dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, COUNT(dbo.Conciertos.Centro_id) AS Centro_id
-FROM         dbo.Conciertos INNER JOIN
-                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
-                      dbo.ICG07 ON dbo.Conciertos.Concierto_id = dbo.ICG07.Concierto_id
-WHERE     (dbo.ICG07.Validado = 0 OR
-                      dbo.ICG07.Validado IS NULL) 
-GROUP BY dbo.Conciertos.Mutua_id, dbo.ICG07.Año, dbo.Conciertos.Concierto_id
-GO
-/****** Object:  Table [dbo].[ConciertosEspecialidades]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ConciertosEspecialidades')
-BEGIN
-CREATE TABLE [dbo].[ConciertosEspecialidades](
-	[ConciertoEspecialidad_id] [int] IDENTITY(1,1) NOT NULL,
-	[Concierto_id] [int] NOT NULL,
-	[Año] [int] NOT NULL,
-	[Especialidad_id] [int] NOT NULL,
-	[Servicio_id] [int] NULL,
-	[Cantidad] [int] NULL,
-	[ImporteConIVA] [float] NULL
-) ON [PRIMARY]
-END
-GO
-/****** Object:  View [dbo].[vw_especialidadesConciertos]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE OR ALTER VIEW [dbo].[vw_especialidadesConciertos]
-AS
-SELECT        TOP (100) PERCENT dbo.ConciertosEspecialidades.ConciertoEspecialidad_id, dbo.ConciertosEspecialidades.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Centro_id, dbo.Conciertos.Mutua_id, 
-                         dbo.Aux_Especialidades.Especialidad_id, dbo.Aux_Especialidades.Especialidad, dbo.ConciertosEspecialidades.Cantidad, dbo.CentrosConcertados.Centro, dbo.CentrosConcertados.Localizador, 
-                         dbo.Conciertos.CodigoCASA, dbo.Aux_Servicios.Servicio
-FROM            dbo.Aux_Especialidades INNER JOIN
-                         dbo.ConciertosEspecialidades ON dbo.Aux_Especialidades.Especialidad_id = dbo.ConciertosEspecialidades.Especialidad_id INNER JOIN
-                         dbo.Conciertos ON dbo.ConciertosEspecialidades.Concierto_id = dbo.Conciertos.Concierto_id INNER JOIN
-                         dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
-                         dbo.Aux_Servicios ON dbo.ConciertosEspecialidades.Servicio_id = dbo.Aux_Servicios.Servicio_id
-ORDER BY dbo.ConciertosEspecialidades.Año DESC, dbo.Aux_Especialidades.Especialidad
-GO
-/****** Object:  View [dbo].[vw_Propios_Capitulo1]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE OR ALTER VIEW [dbo].[vw_Propios_Capitulo1]
+CREATE   VIEW [dbo].[vw_Propios_Capitulo1]
 AS
 SELECT DISTINCT 
                          TOP (100) PERCENT SUM(ISNULL(dbo.ICG06.PersSanitMedArt6GastPers, 0)) + SUM(ISNULL(dbo.ICG06.PersSanitMedArt6GastPersSustInt, 0)) + SUM(ISNULL(dbo.ICG06.PersSanitMedEspArt6GastPers, 0)) 
@@ -1724,13 +1082,14 @@ SELECT DISTINCT
 FROM            dbo.ICG06 INNER JOIN
                          dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 GROUP BY dbo.ICG06.Año, dbo.ICG06.Centro_id, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Mutua_id
+
 GO
-/****** Object:  View [dbo].[vw_Propios_Capitulo2]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Capitulo2]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE OR ALTER VIEW [dbo].[vw_Propios_Capitulo2]
+CREATE   VIEW [dbo].[vw_Propios_Capitulo2]
 AS
 SELECT DISTINCT 
                       TOP (100) PERCENT SUM(ISNULL(dbo.ICG06.GasbienescysCIT, 0)) + SUM(ISNULL(dbo.ICG06.GasbienescysPSS, 0)) + SUM(ISNULL(dbo.ICG06.GasbienescysAG, 0)) 
@@ -1739,8 +1098,9 @@ SELECT DISTINCT
 FROM         dbo.ICG06 INNER JOIN
                       dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 GROUP BY dbo.ICG06.Año, dbo.ICG06.Centro_id, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Mutua_id
+
 GO
-/****** Object:  View [dbo].[vw_Propios_Cuenta68]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Cuenta68]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1759,8 +1119,9 @@ CentrosPropios.Mutua_id
 FROM  ICG06   
 INNER JOIN CentrosPropios on ICG06.Centro_id = CentrosPropios.Centro_id 
 GROUP BY Año, ICG06.Centro_id, Centro,Mutua_id
+
 GO
-/****** Object:  View [dbo].[vw_Propios_Articulo62]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Articulo62]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1776,8 +1137,9 @@ CentrosPropios.Mutua_id
 FROM  ICG06   
 INNER JOIN CentrosPropios on ICG06.Centro_id = CentrosPropios.Centro_id 
 GROUP BY Año, ICG06.Centro_id, Centro,Mutua_id
+
 GO
-/****** Object:  View [dbo].[vw_Propios_Articulo63]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Articulo63]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1792,13 +1154,14 @@ CentrosPropios.Mutua_id
 FROM  ICG06   
 INNER JOIN CentrosPropios on ICG06.Centro_id = CentrosPropios.Centro_id 
 GROUP BY Año, ICG06.Centro_id, Centro,Mutua_id
+
 GO
-/****** Object:  View [dbo].[vw_Propios_Articulo32]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Articulo32]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE OR ALTER VIEW [dbo].[vw_Propios_Articulo32]
+CREATE   VIEW [dbo].[vw_Propios_Articulo32]
 AS
 SELECT DISTINCT 
                          TOP (100) PERCENT SUM(ISNULL(dbo.ICG06.Factejercresto, 0)) + SUM(ISNULL(dbo.ICG06.Factejercsist, 0)) + SUM(ISNULL(dbo.ICG06.FactejerotrmutuasCC, 0)) + SUM(ISNULL(dbo.ICG06.FactejerotrmutuasCP, 0)) AS Respuesta, 
@@ -1806,143 +1169,9 @@ SELECT DISTINCT
 FROM            dbo.ICG06 INNER JOIN
                          dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 GROUP BY dbo.ICG06.Año, dbo.ICG06.Centro_id, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Mutua_id
-GO
-/****** Object:  View [dbo].[vw_ListadoPropiosICG]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE OR ALTER VIEW [dbo].[vw_ListadoPropiosICG] AS
-SELECT     dbo.ICG06.Año, dbo.CentrosPropios.Mutua_id, dbo.CentrosPropios.Centro_id, SUM(DISTINCT ISNULL(dbo.vw_Propios_Capitulo1.Respuesta, 0)) AS Capitulo1, 
-                      SUM(DISTINCT ISNULL(dbo.vw_Propios_Capitulo2.Respuesta, 0)) AS Capitulo2, SUM(DISTINCT ISNULL(dbo.vw_Propios_Cuenta68.Respuesta, 0)) AS Cuenta68, 
-                      SUM(DISTINCT ISNULL(dbo.vw_Propios_Articulo62.Respuesta, 0)) AS Articulo62, SUM(DISTINCT ISNULL(dbo.vw_Propios_Articulo63.Respuesta, 0)) AS Articulo63, 
-                      SUM(DISTINCT ISNULL(dbo.vw_Propios_Articulo32.Respuesta, 0)) AS Articulo32, dbo.ICG06.Validado AS Estado, dbo.CentrosPropios.Poblacion_id, 
-                      ISNULL(dbo.vw_Propios_Financieros.Respuesta, 0) AS GastosFinancieros
-FROM         dbo.vw_Propios_Cuenta68 RIGHT OUTER JOIN
-                      dbo.CentrosPropios INNER JOIN
-                      dbo.ICG06 ON dbo.CentrosPropios.Centro_id = dbo.ICG06.Centro_id LEFT OUTER JOIN
-                      dbo.vw_Propios_Financieros ON dbo.CentrosPropios.Centro_id = dbo.vw_Propios_Financieros.Centro_id AND dbo.ICG06.Año = dbo.vw_Propios_Financieros.Año AND 
-                      dbo.CentrosPropios.Mutua_id = dbo.vw_Propios_Financieros.Mutua_id LEFT OUTER JOIN
-                      dbo.vw_Propios_Articulo62 ON dbo.ICG06.Centro_id = dbo.vw_Propios_Articulo62.Centro_id AND dbo.ICG06.Año = dbo.vw_Propios_Articulo62.Año LEFT OUTER JOIN
-                      dbo.vw_Propios_Articulo63 ON dbo.ICG06.Año = dbo.vw_Propios_Articulo63.Año AND dbo.ICG06.Centro_id = dbo.vw_Propios_Articulo63.Centro_id ON 
-                      dbo.vw_Propios_Cuenta68.Año = dbo.ICG06.Año AND dbo.vw_Propios_Cuenta68.Centro_id = dbo.ICG06.Centro_id LEFT OUTER JOIN
-                      dbo.vw_Propios_Articulo32 ON dbo.ICG06.Centro_id = dbo.vw_Propios_Articulo32.Centro_id AND dbo.ICG06.Año = dbo.vw_Propios_Articulo32.Año LEFT OUTER JOIN
-                      dbo.vw_Propios_Capitulo2 ON dbo.ICG06.Centro_id = dbo.vw_Propios_Capitulo2.Centro_id AND dbo.ICG06.Año = dbo.vw_Propios_Capitulo2.Año LEFT OUTER JOIN
-                      dbo.vw_Propios_Capitulo1 ON dbo.ICG06.Año = dbo.vw_Propios_Capitulo1.Año AND dbo.ICG06.Centro_id = dbo.vw_Propios_Capitulo1.Centro_id
-     
-GROUP BY dbo.ICG06.Año, dbo.CentrosPropios.Mutua_id, dbo.ICG06.Validado, dbo.CentrosPropios.Centro_id, dbo.CentrosPropios.Poblacion_id, 
-                      ISNULL(dbo.vw_Propios_Financieros.Respuesta, 0)
-                      
-GO
-/****** Object:  View [dbo].[vw_Conciertos_Articulo258_1]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create view [dbo].[vw_Conciertos_Articulo258_1] AS
-SELECT DISTINCT 
-TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
-'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(Art2581,0)) AS Respuesta
-                      
-FROM  ICG07  
-INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
-INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
 
-GROUP BY dbo.CentrosConcertados.Centro_id, Año,
-dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
 GO
-/****** Object:  View [dbo].[vw_Conciertos_Articulo258_2]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create view [dbo].[vw_Conciertos_Articulo258_2] AS
-SELECT DISTINCT 
-TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
-'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(Art2582,0)) AS Respuesta
-                      
-FROM  ICG07  
-INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
-INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
-
-GROUP BY dbo.CentrosConcertados.Centro_id, Año,
-dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
-GO
-/****** Object:  View [dbo].[vw_Conciertos_Articulo25_Resto]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-create view [dbo].[vw_Conciertos_Articulo25_Resto] AS
-SELECT DISTINCT 
-TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
-'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(RestoArticulo25SCon,0)) AS Respuesta
-                      
-FROM  ICG07  
-INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
-INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
-
-GROUP BY dbo.CentrosConcertados.Centro_id, Año,
-dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
-GO
-/****** Object:  View [dbo].[vw_ListadoConciertosICG]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-
-
-
-CREATE OR ALTER VIEW [dbo].[vw_ListadoConciertosICG] AS 
-SELECT    Id_ICG, dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Mutuas.Mutua_id, dbo.Mutuas.NumeroMutua, dbo.Mutuas.Mutua, dbo.CentrosConcertados.Centro_id, 
-                      dbo.CentrosConcertados.Centro,   dbo.ICG07.Costeassan AS AsistenciaSanitaria, 
-                      ISNULL(dbo.ICG07.CosteIT, 0) AS IncapacidadTemporal, ISNULL(dbo.ICG07.GastoCentroNoConcert, 0) AS Gastos, 
-                      ISNULL(dbo.ICG07.Art2581, 0) + ISNULL(dbo.ICG07.Art2582, 0) + ISNULL(dbo.ICG07.RestoArticulo25SCon, 0) AS Articulo25, 
-					  ISNULL(dbo.vw_Conciertos_AsistenciaSanitaria.Respuesta, 0) 
-                      + ISNULL(dbo.ICG07.CosteIT, 0) + ISNULL(dbo.ICG07.GastoCentroNoConcert, 0) 
-                      + ISNULL(dbo.ICG07.Art2581, 0) + ISNULL(dbo.ICG07.Art2582, 0) 
-                      + ISNULL(dbo.ICG07.RestoArticulo25SCon, 0) AS Total, dbo.ICG07.Validado AS Estado, dbo.Conciertos.CodigoMZ, dbo.Conciertos.CodigoCASA, 
-                      dbo.CentrosConcertados.Poblacion_id, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia
-FROM         dbo.vw_Conciertos_IncapacidadTemporal RIGHT OUTER JOIN
-                      dbo.vw_Conciertos_Articulo25_Resto RIGHT OUTER JOIN
-                      dbo.Conciertos INNER JOIN
-                      dbo.ICG07 ON dbo.Conciertos.Concierto_id = dbo.ICG07.Concierto_id INNER JOIN
-                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
-                      dbo.Mutuas ON dbo.Conciertos.Mutua_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
-                      dbo.Aux_Provincias INNER JOIN
-                      dbo.Aux_Poblaciones ON dbo.Aux_Provincias.Provincia_id = dbo.Aux_Poblaciones.Provincia_id ON 
-                      dbo.CentrosConcertados.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
-                      dbo.vw_Conciertos_Articulo258_2 ON dbo.ICG07.Año = dbo.vw_Conciertos_Articulo258_2.Año AND 
-                      dbo.ICG07.Concierto_id = dbo.vw_Conciertos_Articulo258_2.Concierto_id LEFT OUTER JOIN
-                      dbo.vw_Conciertos_Articulo258_1 ON dbo.ICG07.Año = dbo.vw_Conciertos_Articulo258_1.Año AND 
-                      dbo.ICG07.Concierto_id = dbo.vw_Conciertos_Articulo258_1.Concierto_id ON dbo.vw_Conciertos_Articulo25_Resto.Año = dbo.ICG07.Año AND 
-                      dbo.vw_Conciertos_Articulo25_Resto.Concierto_id = dbo.ICG07.Concierto_id ON dbo.vw_Conciertos_IncapacidadTemporal.Año = dbo.ICG07.Año AND 
-                      dbo.vw_Conciertos_IncapacidadTemporal.Concierto_id = dbo.ICG07.Concierto_id LEFT OUTER JOIN
-                      dbo.vw_Conciertos_AsistenciaSanitaria ON dbo.ICG07.Año = dbo.vw_Conciertos_AsistenciaSanitaria.Año AND 
-                      dbo.ICG07.Concierto_id = dbo.vw_Conciertos_AsistenciaSanitaria.Concierto_id LEFT OUTER JOIN
-                      dbo.vw_Conciertos_Gastos ON dbo.ICG07.Concierto_id = dbo.vw_Conciertos_Gastos.Concierto_id AND dbo.ICG07.Año = dbo.vw_Conciertos_Gastos.Año
-
-GROUP BY dbo.ICG07.Año, dbo.CentrosConcertados.Centro_id, ISNULL(dbo.vw_Conciertos_AsistenciaSanitaria.Respuesta, 0) 
-                      + ISNULL(dbo.vw_Conciertos_IncapacidadTemporal.Respuesta, 0) + ISNULL(dbo.ICG07.GastoCentroNoConcert, 0) 
-                      + ISNULL(dbo.ICG07.Art2581, 0) + ISNULL(dbo.ICG07.Art2582, 0) 
-                      + ISNULL(dbo.ICG07.RestoArticulo25SCon, 0), dbo.ICG07.Validado, dbo.Conciertos.CodigoMZ, dbo.Conciertos.CodigoCASA, 
-                      dbo.Mutuas.NumeroMutua, dbo.Mutuas.Mutua, dbo.CentrosConcertados.Poblacion_id, dbo.CentrosConcertados.Centro, 
-                      CAST(dbo.CentrosConcertados.Centro_id AS varchar(5)) + CAST(dbo.Mutuas.Mutua_id AS varchar(10)), CAST(dbo.CentrosConcertados.Centro_id AS varchar(10)) 
-                      + CAST(dbo.Mutuas.Mutua_id AS varchar(10)), dbo.Mutuas.Mutua_id, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Conciertos.Concierto_id
-					  , dbo.ICG07.Id_ICG
-					  ,dbo.vw_Conciertos_AsistenciaSanitaria.Respuesta
-					  ,dbo.ICG07.Costeassan
-					  ,dbo.ICG07.Art2581
-					  ,dbo.ICG07.Art2582
-					  ,dbo.ICG07.RestoArticulo25SCon
-					  ,dbo.ICG07.GastoCentroNoConcert
-					  ,dbo.ICG07.CosteIT
-                      
-GO
-/****** Object:  View [dbo].[vw_Propios_Capitulo3]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Capitulo3]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1961,46 +1190,16 @@ CentrosPropios.Mutua_id
 FROM  ICG06   
 INNER JOIN CentrosPropios on ICG06.Centro_id = CentrosPropios.Centro_id 
 GROUP BY Año, ICG06.Centro_id, Centro,Mutua_id
-GO
-/****** Object:  View [dbo].[vw_EspecialidadesPropios]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-create view [dbo].[vw_EspecialidadesPropios] AS
-SELECT     TOP (100) PERCENT dbo.CentrosPropiosEspecialidades.Año, dbo.CentrosPropiosEspecialidades.CentroPropioEspecialidad_id, 
-                      dbo.CentrosPropiosEspecialidades.Centro_id, dbo.CentrosPropios.Mutua_id, dbo.Aux_Especialidades.Especialidad_id, dbo.Aux_Especialidades.Especialidad, 
-                      dbo.CentrosPropiosEspecialidades.Servicio, dbo.CentrosPropiosEspecialidades.Cantidad, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Localizador
-FROM         dbo.Aux_Especialidades INNER JOIN
-                      dbo.CentrosPropiosEspecialidades ON dbo.Aux_Especialidades.Especialidad_id = dbo.CentrosPropiosEspecialidades.Especialidad_id INNER JOIN
-                      dbo.CentrosPropios ON dbo.CentrosPropiosEspecialidades.Centro_id = dbo.CentrosPropios.Centro_id
-ORDER BY dbo.CentrosPropiosEspecialidades.Año DESC, dbo.CentrosPropiosEspecialidades.Servicio, dbo.Aux_Especialidades.Especialidad
 
 GO
-/****** Object:  View [dbo].[vw_Conciertos_Articulo25]    Script Date: 27/03/2026 8:16:36 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE OR ALTER VIEW [dbo].[vw_Conciertos_Articulo25]
-AS
-SELECT DISTINCT 
-                      TOP (100) PERCENT dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' AS CapituloCM, 
-                      'Costes' AS ConceptoCM, dbo.CentrosConcertados.Centro, SUM(ISNULL(dbo.ICG07.Costeassan, 0)) + SUM(ISNULL(dbo.ICG07.CosteIT, 0)) 
-                      + SUM(ISNULL(dbo.ICG07.GastoCentroNoConcert, 0)) AS Respuesta
-FROM         dbo.ICG07 INNER JOIN
-                      dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id INNER JOIN
-                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
-GROUP BY dbo.CentrosConcertados.Centro_id, dbo.ICG07.Año, dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
-GO
-/****** Object:  View [dbo].[vw_Propios_Capitulo1_Anterior]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  View [dbo].[vw_Propios_Capitulo1_Anterior]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 
-CREATE OR ALTER VIEW [dbo].[vw_Propios_Capitulo1_Anterior]
+CREATE   VIEW [dbo].[vw_Propios_Capitulo1_Anterior]
 AS
 SELECT DISTINCT 
                          TOP (100) PERCENT SUM(ISNULL(dbo.ICG06.[Directcentro(med)coste], 0)) 
@@ -2027,14 +1226,683 @@ SELECT DISTINCT
 FROM dbo.ICG06 
 INNER JOIN dbo.CentrosPropios ON dbo.ICG06.Centro_id = dbo.CentrosPropios.Centro_id
 GROUP BY dbo.ICG06.Año, dbo.ICG06.Centro_id, dbo.CentrosPropios.Centro, dbo.CentrosPropios.Mutua_id
+
 GO
-/****** Object:  Table [dbo].[AccesosUsuarios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Citaciones]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AccesosUsuarios')
-BEGIN
+CREATE TABLE [dbo].[Citaciones](
+	[citacion_id] [int] IDENTITY(1,1) NOT NULL,
+	[MutaOferta] [int] NULL,
+	[MutuaDemandante] [int] NULL,
+	[Centro_id] [int] NULL,
+	[Provincia_id] [int] NULL,
+	[Localidad] [int] NULL,
+	[Especialidad_id] [int] NULL,
+	[Servicio_id] [int] NULL,
+	[Movimiento_id] [int] NULL,
+	[Demanda_id] [int] NULL,
+	[FechaAltaSolicitud] [datetime] NULL,
+	[FechaRespuestaCitacion] [datetime] NULL,
+	[Necesidad] [nvarchar](max) NULL,
+	[Contestacion] [nvarchar](max) NULL,
+	[Ene] [int] NULL,
+	[Feb] [int] NULL,
+	[Mar] [int] NULL,
+	[Abr] [int] NULL,
+	[May] [int] NULL,
+	[Jun] [int] NULL,
+	[Jul] [int] NULL,
+	[Ago] [int] NULL,
+	[Sep] [int] NULL,
+	[Oct] [int] NULL,
+	[Nov] [int] NULL,
+	[Diciembre] [int] NULL,
+	[Año] [int] NULL,
+	[Total] [int] NULL,
+	[Estado_id] [int] NULL,
+	[MotivoRechazo] [nvarchar](max) NULL,
+	[FechaRechazo] [datetime] NULL,
+	[UsuarioAlta_id] [int] NULL,
+	[FechaAlta] [datetime] NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+ CONSTRAINT [PK_Citaciones] PRIMARY KEY CLUSTERED 
+(
+	[citacion_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Aux_Citacion_Movimientos]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aux_Citacion_Movimientos](
+	[Movimiento_id] [int] IDENTITY(1,1) NOT NULL,
+	[Movimiento] [nvarchar](max) NULL,
+ CONSTRAINT [PK_aux_Movimientos] PRIMARY KEY CLUSTERED 
+(
+	[Movimiento_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Aux_Poblaciones]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aux_Poblaciones](
+	[Poblacion_id] [int] IDENTITY(1,1) NOT NULL,
+	[Poblacion] [nvarchar](max) NULL,
+	[Provincia_id] [int] NOT NULL,
+ CONSTRAINT [PK_Aux_Poblaciones] PRIMARY KEY CLUSTERED 
+(
+	[Poblacion_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Ofertas]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Ofertas](
+	[Oferta_id] [int] IDENTITY(1,1) NOT NULL,
+	[Especialidad_id] [int] NULL,
+	[Servicio_id] [int] NULL,
+	[Centro_id] [int] NULL,
+	[Año] [int] NULL,
+	[Demanda_id] [int] NULL,
+	[Ene] [int] NULL,
+	[Feb] [int] NULL,
+	[Mar] [int] NULL,
+	[Abr] [int] NULL,
+	[May] [int] NULL,
+	[Jun] [int] NULL,
+	[Jul] [int] NULL,
+	[Ago] [int] NULL,
+	[Sep] [int] NULL,
+	[Oct] [int] NULL,
+	[Nov] [int] NULL,
+	[Dic] [int] NULL,
+	[Estado_id] [int] NULL,
+	[FechaConfirmacion] [datetime] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[NotaContestacion] [nvarchar](max) NULL,
+	[FechaAsignacion] [datetime] NULL,
+	[UsuarioAlta_id] [int] NULL,
+	[ContestacionPlazos] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Ofertas] PRIMARY KEY CLUSTERED 
+(
+	[Oferta_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Aux_Provincias]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aux_Provincias](
+	[Provincia_id] [int] NOT NULL,
+	[CCAA_id] [int] NOT NULL,
+	[Provincia] [char](200) NOT NULL,
+ CONSTRAINT [PK_Aux_Provincias_1] PRIMARY KEY CLUSTERED 
+(
+	[Provincia_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Aux_Servicios]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aux_Servicios](
+	[Servicio_id] [bigint] IDENTITY(445,1) NOT NULL,
+	[Servicio] [nvarchar](200) NULL,
+	[TipoServicio_id] [int] NULL,
+ CONSTRAINT [PK_Aux_Servicios] PRIMARY KEY CLUSTERED 
+(
+	[Servicio_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Mutuas]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Mutuas](
+	[Mutua_id] [int] NOT NULL,
+	[NumeroMutua] [varchar](3) NULL,
+	[Mutua] [varchar](100) NULL,
+	[RazonSocial] [varchar](100) NULL,
+	[Direccion] [varchar](100) NULL,
+	[CP] [char](5) NULL,
+	[Poblacion_id] [int] NULL,
+	[Telefono] [char](15) NULL,
+	[Fax] [char](15) NULL,
+	[DireccionElectronica] [varchar](100) NULL,
+	[PersonaContacto] [varchar](250) NULL,
+	[Logotipo] [varchar](100) NULL,
+	[FechaAlta] [datetime] NULL,
+	[UsuarioAlta_id] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[FechaBaja] [datetime] NULL,
+	[UsuarioBaja_id] [int] NULL,
+	[RatioConsultas] [decimal](18, 2) NULL,
+	[Usuario_id] [int] NULL,
+ CONSTRAINT [PK_Mutuas] PRIMARY KEY CLUSTERED 
+(
+	[Mutua_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 100) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Aux_Estados_Citacion]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Aux_Estados_Citacion](
+	[Estado_id] [int] NOT NULL,
+	[Estado] [nvarchar](200) NULL,
+	[UsuarioModificacion_id] [int] NULL,
+	[FechaModificacion] [datetime] NULL,
+	[Agrupacion] [int] NULL,
+ CONSTRAINT [PK_Aux_Estados_Citacion] PRIMARY KEY CLUSTERED 
+(
+	[Estado_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vwCitaciones]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   VIEW [dbo].[vwCitaciones]
+AS
+SELECT        c.Demanda_id AS id, c.Año, mo.Mutua AS MutuaOfertante, ms.Mutua AS MutuaSolicitante, cp.Localizador + '' + cp.Centro AS Centro, p.Provincia, pob.Poblacion AS Localidad, esp.Especialidad, mov.Movimiento_id, 
+                         mov.Movimiento AS TipoMovimiento, serv.Servicio, c.Ene, c.Feb, c.Mar, c.Abr, c.May, c.Jun, c.Jul, c.Ago, c.Sep, c.Oct, c.Nov, c.Diciembre, c.Total, cp.DireccionGIS, cp.Telefono, ofe.FechaAsignacion, ofe.FechaConfirmacion, 
+                         c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.Estado_id, mo.Mutua_id AS MutuaOfertanteId, ms.Mutua_id AS MutuaDemandanteId, c.citacion_id, cp.Centro_id, esp.Especialidad_id, serv.Servicio_id, p.Provincia_id, 
+                         pob.Poblacion_id AS Localidad_id, ec.Estado, c.MotivoRechazo, c.FechaRechazo, c.FechaRespuestaCitacion
+FROM            dbo.Citaciones AS c INNER JOIN
+                         dbo.Mutuas AS mo ON mo.Mutua_id = c.MutaOferta INNER JOIN
+                         dbo.Mutuas AS ms ON ms.Mutua_id = c.MutuaDemandante INNER JOIN
+                         dbo.Aux_Provincias AS p ON p.Provincia_id = c.Provincia_id INNER JOIN
+                         dbo.Aux_Poblaciones AS pob ON pob.Poblacion_id = c.Localidad INNER JOIN
+                         dbo.Aux_Citacion_Movimientos AS mov ON mov.Movimiento_id = c.Movimiento_id INNER JOIN
+                         dbo.CentrosPropios AS cp ON cp.Centro_id = c.Centro_id INNER JOIN
+                         dbo.Aux_Especialidades AS esp ON esp.Especialidad_id = c.Especialidad_id INNER JOIN
+                         dbo.Aux_Servicios AS serv ON serv.Servicio_id = c.Servicio_id INNER JOIN
+                         dbo.Ofertas AS ofe ON ofe.Demanda_id = c.Demanda_id INNER JOIN
+                         dbo.Aux_Estados_Citacion AS ec ON ec.Estado_id = c.Estado_id
+
+GO
+/****** Object:  Table [dbo].[Demandas]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Demandas](
+	[Demanda_id] [int] IDENTITY(1,1) NOT NULL,
+	[Especialidad_id] [int] NULL,
+	[Servicio_id] [int] NULL,
+	[Centro_id] [int] NULL,
+	[Ene] [int] NULL,
+	[Feb] [int] NULL,
+	[Mar] [int] NULL,
+	[Abr] [int] NULL,
+	[May] [int] NULL,
+	[Jun] [int] NULL,
+	[Jul] [int] NULL,
+	[Ago] [int] NULL,
+	[Sep] [int] NULL,
+	[Oct] [int] NULL,
+	[Nov] [int] NULL,
+	[Dic] [int] NULL,
+	[Año] [int] NULL,
+	[MutuaDemanda_id] [int] NULL,
+	[UsuarioAlta_id] [int] NOT NULL,
+	[FechaAlta] [datetime] NULL,
+	[Estado_id] [int] NULL,
+	[Descripcion] [nvarchar](max) NULL,
+	[Tipo_id] [int] NULL,
+	[FechaRevision] [datetime] NULL,
+	[Localidad] [int] NULL,
+	[Plazos] [nvarchar](max) NULL,
+	[EnvioMail] [int] NULL,
+	[MotivoRechazo] [nvarchar](200) NULL,
+	[TipoRechazo] [int] NULL,
+	[TipoAnulacion] [int] NULL,
+	[MotivoAnulacion] [varchar](500) NULL,
+	[UsuarioAnulacion_id] [int] NULL,
+ CONSTRAINT [PK_Demandas] PRIMARY KEY CLUSTERED 
+(
+	[Demanda_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vwDemandas_Citaciones]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   VIEW [dbo].[vwDemandas_Citaciones]
+AS
+SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, Provincia, 
+                         Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic, 
+                         Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id, Provincia_id, Poblacion_id, Estado, Estado_Citacion_id
+FROM            (SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, 
+                                                    Provincia, Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, SUM(Ene) AS Ene, SUM(Feb) AS Feb, 
+                                                    SUM(Mar) AS Mar, SUM(Abr) AS Abr, SUM(May) AS May, SUM(Jun) AS Jun, SUM(Jul) AS Jul, SUM(Ago) AS Ago, SUM(Sep) AS Sep, SUM(Oct) AS Oct, SUM(Nov) AS Nov, SUM(Dic) AS Dic, SUM(Ene) + SUM(Feb) 
+                                                    + SUM(Mar) + SUM(Abr) + SUM(May) + SUM(Jun) + SUM(Jul) + SUM(Ago) + SUM(Sep) + SUM(Oct) + SUM(Nov) + SUM(Dic) AS Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id, Provincia_id, 
+                                                    Poblacion_id, Estado, Estado_Citacion_id
+                          FROM            (SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS varchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) 
+                                                                              + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS varchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
+                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, MutuasOfertantes.Mutua AS MutuaOfertante, LTRIM(CAST(dbo.CentrosPropios.Localizador AS varchar)) 
+                                                                              + ' ' + LTRIM(CAST(ISNULL(dbo.CentrosPropios.Centro, 'Agrupación de Centros') AS varchar)) AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, dbo.Demandas.Centro_id, 
+                                                                              'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
+                                                                              + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
+                                                                              dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirmacion, dbo.Demandas.FechaRevision, 
+                                                                              dbo.Aux_Poblaciones.Poblacion AS Localidad, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 2 AS TipoMovimiento_id, 
+                                                                              'DEMANDA' AS TipoMovimiento,
+                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                    FROM            dbo.Demandas AS B
+                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
+                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                    FROM            dbo.Demandas AS B
+                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
+                                                                              dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, MAX(dbo.Ofertas.Ene) AS Ene, MAX(dbo.Ofertas.Feb) AS Feb, MAX(dbo.Ofertas.Mar) AS Mar, MAX(dbo.Ofertas.Abr) AS Abr, 
+                                                                              MAX(dbo.Ofertas.May) AS May, MAX(dbo.Ofertas.Jun) AS Jun, MAX(dbo.Ofertas.Jul) AS Jul, MAX(dbo.Ofertas.Ago) AS Ago, MAX(dbo.Ofertas.Sep) AS Sep, MAX(dbo.Ofertas.Oct) AS Oct, 
+                                                                              MAX(dbo.Ofertas.Nov) AS Nov, MAX(dbo.Ofertas.Dic) AS Dic, MAX(dbo.Ofertas.Ene) + MAX(dbo.Ofertas.Feb) + MAX(dbo.Ofertas.Mar) + MAX(dbo.Demandas.Abr) + MAX(dbo.Ofertas.May) 
+                                                                              + MAX(dbo.Ofertas.Jun) + MAX(dbo.Ofertas.Jul) + MAX(dbo.Ofertas.Ago) + MAX(dbo.Ofertas.Sep) + MAX(dbo.Ofertas.Oct) + MAX(dbo.Ofertas.Nov) + MAX(dbo.Ofertas.Dic) AS Total, c.FechaAltaSolicitud, 
+                                                                              c.Necesidad, c.Contestacion, c.citacion_id, dbo.Aux_Provincias.Provincia_id, dbo.Aux_Poblaciones.Poblacion_id, ec.Estado, ec.Estado_id AS Estado_Citacion_id
+                                                    FROM            dbo.Demandas LEFT OUTER JOIN
+                                                                              dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
+                                                                              dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
+                                                                              dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
+                                                                                  (SELECT        CentrosPropios_1.Centro_id, Mutuas_1.Mutua, CentrosPropios_1.Mutua_id AS MutuaOfertante_Id
+                                                                                    FROM            dbo.CentrosPropios AS CentrosPropios_1 LEFT OUTER JOIN
+                                                                                                              dbo.Mutuas AS Mutuas_1 ON CentrosPropios_1.Mutua_id = Mutuas_1.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
+                                                                              dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Estados_Citacion AS ec ON ec.Estado_id = c.Estado_id
+                                                    WHERE        (dbo.Demandas.Tipo_id = 1)
+                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, 
+                                                                              dbo.Aux_Servicios.Servicio, dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, 
+                                                                              dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
+                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id, dbo.Aux_Provincias.Provincia_id, dbo.Aux_Poblaciones.Poblacion_id, 
+                                                                              ec.Estado, ec.Estado_id) AS tab
+                          GROUP BY Mutua, Centro, Centro_id, Especialidad, Especialidad_id, Servicio_id, FechaRevision, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Tipo_id, Demanda_id, Localidad, Provincia, Anio, MutuaOfertante, 
+                                                    Servicio, Agrupacion, FechaConfirmacion, CodigoDemanda, Peticiones_Pendientes, Estado_id, Telefono, ID, DireccionGIS, FechaAsignacion, Mutua_id, MutuaOfertante_Id, FechaAltaSolicitud, Necesidad, 
+                                                    Contestacion, citacion_id, citacion_id, Provincia_id, Poblacion_id, Estado, Estado_Citacion_id) AS GestionDemanda
+WHERE        (TipoMovimiento_id = 2) AND (Tipo_id = 1) AND (Estado_id = 3) AND (ID IN
+                             (SELECT        Demanda_id
+                               FROM            dbo.Ofertas AS Ofertas_1
+                               WHERE        (FechaConfirmacion IS NOT NULL) AND (ISNULL(Ene, 0) + ISNULL(Feb, 0) + ISNULL(Mar, 0) + ISNULL(Abr, 0) + ISNULL(May, 0) + ISNULL(Jun, 0) + ISNULL(Jul, 0) + ISNULL(Ago, 0) + ISNULL(Sep, 0) + ISNULL(Oct, 0) 
+                                                         + ISNULL(Nov, 0) + ISNULL(Dic, 0) > 0)))
+
+GO
+/****** Object:  Table [dbo].[Demandas_SubSol]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Demandas_SubSol](
+	[Demandas_SubSol_id] [int] IDENTITY(1,1) NOT NULL,
+	[Demanda_id] [int] NULL,
+	[Centro_id] [int] NULL,
+	[Ene] [int] NULL,
+	[Feb] [int] NULL,
+	[Mar] [int] NULL,
+	[Abr] [int] NULL,
+	[May] [int] NULL,
+	[Jun] [int] NULL,
+	[Jul] [int] NULL,
+	[Ago] [int] NULL,
+	[Sep] [int] NULL,
+	[Oct] [int] NULL,
+	[Nov] [int] NULL,
+	[Dic] [int] NULL,
+	[UsuarioAlta_id] [int] NOT NULL,
+	[FechaAlta] [datetime] NULL,
+	[Estado_id] [int] NULL,
+	[Oferta_id] [int] NULL,
+	[Doc] [bit] NULL,
+ CONSTRAINT [PK_Demandas_SubSol] PRIMARY KEY CLUSTERED 
+(
+	[Demandas_SubSol_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vwDemandas_Citaciones_SinAgrupar]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+/*select * from [vwDemandas_Citaciones] where anio= 2017
+order by Demanda_id, mutua*/
+CREATE   VIEW [dbo].[vwDemandas_Citaciones_SinAgrupar]
+AS
+SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, Provincia, 
+                         Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic, 
+                         Total, FechaAltaSolicitud, Necesidad, Contestacion, citacion_id
+FROM            (SELECT        ID, Demanda_id, Anio, Mutua, Mutua_id, MutuaOfertante_Id, MutuaOfertante, Centro, Especialidad, Servicio, Centro_id, Agrupacion, Servicio_id, Especialidad_id, FechaConfirmacion, FechaRevision, Localidad, 
+                                                    Provincia, Tipo_id, CodigoDemanda, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Peticiones_Pendientes, Estado_id, DireccionGIS, Telefono, FechaAsignacion, COUNT(Ene) AS Ene, COUNT(Feb) 
+                                                    AS Feb, COUNT(Mar) AS Mar, COUNT(Abr) AS Abr, COUNT(May) AS May, COUNT(Jun) AS Jun, COUNT(Jul) AS Jul, COUNT(Ago) AS Ago, COUNT(Sep) AS Sep, COUNT(Oct) AS Oct, COUNT(Nov) AS Nov, COUNT(Dic) 
+                                                    AS Dic, COUNT(Ene) + COUNT(Feb) + COUNT(Mar) + COUNT(Abr) + COUNT(May) + COUNT(Jun) + COUNT(Jul) + COUNT(Ago) + COUNT(Sep) + COUNT(Oct) + COUNT(Nov) + COUNT(Dic) AS Total, FechaAltaSolicitud, 
+                                                    Necesidad, Contestacion, citacion_id
+                          FROM            (SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS varchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) 
+                                                                              + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS varchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
+                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, MutuasOfertantes.Mutua AS MutuaOfertante, LTRIM(CAST(dbo.CentrosPropios.Localizador AS varchar)) 
+                                                                              + ' ' + LTRIM(CAST(ISNULL(dbo.CentrosPropios.Centro, 'Agrupación de Centros') AS varchar)) AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, dbo.Demandas.Centro_id, 
+                                                                              'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
+                                                                              + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
+                                                                              dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirmacion, dbo.Demandas.FechaRevision, 
+                                                                              dbo.Aux_Poblaciones.Poblacion AS Localidad, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 2 AS TipoMovimiento_id, 
+                                                                              'DEMANDA' AS TipoMovimiento,
+                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                    FROM            dbo.Demandas AS B
+                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
+                                                                                  (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                    FROM            dbo.Demandas AS B
+                                                                                    WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
+                                                                              dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, COUNT(dbo.Demandas.Ene) AS Ene, COUNT(dbo.Demandas.Feb) AS Feb, COUNT(dbo.Demandas.Mar) AS Mar, COUNT(dbo.Demandas.Abr) 
+                                                                              AS Abr, COUNT(dbo.Demandas.May) AS May, COUNT(dbo.Demandas.Jun) AS Jun, COUNT(dbo.Demandas.Jul) AS Jul, COUNT(dbo.Demandas.Ago) AS Ago, COUNT(dbo.Demandas.Sep) AS Sep, 
+                                                                              COUNT(dbo.Demandas.Oct) AS Oct, COUNT(dbo.Demandas.Nov) AS Nov, COUNT(dbo.Demandas.Dic) AS Dic, COUNT(dbo.Demandas.Ene) + COUNT(dbo.Demandas.Feb) + MAX(dbo.Demandas.Mar) 
+                                                                              + COUNT(dbo.Demandas.Abr) + COUNT(dbo.Demandas.May) + COUNT(dbo.Demandas.Jun) + COUNT(dbo.Demandas.Jul) + COUNT(dbo.Demandas.Ago) + COUNT(dbo.Demandas.Sep) 
+                                                                              + COUNT(dbo.Demandas.Oct) + MAX(dbo.Demandas.Nov) + COUNT(dbo.Demandas.Dic) AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
+                                                    FROM            dbo.Demandas LEFT OUTER JOIN
+                                                                              dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
+                                                                              dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
+                                                                              dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
+                                                                                  (SELECT        dbo.CentrosPropios.Centro_id, dbo.Mutuas.Mutua, dbo.CentrosPropios.Mutua_id AS MutuaOfertante_Id
+                                                                                    FROM            dbo.CentrosPropios LEFT OUTER JOIN
+                                                                                                              dbo.Mutuas ON dbo.CentrosPropios.Mutua_id = dbo.Mutuas.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
+                                                                              dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
+                                                                              dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
+                                                    WHERE        (dbo.Demandas.Tipo_id = 1)
+                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, 
+                                                                              dbo.Aux_Servicios.Servicio, dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, 
+                                                                              dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
+                                                                              dbo.Mutuas.Mutua_id, MutuasOfertantes.MutuaOfertante_Id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
+                                                    UNION ALL
+                                                    SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS varchar) 
+                                                                             + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) AS nvarchar) + ';2;' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS varchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, 
+                                                                             dbo.Mutuas.Mutua_id, 0 AS MutuaOfertante_id, 'Mutuas Ofertantes' AS MutuaOfertante, 'Centros de demanda Individual' AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, 
+                                                                             dbo.Demandas.Centro_id, 'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
+                                                                             + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(dbo.Demandas.Demanda_id AS nvarchar) AS Agrupacion, 
+                                                                             dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirnmacion, dbo.Demandas.FechaRevision, 
+                                                                             ISNULL(dbo.Aux_Poblaciones.Poblacion, '') AS Localidad, ISNULL(dbo.Aux_Provincias.Provincia, '') AS Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 
+                                                                             2 AS TipoMovimiento_id, 'DEMANDA' AS TipoMovimiento,
+                                                                                 (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                   FROM            dbo.Demandas_SubSol AS B
+                                                                                   WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (Estado_id IN (1, 2, 3, 4))) AS Peticiones_Atendidas,
+                                                                                 (SELECT        COUNT(Demanda_id) AS Expr1
+                                                                                   FROM            dbo.Demandas AS B
+                                                                                   WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, 
+                                                                             dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, COUNT(dbo.Demandas.Ene) AS Ene, COUNT(dbo.Demandas.Feb) AS Feb, COUNT(dbo.Demandas.Mar) AS Mar, COUNT(dbo.Demandas.Abr) 
+                                                                             AS Abr, COUNT(dbo.Demandas.May) AS May, COUNT(dbo.Demandas.Jun) AS Jun, COUNT(dbo.Demandas.Jul) AS Jul, COUNT(dbo.Demandas.Ago) AS Ago, COUNT(dbo.Demandas.Sep) AS Sep, 
+                                                                             COUNT(dbo.Demandas.Oct) AS Oct, COUNT(dbo.Demandas.Nov) AS Nov, COUNT(dbo.Demandas.Dic) AS Dic, COUNT(dbo.Demandas.Ene) + COUNT(dbo.Demandas.Feb) + MAX(dbo.Demandas.Mar) 
+                                                                             + COUNT(dbo.Demandas.Abr) + COUNT(dbo.Demandas.May) + COUNT(dbo.Demandas.Jun) + COUNT(dbo.Demandas.Jul) + COUNT(dbo.Demandas.Ago) + COUNT(dbo.Demandas.Sep) 
+                                                                             + COUNT(dbo.Demandas.Oct) + MAX(dbo.Demandas.Nov) + COUNT(dbo.Demandas.Dic) AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
+                                                    FROM            dbo.Demandas LEFT OUTER JOIN
+                                                                             dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
+                                                                             dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
+                                                                             dbo.Aux_Poblaciones ON dbo.Demandas.Localidad = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
+                                                                             dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
+                                                                             dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
+                                                                             dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
+                                                                             dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
+                                                                             dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
+                                                    WHERE        (dbo.Demandas.Tipo_id = 2)
+                                                    GROUP BY dbo.Demandas.Año, dbo.Mutuas.Mutua, dbo.CentrosPropios.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, dbo.Aux_Servicios.Servicio, 
+                                                                             dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id, 
+                                                                             dbo.CentrosPropios.Localizador, dbo.Demandas.Localidad, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, 
+                                                                             dbo.Mutuas.Mutua_id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id) AS tab
+                          GROUP BY Mutua, Centro, Centro_id, Especialidad, Especialidad_id, Servicio_id, FechaRevision, TipoMovimiento_id, TipoMovimiento, Peticiones_Atendidas, Tipo_id, Demanda_id, Localidad, Provincia, Anio, MutuaOfertante, 
+                                                    Servicio, Agrupacion, FechaConfirmacion, CodigoDemanda, Peticiones_Pendientes, Estado_id, Telefono, ID, DireccionGIS, FechaAsignacion, Mutua_id, MutuaOfertante_Id, FechaAltaSolicitud, Necesidad, 
+                                                    Contestacion, citacion_id
+                          UNION ALL
+                          SELECT        dbo.Demandas.Demanda_id AS ID, CAST(ISNULL(dbo.Demandas.Centro_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Servicio_id, 0) AS nvarchar) + ';' + CAST(ISNULL(dbo.Demandas.Especialidad_id, 0) 
+                                                   AS nvarchar) + ';1;' + CAST(ISNULL(dbo.Ofertas.Demanda_id, 0) AS nvarchar) AS Demanda_id, dbo.Demandas.Año AS Anio, dbo.Mutuas.Mutua, dbo.Mutuas.Mutua_id, 
+                                                   CASE WHEN Tipo_id = 1 THEN MutuasOfertantes.MutuaOfertante_id ELSE 0 END AS MutuaOfertante_id, CASE WHEN Tipo_id = 1 THEN MutuasOfertantes.Mutua ELSE 'Mutuas Ofertantes' END AS MutuaOfertante, 
+                                                   CASE WHEN tipo_id = 1 THEN ltrim(CAST(CentrosPropios.Localizador AS varchar)) + ' ' + ltrim(CAST(CentrosPropios.Centro AS varchar)) 
+                                                   ELSE CASE WHEN DemandasSub.Estado_id = 3 THEN DemandasSub.Centro ELSE 'Centros Demanda Individual' END END AS Centro, dbo.Aux_Especialidades.Especialidad, dbo.Aux_Servicios.Servicio, 
+                                                   dbo.Demandas.Centro_id, 'Año: ' + CAST(dbo.Demandas.Año AS nvarchar) + ' | Mutua: ' + dbo.Mutuas.Mutua + ' | Centro: ' + ISNULL(dbo.CentrosPropios.Centro, 'Individual') 
+                                                   + ' | Especialidad: ' + dbo.Aux_Especialidades.Especialidad + ' | Servicio: ' + dbo.Aux_Servicios.Servicio + ' | ' + CAST(ISNULL(dbo.Demandas.Demanda_id, 0) AS nvarchar) AS Agrupacion, 
+                                                   dbo.Demandas.Servicio_id, dbo.Demandas.Especialidad_id, CONVERT(nvarchar(10), MAX(dbo.Ofertas.FechaConfirmacion), 103) AS FechaConfirnmacion, dbo.Demandas.FechaRevision, 
+                                                   CASE WHEN Tipo_id = 1 THEN isnull(Aux_Poblaciones.Poblacion, '') ELSE Poblaciones.Poblacion END AS Localidad, CASE WHEN Tipo_id = 1 THEN isnull(Aux_Provincias.Provincia, '') 
+                                                   ELSE Provincias.Provincia END AS Provincia, dbo.Demandas.Tipo_id, dbo.Demandas.Demanda_id AS CodigoDemanda, 1 AS TipoMovimiento_id, 'OFERTA' AS TipoMovimiento, 
+                                                   CASE WHEN Tipo_id = 1 THEN
+                                                       (SELECT        COUNT(B.Demanda_id)
+                                                         FROM            Demandas B
+                                                         WHERE        B.Demanda_id = Demandas.Demanda_id AND b.Estado_id IN (1, 2, 3, 4)) ELSE
+                                                       (SELECT        COUNT(B.Demanda_id)
+                                                         FROM            Demandas_SubSol B
+                                                         WHERE        B.Demanda_id = Demandas.Demanda_id AND b.Estado_id IN (1, 2, 3, 4)) END AS Peticiones_Atendidas,
+                                                       (SELECT        COUNT(Demanda_id) AS Expr1
+                                                         FROM            dbo.Demandas AS B
+                                                         WHERE        (Demanda_id = dbo.Demandas.Demanda_id) AND (NOT (Estado_id IN (2, 3)))) AS Peticiones_Pendientes, dbo.Demandas.Estado_id, dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, 
+                                                   dbo.Ofertas.FechaAsignacion, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Ene), 0) ELSE isnull(MAX(Ofertas.Ene), 0) END AS Ene, CASE WHEN NOT MAX(FechaConfirmacion) 
+                                                   IS NULL THEN isnull(COUNT(Ofertas.Feb), 0) ELSE isnull(MAX(Ofertas.Feb), 0) END AS Feb, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Mar), 0) ELSE isnull(MAX(Ofertas.Mar), 0) 
+                                                   END AS Mar, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Abr), 0) ELSE isnull(MAX(Ofertas.Abr), 0) END AS Abr, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
+                                                   THEN isnull(COUNT(Ofertas.May), 0) ELSE isnull(MAX(Ofertas.May), 0) END AS May, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Jun), 0) ELSE isnull(MAX(Ofertas.Jun), 0) 
+                                                   END AS Jun, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Jul), 0) ELSE isnull(MAX(Ofertas.Jul), 0) END AS Jul, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
+                                                   THEN isnull(COUNT(Ofertas.Ago), 0) ELSE isnull(MAX(Ofertas.Ago), 0) END AS Ago, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Sep), 0) ELSE isnull(MAX(Ofertas.Sep), 0) 
+                                                   END AS Sep, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Oct), 0) ELSE isnull(MAX(Ofertas.Oct), 0) END AS Oct, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL 
+                                                   THEN isnull(COUNT(Ofertas.Nov), 0) ELSE isnull(MAX(Ofertas.Nov), 0) END AS Nov, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Dic), 0) ELSE isnull(MAX(Ofertas.Dic), 0) 
+                                                   END AS Dic, CASE WHEN NOT MAX(FechaConfirmacion) IS NULL THEN isnull(COUNT(Ofertas.Ene), 0) + isnull(COUNT(Ofertas.Feb), 0) + isnull(COUNT(Ofertas.Mar), 0) + isnull(COUNT(Ofertas.Abr), 0) 
+                                                   + isnull(COUNT(Ofertas.May), 0) + isnull(COUNT(Ofertas.Jun), 0) + isnull(COUNT(Ofertas.Jul), 0) + isnull(COUNT(Ofertas.Ago), 0) + isnull(COUNT(Ofertas.Sep), 0) + isnull(COUNT(Ofertas.Oct), 0) 
+                                                   + isnull(COUNT(Ofertas.Nov), 0) + isnull(COUNT(Ofertas.Dic), 0) ELSE isnull(MAX(Ofertas.Ene), 0) + isnull(MAX(Ofertas.Feb), 0) + isnull(MAX(Ofertas.Mar), 0) + isnull(MAX(Ofertas.Abr), 0) + isnull(MAX(Ofertas.May), 0) 
+                                                   + isnull(MAX(Ofertas.Jun), 0) + isnull(MAX(Ofertas.Jul), 0) + isnull(MAX(Ofertas.Ago), 0) + isnull(MAX(Ofertas.Sep), 0) + isnull(MAX(Ofertas.Oct), 0) + isnull(MAX(Ofertas.Nov), 0) + isnull(MAX(Ofertas.Dic), 0) 
+                                                   END AS Total, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, c.citacion_id
+                          FROM            dbo.Demandas LEFT OUTER JOIN
+                                                       (SELECT        CAST(dbo.CentrosPropios.Localizador AS nvarchar) + ' ' + CAST(dbo.CentrosPropios.Centro AS nvarchar) AS Centro, dbo.Demandas_SubSol.Centro_id, dbo.Demandas_SubSol.Demanda_id, 
+                                                                                   dbo.Demandas_SubSol.Estado_id
+                                                         FROM            dbo.Demandas_SubSol INNER JOIN
+                                                                                   dbo.CentrosPropios ON dbo.Demandas_SubSol.Centro_id = dbo.CentrosPropios.Centro_id
+                                                         WHERE        (dbo.Demandas_SubSol.Estado_id = 3)) AS DemandasSub ON dbo.Demandas.Demanda_id = DemandasSub.Demanda_id LEFT OUTER JOIN
+                                                   dbo.Ofertas ON dbo.Demandas.Demanda_id = dbo.Ofertas.Demanda_id LEFT OUTER JOIN
+                                                   dbo.CentrosPropios ON dbo.Demandas.Centro_id = dbo.CentrosPropios.Centro_id LEFT OUTER JOIN
+                                                   dbo.Aux_Poblaciones ON dbo.CentrosPropios.Poblacion_id = dbo.Aux_Poblaciones.Poblacion_id LEFT OUTER JOIN
+                                                   dbo.Aux_Poblaciones AS Poblaciones ON ISNULL(dbo.Demandas.Localidad, 0) = Poblaciones.Poblacion_id LEFT OUTER JOIN
+                                                   dbo.Aux_Provincias ON dbo.Aux_Poblaciones.Provincia_id = dbo.Aux_Provincias.Provincia_id LEFT OUTER JOIN
+                                                   dbo.Aux_Provincias AS Provincias ON ISNULL(Poblaciones.Provincia_id, 0) = Provincias.Provincia_id LEFT OUTER JOIN
+                                                   dbo.Mutuas ON dbo.Demandas.MutuaDemanda_id = dbo.Mutuas.Mutua_id LEFT OUTER JOIN
+                                                       (SELECT        dbo.CentrosPropios.Centro_id, dbo.Mutuas.Mutua, dbo.CentrosPropios.Mutua_id AS MutuaOfertante_id
+                                                         FROM            dbo.CentrosPropios LEFT OUTER JOIN
+                                                                                   dbo.Mutuas ON dbo.CentrosPropios.Mutua_id = dbo.Mutuas.Mutua_id) AS MutuasOfertantes ON dbo.Demandas.Centro_id = MutuasOfertantes.Centro_id LEFT OUTER JOIN
+                                                   dbo.Aux_Especialidades ON dbo.Demandas.Especialidad_id = dbo.Aux_Especialidades.Especialidad_id LEFT OUTER JOIN
+                                                   dbo.Aux_Servicios ON dbo.Demandas.Servicio_id = dbo.Aux_Servicios.Servicio_id LEFT OUTER JOIN
+                                                   dbo.Citaciones AS c ON dbo.Demandas.Demanda_id = c.Demanda_id
+                          GROUP BY dbo.Demandas.Año, dbo.CentrosPropios.Centro, DemandasSub.Centro, dbo.Demandas.Centro_id, dbo.Aux_Especialidades.Especialidad, dbo.Demandas.Especialidad_id, dbo.Aux_Servicios.Servicio, 
+                                                   dbo.Demandas.Servicio_id, dbo.Demandas.FechaRevision, dbo.Aux_Poblaciones.Poblacion, Poblaciones.Poblacion, dbo.Aux_Provincias.Provincia, Provincias.Provincia, dbo.Demandas.Tipo_id, 
+                                                   dbo.Demandas.Demanda_id, dbo.CentrosPropios.Localizador, dbo.Ofertas.Demanda_id, dbo.Mutuas.Mutua, MutuasOfertantes.Mutua, DemandasSub.Estado_id, dbo.Demandas.Estado_id, 
+                                                   dbo.CentrosPropios.DireccionGIS, dbo.CentrosPropios.Telefono, dbo.Ofertas.FechaAsignacion, MutuasOfertantes.MutuaOfertante_id, dbo.Mutuas.Mutua_id, c.FechaAltaSolicitud, c.Necesidad, c.Contestacion, 
+                                                   c.citacion_id) AS GestionDemanda
+WHERE        (TipoMovimiento_id = 2) AND (Tipo_id = 1) AND (Estado_id = 3)
+
+GO
+/****** Object:  Table [dbo].[DisponibilidadCentrosPropios]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[DisponibilidadCentrosPropios](
+	[DisponibilidadCentro_id] [int] IDENTITY(1,1) NOT NULL,
+	[Centro_id] [int] NULL,
+	[Servicio_id] [int] NULL,
+	[Especialidad_id] [int] NULL,
+	[Mes] [int] NULL,
+	[Año] [int] NULL,
+	[Cantidad] [int] NULL,
+ CONSTRAINT [PK_DisponibilidadCentrosPropios] PRIMARY KEY CLUSTERED 
+(
+	[DisponibilidadCentro_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vw_Disponibilidad]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   VIEW [dbo].[vw_Disponibilidad] AS
+SELECT        Año, Centro_id, Especialidad_id, Servicio_id, Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre, Total
+FROM            (SELECT        Año, Centro_id, Especialidad_id, Servicio_id, isnull([1], 0) AS Enero, isnull([2], 0) AS Febrero, isnull([3], 0) AS Marzo, isnull([4], 0) AS Abril, isnull([5], 0) AS Mayo, isnull([6], 0) AS Junio, isnull([7], 0) 
+                                                    AS Julio, isnull([8], 0) AS Agosto, isnull([9], 0) AS Septiembre, isnull([10], 0) AS Octubre, isnull([11], 0) AS Noviembre, isnull([12], 0) AS Diciembre, isnull([1], 0) + isnull([2], 0) + isnull([3], 0) + isnull([4], 0) 
+                                                    + isnull([5], 0) + isnull([6], 0) + isnull([7], 0) + isnull([8], 0) + isnull([9], 0) + isnull([10], 0) + isnull([11], 0) + isnull([12], 0) AS Total
+                          FROM            (SELECT        Cantidad, mes, Año, Centro_id, Servicio_id, Especialidad_id
+                                                    FROM            DisponibilidadCentrosPropios) AS tb1 PIVOT (Sum(Cantidad) FOR Mes IN ([1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12])) AS PivotTable) AS Disponibilidad
+   
+
+GO
+/****** Object:  View [dbo].[vw_DisponibilidadCentro]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+create view [dbo].[vw_DisponibilidadCentro] as 
+Select 
+Año, Centro_id, Especialidad_id, Servicio_id, ActualizarDisponibilidad, FechaModificacion, FechaActualizarDisponibilidad, Enero,Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre, Total from (
+ SELECT Año, Centro_id, Especialidad_id, Servicio_id, ActualizarDisponibilidad, FechaModificacion, FechaActualizarDisponibilidad, 
+ 	isnull([1],0) as Enero, isnull([2],0) AS Febrero, isnull([3],0) as Marzo, isnull([4],0) as Abril, 
+    isnull([5],0) AS Mayo, isnull([6],0) as Junio, isnull([7],0) as Julio, isnull([8],0) as Agosto, 
+    isnull([9],0) as Septiembre, isnull([10],0) as Octubre, isnull([11],0) as Noviembre, isnull([12],0) as Diciembre, 
+    isnull([1],0) + isnull([2],0) + isnull([3],0) + isnull([4],0) + 
+    isnull([5],0) + isnull([6],0) + isnull([7],0) + isnull([8],0) + 
+    isnull([9],0) + isnull([10],0) + isnull([11],0) + isnull([12],0) as Total 
+    from (
+            Select a.Cantidad, mes, a.Año, a.Centro_id, a.Servicio_id, a.Especialidad_id, b.ActualizarDisponibilidad, b.FechaModificacion, b.FechaActualizarDisponibilidad from DisponibilidadCentrosPropios a
+			left join CentrosPropiosEspecialidades b on a.Centro_id=b.Centro_id and a.Especialidad_id=b.Especialidad_id and a.Servicio_id = b.Servicio_id and a.Año=b.Año  ) as tb1
+         PIVOT
+            (Sum(Cantidad)
+            FOR Mes IN ([1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12]) 
+         ) as PivotTable
+ ) as Disponibilidad 
+
+GO
+/****** Object:  View [dbo].[vw_Concertados_Validados]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   VIEW [dbo].[vw_Concertados_Validados] AS
+SELECT     dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, COUNT(dbo.Conciertos.Centro_id) AS Centro_id
+FROM         dbo.Conciertos INNER JOIN
+                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
+                      dbo.ICG07 ON dbo.Conciertos.Concierto_id = dbo.ICG07.Concierto_id
+WHERE     (dbo.ICG07.Validado = 1) 
+GROUP BY dbo.Conciertos.Mutua_id, dbo.ICG07.Año, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  View [dbo].[vw_Concertados_NoValidados]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   VIEW [dbo].[vw_Concertados_NoValidados] AS
+SELECT     dbo.ICG07.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, COUNT(dbo.Conciertos.Centro_id) AS Centro_id
+FROM         dbo.Conciertos INNER JOIN
+                      dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
+                      dbo.ICG07 ON dbo.Conciertos.Concierto_id = dbo.ICG07.Concierto_id
+WHERE     (dbo.ICG07.Validado = 0 OR
+                      dbo.ICG07.Validado IS NULL) 
+GROUP BY dbo.Conciertos.Mutua_id, dbo.ICG07.Año, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  Table [dbo].[ConciertosEspecialidades]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConciertosEspecialidades](
+	[ConciertoEspecialidad_id] [int] IDENTITY(1,1) NOT NULL,
+	[Concierto_id] [int] NOT NULL,
+	[Año] [int] NOT NULL,
+	[Especialidad_id] [int] NOT NULL,
+	[Servicio_id] [int] NULL,
+	[Cantidad] [int] NULL,
+	[ImporteConIVA] [float] NULL
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vw_especialidadesConciertos]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE   VIEW [dbo].[vw_especialidadesConciertos]
+AS
+SELECT        TOP (100) PERCENT dbo.ConciertosEspecialidades.ConciertoEspecialidad_id, dbo.ConciertosEspecialidades.Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Centro_id, dbo.Conciertos.Mutua_id, 
+                         dbo.Aux_Especialidades.Especialidad_id, dbo.Aux_Especialidades.Especialidad, dbo.ConciertosEspecialidades.Cantidad, dbo.CentrosConcertados.Centro, dbo.CentrosConcertados.Localizador, 
+                         dbo.Conciertos.CodigoCASA, dbo.Aux_Servicios.Servicio
+FROM            dbo.Aux_Especialidades INNER JOIN
+                         dbo.ConciertosEspecialidades ON dbo.Aux_Especialidades.Especialidad_id = dbo.ConciertosEspecialidades.Especialidad_id INNER JOIN
+                         dbo.Conciertos ON dbo.ConciertosEspecialidades.Concierto_id = dbo.Conciertos.Concierto_id INNER JOIN
+                         dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id INNER JOIN
+                         dbo.Aux_Servicios ON dbo.ConciertosEspecialidades.Servicio_id = dbo.Aux_Servicios.Servicio_id
+ORDER BY dbo.ConciertosEspecialidades.Año DESC, dbo.Aux_Especialidades.Especialidad
+
+GO
+/****** Object:  View [dbo].[vw_Conciertos_Articulo258_1]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create view [dbo].[vw_Conciertos_Articulo258_1] AS
+SELECT DISTINCT 
+TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
+'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(Art2581,0)) AS Respuesta
+                      
+FROM  ICG07  
+INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
+INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
+
+GROUP BY dbo.CentrosConcertados.Centro_id, Año,
+dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  View [dbo].[vw_Conciertos_Articulo258_2]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+create view [dbo].[vw_Conciertos_Articulo258_2] AS
+SELECT DISTINCT 
+TOP (100) PERCENT Año, dbo.Conciertos.Concierto_id, dbo.Conciertos.Mutua_id, dbo.CentrosConcertados.Centro_id, 'Conciertos' as [CapituloCM], 
+'Costes' as [ConceptoCM], dbo.CentrosConcertados.Centro, sum(isnull(Art2582,0)) AS Respuesta
+                      
+FROM  ICG07  
+INNER JOIN dbo.Conciertos ON dbo.ICG07.Concierto_id = dbo.Conciertos.Concierto_id 
+INNER JOIN dbo.CentrosConcertados ON dbo.Conciertos.Centro_id = dbo.CentrosConcertados.Centro_id
+
+GROUP BY dbo.CentrosConcertados.Centro_id, Año,
+dbo.CentrosConcertados.Centro, dbo.Conciertos.Mutua_id, dbo.Conciertos.Concierto_id
+
+GO
+/****** Object:  Table [dbo].[AccesosUsuarios]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[AccesosUsuarios](
 	[AccesoUsuario_id] [int] IDENTITY(1,1) NOT NULL,
 	[Perfil_id] [int] NULL,
@@ -2046,15 +1914,12 @@ CREATE TABLE [dbo].[AccesosUsuarios](
 	[AccesoUsuario_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_ActividadAsistencial_A]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_ActividadAsistencial_A]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_ActividadAsistencial_A')
-BEGIN
 CREATE TABLE [dbo].[Access_ActividadAsistencial_A](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2192,15 +2057,12 @@ CREATE TABLE [dbo].[Access_ActividadAsistencial_A](
 	[OppractConvSectBilMult] [numeric](10, 2) NULL,
 	[PruBiomConvSectBilMult] [numeric](10, 2) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_ActividadAsistencial_H]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_ActividadAsistencial_H]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_ActividadAsistencial_H')
-BEGIN
 CREATE TABLE [dbo].[Access_ActividadAsistencial_H](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [nvarchar](max) NULL,
@@ -2336,15 +2198,12 @@ CREATE TABLE [dbo].[Access_ActividadAsistencial_H](
 	[PrueBiomConvSecBilMultHOS] [numeric](10, 2) NULL,
 	[PAUrgNoIngrConvSecBilMultHOS] [numeric](10, 2) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_Conciertos_NC]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_Conciertos_NC]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_Conciertos_NC')
-BEGIN
 CREATE TABLE [dbo].[Access_Conciertos_NC](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2421,15 +2280,12 @@ CREATE TABLE [dbo].[Access_Conciertos_NC](
 	[CITnºotrpru] [int] NULL,
 	[Mutua_id] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_Conciertos_NV]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_Conciertos_NV]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_Conciertos_NV')
-BEGIN
 CREATE TABLE [dbo].[Access_Conciertos_NV](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2506,15 +2362,12 @@ CREATE TABLE [dbo].[Access_Conciertos_NV](
 	[CITnºotrpru] [int] NULL,
 	[Mutua_id] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_Conciertos_V]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_Conciertos_V]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_Conciertos_V')
-BEGIN
 CREATE TABLE [dbo].[Access_Conciertos_V](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2591,15 +2444,12 @@ CREATE TABLE [dbo].[Access_Conciertos_V](
 	[CITnºotrpru] [int] NULL,
 	[Mutua_id] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_DatosGenerales]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_DatosGenerales]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_DatosGenerales')
-BEGIN
 CREATE TABLE [dbo].[Access_DatosGenerales](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2823,15 +2673,12 @@ CREATE TABLE [dbo].[Access_DatosGenerales](
 	[FactejerotrmutuasCP] [numeric](10, 2) NULL,
 	[OtrasObservac] [nvarchar](max) NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_FincasRegistrales]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_FincasRegistrales]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_FincasRegistrales')
-BEGIN
 CREATE TABLE [dbo].[Access_FincasRegistrales](
 	[Idcentro] [nvarchar](max) NULL,
 	[Ejerc] [int] NULL,
@@ -2850,15 +2697,12 @@ CREATE TABLE [dbo].[Access_FincasRegistrales](
 	[ReferenciaCatastral] [nvarchar](max) NULL,
 	[Mutua_id] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Access_IdentificacionCentros]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Access_IdentificacionCentros]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Access_IdentificacionCentros')
-BEGIN
 CREATE TABLE [dbo].[Access_IdentificacionCentros](
 	[Idcentro] [nvarchar](max) NULL,
 	[NuMut] [int] NULL,
@@ -2904,15 +2748,12 @@ CREATE TABLE [dbo].[Access_IdentificacionCentros](
 	[TraslNdirec] [nvarchar](max) NULL,
 	[Mutua_id] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_AgrupacionConciertos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_AgrupacionConciertos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_AgrupacionConciertos')
-BEGIN
 CREATE TABLE [dbo].[Aux_AgrupacionConciertos](
 	[Agrupacion_id] [int] IDENTITY(4,1) NOT NULL,
 	[Agrupacion] [nvarchar](50) NULL,
@@ -2921,15 +2762,12 @@ CREATE TABLE [dbo].[Aux_AgrupacionConciertos](
 	[Agrupacion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_AmbitosCobertura]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_AmbitosCobertura]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_AmbitosCobertura')
-BEGIN
 CREATE TABLE [dbo].[Aux_AmbitosCobertura](
 	[Ambito_id] [bigint] IDENTITY(1,1) NOT NULL,
 	[Ambito] [nvarchar](100) NULL,
@@ -2938,15 +2776,12 @@ CREATE TABLE [dbo].[Aux_AmbitosCobertura](
 	[Ambito_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Areas]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Areas]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Areas')
-BEGIN
 CREATE TABLE [dbo].[Aux_Areas](
 	[Area_id] [int] IDENTITY(1,1) NOT NULL,
 	[Area] [varchar](50) NULL,
@@ -2955,15 +2790,12 @@ CREATE TABLE [dbo].[Aux_Areas](
 	[Area_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_DescripcionesSeguimiento]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_DescripcionesSeguimiento]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_DescripcionesSeguimiento')
-BEGIN
 CREATE TABLE [dbo].[Aux_DescripcionesSeguimiento](
 	[DescripcionAccion_id] [bigint] NOT NULL,
 	[DescripcionAccion] [nvarchar](200) NULL,
@@ -2974,15 +2806,12 @@ CREATE TABLE [dbo].[Aux_DescripcionesSeguimiento](
 	[DescripcionAccion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Estados_Demanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Estados_Demanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Estados_Demanda')
-BEGIN
 CREATE TABLE [dbo].[Aux_Estados_Demanda](
 	[Estado_id] [int] IDENTITY(1,1) NOT NULL,
 	[Estado] [nvarchar](200) NULL,
@@ -2993,15 +2822,12 @@ CREATE TABLE [dbo].[Aux_Estados_Demanda](
 	[Estado_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_EstadosInformesICG]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_EstadosInformesICG]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_EstadosInformesICG')
-BEGIN
 CREATE TABLE [dbo].[Aux_EstadosInformesICG](
 	[EstadoInforme_id] [int] IDENTITY(1,1) NOT NULL,
 	[EstadoInforme] [varchar](50) NULL,
@@ -3010,15 +2836,12 @@ CREATE TABLE [dbo].[Aux_EstadosInformesICG](
 	[EstadoInforme_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_FichasSistema]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_FichasSistema]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_FichasSistema')
-BEGIN
 CREATE TABLE [dbo].[Aux_FichasSistema](
 	[Ficha_id] [int] IDENTITY(58,1) NOT NULL,
 	[Ficha] [nvarchar](max) NULL,
@@ -3029,15 +2852,12 @@ CREATE TABLE [dbo].[Aux_FichasSistema](
 	[Ficha_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_IconosMutuas]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_IconosMutuas]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_IconosMutuas')
-BEGIN
 CREATE TABLE [dbo].[Aux_IconosMutuas](
 	[Icono_id] [int] IDENTITY(1,1) NOT NULL,
 	[Mutua_id] [int] NULL,
@@ -3047,15 +2867,12 @@ CREATE TABLE [dbo].[Aux_IconosMutuas](
 	[Icono_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Informes_Acuerdos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Informes_Acuerdos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Informes_Acuerdos')
-BEGIN
 CREATE TABLE [dbo].[Aux_Informes_Acuerdos](
 	[Tipo_acuerdo_id] [nchar](10) NOT NULL,
 	[Tipo_acuerdo] [nchar](100) NOT NULL,
@@ -3064,15 +2881,12 @@ CREATE TABLE [dbo].[Aux_Informes_Acuerdos](
 	[Tipo_acuerdo_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Meses]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Meses]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Meses')
-BEGIN
 CREATE TABLE [dbo].[Aux_Meses](
 	[Mes_id] [int] IDENTITY(1,1) NOT NULL,
 	[Mes] [nvarchar](100) NULL,
@@ -3081,15 +2895,12 @@ CREATE TABLE [dbo].[Aux_Meses](
 	[Mes_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_Poblaciones_Cod_Postales]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_Poblaciones_Cod_Postales]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_Poblaciones_Cod_Postales')
-BEGIN
 CREATE TABLE [dbo].[Aux_Poblaciones_Cod_Postales](
 	[Registro_id] [int] IDENTITY(1,1) NOT NULL,
 	[Poblacion_id] [int] NOT NULL,
@@ -3099,30 +2910,24 @@ CREATE TABLE [dbo].[Aux_Poblaciones_Cod_Postales](
 	[Registro_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_SesionUsuario]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_SesionUsuario]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_SesionUsuario')
-BEGIN
 CREATE TABLE [dbo].[Aux_SesionUsuario](
 	[Usuario] [varchar](30) NULL,
 	[Contrasena] [nvarchar](max) NULL,
 	[Intentos] [int] NOT NULL,
 	[FechaIntento] [datetime] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TipoAnulacion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TipoAnulacion]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TipoAnulacion')
-BEGIN
 CREATE TABLE [dbo].[Aux_TipoAnulacion](
 	[TipoAnulacion_id] [int] NOT NULL,
 	[Motivo] [nvarchar](50) NULL,
@@ -3131,28 +2936,22 @@ CREATE TABLE [dbo].[Aux_TipoAnulacion](
 	[TipoAnulacion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TipoFinca]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TipoFinca]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TipoFinca')
-BEGIN
 CREATE TABLE [dbo].[Aux_TipoFinca](
 	[TipoFinca_ID] [int] NULL,
 	[TipoFinca] [nvarchar](50) NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TipoRechazo]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TipoRechazo]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TipoRechazo')
-BEGIN
 CREATE TABLE [dbo].[Aux_TipoRechazo](
 	[TipoRechazo_id] [int] IDENTITY(1,1) NOT NULL,
 	[Rechazo] [nvarchar](50) NULL,
@@ -3161,15 +2960,12 @@ CREATE TABLE [dbo].[Aux_TipoRechazo](
 	[TipoRechazo_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TiposAcreditacion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TiposAcreditacion]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TiposAcreditacion')
-BEGIN
 CREATE TABLE [dbo].[Aux_TiposAcreditacion](
 	[TipoAcreditacion_id] [int] IDENTITY(1,1) NOT NULL,
 	[TipoAcreditacion] [nvarchar](300) NULL,
@@ -3180,15 +2976,12 @@ CREATE TABLE [dbo].[Aux_TiposAcreditacion](
 	[TipoAcreditacion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TiposDemanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TiposDemanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TiposDemanda')
-BEGIN
 CREATE TABLE [dbo].[Aux_TiposDemanda](
 	[Tipo_id] [int] IDENTITY(1,1) NOT NULL,
 	[Tipo] [nvarchar](300) NULL,
@@ -3199,15 +2992,12 @@ CREATE TABLE [dbo].[Aux_TiposDemanda](
 	[Tipo_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TipoServicio]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TipoServicio]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TipoServicio')
-BEGIN
 CREATE TABLE [dbo].[Aux_TipoServicio](
 	[TipoServicio_id] [int] IDENTITY(1,1) NOT NULL,
 	[TipoServicio] [nvarchar](100) NULL,
@@ -3217,15 +3007,12 @@ PRIMARY KEY CLUSTERED
 	[TipoServicio_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Aux_TiposSeguimiento]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Aux_TiposSeguimiento]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Aux_TiposSeguimiento')
-BEGIN
 CREATE TABLE [dbo].[Aux_TiposSeguimiento](
 	[TipoAccion_id] [bigint] NOT NULL,
 	[TipoAccion] [nvarchar](200) NULL,
@@ -3236,15 +3023,26 @@ CREATE TABLE [dbo].[Aux_TiposSeguimiento](
 	[TipoAccion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[CentrosEspecialidades]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[CCAA]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CentrosEspecialidades')
-BEGIN
+CREATE TABLE [dbo].[CCAA](
+	[CCAA_id] [int] IDENTITY(1,1) NOT NULL,
+	[CCAA] [char](100) NULL,
+ CONSTRAINT [PK_CCAA] PRIMARY KEY CLUSTERED 
+(
+	[CCAA_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[CentrosEspecialidades]    Script Date: 09/04/2026 12:43:53 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[CentrosEspecialidades](
 	[CentroEspecialidad_id] [int] IDENTITY(1,1) NOT NULL,
 	[Centro_id] [int] NOT NULL,
@@ -3264,15 +3062,12 @@ CREATE TABLE [dbo].[CentrosEspecialidades](
 	[Servicio] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[CentrosPropiosCatalogoServicios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[CentrosPropiosCatalogoServicios]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CentrosPropiosCatalogoServicios')
-BEGIN
 CREATE TABLE [dbo].[CentrosPropiosCatalogoServicios](
 	[CentroPropioCatalogoServicios_id] [int] IDENTITY(1,1) NOT NULL,
 	[Centro_id] [int] NOT NULL,
@@ -3289,15 +3084,12 @@ CREATE TABLE [dbo].[CentrosPropiosCatalogoServicios](
 	[CentroPropioCatalogoServicios_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[CitacionDocumentacion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[CitacionDocumentacion]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CitacionDocumentacion')
-BEGIN
 CREATE TABLE [dbo].[CitacionDocumentacion](
 	[Doc_id] [bigint] IDENTITY(1,1) NOT NULL,
 	[Nombre] [nvarchar](max) NULL,
@@ -3312,15 +3104,12 @@ CREATE TABLE [dbo].[CitacionDocumentacion](
 	[Doc_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[CodigosCIEP]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[CodigosCIEP]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CodigosCIEP')
-BEGIN
 CREATE TABLE [dbo].[CodigosCIEP](
 	[CIEP_id] [int] IDENTITY(1,1) NOT NULL,
 	[CIEP] [nvarchar](50) NOT NULL,
@@ -3330,15 +3119,12 @@ CREATE TABLE [dbo].[CodigosCIEP](
 	[CIEP_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[ConciertosAmbitoCobertura]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[ConciertosAmbitoCobertura]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ConciertosAmbitoCobertura')
-BEGIN
 CREATE TABLE [dbo].[ConciertosAmbitoCobertura](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[Concierto_id] [int] NOT NULL,
@@ -3356,15 +3142,12 @@ CREATE TABLE [dbo].[ConciertosAmbitoCobertura](
 	[Poblacion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[ConciertosDocumentos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[ConciertosDocumentos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ConciertosDocumentos')
-BEGIN
 CREATE TABLE [dbo].[ConciertosDocumentos](
 	[Concierto_id] [int] NULL,
 	[Documento_id] [int] IDENTITY(1,1) NOT NULL,
@@ -3381,15 +3164,12 @@ CREATE TABLE [dbo].[ConciertosDocumentos](
 	[Documento_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Configuracion_Administracion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Configuracion_Administracion]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Configuracion_Administracion')
-BEGIN
 CREATE TABLE [dbo].[Configuracion_Administracion](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[FechaBloqueoDesde] [date] NOT NULL,
@@ -3407,15 +3187,12 @@ CREATE TABLE [dbo].[Configuracion_Administracion](
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Delegaciones]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Delegaciones]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Delegaciones')
-BEGIN
 CREATE TABLE [dbo].[Delegaciones](
 	[Delegacion_id] [int] IDENTITY(1,1) NOT NULL,
 	[Proveedor_id] [int] NOT NULL,
@@ -3428,15 +3205,12 @@ CREATE TABLE [dbo].[Delegaciones](
 	[Delegacion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[DemandasDocumentacion]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[DemandasDocumentacion]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DemandasDocumentacion')
-BEGIN
 CREATE TABLE [dbo].[DemandasDocumentacion](
 	[Documento_id] [int] IDENTITY(1,1) NOT NULL,
 	[NombreDocumento] [nvarchar](max) NULL,
@@ -3450,15 +3224,12 @@ CREATE TABLE [dbo].[DemandasDocumentacion](
 	[Documento_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Descuadres]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Descuadres]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Descuadres')
-BEGIN
 CREATE TABLE [dbo].[Descuadres](
 	[Usuario_id] [int] NOT NULL,
 	[Mutua_id] [int] NOT NULL,
@@ -3483,15 +3254,12 @@ CREATE TABLE [dbo].[Descuadres](
 	[Mutua_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Ejercicios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Ejercicios]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Ejercicios')
-BEGIN
 CREATE TABLE [dbo].[Ejercicios](
 	[Año] [int] NOT NULL,
 	[FechaApertura] [datetime] NULL,
@@ -3501,15 +3269,12 @@ CREATE TABLE [dbo].[Ejercicios](
 	[Año] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Ficheros]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Ficheros]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Ficheros')
-BEGIN
 CREATE TABLE [dbo].[Ficheros](
 	[Fichero_Id] [int] IDENTITY(1,1) NOT NULL,
 	[Fichero] [nvarchar](200) NULL,
@@ -3526,15 +3291,12 @@ CREATE TABLE [dbo].[Ficheros](
 	[Fichero_Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[FicherosAcreditaciones_Informes]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[FicherosAcreditaciones_Informes]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FicherosAcreditaciones_Informes')
-BEGIN
 CREATE TABLE [dbo].[FicherosAcreditaciones_Informes](
 	[Fichero_id] [int] IDENTITY(13800,1) NOT NULL,
 	[Fichero] [nvarchar](max) NULL,
@@ -3554,15 +3316,12 @@ CREATE TABLE [dbo].[FicherosAcreditaciones_Informes](
 	[Fichero_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[FicherosGenerados]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[FicherosGenerados]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FicherosGenerados')
-BEGIN
 CREATE TABLE [dbo].[FicherosGenerados](
 	[FicheroGenerado_id] [int] IDENTITY(1,1) NOT NULL,
 	[Mutua_id] [nchar](10) NULL,
@@ -3578,15 +3337,12 @@ CREATE TABLE [dbo].[FicherosGenerados](
 	[FicheroGenerado_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[FincasRegistrales]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[FincasRegistrales]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FincasRegistrales')
-BEGIN
 CREATE TABLE [dbo].[FincasRegistrales](
 	[Finca_id] [int] IDENTITY(1,1) NOT NULL,
 	[Centro_id] [int] NULL,
@@ -3617,15 +3373,12 @@ CREATE TABLE [dbo].[FincasRegistrales](
 	[Finca_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[FincasRegistrales_CostesPorAño]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[FincasRegistrales_CostesPorAño]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'FincasRegistrales_CostesPorAño')
-BEGIN
 CREATE TABLE [dbo].[FincasRegistrales_CostesPorAño](
 	[Finca_id] [int] NOT NULL,
 	[Localizador] [nvarchar](50) NULL,
@@ -3637,15 +3390,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Historico_CatalogoCompletoServicios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Historico_CatalogoCompletoServicios]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Historico_CatalogoCompletoServicios')
-BEGIN
 CREATE TABLE [dbo].[Historico_CatalogoCompletoServicios](
 	[HistoricoCatalogoCompletoServicios_id] [int] IDENTITY(1,1) NOT NULL,
 	[Centro_id] [int] NOT NULL,
@@ -3655,15 +3405,12 @@ CREATE TABLE [dbo].[Historico_CatalogoCompletoServicios](
 	[Usuario_id] [int] NULL,
 	[FechaModificacion] [datetime] NULL
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Historico_CentrosPropiosEspecialidades]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Historico_CentrosPropiosEspecialidades]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Historico_CentrosPropiosEspecialidades')
-BEGIN
 CREATE TABLE [dbo].[Historico_CentrosPropiosEspecialidades](
 	[HistoricoCentroPropioEspecialidad_id] [int] IDENTITY(1,1) NOT NULL,
 	[Centro_id] [int] NULL,
@@ -3691,15 +3438,12 @@ CREATE TABLE [dbo].[Historico_CentrosPropiosEspecialidades](
 	[HistoricoCentroPropioEspecialidad_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Informes]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Informes]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Informes')
-BEGIN
 CREATE TABLE [dbo].[Informes](
 	[Informe_id] [int] IDENTITY(1,1) NOT NULL,
 	[Tipo] [nvarchar](50) NULL,
@@ -3710,15 +3454,12 @@ CREATE TABLE [dbo].[Informes](
 	[Informe_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Informes_Acuerdos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Informes_Acuerdos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Informes_Acuerdos')
-BEGIN
 CREATE TABLE [dbo].[Informes_Acuerdos](
 	[Informes_id] [int] IDENTITY(1,1) NOT NULL,
 	[Informe] [nchar](250) NULL,
@@ -3734,15 +3475,12 @@ CREATE TABLE [dbo].[Informes_Acuerdos](
 	[Informes_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Informes_Direccion_Agrupados]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Informes_Direccion_Agrupados]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Informes_Direccion_Agrupados')
-BEGIN
 CREATE TABLE [dbo].[Informes_Direccion_Agrupados](
 	[Informe_id] [int] IDENTITY(1,1) NOT NULL,
 	[Informe] [nvarchar](max) NULL,
@@ -3757,15 +3495,12 @@ CREATE TABLE [dbo].[Informes_Direccion_Agrupados](
 	[Informe_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Informes_ICG]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Informes_ICG]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Informes_ICG')
-BEGIN
 CREATE TABLE [dbo].[Informes_ICG](
 	[Informe_id] [int] IDENTITY(1,1) NOT NULL,
 	[Informe] [nvarchar](max) NULL,
@@ -3782,15 +3517,12 @@ CREATE TABLE [dbo].[Informes_ICG](
 	[Informe_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Motivos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Motivos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Motivos')
-BEGIN
 CREATE TABLE [dbo].[Motivos](
 	[Motivo_id] [int] IDENTITY(1,1) NOT NULL,
 	[Motivo] [char](10) NULL,
@@ -3799,15 +3531,12 @@ CREATE TABLE [dbo].[Motivos](
 	[Motivo_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Mutuas_bm]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Mutuas_bm]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Mutuas_bm')
-BEGIN
 CREATE TABLE [dbo].[Mutuas_bm](
 	[Mutua_id] [int] IDENTITY(1,1) NOT NULL,
 	[NumeroMutua] [varchar](3) NULL,
@@ -3832,15 +3561,12 @@ CREATE TABLE [dbo].[Mutuas_bm](
 	[Mutua_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[MutuasPresupuesto]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[MutuasPresupuesto]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'MutuasPresupuesto')
-BEGIN
 CREATE TABLE [dbo].[MutuasPresupuesto](
 	[Id_Presupuesto] [int] IDENTITY(1,1) NOT NULL,
 	[Año] [char](4) NOT NULL,
@@ -3862,15 +3588,12 @@ CREATE TABLE [dbo].[MutuasPresupuesto](
 	[Id_Presupuesto] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Perfiles]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Perfiles]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Perfiles')
-BEGIN
 CREATE TABLE [dbo].[Perfiles](
 	[Perfil_id] [int] IDENTITY(1,1) NOT NULL,
 	[Perfil] [varchar](50) NULL,
@@ -3879,15 +3602,12 @@ CREATE TABLE [dbo].[Perfiles](
 	[Perfil_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Proveedores]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Proveedores]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Proveedores')
-BEGIN
 CREATE TABLE [dbo].[Proveedores](
 	[Proveedor_id] [int] IDENTITY(1,1) NOT NULL,
 	[TipoProveedor_id] [int] NULL,
@@ -3901,15 +3621,12 @@ CREATE TABLE [dbo].[Proveedores](
 	[Proveedor_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Demanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Demanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuas_Demanda')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Demanda](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -3923,15 +3640,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Oferta]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Oferta]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuas_Oferta')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuas_Oferta](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -3945,15 +3659,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Demanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Demanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuasProvincias_Demanda')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Demanda](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -3969,15 +3680,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Oferta]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Oferta]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuasProvincias_Oferta')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuasProvincias_Oferta](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -3993,15 +3701,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Demanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Demanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Demanda')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Demanda](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -4018,15 +3723,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Oferta]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Oferta]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Oferta')
-BEGIN
 CREATE TABLE [dbo].[PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Oferta](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IDMutuaAnio] [nvarchar](15) NULL,
@@ -4043,15 +3745,12 @@ PRIMARY KEY CLUSTERED
 	[ID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Registro_Errores]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Registro_Errores]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Registro_Errores')
-BEGIN
 CREATE TABLE [dbo].[Registro_Errores](
 	[Error_id] [int] IDENTITY(1,1) NOT NULL,
 	[Usuario_id] [int] NULL,
@@ -4067,15 +3766,12 @@ CREATE TABLE [dbo].[Registro_Errores](
 	[Error_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[RegistroActividad]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[RegistroActividad]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'RegistroActividad')
-BEGIN
 CREATE TABLE [dbo].[RegistroActividad](
 	[Registro_id] [int] IDENTITY(5000,1) NOT NULL,
 	[Usuario_id] [int] NULL,
@@ -4087,15 +3783,12 @@ CREATE TABLE [dbo].[RegistroActividad](
 	[Registro_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[SeguimientoOD]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[SeguimientoOD]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SeguimientoOD')
-BEGIN
 CREATE TABLE [dbo].[SeguimientoOD](
 	[Gestion_id] [bigint] IDENTITY(1,1) NOT NULL,
 	[Usuario_id] [bigint] NULL,
@@ -4113,15 +3806,12 @@ CREATE TABLE [dbo].[SeguimientoOD](
 	[Gestion_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[ServiciosEspecialidades_Comparacion2]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[ServiciosEspecialidades_Comparacion2]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ServiciosEspecialidades_Comparacion2')
-BEGIN
 CREATE TABLE [dbo].[ServiciosEspecialidades_Comparacion2](
 	[Provincia_id] [nvarchar](50) NULL,
 	[Poblacion] [nvarchar](max) NULL,
@@ -4129,15 +3819,12 @@ CREATE TABLE [dbo].[ServiciosEspecialidades_Comparacion2](
 	[Servicio] [nvarchar](max) NULL,
 	[Año] [int] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Subgrupos]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Subgrupos]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Subgrupos')
-BEGIN
 CREATE TABLE [dbo].[Subgrupos](
 	[Subgrupo_id] [varchar](6) NOT NULL,
 	[Subgrupo] [varchar](100) NULL,
@@ -4151,15 +3838,12 @@ CREATE TABLE [dbo].[Subgrupos](
 	[Subgrupo_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Tarifas]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Tarifas]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Tarifas')
-BEGIN
 CREATE TABLE [dbo].[Tarifas](
 	[Tarifa_id] [int] IDENTITY(17,1) NOT NULL,
 	[Tarifa] [nvarchar](250) NOT NULL,
@@ -4171,15 +3855,12 @@ CREATE TABLE [dbo].[Tarifas](
 	[Tarifa_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[TarifasDetalle]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[TarifasDetalle]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TarifasDetalle')
-BEGIN
 CREATE TABLE [dbo].[TarifasDetalle](
 	[TarifaDetalle_id] [int] IDENTITY(1,1) NOT NULL,
 	[Tarifa_id] [int] NOT NULL,
@@ -4195,15 +3876,12 @@ CREATE TABLE [dbo].[TarifasDetalle](
 	[TarifaDetalle_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[TiposAsistencia]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[TiposAsistencia]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TiposAsistencia')
-BEGIN
 CREATE TABLE [dbo].[TiposAsistencia](
 	[Registro_id] [bigint] IDENTITY(1,1) NOT NULL,
 	[TipoAsistencia_id] [int] NOT NULL,
@@ -4216,15 +3894,12 @@ CREATE TABLE [dbo].[TiposAsistencia](
 	[Año] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[TiposDemanda]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[TiposDemanda]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TiposDemanda')
-BEGIN
 CREATE TABLE [dbo].[TiposDemanda](
 	[TipoDemanda_id] [int] IDENTITY(1,1) NOT NULL,
 	[Año] [int] NOT NULL,
@@ -4241,15 +3916,12 @@ CREATE TABLE [dbo].[TiposDemanda](
 	[TipoDemanda_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[TiposVia]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[TiposVia]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TiposVia')
-BEGIN
 CREATE TABLE [dbo].[TiposVia](
 	[TipoVia_id] [int] IDENTITY(1,1) NOT NULL,
 	[TipoVia] [nvarchar](50) NOT NULL,
@@ -4259,15 +3931,12 @@ CREATE TABLE [dbo].[TiposVia](
 	[TipoVia_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Usuarios]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Usuarios]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios')
-BEGIN
 CREATE TABLE [dbo].[Usuarios](
 	[Usuario_id] [int] IDENTITY(1,1) NOT NULL,
 	[Perfil_id] [int] NULL,
@@ -4296,15 +3965,12 @@ CREATE TABLE [dbo].[Usuarios](
 	[Usuario_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[Usuarios_web]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[Usuarios_web]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Usuarios_web')
-BEGIN
 CREATE TABLE [dbo].[Usuarios_web](
 	[Usuario_id] [int] IDENTITY(1,1) NOT NULL,
 	[Usuario_id_app] [int] NULL,
@@ -4312,15 +3978,12 @@ CREATE TABLE [dbo].[Usuarios_web](
 	[Token] [nvarchar](max) NULL,
 	[CaducidadToken] [datetime] NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-END
 GO
-/****** Object:  Table [dbo].[UsuariosPorPerfilesModificar]    Script Date: 27/03/2026 8:16:36 ******/
+/****** Object:  Table [dbo].[UsuariosPorPerfilesModificar]    Script Date: 09/04/2026 12:43:53 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'UsuariosPorPerfilesModificar')
-BEGIN
 CREATE TABLE [dbo].[UsuariosPorPerfilesModificar](
 	[AccesoUsuario_id] [int] IDENTITY(1,1) NOT NULL,
 	[Perfil_id] [int] NULL,
@@ -4332,7 +3995,6 @@ CREATE TABLE [dbo].[UsuariosPorPerfilesModificar](
 	[AccesoUsuario_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-END
 GO
 ALTER TABLE [dbo].[CentrosEspecialidades] ADD  CONSTRAINT [DF_CentrosEspecialidades_Cantidad]  DEFAULT ((0)) FOR [Cantidad]
 GO
@@ -4358,17 +4020,17 @@ ALTER TABLE [dbo].[Usuarios] ADD  CONSTRAINT [DF_Usuarios_LimiteCorreos]  DEFAUL
 GO
 ALTER TABLE [dbo].[Usuarios] ADD  DEFAULT ((0)) FOR [PermisoQlikSense]
 GO
-ALTER TABLE [dbo].[Aux_Poblaciones]  WITH CHECK ADD  CONSTRAINT [FK_Aux_Poblaciones_Aux_Provincias] FOREIGN KEY([Provincia_id])
+ALTER TABLE [dbo].[Aux_Poblaciones]  WITH NOCHECK ADD  CONSTRAINT [FK_Aux_Poblaciones_Aux_Provincias] FOREIGN KEY([Provincia_id])
 REFERENCES [dbo].[Aux_Provincias] ([Provincia_id])
 GO
 ALTER TABLE [dbo].[Aux_Poblaciones] CHECK CONSTRAINT [FK_Aux_Poblaciones_Aux_Provincias]
 GO
-ALTER TABLE [dbo].[Aux_Poblaciones_Cod_Postales]  WITH CHECK ADD  CONSTRAINT [FK_Aux_Poblaciones_Cod_Postales_Aux_Poblaciones] FOREIGN KEY([Poblacion_id])
+ALTER TABLE [dbo].[Aux_Poblaciones_Cod_Postales]  WITH NOCHECK ADD  CONSTRAINT [FK_Aux_Poblaciones_Cod_Postales_Aux_Poblaciones] FOREIGN KEY([Poblacion_id])
 REFERENCES [dbo].[Aux_Poblaciones] ([Poblacion_id])
 GO
 ALTER TABLE [dbo].[Aux_Poblaciones_Cod_Postales] CHECK CONSTRAINT [FK_Aux_Poblaciones_Cod_Postales_Aux_Poblaciones]
 GO
-ALTER TABLE [dbo].[Aux_Provincias]  WITH CHECK ADD  CONSTRAINT [FK_Aux_Provincias_CCAA] FOREIGN KEY([CCAA_id])
+ALTER TABLE [dbo].[Aux_Provincias]  WITH NOCHECK ADD  CONSTRAINT [FK_Aux_Provincias_CCAA] FOREIGN KEY([CCAA_id])
 REFERENCES [dbo].[CCAA] ([CCAA_id])
 GO
 ALTER TABLE [dbo].[Aux_Provincias] CHECK CONSTRAINT [FK_Aux_Provincias_CCAA]
@@ -4380,17 +4042,14 @@ ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[FincasRegistrales_CostesPorAño] CHECK CONSTRAINT [FK_FincasRegistrales_CostesPorAño_FincasRegistrales]
 GO
-ALTER TABLE [dbo].[TarifasDetalle]  WITH CHECK ADD  CONSTRAINT [FK_TarifasDetalle_Tarifas] FOREIGN KEY([Tarifa_id])
+ALTER TABLE [dbo].[TarifasDetalle]  WITH NOCHECK ADD  CONSTRAINT [FK_TarifasDetalle_Tarifas] FOREIGN KEY([Tarifa_id])
 REFERENCES [dbo].[Tarifas] ([Tarifa_id])
 ON UPDATE CASCADE
 ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[TarifasDetalle] CHECK CONSTRAINT [FK_TarifasDetalle_Tarifas]
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -4519,15 +4178,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Conciertos_Articulo25'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Conciertos_Articulo25'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -4671,10 +4324,7 @@ Begin DesignProperties =
       Begin ColumnWidths = 11
     ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_especialidadesConciertos'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane2', @value=N'     Column = 1440
-END TRY BEGIN CATCH END CATCH
-GO
          Alias = 900
          Table = 1170
          Output = 720
@@ -4692,15 +4342,9 @@ GO
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_especialidadesConciertos'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=2 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_especialidadesConciertos'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -4819,15 +4463,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Articulo32'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Articulo32'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -4957,15 +4595,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo1'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo1'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -5074,15 +4706,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo1_Anterior'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo1_Anterior'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -5201,15 +4827,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo2'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vw_Propios_Capitulo2'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -5351,10 +4971,7 @@ Begin DesignProperties =
             DisplayFlags = 280
             Top' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwCitaciones'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane2', @value=N'Column = 0
-END TRY BEGIN CATCH END CATCH
-GO
          End
          Begin Table = "esp"
             Begin Extent = 
@@ -5436,15 +5053,9 @@ GO
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwCitaciones'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=2 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwCitaciones'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -5556,15 +5167,9 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwDemandas_Citaciones'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwDemandas_Citaciones'
-END TRY BEGIN CATCH END CATCH
 GO
-GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
-END TRY BEGIN CATCH END CATCH
-GO
 Begin DesignProperties = 
    Begin PaneConfigurations = 
       Begin PaneConfiguration = 0
@@ -5673,8 +5278,5 @@ Begin DesignProperties =
 End
 ' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwDemandas_Citaciones_SinAgrupar'
 GO
-BEGIN TRY
 EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'vwDemandas_Citaciones_SinAgrupar'
-END TRY BEGIN CATCH END CATCH
-GO
 GO
