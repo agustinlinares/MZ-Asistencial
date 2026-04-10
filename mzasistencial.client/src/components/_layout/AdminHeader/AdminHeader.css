@@ -103,3 +103,158 @@
 .item-admin-header .LanguageSwitcher button.active{
     background-color: #1b3f18;
 }
+
+/* Contenedor opcional */
+.actions-dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.btn-acciones-custom {
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 4px 10px;
+    background-color: #fff;
+}
+
+.btn-acciones-custom .dx-button {
+    width: 100%;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Contenido */
+.btn-acciones-custom .dx-button-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 !important;
+}
+
+/* Texto */
+.btn-acciones-custom .dx-button-text {
+    font-size: 13px;
+}
+
+.btn-acciones-custom .dx-icon-spindown {
+    display: none !important;
+}
+
+.btn-acciones-custom .dx-dropdownbutton-toggle {
+    display: none !important;
+}
+
+.btn-acciones-custom .dx-button.dx-state-hover {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.btn-acciones-custom.dx-state-hover {
+    background-color: #f5f5f5 !important;
+}
+
+/* Contenedor de filtros */
+.header-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 8px;
+}
+
+/* Cada item */
+.header-filters .filter-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #dcdcdc;
+    color: #000000;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+/* Iconos */
+.header-filters .filter-item i {
+    font-size: 14px;
+}
+
+/* Select */
+.header-filters .filter-select {
+    background: transparent;
+    border: none;
+    color: #000000;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Quitar fondo blanco nativo en select */
+.header-filters .filter-select option {
+    color: #000;
+}
+
+/*  Quitar flecha nativa del select */
+.header-filters .filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: none;
+}
+
+.header-filters .filter-select {
+    padding: 0px 10px;  
+    min-width: 50px;    
+}
+
+.header-filters .filter-select option {
+    padding: 8px 12px;
+}
+
+
+/* -------------------------- */
+/* 🔴 CLAVE: quitar estructura de botón */
+.filter-dropdown-custom.dx-dropdownbutton {
+    width: auto !important;
+}
+
+/* 🔴 El botón interno NO debe ocupar todo */
+.filter-dropdown-custom .dx-button {
+    width: auto !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 🔴 Contenido inline REAL */
+.filter-dropdown-custom .dx-button-content {
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 🔴 TEXTO visible */
+.filter-dropdown-custom .dx-button-text {
+    display: inline !important;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* 🔴 ELIMINAR FLECHA COMPLETAMENTE */
+.filter-dropdown-custom .dx-dropdownbutton-toggle {
+    display: none !important;
+}
+
+/* 🔴 ELIMINAR ICONOS INTERNOS */
+.filter-dropdown-custom .dx-icon {
+    display: none !important;
+}
+
+/* Hover del contenedor completo (como en tu header) */
+.header-filters .filter-item:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}

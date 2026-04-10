@@ -86,15 +86,15 @@ body#main.sidebar-collapsed #admin-nav{
 }
 #list-menuadmin li a{
     margin: 0;
-    margin-bottom: 3px;
+    /* margin-bottom: 3px; */
     border-radius: 4px;
     color: #fff;
     text-decoration: none;
     position: relative;
-    text-transform: uppercase;
+    text-transform: capitalize;
     cursor: pointer;
-    font-size: .8rem;
-    padding: 6px 11px;
+    font-size: 16px;
+    padding: 10px;
     min-height: 40px;
     line-height: 1.625rem; 
     display: flex;
@@ -110,7 +110,7 @@ body#main.sidebar-collapsed #admin-nav{
 }
 #list-menuadmin li a > i{
     font-size: 1rem;
-    margin-right: 10px;
+    margin: 0 5px;
 }
 
 #list-menuadmin .dx-accordion {
@@ -124,7 +124,7 @@ body#main.sidebar-collapsed #admin-nav{
 }
 #list-menuadmin .dx-accordion.active  .dx-accordion-item-title,
 #list-menuadmin .dx-accordion-item-title:hover {
-    background-color: #009688;
+    background-color: #89c1ee;
 }
 #list-menuadmin .dx-accordion-item-title:hover,
 #list-menuadmin .dx-accordion-item-title.active .dx-accordion-item-title,

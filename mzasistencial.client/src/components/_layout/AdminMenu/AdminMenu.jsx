@@ -17,6 +17,8 @@ function AdminMenu(props) {
     const [openICG, setOpenICG] = useState(false);
     const [openOfertaDemanda, setOpenOfertaDemanda] = useState(false);
     const [openGestionReserva, setOpenGestionReserva] = useState(false);
+    const [openAnalisis, setOpenAnalisis] = useState(false);
+    const [openAdmin, setOpenAdmin] = useState(false);
 
     useEffect(() => {
 
@@ -28,7 +30,7 @@ function AdminMenu(props) {
             <nav id="admin-nav">
                 <div className='item-logo-admin'>
                     <div id="logo-cliente" className="logos-inner">
-                        <img src="/assets/img/logos/mercanza_logo.png" alt='Mercanza' />
+                        <img src="/assets/img/logos/mercanza_logo.jpg" alt='Mercanza' />
                     </div>
                 </div>
                 <ul id="list-menuadmin">
@@ -167,7 +169,7 @@ function AdminMenu(props) {
                             className="menu-title"
                             onClick={() => setOpenICG(!openICG)}
                         >
-                            <i className="ri-thumb-up-line"></i>
+                            <i className="ri-search-line"></i>
                             {t('ICG')}
 
                             {/* Flecha */}
@@ -198,7 +200,7 @@ function AdminMenu(props) {
                             className="menu-title"
                             onClick={() => setOpenOfertaDemanda(!openOfertaDemanda)}
                         >
-                            <i className="ri-thumb-up-line"></i>
+                            <i className="ri-stack-overflow-line"></i>
                             {t('Oferta Demanda')}
 
                             {/* Flecha */}
@@ -239,7 +241,7 @@ function AdminMenu(props) {
                             className="menu-title"
                             onClick={() => setOpenGestionReserva(!openGestionReserva)}
                         >
-                            <i className="ri-puzzle-line"></i>
+                            <i className="ri-stack-overflow-line"></i>
                             {t('Gestión Reserva')}
 
                             {/* Flecha */}
@@ -260,9 +262,122 @@ function AdminMenu(props) {
                         </ul>
                     </li>
 
+                    <li>
+                        <NavLink to="CuadroMedico" end>
+                            <i className="ri-map-2-line"></i>{t('Cuadro médico')}
+                        </NavLink>
+                    </li>
+
+                    <li className="menu-group">
+                        <div 
+                            className="menu-title"
+                            onClick={() => setOpenAnalisis(!openAnalisis)}
+                        >
+                            <i className="ri-dashboard-3-line"></i>
+                            {t('Análisis')}
+
+                            {/* Flecha */}
+                            <i className={`ri-arrow-down-s-line arrow ${openAnalisis ? 'open' : ''}`}></i>
+                        </div>
+
+                        <ul className={`submenu ${openAnalisis ? 'open' : ''}`}>
+                            <li>
+                                <NavLink to="Analisis/AnalisisView">
+                                    {t('Análisis View')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Analisis/AnalisisSense">
+                                    {t('Análisis Sense')}
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </li>
+
+                     <li className="menu-group">
+                        <div 
+                            className="menu-title"
+                            onClick={() => setOpenAdmin(!openAdmin)}
+                        >
+                            <i className="ri-mind-map"></i>
+                            {t('Admin')}
+
+                            {/* Flecha */}
+                            <i className={`ri-arrow-down-s-line arrow ${openAdmin ? 'open' : ''}`}></i>
+                        </div>
+
+                        <ul className={`submenu ${openAdmin ? 'open' : ''}`}>
+                            <li>
+                                <NavLink to="Admin/Usuarios">
+                                    {t('Usuarios')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Perfiles">
+                                    {t('Perfiles')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/PresupuestosLiquidados">
+                                    {t('Presupuestos Liquidados')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Ejercicios">
+                                    {t('Ejercicios')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Ficheros">
+                                    {t('Ficheros')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/ExportarAccess">
+                                    {t('Exportar a Access')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/RegistrosActividad">
+                                    {t('Registros Actividad')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/RegistrosError">
+                                    {t('Registros Error')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/CIEP">
+                                    {t('CIEP')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Tarifas">
+                                    {t('Tarifas')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/TiposDemanda">
+                                    {t('Tipos Demanda')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Configuracion">
+                                    {t('Configuracion')}
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="Admin/Mantenimiento">
+                                    {t('Mantenimiento')}
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
                 <div className='logo-app-menu'>
-                    <img className="logo-app" alt="Mercanza" src="/assets/img/logos/mercanza_logo.png"></img>
+                    <img className="logo-app" alt="MZ" src="/assets/img/logos/mercanza_logo.jpg"></img>
                 </div>
             </nav>
 

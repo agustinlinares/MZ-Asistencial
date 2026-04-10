@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import * as rdd from 'react-device-detect';
 import AuthService from '@services/auth/AuthService';
 import { TextBox } from 'devextreme-react';
-
+import DropDownButton from 'devextreme-react/drop-down-button';
 import './AdminHeader.css';
-
+// import SelectBox from 'devextreme-react/select-box';
 
 // 1. Estado inicial
 const initialState = {
@@ -143,6 +143,32 @@ function AdminHeader(props) {
         dispatch({ type: 'SET_FIELD', field, value });
     };
 
+    const actions = [
+        { id: 'new', text: 'Nuevo', icon: 'plus' },
+        { id: 'print', text: 'Imprimir ICG06', icon: 'print' },
+        { id: 'excel', text: 'Exportar a Excel', icon: 'xlsxfile' },
+        { id: 'pdf', text: 'Exportar a PDF', icon: 'pdffile' },
+    ];
+
+    const handleActionClick = (e) => {
+        switch (e.item.id) {
+            case 'new':
+                console.log('Nuevo');
+                break;
+            case 'print':
+                console.log('Imprimir');
+                break;
+            case 'excel':
+                console.log('Exportar Excel');
+                break;
+            case 'pdf':
+                console.log('Exportar PDF');
+                break;
+            default:
+                break;
+        }
+    };
+
     return (
         <React.Fragment>
             <header id="top-header-admin">
@@ -156,21 +182,78 @@ function AdminHeader(props) {
                     </div>
 
                     <div className='admin-action'>
-                        <div className='item-admin-action btn-ico'>
-                            <p><span>{username}</span> <i className="ri-user-line"></i></p>
+                        <div className='item-admin-action header-filters'>
+                            {/* Usuario */}
+                            <div className="filter-item">
+                                <i className="ri-user-line"></i>
+                                <span>ecua1</span>
+                            </div>
+
+                            {/* Rol */}
+                            <div className="filter-item">
+                                <i className="ri-user-3-line"></i>
+                                <span>Admin</span>
+                            </div>
+
+                            {/* Año */}
+                            <div className="filter-item">
+                                <i className="ri-calendar-line"></i>
+                                <DropDownButton
+                                    text="Calendario"
+                                    icon={null}
+                                    items={[
+                                        { id: '2025', text: '2025' },
+                                        { id: '2024', text: '2024' }
+                                    ]}
+                                    keyExpr="id"
+                                    displayExpr="text"
+                                    stylingMode="text"
+                                    splitButton={false}
+                                    elementAttr={{ class: 'filter-dropdown-custom' }}
+                                    dropDownOptions={{
+                                        width: 160
+                                    }}
+                                />
+                            </div>
+
+                            {/* Tipo */}
+                            <div className="filter-item">
+                                <i className="ri-filter-3-line"></i>
+                                <DropDownButton
+                                    text="Todas"
+                                    icon={null}
+                                    items={[
+                                        { id: 'todas', text: 'Todas' },
+                                        { id: 'activas', text: 'Activas' }
+                                    ]}
+                                    keyExpr="id"
+                                    displayExpr="text"
+                                    stylingMode="text"
+                                    splitButton={false}
+                                    elementAttr={{ class: 'filter-dropdown-custom' }}
+                                    dropDownOptions={{
+                                        width: 160
+                                    }}
+                                />
+                            </div>
+
                         </div>
-                        <button type='button' className='item-admin-action btn-ico cursor-pointer mz-btn-link' id="change-password" onClick={handleShowPasswordData}>
-                            <i className="ri-key-2-line"></i>
-                            <Tooltip target="#change-password" showEvent="mouseenter" hideEvent="mouseleave" hideOnOutsideClick={false}>
-                                <div>{t('CambiarContraseña')}</div>
-                            </Tooltip>
-                        </button>
-                        <button type='button' className='item-admin-action btn-ico cursor-pointer mz-btn-link' id="logout-session" onClick={handleShowLogout}>
-                            <i className="ri-logout-box-r-line"></i>
-                            <Tooltip target="#logout-session" showEvent="mouseenter" hideEvent="mouseleave" hideOnOutsideClick={false}>
-                                <div>{t('CerrarSession')}</div>
-                            </Tooltip>
-                        </button>                        
+                        <div className='item-admin-action actions-dropdown'>
+                            <DropDownButton
+                                text="Acciones"
+                                icon="overflow"
+                                items={actions}
+                                keyExpr="id"
+                                displayExpr="text"
+                                onItemClick={handleActionClick}
+                                stylingMode="outlined"
+                                splitButton={false}
+                                elementAttr={{ class: 'btn-acciones-custom' }}
+                                dropDownOptions={{
+                                    width: 220
+                                }}
+                            />
+                        </div>                      
                     </div>
                 </div>
             </header>
