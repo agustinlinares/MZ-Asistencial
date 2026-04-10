@@ -5,6 +5,8 @@ import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import DataGrid, {
     Column,
     Paging,
@@ -21,12 +23,8 @@ import DataGrid, {
     FilterPanel,
     ColumnFixing,
     Pager,
-    Toolbar,
-    Item,
     Lookup
 } from "devextreme-react/data-grid";
-
-import { useTranslation } from "react-i18next";
 
 // ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
 const sampleData = [];
@@ -41,7 +39,7 @@ const onExporting = (e) => {
         autoFilterEnabled: true,
     }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Conciertos.xlsx');
         });
     })
     e.cancel = true;
@@ -50,31 +48,23 @@ const onExporting = (e) => {
 const Conciertos = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
-
-    // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
-
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
 
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
+                    <div className="title" style={{ padding: '10px 15px', fontSize: '18px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                        {t('LISTA REGISTROS ICG CONCIERTOS')}
+                    </div>
 
-                    <div className="title"> {t('LISTA DE CONCIERTOS')}</div>
-
-                    <div className="table-container">
+                    <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={sampleData}
-                            keyExpr="concierto_id"
+                            keyExpr="Id_Icg"
                             showBorders={true}
-                            columnAutoWidth={true}
+                            columnAutoWidth={false}
                             allowColumnResizing={true}
                             onExporting={onExporting}
                             className="mz-table"
@@ -82,37 +72,73 @@ const Conciertos = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            noDataText={t('Sin datos para mostrar')}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
-                            <Paging defaultPageSize={25} />
-                            <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
-                            <SearchPanel visible width={240} placeholder={t('buscar')} />
+                            <Paging defaultPageSize={20} />
+                            <Pager
+                                visible={true}
+                                allowedPageSizes={[10, 20, 50, 100]}
+                                displayMode="full"
+                                showPageSizeSelector={true}
+                                showInfo={true}
+                                showNavigationButtons={true}
+                            />
+                            <SearchPanel visible={true} width={240} placeholder={t('buscar')} />
                             <FilterRow visible={true} applyFilter="auto" />
-                            <HeaderFilter visible searchMode='contains' />
-                            <Selection mode="multiple" allowSelectAll />
+                            <HeaderFilter visible={true} />
+                            <Selection mode="multiple" allowSelectAll={true} />
+                            <GroupPanel visible={true} placeholder={t('Arrastre una columna aquí para agrupar por dicha columna')} />
                             <Grouping autoExpandAll={false} />
-                            <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
+                            <ColumnChooser enabled={true} mode="select" />
+                            <Export enabled={true} allowExportSelectedData={true} />
                             <Sorting mode="multiple" />
-                            <FilterPanel visible />
-                            <ColumnFixing enabled />
+                            <ColumnFixing enabled={true} />
 
+                            <Column dataField="Id_Icg" caption="Id_Icg" width={90} />
+                            <Column dataField="Localizador" caption="Localizador" width={110} />
+                            <Column dataField="Concierto_id" caption="Concierto_id" width={110} />
+                            <Column dataField="CodCASA" caption="Cód. CASA" width={110} />
+                            <Column dataField="Mutua" caption="Mutua" width={140} />
+                            <Column dataField="Centro_id" caption="Centro_id" width={100} />
+                            <Column dataField="Centro" caption="Centro" width={180} />
+                            <Column dataField="Población" caption="Población" width={140} />
+                            <Column dataField="Provincia" caption="Provincia" width={140} />
+                            <Column dataField="AsistenciaSanitar" caption="Asistencia Sanitar." width={130} format="#,##0.00" />
+                            <Column dataField="IncapacidadTemp" caption="Incapacidad Temp." width={130} format="#,##0.00" />
+                            <Column dataField="Gastos" caption="Gastos" width={100} format="#,##0.00" />
+                            <Column dataField="Articulo25" caption="Articulo 25" width={100} format="#,##0.00" />
+                            <Column dataField="Total" caption="Total" width={110} format="#,##0.00" />
 
+                            <Column
+                                dataField="Confirmar"
+                                caption="Confirmar"
+                                width={90}
+                                alignment="center"
+                            >
+                                <Lookup
+                                    dataSource={[
+                                        { id: true, text: "Sí" },
+                                        { id: false, text: "No" }
+                                    ]}
+                                    valueExpr="id"
+                                    displayExpr="text"
+                                />
+                            </Column>
 
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
-
-                            <Column dataField="concierto_id" caption="Concierto_id" width={110} />
-                            <Column dataField="centro_id" caption="Centro_id" width={100} />
-                            <Column dataField="indigo_cod" caption="Cód. INDIGO" width={120} />
-                            <Column dataField="casa_cod" caption="Cód. CASA" width={110} />
-                            <Column dataField="centro" caption="Centro" width={180} />
-                            <Column dataField="cif_nif" caption="CIF/NIF" width={110} />
-                            <Column dataField="cp" caption="C.P." width={80} />
-                            <Column dataField="poblacion" caption="Población" width={140} />
-                            <Column dataField="provincia" caption="Provincia" width={130} />
-                            <Column dataField="mutua" caption="Mutua" width={120} />
-                            <Column dataField="mapa" caption="Mapa" width={80} />
-                            <Column dataField="acciones" caption="Acciones" width={100} />
+                            <Column
+                                dataField="Acciones"
+                                caption="Acciones"
+                                width={80}
+                                fixed={true}
+                                fixedPosition="right"
+                                alignment="center"
+                                cellRender={() => (
+                                    <div className="text-center" style={{ color: '#2f5da8', cursor: 'pointer' }}>
+                                        <i className="ri-edit-line"></i>
+                                    </div>
+                                )}
+                            />
                         </DataGrid>
                     </div>
                 </div>
