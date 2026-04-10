@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import FichaCliente from './FichaCliente'; // ajusta la ruta según donde esté el archivo
+//import FichaCliente from './FichaCliente'; // ajusta la ruta según donde esté el archivo
 
 import DataGrid, {
     Column,
