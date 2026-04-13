@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MZAsistencial.Server.Data;
-using MZAsistencial.Server.Models;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
 {
@@ -9,31 +7,19 @@ namespace MZAsistencial.Server.Controllers
     [Route("api/[controller]")]
     public class DescuadresController : ControllerBase
     {
-        private readonly MZAsistencialContext _context;
+        private readonly IDescuadresService _service;
 
-        public DescuadresController(MZAsistencialContext context)
+        public DescuadresController(IDescuadresService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/descuadres
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Descuadre>>> GetDescuadres()
+        public async Task<IActionResult> GetDescuadres()
         {
-            return await _context.Descuadres.ToListAsync();
-        }
-
-        // GET: api/descuadres/5
-        [HttpGet("{mutuaId}")]
-        public async Task<ActionResult<Descuadre>> GetDescuadre(int mutuaId)
-        {
-            var descuadre = await _context.Descuadres
-                .FirstOrDefaultAsync(d => d.MutuaId == mutuaId);
-
-            if (descuadre == null)
-                return NotFound();
-
-            return descuadre;
+            var descuadres = await _service.GetDescuadresAsync();
+            return Ok(descuadres);
         }
     }
 }
