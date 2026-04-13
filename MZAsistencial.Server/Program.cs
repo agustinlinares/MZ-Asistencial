@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
+using MZAsistencial.Server.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 
-// Conexión a la base de datos
-builder.Services.AddDbContext<MZAsistencialContext>(options =>
+// Conexion a la base de datos
+builder.Services.AddDbContext<MZAsistencial.Server.Models.MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
