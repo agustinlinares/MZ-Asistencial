@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -134,7 +134,7 @@ public partial class MZAsistencialContext : DbContext
 
     public virtual DbSet<FincasRegistrale> FincasRegistrales { get; set; }
 
-    public virtual DbSet<FincasRegistralesCostesPorAño> FincasRegistralesCostesPorAños { get; set; }
+    public virtual DbSet<FincasRegistralesCostesPorA�o> FincasRegistralesCostesPorA�os { get; set; }
 
     public virtual DbSet<HistoricoCatalogoCompletoServicio> HistoricoCatalogoCompletoServicios { get; set; }
 
@@ -250,9 +250,9 @@ public partial class MZAsistencialContext : DbContext
 
     public virtual DbSet<VwPropiosValidado> VwPropiosValidados { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {}  //
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=MZAsistencial;Trusted_Connection=True;TrustServerCertificate=True;");
+        //         => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=MZAsistencial;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -884,10 +884,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.AshnprimconsNoProgvideo).HasColumnName("ASHNprimconsNoProgvideo");
             entity.Property(e => e.AshnprimconsProgvideo).HasColumnName("ASHNprimconsProgvideo");
             entity.Property(e => e.Ashnsesrehab).HasColumnName("ASHNsesrehab");
-            entity.Property(e => e.Citnºconsesp).HasColumnName("CITnºconsesp");
-            entity.Property(e => e.Citnºintquir).HasColumnName("CITnºintquir");
-            entity.Property(e => e.Citnºotrpru).HasColumnName("CITnºotrpru");
-            entity.Property(e => e.Citnºsesrehab).HasColumnName("CITnºsesrehab");
+            entity.Property(e => e.Citn�consesp).HasColumnName("CITn�consesp");
+            entity.Property(e => e.Citn�intquir).HasColumnName("CITn�intquir");
+            entity.Property(e => e.Citn�otrpru).HasColumnName("CITn�otrpru");
+            entity.Property(e => e.Citn�sesrehab).HasColumnName("CITn�sesrehab");
             entity.Property(e => e.CosteIt)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("CosteIT");
@@ -942,10 +942,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.AshnprimconsNoProgvideo).HasColumnName("ASHNprimconsNoProgvideo");
             entity.Property(e => e.AshnprimconsProgvideo).HasColumnName("ASHNprimconsProgvideo");
             entity.Property(e => e.Ashnsesrehab).HasColumnName("ASHNsesrehab");
-            entity.Property(e => e.Citnºconsesp).HasColumnName("CITnºconsesp");
-            entity.Property(e => e.Citnºintquir).HasColumnName("CITnºintquir");
-            entity.Property(e => e.Citnºotrpru).HasColumnName("CITnºotrpru");
-            entity.Property(e => e.Citnºsesrehab).HasColumnName("CITnºsesrehab");
+            entity.Property(e => e.Citn�consesp).HasColumnName("CITn�consesp");
+            entity.Property(e => e.Citn�intquir).HasColumnName("CITn�intquir");
+            entity.Property(e => e.Citn�otrpru).HasColumnName("CITn�otrpru");
+            entity.Property(e => e.Citn�sesrehab).HasColumnName("CITn�sesrehab");
             entity.Property(e => e.CosteIt)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("CosteIT");
@@ -1000,10 +1000,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.AshnprimconsNoProgvideo).HasColumnName("ASHNprimconsNoProgvideo");
             entity.Property(e => e.AshnprimconsProgvideo).HasColumnName("ASHNprimconsProgvideo");
             entity.Property(e => e.Ashnsesrehab).HasColumnName("ASHNsesrehab");
-            entity.Property(e => e.Citnºconsesp).HasColumnName("CITnºconsesp");
-            entity.Property(e => e.Citnºintquir).HasColumnName("CITnºintquir");
-            entity.Property(e => e.Citnºotrpru).HasColumnName("CITnºotrpru");
-            entity.Property(e => e.Citnºsesrehab).HasColumnName("CITnºsesrehab");
+            entity.Property(e => e.Citn�consesp).HasColumnName("CITn�consesp");
+            entity.Property(e => e.Citn�intquir).HasColumnName("CITn�intquir");
+            entity.Property(e => e.Citn�otrpru).HasColumnName("CITn�otrpru");
+            entity.Property(e => e.Citn�sesrehab).HasColumnName("CITn�sesrehab");
             entity.Property(e => e.CosteIt)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("CosteIT");
@@ -1926,7 +1926,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<CentrosEspecialidade>(entity =>
         {
-            entity.HasKey(e => new { e.CentroId, e.MutuaId, e.Año, e.EspecialidadId, e.Servicio });
+            entity.HasKey(e => new { e.CentroId, e.MutuaId, e.A�o, e.EspecialidadId, e.Servicio });
 
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
@@ -2282,9 +2282,9 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<Ejercicio>(entity =>
         {
-            entity.HasKey(e => e.Año);
+            entity.HasKey(e => e.A�o);
 
-            entity.Property(e => e.Año).ValueGeneratedNever();
+            entity.Property(e => e.A�o).ValueGeneratedNever();
             entity.Property(e => e.FechaApertura).HasColumnType("datetime");
             entity.Property(e => e.FechaCierre).HasColumnType("datetime");
         });
@@ -2293,7 +2293,7 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.Property(e => e.FicheroId).HasColumnName("Fichero_Id");
             entity.Property(e => e.AreaId).HasColumnName("Area_id");
-            entity.Property(e => e.Descripción).HasMaxLength(1000);
+            entity.Property(e => e.Descripci�n).HasMaxLength(1000);
             entity.Property(e => e.Fecha).HasColumnType("datetime");
             entity.Property(e => e.FechaAlta).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
@@ -2372,19 +2372,19 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.Utilizacion).HasMaxLength(50);
         });
 
-        modelBuilder.Entity<FincasRegistralesCostesPorAño>(entity =>
+        modelBuilder.Entity<FincasRegistralesCostesPorA�o>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorAño");
+            entity.ToTable("FincasRegistrales_CostesPorA�o");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
             entity.Property(e => e.Localizador).HasMaxLength(50);
 
-            entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorAños)
+            entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorA�os)
                 .HasForeignKey(d => d.FincaId)
-                .HasConstraintName("FK_FincasRegistrales_CostesPorAño_FincasRegistrales");
+                .HasConstraintName("FK_FincasRegistrales_CostesPorA�o_FincasRegistrales");
         });
 
         modelBuilder.Entity<HistoricoCatalogoCompletoServicio>(entity =>
@@ -4053,10 +4053,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.Ashnsesrehab).HasColumnName("ASHNsesrehab");
             entity.Property(e => e.CitnintervencionesQuirurjicas).HasColumnName("CITNIntervencionesQuirurjicas");
             entity.Property(e => e.CitnotrasPruebasControl).HasColumnName("CITNOtrasPruebasControl");
-            entity.Property(e => e.Citnºconsesp).HasColumnName("CITnºconsesp");
-            entity.Property(e => e.Citnºintquir).HasColumnName("CITnºintquir");
-            entity.Property(e => e.Citnºotrpru).HasColumnName("CITnºotrpru");
-            entity.Property(e => e.Citnºsesrehab).HasColumnName("CITnºsesrehab");
+            entity.Property(e => e.Citn�consesp).HasColumnName("CITn�consesp");
+            entity.Property(e => e.Citn�intquir).HasColumnName("CITn�intquir");
+            entity.Property(e => e.Citn�otrpru).HasColumnName("CITn�otrpru");
+            entity.Property(e => e.Citn�sesrehab).HasColumnName("CITn�sesrehab");
             entity.Property(e => e.ConciertoId).HasColumnName("Concierto_id");
             entity.Property(e => e.CosteIt)
                 .HasColumnType("numeric(10, 2)")
@@ -4252,7 +4252,7 @@ public partial class MZAsistencialContext : DbContext
             entity.ToTable("MutuasPresupuesto");
 
             entity.Property(e => e.IdPresupuesto).HasColumnName("Id_Presupuesto");
-            entity.Property(e => e.Año)
+            entity.Property(e => e.A�o)
                 .HasMaxLength(4)
                 .IsUnicode(false)
                 .IsFixedLength();
@@ -4496,7 +4496,7 @@ public partial class MZAsistencialContext : DbContext
             entity.HasKey(e => e.TarifaId).HasName("PK_Tarifas_1");
 
             entity.Property(e => e.TarifaId).HasColumnName("Tarifa_id");
-            entity.Property(e => e.Año).HasMaxLength(4);
+            entity.Property(e => e.A�o).HasMaxLength(4);
             entity.Property(e => e.Tarifa1)
                 .HasMaxLength(250)
                 .HasColumnName("Tarifa");
@@ -4523,7 +4523,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<TiposAsistencium>(entity =>
         {
-            entity.HasKey(e => new { e.RegistroId, e.TipoAsistenciaId, e.Año }).HasName("PK_TiposConcierto");
+            entity.HasKey(e => new { e.RegistroId, e.TipoAsistenciaId, e.A�o }).HasName("PK_TiposConcierto");
 
             entity.Property(e => e.RegistroId)
                 .ValueGeneratedOnAdd()
@@ -4562,7 +4562,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.Apellidos).HasMaxLength(150);
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
-            entity.Property(e => e.Contraseña)
+            entity.Property(e => e.Contrase�a)
                 .HasMaxLength(10)
                 .IsFixedLength();
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);

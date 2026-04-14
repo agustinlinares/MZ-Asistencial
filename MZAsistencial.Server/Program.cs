@@ -11,8 +11,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
+builder.Services.AddScoped<IDescuadresService, DescuadresService>();
+builder.Services.AddScoped<CentrosPropiosService>();
 
-// Conexión a la base de datos
+// Conexiï¿½n a la base de datos
 builder.Services.AddDbContext<MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
