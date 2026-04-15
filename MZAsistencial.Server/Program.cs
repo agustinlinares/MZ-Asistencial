@@ -17,6 +17,11 @@ builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddDbContext<MZAsistencial.Server.Models.MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(options => 
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<MZAsistencial.Server.Services.ICentrosConcertadosService, MZAsistencial.Server.Services.CentrosConcertadosService>();
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
