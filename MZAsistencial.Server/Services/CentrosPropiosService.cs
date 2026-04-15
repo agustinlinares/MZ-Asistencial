@@ -1,4 +1,4 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +28,7 @@ namespace MZAsistencial.Server.Services
                     Telefono    = c.Telefono,
                     Latitud     = c.Latitud,
                     Longitud    = c.Longitud,
+                    CodigoMz    = c.CodigoMz,
                     Desactivado = c.Desactivado,
                 })
                 .ToListAsync();
@@ -51,8 +52,10 @@ namespace MZAsistencial.Server.Services
                 Telefono    = c.Telefono,
                 Latitud     = c.Latitud,
                 Longitud    = c.Longitud,
-                Desactivado = c.Desactivado,
+                CodigoMz    = c.CodigoMz,
+                    Desactivado = c.Desactivado,
             };
         }
     }
 }
+

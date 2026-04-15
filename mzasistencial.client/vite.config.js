@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from 'node:url';
+﻿import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
@@ -55,6 +55,11 @@ export default defineConfig({
     },
     server: {
         proxy: {
+            '/api': {
+                target: 'http://localhost:5118',
+                changeOrigin: true,
+                secure: false
+            }
         },
         port: parseInt(env.DEV_SERVER_PORT || '60007'),
         https: {
@@ -63,3 +68,4 @@ export default defineConfig({
         }
     }
 })
+
