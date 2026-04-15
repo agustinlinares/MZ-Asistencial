@@ -37,7 +37,8 @@ const Acuerdos = () => {
                         {/* FILTRO MUTUA */}
                         <div className="filtro-item">
                             <label>Mutua</label>
-                            <select>
+                            <select className="filtro-select">
+                                <option value="">-- Selecciona una mutua --</option>
                                 {mutuas.map(m => (
                                     <option key={m.mutuaId} value={m.mutuaId}>
                                         {m.numeroMutua} - {m.nombre}
@@ -48,7 +49,8 @@ const Acuerdos = () => {
                         {/* FILTRO AÑO */}
                         <div className="filtro-item">
                             <label>Año</label>
-                            <select>
+                            <select className="filtro-select">
+                                <option value="">-- Selecciona un año --</option>
                                 {años.map(año => (
                                     <option key={año} value={año}>
                                         {año}
