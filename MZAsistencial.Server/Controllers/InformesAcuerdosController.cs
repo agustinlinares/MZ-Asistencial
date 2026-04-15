@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Controllers
