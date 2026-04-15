@@ -94,7 +94,7 @@ const CentrosPropios = () => {
                             React.createElement(Column, { dataField: 'localizador', caption: 'Localizador', width: 110 }),
                             React.createElement(Column, { dataField: 'centroId', caption: 'No', width: 80 }),
                             React.createElement(Column, { dataField: 'mutuaId', caption: 'Mutua', width: 90 }),
-                            React.createElement(Column, { dataField: 'localizador', caption: 'Centro ID', width: 100 }),
+                            React.createElement(Column, { dataField: 'codigoMz', caption: 'Centro ID', width: 100 }),
                             React.createElement(Column, { dataField: 'centro', caption: 'Centro', width: 200 }),
                             React.createElement(Column, { dataField: 'cp', caption: 'C.P.', width: 80 }),
                             React.createElement(Column, { dataField: 'provincia', caption: 'Provincia', width: 130 }),
@@ -112,4 +112,5 @@ const CentrosPropios = () => {
 };
 
 export default CentrosPropios;
+
 

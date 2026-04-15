@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server.DTOs
+﻿namespace MZAsistencial.Server.DTOs
 {
     public class CentrosPropiosDTO
     {
@@ -11,6 +11,8 @@ namespace MZAsistencial.Server.DTOs
         public string? Telefono     { get; set; }
         public string? Latitud      { get; set; }
         public string? Longitud     { get; set; }
+        public string? CodigoMz     { get; set; }
         public bool    Desactivado  { get; set; }
     }
 }
+
