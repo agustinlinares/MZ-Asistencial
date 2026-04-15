@@ -76,7 +76,7 @@ const CentrosPropios = () => {
                             showBorders: true, columnAutoWidth: false, allowColumnResizing: true,
                             onExporting: onExporting, className: 'mz-table', rowAlternationEnabled: true,
                             showRowLines: true, showColumnLines: true, wordWrapEnabled: false,
-                            noDataText: t('Sin datos para mostrar'), onRowClick: (e) => setSelectedCliente(e.data)
+                            noDataText: t('Sin datos para mostrar'), onRowDblClick: (e) => setSelectedCliente(e.data)
                         },
                             React.createElement(Scrolling, { mode: 'standard', showScrollbar: 'always' }),
                             React.createElement(Paging, { defaultPageSize: 20 }),
@@ -112,5 +112,6 @@ const CentrosPropios = () => {
 };
 
 export default CentrosPropios;
+
 
 
