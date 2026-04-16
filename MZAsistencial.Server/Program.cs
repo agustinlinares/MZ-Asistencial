@@ -1,18 +1,42 @@
+using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Data;
+using MZAsistencial.Server.Services;
+using MZAsistencial.Server.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:60007", "http://localhost:60007")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Conexión a la base de datos
+builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Servicios
+builder.Services.AddScoped<IDescuadresService, DescuadresService>();
+builder.Services.AddScoped<IMutuasService, MutuasService>();
+builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
+builder.Services.AddScoped<FincaRegistralService>();
+builder.Services.AddScoped<CentroPropioIcgService>();
+
+
 var app = builder.Build();
 
+app.UseCors("AllowFrontend");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -20,11 +44,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.MapFallbackToFile("/index.html");
-
 app.Run();

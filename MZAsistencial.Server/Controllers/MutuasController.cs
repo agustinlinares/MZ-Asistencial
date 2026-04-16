@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
@@ -117,5 +118,6 @@ public class MutuasController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+
     }
 }
