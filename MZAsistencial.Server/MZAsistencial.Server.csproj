@@ -33,4 +33,12 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\andrea\mz-asistencial\MZAsistencial.Server\DTOs\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\andrea\mz-asistencial\MZAsistencial.Server\DTOs\.editorconfig" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
-USE MZAsistencialPrueba;
+
+USE MZAsistencial;
 GO
 
 EXEC sp_MSforeachtable "ALTER TABLE ? NOCHECK CONSTRAINT ALL";
