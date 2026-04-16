@@ -23,9 +23,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<MZAsistencial.Server.Models.MZAsistencialContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 // Servicios
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<MZAsistencial.Server.Services.ICentrosConcertadosService, MZAsistencial.Server.Services.CentrosConcertadosService>();

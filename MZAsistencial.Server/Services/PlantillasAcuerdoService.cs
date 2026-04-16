@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MZAsistencial.Server.Data; // Usamos el contexto de Data
+using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 
@@ -7,9 +7,9 @@ namespace MZAsistencial.Server.Services
 {
     public class PlantillasAcuerdoService : IPlantillasAcuerdoService
     {
-        private readonly MZAsistencial.Server.Data.MZAsistencialContext _context;
+        private readonly MZAsistencialContext _context;
 
-        public PlantillasAcuerdoService(MZAsistencial.Server.Data.MZAsistencialContext context)
+        public PlantillasAcuerdoService(MZAsistencialContext context)
         {
             _context = context;
         }

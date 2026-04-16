@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Models;
 using MZAsistencial.Server.DTOs;
 
