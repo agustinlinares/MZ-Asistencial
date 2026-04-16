@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MZAsistencial.Server.Data;
-using MZAsistencial.Server.Models;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
 {
@@ -10,37 +8,18 @@ namespace MZAsistencial.Server.Controllers
     [ApiController]
     public class PlantillasAcuerdoController : ControllerBase
     {
-        private readonly MZAsistencialContext _context;
+        private readonly IPlantillasAcuerdoService _service;
 
-        public PlantillasAcuerdoController(MZAsistencialContext context)
+        public PlantillasAcuerdoController(IPlantillasAcuerdoService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/PlantillasAcuerdo
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PlantillasAcuerdosDTO>>> GetPlantillasAcuerdos()
         {
-            var acuerdos = await _context.InformesAcuerdos
-                .GroupJoin(_context.Mutuas,
-                    ia => ia.MutuaId,
-                    m => m.MutuaId,
-                    (ia, mutuas) => new { ia, mutuas })
-                .SelectMany(
-                    x => x.mutuas.DefaultIfEmpty(),
-                    (x, m) => new PlantillasAcuerdosDTO
-                    {
-                        Informe = x.ia.Informe,
-                        EstadoInforme = x.ia.EstadoInformeId.ToString(),
-                        TipoAcuerdo = x.ia.TipoAcuerdo,
-                        Mutua = m != null ? m.Mutua1 : "Sin mutua",
-                        Año = x.ia.Año,
-                        Mes = x.ia.Mes,
-                        Usuario = x.ia.UsuarioModificacion.ToString(),
-                        FechaAlta = x.ia.FechaModificacion
-                    })
-                .ToListAsync();
-
+            var acuerdos = await _service.GetPlantillasAcuerdosAsync();
             return Ok(acuerdos);
         }
 
@@ -50,22 +29,12 @@ namespace MZAsistencial.Server.Controllers
         {
             if (dto == null) return BadRequest("Los datos no son válidos");
 
-            var nuevoAcuerdo = new InformesAcuerdo
-            {
-                Informe = dto.Informe ?? "Nuevo Acuerdo",
-                EstadoInformeId = int.TryParse(dto.EstadoInforme, out int idEstado) ? idEstado : 1,
-                TipoAcuerdo = dto.TipoAcuerdo ?? "Bilateral",
-                MutuaId = 1,
-                Año = dto.Año ?? DateTime.Now.Year,
-                Mes = dto.Mes ?? DateTime.Now.Month,
-                UsuarioModificacion = 123,
-                FechaModificacion = DateTime.Now
-            };
-
-            _context.InformesAcuerdos.Add(nuevoAcuerdo);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { mensaje = "Plantilla creada correctamente", acuerdo = nuevoAcuerdo });
+            var success = await _service.CreatePlantillaAcuerdoAsync(dto);
+            
+            if (success)
+                return Ok(new { mensaje = "Plantilla creada correctamente" });
+            
+            return BadRequest("Error al crear la plantilla");
         }
 
         // PUT: api/PlantillasAcuerdo/5
@@ -74,52 +43,24 @@ namespace MZAsistencial.Server.Controllers
         {
             if (dto == null) return BadRequest("Datos no válidos");
 
-            var acuerdo = await _context.InformesAcuerdos.FindAsync(id);
+            var success = await _service.UpdatePlantillaAcuerdoAsync(id, dto);
 
-            if (acuerdo == null)
-            {
-                return NotFound($"No se ha encontrado la plantilla con ID {id}");
-            }
-
-            acuerdo.Informe = dto.Informe ?? acuerdo.Informe;
+            if (success)
+                return Ok(new { mensaje = "Plantilla actualizada correctamente" });
             
-            if (int.TryParse(dto.EstadoInforme, out int nuevoEstadoId)) {
-                acuerdo.EstadoInformeId = nuevoEstadoId;
-            }
-
-            acuerdo.TipoAcuerdo = dto.TipoAcuerdo ?? acuerdo.TipoAcuerdo;
-            acuerdo.Año = dto.Año ?? acuerdo.Año;
-            acuerdo.Mes = dto.Mes ?? acuerdo.Mes;
-            
-            acuerdo.UsuarioModificacion = 123;
-            acuerdo.FechaModificacion = DateTime.Now;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                return Ok(new { mensaje = "Plantilla actualizada correctamente", acuerdo = acuerdo });
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return StatusCode(500, "Error de concurrencia al actualizar");
-            }
+            return NotFound($"No se ha encontrado la plantilla con ID {id}");
         }
 
         // DELETE: api/PlantillasAcuerdo/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePlantillaAcuerdo(int id)
         {
-            var acuerdo = await _context.InformesAcuerdos.FindAsync(id);
+            var success = await _service.DeletePlantillaAcuerdoAsync(id);
+
+            if (success)
+                return Ok(new { mensaje = "Plantilla eliminada correctamente" });
             
-            if (acuerdo == null)
-            {
-                return NotFound($"No se ha encontrado la plantilla con ID {id}");
-            }
-
-            _context.InformesAcuerdos.Remove(acuerdo);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { mensaje = "Plantilla eliminada correctamente" });
+            return NotFound($"No se ha encontrado la plantilla con ID {id}");
         }
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Models;
@@ -19,7 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Conexi�n a la base de datos
+// Conexión a la base de datos
 builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -30,6 +30,7 @@ builder.Services.AddDbContext<MZAsistencial.Server.Models.MZAsistencialContext>(
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<MZAsistencial.Server.Services.ICentrosConcertadosService, MZAsistencial.Server.Services.CentrosConcertadosService>();
 builder.Services.AddScoped<IMutuasService, MutuasService>();
+builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
 
 var app = builder.Build();
 
