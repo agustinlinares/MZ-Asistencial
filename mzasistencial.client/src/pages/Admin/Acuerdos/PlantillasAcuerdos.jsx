@@ -57,15 +57,15 @@ const PlantillasAcuerdos = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const [popupVisible, setPopupVisible] = useState(false);
+    const [acuerdos, setAcuerdos] = useState([]);
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
-
+    useEffect(() => {
+        fetch('http://localhost:5118/api/PlantillasAcuerdo')
+            .then(response => response.json())
+            .then(data => setAcuerdos(data))
+            .catch(error => console.error('Error al cargar acuerdos:', error));
+    }, []);
     return (
         
         <React.Fragment>
@@ -88,7 +88,7 @@ const PlantillasAcuerdos = () => {
                     <div className="table-container">
                         <DataGrid
                             ref={dataGridRef}
-                            dataSource={sampleData}
+                            dataSource={acuerdos}
                             keyExpr="id"
                             showBorders={true}
                             columnAutoWidth={true}
