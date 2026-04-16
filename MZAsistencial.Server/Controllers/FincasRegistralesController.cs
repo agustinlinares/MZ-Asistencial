@@ -8,18 +8,17 @@ namespace MZAsistencial.Server.Controllers
     [ApiController]
     public class FincasRegistralesController : ControllerBase
     {
-        private readonly FincaRegistralService _fincaService;
+        private readonly FincaRegistralService _service;
 
-        public FincasRegistralesController(FincaRegistralService fincaService)
+        public FincasRegistralesController(FincaRegistralService service)
         {
-            _fincaService = fincaService;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<FincaRegistralDTO>>> GetFincas()
+        public async Task<ActionResult<List<FincaRegistralDTO>>> Get()
         {
-            var fincas = await _fincaService.ObtenerTodasLasFincas();
-            return Ok(fincas);
+            return Ok(await _service.ObtenerTodasLasFincas());
         }
     }
 }
