@@ -55,6 +55,10 @@ export default defineConfig({
     },
     server: {
         proxy: {
+            '^/api': {
+                target: 'https://localhost:7132',
+                secure: false
+            }
         },
         port: parseInt(env.DEV_SERVER_PORT || '60007'),
         https: {
