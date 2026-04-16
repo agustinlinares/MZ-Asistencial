@@ -1,3 +1,11 @@
+
+-- Si la base de datos existe, la borramos para que el script la cree de cero
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'MZAsistencial')
+    DROP DATABASE [MZAsistencial];
+GO
+
+CREATE DATABASE [MZAsistencial];
+GO
 USE [MZAsistencial]
 GO
 /****** Object:  Table [dbo].[Conciertos]    Script Date: 09/04/2026 12:43:53 ******/
