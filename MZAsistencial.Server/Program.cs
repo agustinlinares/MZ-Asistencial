@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Models;
@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:60007")
+        policy.WithOrigins("https://localhost:60007", "http://localhost:60007")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

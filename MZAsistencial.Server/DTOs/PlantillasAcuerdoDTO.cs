@@ -4,6 +4,7 @@ namespace MZAsistencial.Server.DTOs
 {
     public class PlantillasAcuerdosDTO
     {
+        public int Id { get; set; }
         public string? Informe { get; set; }
         public string? EstadoInforme { get; set; }
         public string? TipoAcuerdo { get; set; }
