@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MZAsistencial.Server.Data;
+namespace MZAsistencial.Server.Models;
 
 public partial class MZAsistencialContext : DbContext
 {
@@ -1786,7 +1785,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<AuxTipoServicio>(entity =>
         {
-            entity.HasKey(e => e.TipoServicioId).HasName("PK__Aux_Tipo__7DDA2B8398720696");
+            entity.HasKey(e => e.TipoServicioId).HasName("PK__Aux_Tipo__7DDA2B838F35A2D8");
 
             entity.ToTable("Aux_TipoServicio");
 
@@ -2370,7 +2369,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<FincasRegistralesCostesPorAño>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
+            entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC273D0A0508");
 
             entity.ToTable("FincasRegistrales_CostesPorAño");
 
@@ -4302,7 +4301,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasDemandum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC274CC3B304");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC27CB865B71");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuas_Demanda");
 
@@ -4317,7 +4316,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasOfertum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC2756242C9C");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC27537038E6");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuas_Oferta");
 
@@ -4332,7 +4331,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasProvinciasDemandum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC274FBA91AE");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC27EEF28B69");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuasProvincias_Demanda");
 
@@ -4351,7 +4350,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasProvinciasOfertum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC278C50ED46");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC27FC9EB6C9");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuasProvincias_Oferta");
 
@@ -4370,7 +4369,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasTipoServicioDemandum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC2775B82324");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC279C073D7A");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Demanda");
 
@@ -4390,7 +4389,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<PsAcuerdosBiMultilateralesMutuasTipoServicioOfertum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC2720C768F2");
+            entity.HasKey(e => e.Id).HasName("PK__PS_Acuer__3214EC270E120BB5");
 
             entity.ToTable("PS_AcuerdosBI_MultilateralesMutuasTipoServicio_Oferta");
 
