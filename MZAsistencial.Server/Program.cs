@@ -25,10 +25,10 @@ builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(op
 
 // Servicios
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
-builder.Services.AddScoped<ICentrosConcertadosService, CentrosConcertadoService>();
 builder.Services.AddScoped<IMutuasService, MutuasService>();
 builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
 builder.Services.AddScoped<FincaRegistralService>();
+builder.Services.AddScoped<CentroPropioIcgService>();
 
 
 var app = builder.Build();
