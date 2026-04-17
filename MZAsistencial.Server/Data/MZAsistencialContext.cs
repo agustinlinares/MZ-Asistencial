@@ -4189,6 +4189,11 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioBajaId).HasColumnName("UsuarioBaja_id");
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.UsuarioModificacionId).HasColumnName("UsuarioModificacion_id");
+            entity.HasOne(m => m.PoblacionNavigation)
+                .WithMany()
+                .HasForeignKey(m => m.PoblacionId)
+                //.HasConstraintName("FK_Mutuas_Poblaciones")
+                ;
         });
 
         modelBuilder.Entity<MutuasBm>(entity =>
