@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import './FichaCliente.css';
+import MapaModal from './MapaModal';
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
 import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
 
 const MUTUOS = ["603 - ACTIVA MUTUA 2008","151 - FRATERNIDAD MUPRESPA","201 - FREMAP","272 - IBERMUTUA","061 - MAC MUTUA"];
-const PROVINCIAS = ["Álava","Albacete","Alicante","Almería","Ávila","Badajoz","Barcelona","Burgos","Cáceres","Cádiz","Castellón","Ciudad Real","Córdoba","Cuenca","Girona","Granada","Guadalajara","Guipúzcoa","Huelva","Huesca","Jaén","La Rioja","Las Palmas","León","Lérida","Lugo","Madrid","Málaga","Murcia","Navarra","Orense","Palencia","Pontevedra","Salamanca","Santa Cruz de Tenerife","Segovia","Sevilla","Soria","Tarragona","Teruel","Toledo","Valencia","Valladolid","Vizcaya","Zamora","Zaragoza"];
+const PROVINCIAS = ["Alava","Albacete","Alicante","Almeria","Avila","Badajoz","Barcelona","Burgos","Caceres","Cadiz","Castellon","Ciudad Real","Cordoba","Cuenca","Girona","Granada","Guadalajara","Guipuzcoa","Huelva","Huesca","Jaen","La Rioja","Las Palmas","Leon","Lerida","Lugo","Madrid","Malaga","Murcia","Navarra","Orense","Palencia","Pontevedra","Salamanca","Santa Cruz de Tenerife","Segovia","Sevilla","Soria","Tarragona","Teruel","Toledo","Valencia","Valladolid","Vizcaya","Zamora","Zaragoza"];
 const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
-const ESPECIALIDADES_LIST = ["Medicina General","Traumatología","Rehabilitación","Fisioterapia","Psicología","Enfermería","Radiología","Cirugía","Cardiología","Neurología","Dermatología","Oftalmología","Urgencias","Pediatría"];
+const ESPECIALIDADES_LIST = ["Medicina General","Traumatologia","Rehabilitacion","Fisioterapia","Psicologia","Enfermeria","Radiologia","Cirugia","Cardiologia","Neurologia","Dermatologia","Oftalmologia","Urgencias","Pediatria"];
 const ANOS = ["2020","2021","2022","2023","2024","2025"];
 
 const onExportingGrid = (e, filename) => {
@@ -26,6 +27,7 @@ const onExportingGrid = (e, filename) => {
 const FichaCliente = ({ cliente, onClose }) => {
     const [activeTab, setActiveTab] = useState("general");
     const [form, setForm] = useState({});
+    const [mapaAbierto, setMapaAbierto] = useState(false);
 
     useEffect(() => {
         setForm({
@@ -46,6 +48,8 @@ const FichaCliente = ({ cliente, onClose }) => {
             Telefono: cliente.telefono || cliente.Telefono || "",
             DireccionGoogle: cliente.DireccionGoogle || "",
             VerificarDireccionGoogle: cliente.VerificarDireccionGoogle || "",
+            Latitud: cliente.latitud || cliente.Latitud || "",
+            Longitud: cliente.longitud || cliente.Longitud || "",
             Email: cliente.Email || "",
             PersonaContacto: cliente.PersonaContacto || "",
             OtrosDatos: cliente.OtrosDatos || "",
@@ -77,11 +81,11 @@ const FichaCliente = ({ cliente, onClose }) => {
 
     const TABS = [
         { key: "general", label: "General" },
-        { key: "DatosUtilizacion", label: "Datos Utilización" },
+        { key: "DatosUtilizacion", label: "Datos Utilizacion" },
         { key: "RegistroICG", label: "Registro ICG" },
         { key: "FincasRegistrales", label: "Fincas Registrales" },
         { key: "Especialidades", label: "Especialidades/ Serv.Disponibles" },
-        { key: "Catalogo", label: "Catálogo completo de servicios" },
+        { key: "Catalogo", label: "Catalogo completo de servicios" },
     ];
 
     return (
@@ -90,8 +94,8 @@ const FichaCliente = ({ cliente, onClose }) => {
                 <div className="ficha-header">
                     <span className="ficha-header-title">Ficha Centros Propios</span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn ficha-btn--aceptar" onClick={() => { console.log(form); onClose(); }}>✔ Aceptar</button>
-                        <button className="ficha-btn ficha-btn--salir" onClick={onClose}>✖ Salir</button>
+                        <button className="ficha-btn ficha-btn--aceptar" onClick={() => { console.log(form); onClose(); }}>Aceptar</button>
+                        <button className="ficha-btn ficha-btn--salir" onClick={onClose}>Salir</button>
                     </div>
                 </div>
                 <div className="ficha-tabs">
@@ -109,23 +113,29 @@ const FichaCliente = ({ cliente, onClose }) => {
                             <div className="ficha-field ficha-field--wide"><label>Centro</label><input type="text" value={form.Centro} onChange={set("Centro")} /></div>
                             <div className="ficha-field"><label>Mutua</label><select value={form.Mutua} onChange={set("Mutua")}><option value=""></option>{MUTUOS.map(m => <option key={m}>{m}</option>)}</select></div>
                             <div className="ficha-field"><label>Provincia</label><select value={form.Provincia} onChange={set("Provincia")}><option value=""></option>{PROVINCIAS.map(p => <option key={p}>{p}</option>)}</select></div>
-                            <div className="ficha-field"><label>Población</label><select value={form.Poblacion} onChange={set("Poblacion")}><option value=""></option>{PROVINCIAS.map(p => <option key={p}>{p}</option>)}</select></div>
-                            <div className="ficha-field"><label>Código Postal</label><input type="text" value={form.Cp} onChange={set("Cp")} /></div>
-                            <div className="ficha-field"><label>Vía Pública</label><select value={form.ViaPublica} onChange={set("ViaPublica")}>{VIAS.map(v => <option key={v}>{v}</option>)}</select></div>
-                            <div className="ficha-field ficha-field--wide"><label>Dirección</label><input type="text" value={form.Direccion} onChange={set("Direccion")} /></div>
-                            <div className="ficha-field"><label>Número</label><input type="text" value={form.Numero} onChange={set("Numero")} /></div>
+                            <div className="ficha-field"><label>Poblacion</label><select value={form.Poblacion} onChange={set("Poblacion")}><option value=""></option>{PROVINCIAS.map(p => <option key={p}>{p}</option>)}</select></div>
+                            <div className="ficha-field"><label>Codigo Postal</label><input type="text" value={form.Cp} onChange={set("Cp")} /></div>
+                            <div className="ficha-field"><label>Via Publica</label><select value={form.ViaPublica} onChange={set("ViaPublica")}>{VIAS.map(v => <option key={v}>{v}</option>)}</select></div>
+                            <div className="ficha-field ficha-field--wide"><label>Direccion</label><input type="text" value={form.Direccion} onChange={set("Direccion")} /></div>
+                            <div className="ficha-field"><label>Numero</label><input type="text" value={form.Numero} onChange={set("Numero")} /></div>
                             <div className="ficha-field"><label>Piso</label><input type="text" value={form.Piso} onChange={set("Piso")} /></div>
                             <div className="ficha-field"><label>Puerta</label><input type="text" value={form.Puerta} onChange={set("Puerta")} /></div>
                             <div className="ficha-field"><label>Servicios Especiales</label><select value={form.ServiciosEspeciales} onChange={set("ServiciosEspeciales")}><option value=""></option>{SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}</select></div>
-                            <div className="ficha-field"><label>Teléfono</label><input type="text" value={form.Telefono} onChange={set("Telefono")} /></div>
-                            <div className="ficha-field ficha-field--wide"><label>Dirección Google</label><input type="text" value={form.DireccionGoogle} onChange={set("DireccionGoogle")} /></div>
-                            <div className="ficha-field"><label>Verificar dirección Google</label><input type="text" value={form.VerificarDireccionGoogle} onChange={set("VerificarDireccionGoogle")} /></div>
-                            <div className="ficha-field"><label>Dirección electrónica</label><input type="email" value={form.Email} onChange={set("Email")} /></div>
+                            <div className="ficha-field"><label>Telefono</label><input type="text" value={form.Telefono} onChange={set("Telefono")} /></div>
+                            <div className="ficha-field ficha-field--wide"><label>Direccion Google</label><input type="text" value={form.DireccionGoogle} onChange={set("DireccionGoogle")} /></div>
+                            <div className="ficha-field">
+                                <label>Verificar direccion Google</label>
+                                <div style={{display:'flex', alignItems:'center', gap:'6px'}}>
+                                    <input type="text" value={form.VerificarDireccionGoogle} onChange={set("VerificarDireccionGoogle")} />
+                                    <span style={{fontSize:'18px', cursor:'pointer'}} onClick={() => setMapaAbierto(true)}>🌐</span>
+                                </div>
+                            </div>
+                            <div className="ficha-field"><label>Direccion electronica</label><input type="email" value={form.Email} onChange={set("Email")} /></div>
                             <div className="ficha-field"><label>Persona de contacto</label><input type="text" value={form.PersonaContacto} onChange={set("PersonaContacto")} /></div>
                             <div className="ficha-field"><label>Otros Datos</label><input type="text" value={form.OtrosDatos} onChange={set("OtrosDatos")} /></div>
-                            <div className="ficha-field"><label>Autorización / Comunicación</label><input type="date" value={form.Autorizacion} onChange={set("Autorizacion")} /></div>
+                            <div className="ficha-field"><label>Autorizacion / Comunicacion</label><input type="date" value={form.Autorizacion} onChange={set("Autorizacion")} /></div>
                             <div className="ficha-field"><label>Puesta en funcionamiento</label><input type="date" value={form.PuestaFuncionamiento} onChange={set("PuestaFuncionamiento")} /></div>
-                            <div className="ficha-field"><label>Calificación de suficiencia</label><input type="date" value={form.Calificacion} onChange={set("Calificacion")} /></div>
+                            <div className="ficha-field"><label>Calificacion de suficiencia</label><input type="date" value={form.Calificacion} onChange={set("Calificacion")} /></div>
                             <div className="ficha-field"><label>Centro Inicial</label><input type="date" value={form.CentroInicial} onChange={set("CentroInicial")} /></div>
                         </div>
                     )}
@@ -145,11 +155,11 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <div className="ficha-checkbox-grid">
                                     <label><input type="checkbox" checked={form.ActividadHospitalaria} onChange={set("ActividadHospitalaria")} /> Asistencia sanitaria Hospitalaria</label>
                                     <label><input type="checkbox" checked={form.ActividadAmbulatoria} onChange={set("ActividadAmbulatoria")} /> Asistencia sanitaria ambulatoria</label>
-                                    <label><input type="checkbox" checked={form.ActividadRehabilitacion} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitación</label>
+                                    <label><input type="checkbox" checked={form.ActividadRehabilitacion} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitacion</label>
                                     <label><input type="checkbox" checked={form.ActividadControlIT} onChange={set("ActividadControlIT")} /> Control administrativo de IT</label>
-                                    <label><input type="checkbox" checked={form.ActividadPrevencion} onChange={set("ActividadPrevencion")} /> Prevención R.L seguridad social</label>
+                                    <label><input type="checkbox" checked={form.ActividadPrevencion} onChange={set("ActividadPrevencion")} /> Prevencion R.L seguridad social</label>
                                     <label><input type="checkbox" checked={form.ActividadOtras} onChange={set("ActividadOtras")} /> Otras Actividades</label>
-                                    <label><input type="checkbox" checked={form.ActividadAdmon} onChange={set("ActividadAdmon")} /> Administración general de la Mutua</label>
+                                    <label><input type="checkbox" checked={form.ActividadAdmon} onChange={set("ActividadAdmon")} /> Administracion general de la Mutua</label>
                                 </div>
                             </div>
                             <div className="ficha-bloque">
@@ -178,10 +188,10 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <HeaderFilter visible={true} />
                                 <Sorting mode="multiple" />
                                 <Export enabled={true} />
-                                <Column dataField="ano" caption="Año" width={80} />
+                                <Column dataField="ano" caption="Ano" width={80} />
                                 <Column dataField="mutua" caption="Mutua" width={220} />
                                 <Column dataField="centro" caption="Centro" width={220} />
-                                <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="fechaActualizacion" caption="Fecha de Actualizacion" width={180} dataType="date" format="dd/MM/yyyy" />
                                 <Column dataField="usuario" caption="Usuario" width={150} />
                             </DataGrid>
                         </div>
@@ -197,14 +207,14 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <HeaderFilter visible={true} />
                                 <Sorting mode="multiple" />
                                 <Export enabled={true} />
-                                <Column dataField="codigo" caption="Código" width={90} />
+                                <Column dataField="codigo" caption="Codigo" width={90} />
                                 <Column dataField="cFinca" caption="C. Finca" width={100} />
-                                <Column dataField="direccion" caption="Dirección" width={220} />
+                                <Column dataField="direccion" caption="Direccion" width={220} />
                                 <Column dataField="superficie" caption="Superficie" width={100} />
                                 <Column dataField="titularidad" caption="Titularidad" width={120} />
                                 <Column dataField="coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
                                 <Column dataField="fechaAlquiler" caption="Fecha Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="fechaInscripcion" caption="Fecha Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="fechaInscripcion" caption="Fecha Inscripcion" width={140} dataType="date" format="dd/MM/yyyy" />
                             </DataGrid>
                         </div>
                     )}
@@ -216,7 +226,7 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <div className="ficha-field"><label>Mutua</label><select value={form.Mutua} onChange={set("Mutua")}><option value=""></option>{MUTUOS.map(m => <option key={m}>{m}</option>)}</select></div>
                                 <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro} readOnly className="readonly" /></div>
                                 <div className="ficha-field"><label>Especialidad</label><select><option value=""></option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select></div>
-                                <div className="ficha-field"><label>Año</label><select><option value=""></option>{ANOS.map(a => <option key={a}>{a}</option>)}</select></div>
+                                <div className="ficha-field"><label>Ano</label><select><option value=""></option>{ANOS.map(a => <option key={a}>{a}</option>)}</select></div>
                             </div>
                             <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={350}>
                                 <Scrolling mode="standard" />
@@ -244,8 +254,8 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <Column dataField="total" caption="Total" width={70} dataType="number" />
                             </DataGrid>
                             <div className="ficha-acciones-bottom">
-                                <button className="ficha-btn ficha-btn--actualizar">✔ Actualizar</button>
-                                <button className="ficha-btn ficha-btn--cancelar">✖ Cancelar</button>
+                                <button className="ficha-btn ficha-btn--actualizar">Actualizar</button>
+                                <button className="ficha-btn ficha-btn--cancelar">Cancelar</button>
                             </div>
                         </div>
                     )}
@@ -257,7 +267,7 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <div className="ficha-field"><label>Mutua</label><select value={form.Mutua} onChange={set("Mutua")}><option value=""></option>{MUTUOS.map(m => <option key={m}>{m}</option>)}</select></div>
                                 <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro} readOnly className="readonly" /></div>
                                 <div className="ficha-field"><label>Especialidad</label><select><option value=""></option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select></div>
-                                <div className="ficha-field"><label>Año</label><select><option value=""></option>{ANOS.map(a => <option key={a}>{a}</option>)}</select></div>
+                                <div className="ficha-field"><label>Ano</label><select><option value=""></option>{ANOS.map(a => <option key={a}>{a}</option>)}</select></div>
                             </div>
                             <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={350}>
                                 <Scrolling mode="standard" />
@@ -268,16 +278,30 @@ const FichaCliente = ({ cliente, onClose }) => {
                                 <Sorting mode="multiple" />
                                 <Column dataField="especialidad" caption="Especialidad" width={220} />
                                 <Column dataField="servicio" caption="Servicio" width={250} />
-                                <Column dataField="catalogoCompletoServ" caption="Catálogo Completo de Servicios" width={250} />
+                                <Column dataField="catalogoCompletoServ" caption="Catalogo Completo de Servicios" width={250} />
                             </DataGrid>
                             <div className="ficha-acciones-bottom">
-                                <button className="ficha-btn ficha-btn--actualizar">✔ Actualizar</button>
-                                <button className="ficha-btn ficha-btn--cancelar">✖ Cancelar</button>
+                                <button className="ficha-btn ficha-btn--actualizar">Actualizar</button>
+                                <button className="ficha-btn ficha-btn--cancelar">Cancelar</button>
                             </div>
                         </div>
                     )}
 
                 </div>
+                {mapaAbierto && (
+                    <MapaModal
+                        latitud={form.Latitud}
+                        longitud={form.Longitud}
+                        direccion={form.DireccionGoogle}
+                        onAceptar={(coords) => setForm(f => ({
+                            ...f,
+                            Latitud: coords.latitud,
+                            Longitud: coords.longitud,
+                            DireccionGoogle: coords.direccion
+                        }))}
+                        onCerrar={() => setMapaAbierto(false)}
+                    />
+                )}
             </div>
         </div>
     );
