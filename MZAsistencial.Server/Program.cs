@@ -29,6 +29,7 @@ builder.Services.AddScoped<IMutuasService, MutuasService>();
 builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
 builder.Services.AddScoped<FincaRegistralService>();
 builder.Services.AddScoped<CentroPropioIcgService>();
+builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
 
 
 var app = builder.Build();

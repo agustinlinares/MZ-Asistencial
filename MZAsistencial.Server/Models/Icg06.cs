@@ -1191,9 +1191,9 @@ public partial class Icg06
 
     public decimal? PersSanitGradSupGastPers { get; set; }
 
-    public decimal? PersSanitGradSupHorasCp1 { get; set; }
+    public decimal? PersSanitGradSupHorasCp { get; set; }
 
-    public decimal? PersSanitGradSupHorasCc1 { get; set; }
+    public decimal? PersSanitGradSupHorasCc { get; set; }
 
     public decimal? PersSanitGradSupHorasIt { get; set; }
 
