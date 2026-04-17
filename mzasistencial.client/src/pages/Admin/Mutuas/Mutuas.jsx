@@ -49,6 +49,8 @@ const Mutuas = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
 
+    const [mutuas, setMutuas] = useState([]);
+
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
@@ -58,6 +60,17 @@ const Mutuas = () => {
     //         // navigate('/'); 
     //     }
     // }, [isAuthenticated, navigate]); 
+
+    //Conectamos Backend con Frontend
+    useEffect(() => {
+    fetch("/api/mutuas")
+        .then(response => response.json())
+        .then(data => {
+            console.log("Datos recibidos:", data);
+            setMutuas(data);
+        })
+        .catch(error => console.error("Error cargando mutuas:", error));
+    }, []);
 
     return (
         <React.Fragment>
@@ -95,8 +108,10 @@ const Mutuas = () => {
                     <div className="table-container">
                         <DataGrid
                             ref={dataGridRef}
+                            dataSource={mutuas}
                             //dataSource={sampleData}
-                            keyExpr="CodigoPersona"
+                            keyExpr="nº"
+                            //keyExpr="CodigoPersona"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -126,7 +141,8 @@ const Mutuas = () => {
                             {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
 
                             <Column
-                                dataField="id"
+                                //dataField="id"
+                                dataField="nº"
                                 caption="Nº"
                                 fixed={true}
                                 fixedPosition="left"
@@ -134,6 +150,7 @@ const Mutuas = () => {
                             />
 
                             <Column
+                                //dataField="mutua"
                                 dataField="mutua"
                                 caption="Mutua"
                                 fixed={true}

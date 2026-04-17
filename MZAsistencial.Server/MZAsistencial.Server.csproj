@@ -6,14 +6,25 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SpaRoot>..\mzasistencial.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+
     <SpaProxyServerUrl>https://localhost:51800</SpaProxyServerUrl>
     <UserSecretsId>5b850dfd-7e08-4dd1-9373-92d5484e148f</UserSecretsId>
+
+    <!--<SpaProxyServerUrl>https://localhost:60007</SpaProxyServerUrl>-->
+    <!--<UserSecretsId>7baef17b-7754-4b9e-8e3e-6e924a5e542d</UserSecretsId>-->
+
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="8.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
-      <Version>8.*-*</Version>
+      <Version>10.*-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
