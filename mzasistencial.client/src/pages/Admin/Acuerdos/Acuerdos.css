@@ -53,3 +53,73 @@
         width: 100%;
         text-align: center;
     }
+
+/* SECCIONES COLAPSABLES */
+.seccion-box {
+    width: 100%;
+    margin-top: 20px;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.seccion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f7f7f7;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2f5da8;
+    border-bottom: 1px solid #dcdcdc;
+}
+
+.seccion-content {
+    padding: 15px;
+}
+
+/* PESTAÑAS */
+.tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3f51b5;
+}
+
+.tab {
+    padding: 8px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+    .tab.activo {
+        background: #3f51b5;
+        color: white;
+        border-radius: 4px 4px 0 0;
+    }
+
+/* TABLA */
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+    .tabla-datos th {
+        background: #f0f0f0;
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 2px solid #dcdcdc;
+    }
+
+    .tabla-datos td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .tabla-datos tr:hover {
+        background: #f9f9f9;
+    }
