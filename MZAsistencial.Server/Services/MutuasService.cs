@@ -18,9 +18,12 @@ namespace MZAsistencial.Server.Services
             return await _context.Mutuas
                 .Select(m => new MutuaDTO
                 {
-                    MutuaId = m.MutuaId,
-                    NumeroMutua = m.NumeroMutua,
-                    Nombre = m.Mutua1
+                    Nº = m.MutuaId,
+                    Mutua = m.Mutua1,
+                    Direccion = m.Direccion,
+                    CP = m.Cp,
+                    Poblacion = m.PoblacionNavigation != null ? m.PoblacionNavigation.Poblacion : "",
+                    Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null ? m.PoblacionNavigation.Provincia.Provincia : ""
                 })
                 .ToListAsync();
         }

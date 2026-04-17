@@ -11,9 +11,9 @@ namespace MZAsistencial.Server.Controllers;
 [Route("api/[controller]")]
 public class MutuasController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly MZAsistencialContext _context;
 
-    public MutuasController(AppDbContext context)
+    public MutuasController(MZAsistencialContext context)
     {
         _context = context;
     }
