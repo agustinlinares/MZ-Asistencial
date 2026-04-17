@@ -11,13 +11,29 @@ const MapaModal = ({ latitud, longitud, direccion, onAceptar, onCerrar }) => {
             : "https://maps.google.com/maps?q=Espana&z=6&output=embed"
     );
 
-    const handleBuscar = () => {
-        if (lat && lng) {
-            setMapUrl("https://maps.google.com/maps?q=" + lat + "," + lng + "&z=15&output=embed");
-        } else if (dir) {
-            setMapUrl("https://maps.google.com/maps?q=" + encodeURIComponent(dir) + "&z=15&output=embed");
+const handleBuscar = async () => {
+    if (dir) {
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir)}&limit=1`,
+                { headers: { 'Accept-Language': 'es' } }
+            );
+            const data = await res.json();
+            if (data && data.length > 0) {
+                const { lat: newLat, lon: newLng } = data[0];
+                setLat(newLat);
+                setLng(newLng);
+                setMapUrl(`https://maps.google.com/maps?q=${newLat},${newLng}&z=15&output=embed`);
+            } else {
+                setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
+            }
+        } catch {
+            setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
         }
-    };
+    } else if (lat && lng) {
+        setMapUrl(`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`);
+    }
+};
 
     const handleAceptar = () => {
         onAceptar({ latitud: lat, longitud: lng, direccion: dir });
