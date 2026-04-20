@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
+builder.Services.AddScoped<RegistroICGService>();
 
 // Conexi�n a la base de datos
 builder.Services.AddDbContext<MZAsistencialContext>(options =>
