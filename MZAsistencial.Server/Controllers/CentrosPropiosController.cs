@@ -1,4 +1,4 @@
-using MZAsistencial.Server.DTOs;
+﻿using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,9 +26,16 @@ namespace MZAsistencial.Server.Controllers
         public async Task<ActionResult<CentrosPropiosDTO>> GetById(int id)
         {
             var result = await _service.GetByIdAsync(id);
-            if (result is null)
-                return NotFound();
+            if (result is null) return NotFound();
             return Ok(result);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] CentrosPropiosDTO dto)
+        {
+            var result = await _service.UpdateAsync(id, dto);
+            if (!result) return NotFound();
+            return Ok();
         }
     }
 }

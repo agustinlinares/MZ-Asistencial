@@ -29,6 +29,10 @@ namespace MZAsistencial.Server.Services
                     Latitud     = c.Latitud,
                     Longitud    = c.Longitud,
                     CodigoMz    = c.CodigoMz,
+                    Direccion   = c.Direccion,
+                    DireccionGoogle = c.DireccionGis,
+                    Email       = c.DireccionElectronica,
+                    PersonaContacto = c.PersonaContacto,
                     Desactivado = c.Desactivado,
                 })
                 .ToListAsync();
@@ -53,9 +57,34 @@ namespace MZAsistencial.Server.Services
                 Latitud     = c.Latitud,
                 Longitud    = c.Longitud,
                 CodigoMz    = c.CodigoMz,
-                    Desactivado = c.Desactivado,
+                Direccion   = c.Direccion,
+                DireccionGoogle = c.DireccionGis,
+                Email       = c.DireccionElectronica,
+                PersonaContacto = c.PersonaContacto,
+                Desactivado = c.Desactivado,
             };
+        }
+
+        public async Task<bool> UpdateAsync(int centroId, CentrosPropiosDTO dto)
+        {
+            var centro = await _context.CentrosPropios
+                .FirstOrDefaultAsync(x => x.CentroId == centroId);
+
+            if (centro is null) return false;
+
+            centro.Centro               = dto.Centro;
+            centro.Cp                   = dto.Cp;
+            centro.Telefono             = dto.Telefono;
+            centro.Latitud              = dto.Latitud;
+            centro.Longitud             = dto.Longitud;
+            centro.Direccion            = dto.Direccion;
+            centro.DireccionGis         = dto.DireccionGoogle;
+            centro.DireccionElectronica = dto.Email;
+            centro.PersonaContacto      = dto.PersonaContacto;
+            centro.Desactivado          = dto.Desactivado;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
-

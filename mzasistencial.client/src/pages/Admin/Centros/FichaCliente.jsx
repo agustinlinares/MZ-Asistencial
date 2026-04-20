@@ -87,14 +87,32 @@ const FichaCliente = ({ cliente, onClose }) => {
         { key: "Especialidades", label: "Especialidades/ Serv.Disponibles" },
         { key: "Catalogo", label: "Catalogo completo de servicios" },
     ];
-
+const handleAceptar = async () => {
+    try {
+        const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                localizador: form.Localizador, centroId: form.CentroId,
+                mutuaId: form.MutuaId || 0, centro: form.Centro,
+                cp: form.Cp, poblacionId: form.PoblacionId || 0,
+                telefono: form.Telefono, latitud: form.Latitud,
+                longitud: form.Longitud, direccion: form.Direccion,
+                direccionGoogle: form.DireccionGoogle, email: form.Email,
+                personaContacto: form.PersonaContacto, desactivado: form.CentroDesactivado,
+            })
+        });
+        if (res.ok) { alert('Centro guardado correctamente'); onClose(); }
+        else { alert('Error al guardar el centro'); }
+    } catch (err) { alert('Error de conexion: ' + err.message); }
+};
     return (
         <div className="ficha-overlay">
             <div className="ficha-container">
                 <div className="ficha-header">
                     <span className="ficha-header-title">Ficha Centros Propios</span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn ficha-btn--aceptar" onClick={() => { console.log(form); onClose(); }}>Aceptar</button>
+                        <button className="ficha-btn ficha-btn--aceptar" onClick={handleAceptar}>Aceptar</button>
                         <button className="ficha-btn ficha-btn--salir" onClick={onClose}>Salir</button>
                     </div>
                 </div>
