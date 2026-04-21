@@ -30,6 +30,7 @@ builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>(
 builder.Services.AddScoped<FincaRegistralService>();
 builder.Services.AddScoped<CentroPropioIcgService>();
 builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
+builder.Services.AddScoped<CentrosConcertadosService>();
 
 
 var app = builder.Build();

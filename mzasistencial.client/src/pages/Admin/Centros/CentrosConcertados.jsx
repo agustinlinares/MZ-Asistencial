@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
-import FichaCliente from "./FichaCliente";
+import FichaCliente from "./FichaCentroConcertado";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
@@ -67,7 +67,7 @@ const CentrosConcertados = () => {
                 const token = AuthService.getToken(); 
                 
                 // Petición a tu Controller 
-                const respuesta = await fetch('/api/CentrosConcertados/cabeceras', {
+                const respuesta = await fetch('/api/CentrosConcertados', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -91,10 +91,17 @@ const CentrosConcertados = () => {
 
     // Doble clic para navegar a la ficha de detalle
     const onRowDblClick = (e) => {
-        // Guardamos todos los datos de la fila en la variable
-        setCentroSeleccionado(e.data);
-        // Abrimos la ventana
-        setIsFichaAbierta(true); 
+        const datosAdaptados = {
+            CentroID: e.data.centro_id,  
+            Localizador: e.data.ccn,     
+            Centro: e.data.centro,
+            Direccion: e.data.direccion,
+            Poblacion: e.data.poblacion,
+            Provincia: e.data.provincia,
+        };
+
+        setCentroSeleccionado(datosAdaptados);
+        setIsFichaAbierta(true);
     };
 
     return (
@@ -113,7 +120,7 @@ const CentrosConcertados = () => {
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={centros}
-                            keyExpr="centroId"
+                            keyExpr="centro_id" 
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -139,29 +146,24 @@ const CentrosConcertados = () => {
                             <FilterPanel visible />
                             <ColumnFixing enabled />
 
+                            {/* ── COLUMNAS ── */}
 
-
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
-
-                            <Column dataField="codigoMZ" caption="CCN" width={100} />
-                            <Column dataField="cifnif" caption="CIF" width={110} />
-                            <Column dataField="centroId" caption="Centro_id" width={100} />
+                            <Column dataField="ccn" caption="CCN" width={100} />
+                            <Column dataField="cif" caption="CIF" width={110} />
+                            <Column dataField="centro_id" caption="Centro ID" width={100} />
                             <Column dataField="centro" caption="Centro" width={180} />
                             <Column dataField="direccion" caption="Dirección" width={200} />
                             <Column dataField="cp" caption="C.P." width={80} />
                             
-                            {/* De momento el ID de la población hasta que hacer el Join */}
-                            <Column dataField="poblacionId" caption="Población ID" width={150} /> 
+                            <Column dataField="poblacion" caption="Población" width={150} /> 
                             <Column dataField="provincia" caption="Provincia" width={130} />
-                            <Column dataField="fechaAlta" caption="Fecha Alta" dataType="date" width={110} />
                             
-                            {/* Usamos el booleano del mapa para esta columna */}
-                            <Column dataField="mapaValidado" caption="Mapa" dataType="boolean" width={80} />
+                            <Column dataField="fechaAlta" caption="Fecha Alta" dataType="date" width={110} />
+                            <Column dataField="mapa" caption="Mapa" width={80} />
                             <Column dataField="acciones" caption="Acciones" width={100} />
                         </DataGrid>
                     </div>
                 </div>
-                {/* Si isFichaAbierta es true, pintamos el componente y le pasamos los props */}
                 {isFichaAbierta && (
                     <FichaCliente 
                         cliente={centroSeleccionado} 
