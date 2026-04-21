@@ -131,6 +131,7 @@ const Descuadres = () => {
                             <Column dataField="gastosFinancieros" caption="Gastos Financieros" width={130} />
                             <Column dataField="amortizacion" caption="Amortización" width={130} />
                             <Column dataField="totalCostePropios" caption="TOTAL COSTE PROPIOS" width={150} />
+                            <Column dataField="costeConciertos" caption="Coste conciertos" width={130} />
                             <Column dataField="aplicacion2581" caption="Aplicacion 258.1" width={130} />
                             <Column dataField="aplicacion2582" caption="Aplicacion 258.2" width={130} />
                             <Column dataField="restoArt25" caption="Resto art. 25" width={130} />
@@ -139,6 +140,7 @@ const Descuadres = () => {
                             <Column dataField="reposicion" caption="Reposición" width={130} />
                             <Column dataField="ingresosServicios" caption="Ingresos proced. prest. Servicios" width={220} />
                             <Column dataField="totalOtrosConceptos" caption="TOTAL OTROS CONCEPTOS" width={180} />
+                            <Column dataField="totalGeneral" caption="TOTAL GENERAL" width={150} />
                             <Column dataField="propiosConf" caption="Propios conf." width={130} />
                             <Column dataField="propiosNoConf" caption="Propios no conf." width={130} />
                             <Column dataField="concertConf" caption="Concert. conf." width={130} />
