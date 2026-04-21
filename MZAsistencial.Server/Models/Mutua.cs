@@ -44,7 +44,4 @@ public partial class Mutua
     public decimal? RatioConsultas { get; set; }
 
     public int? UsuarioId { get; set; }
-
-    // Añadimos navegacion
-    public virtual AuxPoblacione? PoblacionNavigation { get; set; }
 }

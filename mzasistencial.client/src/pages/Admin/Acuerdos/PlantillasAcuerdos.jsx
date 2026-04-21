@@ -59,9 +59,13 @@ const PlantillasAcuerdos = () => {
     const dataGridRef = useRef(null);
     const [popupVisible, setPopupVisible] = useState(false);
     const [acuerdos, setAcuerdos] = useState([]);
+    const [mutuasList, setMutuasList] = useState([]);
+    const currentYear = new Date().getFullYear();
+    const añosList = Array.from({ length: currentYear - 2008 + 1 }, (_, i) => 2008 + i).reverse();
+
     const [formData, setFormData] = useState({
         mutua: "",
-        año: 2024,
+        año: currentYear,
         informe: "",
         estadoInforme: "1",
         tipoAcuerdo: "Bilateral",
@@ -76,8 +80,16 @@ const PlantillasAcuerdos = () => {
             .catch(error => console.error('Error al cargar acuerdos:', error));
     };
 
+    const fetchMutuas = () => {
+        fetch('/api/mutuas')
+            .then(response => response.json())
+            .then(data => setMutuasList(data.map(m => m.mutua)))
+            .catch(error => console.error('Error al cargar mutuas:', error));
+    };
+
     useEffect(() => {
         fetchAcuerdos();
+        fetchMutuas();
     }, []);
 
     const onRowUpdating = (e) => {
@@ -189,85 +201,102 @@ const PlantillasAcuerdos = () => {
                 onHiding={() => setPopupVisible(false)}
                 dragEnabled={true}
                 closeOnOutsideClick={true}
-                showCloseButton={true}
+                showCloseButton={false}
                 title="FICHA DOC. ADJUNTO"
                 width={700}
                 height="auto"
+                className="popup-ficha-doc"
             >
-                <div className="popup-container">
-                    {/* BOTONES */}
-                    <div className="popup-actions">
-                        <Button
-                            text="Aceptar"
-                            type="success"
-                            icon="check"
-                            onClick={handleSave}
-                        />
-                        <Button
-                            text="Salir"
-                            type="danger"
-                            icon="close"
-                            onClick={() => setPopupVisible(false)}
-                        />
-                    </div>
+                <Toolbar itemVisible={true}>
+                    <Item
+                        widget="dxButton"
+                        toolbar="top"
+                        location="after"
+                        options={{
+                            text: "Aceptar",
+                            type: "default",
+                            icon: "check",
+                            onClick: handleSave,
+                            elementAttr: { class: "btn-aceptar-popup" }
+                        }}
+                    />
+                    <Item
+                        widget="dxButton"
+                        toolbar="top"
+                        location="after"
+                        options={{
+                            text: "Salir",
+                            type: "normal",
+                            icon: "close",
+                            onClick: () => setPopupVisible(false),
+                            elementAttr: { class: "btn-salir-popup" }
+                        }}
+                    />
+                </Toolbar>
 
-                    {/* FILA 1 */}
+                <div className="popup-container">
+                    {/* FILA 1: Mutua y Año */}
                     <div className="popup-row">
                         <div className="popup-field">
                             <label>Mutua</label>
                             <SelectBox 
-                                items={["MUTUALIA", "PREVENSALUD", "SALUMUT"]} 
+                                items={mutuasList} 
                                 value={formData.mutua}
                                 onValueChanged={(e) => setFormData({...formData, mutua: e.value})}
+                                placeholder=""
                             />
                         </div>
 
                         <div className="popup-field">
                             <label>Año</label>
                             <SelectBox 
-                                items={[2024, 2025, 2026]} 
+                                items={añosList} 
                                 value={formData.año}
                                 onValueChanged={(e) => setFormData({...formData, año: e.value})}
+                                placeholder=""
                             />
                         </div>
                     </div>
 
-                    {/* FILA 2 */}
+                    {/* FILA 2: Acuerdo */}
                     <div className="popup-row">
                         <div className="popup-field full">
-                            <label>Nombre del Informe / Acuerdo</label>
-                            <TextBox 
+                            <label>Acuerdo</label>
+                            <SelectBox 
+                                items={["Acuerdo 1", "Acuerdo 2", "Acuerdo 3"]}
                                 value={formData.informe}
                                 onValueChanged={(e) => setFormData({...formData, informe: e.value})}
+                                placeholder=""
                             />
                         </div>
                     </div>
 
-                    {/* FILE */}
-                    <div className="popup-row">
+                    {/* FILA 3: Fichero */}
+                    <div className="popup-row mt-3">
                         <div className="popup-field full">
                             <label>Fichero</label>
-                            <FileUploader
-                                selectButtonText="Examinar..."
-                                labelText="Seleccionar un archivo..."
-                                uploadMode="useForm"
-                            />
+                            <div className="file-uploader-custom">
+                                <FileUploader
+                                    selectButtonText="Examinar..."
+                                    labelText="Seleccionar un archivo..."
+                                    uploadMode="useForm"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    {/* INFO */}
-                    <div className="popup-row">
+                    {/* FILA 4: Info Usuario y Fecha */}
+                    <div className="popup-row mt-2">
                         <div className="popup-field">
                             <label>Usuario</label>
-                            <TextBox value="ecua1" readOnly />
+                            <TextBox value="TestDev" readOnly stylingMode="filled" />
                         </div>
 
                         <div className="popup-field">
                             <label>Fecha de Subida</label>
-                            <TextBox value={new Date().toLocaleString()} readOnly />
+                            <TextBox value={new Date().toLocaleString()} readOnly stylingMode="filled" />
                         </div>
                     </div>
-
                 </div>
             </Popup>
 

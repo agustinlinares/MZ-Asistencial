@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
@@ -19,27 +18,25 @@ public class MutuasController : ControllerBase
     }
 
     // GET: api/mutuas
-    // Devuelve la lista con solo los 6 campos del DTO
+    // Devuelve la lista de mutuas con los campos del DTO
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MutuaDTO>>> GetMutuas()
     {
         var mutuas = await _context.Mutuas
-            .Include(m => m.PoblacionNavigation)
-                .ThenInclude(p => p.Provincia)
             .Select(m => new MutuaDTO
             {
+<<<<<<< HEAD
                 Nº    = m.MutuaId,
                 //Numero    = m.NumeroMutua ?? "",
                 Mutua     = m.Mutua1 ?? "", //Nombre
+=======
+                Nº = m.MutuaId,
+                Mutua = m.Mutua1 ?? "",
+>>>>>>> 0050b40e386026e1ebe9aa21b097c37241f1b699
                 Direccion = m.Direccion ?? "",
-                CP        = m.Cp ?? "",
-                Poblacion = m.PoblacionNavigation != null
-                            ? m.PoblacionNavigation.Poblacion ?? ""
-                            : "",
-                Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null
-                            //? m.PoblacionNavigation.Provincia.Provincia1 ?? ""
-                            ? m.PoblacionNavigation.Provincia.Provincia ?? ""
-                            : ""
+                CP = m.Cp ?? "",
+                Poblacion = "",
+                Provincia = ""
             })
             .ToListAsync();
 
@@ -47,13 +44,11 @@ public class MutuasController : ControllerBase
     }
 
     // GET: api/mutuas/5
-    // Devuelve una sola mutua también con el DTO
+    // Devuelve una sola mutua por id
     [HttpGet("{id}")]
     public async Task<ActionResult<MutuaDTO>> GetMutua(int id)
     {
         var mutua = await _context.Mutuas
-            .Include(m => m.PoblacionNavigation)
-                .ThenInclude(p => p.Provincia)
             .Where(m => m.MutuaId == id)
             .Select(m => new MutuaDTO
             {
@@ -85,19 +80,17 @@ public class MutuasController : ControllerBase
     }
 
     // POST: api/mutuas
-    // Aquí recibe el modelo completo porque necesita todos los datos para guardar
+    // Crea una nueva mutua recibiendo el modelo completo
     [HttpPost]
     public async Task<ActionResult<MutuaDTO>> CreateMutua(Mutua mutua)
     {
         _context.Mutuas.Add(mutua);
         await _context.SaveChangesAsync();
-
-        // Devuelve el DTO del registro recién creado
         return CreatedAtAction(nameof(GetMutua), new { id = mutua.MutuaId }, mutua);
     }
 
     // PUT: api/mutuas/5
-    // Recibe el modelo completo para actualizar
+    // Actualiza una mutua existente
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMutua(int id, Mutua mutua)
     {
@@ -106,24 +99,20 @@ public class MutuasController : ControllerBase
 
         _context.Entry(mutua).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-
         return NoContent();
     }
 
     // DELETE: api/mutuas/5
-    // Solo necesita el id, sin DTO
+    // Elimina una mutua por id
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMutua(int id)
     {
         var mutua = await _context.Mutuas.FindAsync(id);
-
         if (mutua == null)
             return NotFound();
 
         _context.Mutuas.Remove(mutua);
         await _context.SaveChangesAsync();
-
         return NoContent();
-
     }
 }

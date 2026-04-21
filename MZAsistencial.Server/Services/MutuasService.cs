@@ -19,11 +19,11 @@ namespace MZAsistencial.Server.Services
                 .Select(m => new MutuaDTO
                 {
                     Nº = m.MutuaId,
-                    Mutua = m.Mutua1,
-                    Direccion = m.Direccion,
-                    CP = m.Cp,
-                    Poblacion = m.PoblacionNavigation != null ? m.PoblacionNavigation.Poblacion : "",
-                    Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null ? m.PoblacionNavigation.Provincia.Provincia : ""
+                    Mutua = m.Mutua1 ?? "",
+                    Direccion = m.Direccion ?? "",
+                    CP = m.Cp ?? "",
+                    Poblacion = "",
+                    Provincia = ""
                 })
                 .ToListAsync();
         }

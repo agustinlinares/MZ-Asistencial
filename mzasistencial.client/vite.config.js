@@ -55,21 +55,11 @@ export default defineConfig({
     },
     server: {
         proxy: {
-
-            /*
             '^/api': {
-                target: 'https://localhost:7132', //Ayoub, esto ya lo tenemos definido arriba. Lo vemos.
-                secure: false
+                target: 'https://127.0.0.1:7132', 
+                secure: false,                   
+                changeOrigin: true
             }
-            */
-
-            '/api': { 
-                    target: target,
-                    changeOrigin: true,
-                    secure: false,
-                    rewrite: (path) => path       
-            } 
-
         },
         port: parseInt(env.DEV_SERVER_PORT || '60007'),
         https: {
