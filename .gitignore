@@ -98,6 +98,12 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+
+#Ignorar el vite config
+*.vite.config.js
+
+
+
 # Chutzpah Test files
 _Chutzpah*
 

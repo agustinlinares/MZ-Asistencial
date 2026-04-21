@@ -23,7 +23,8 @@ import DataGrid, {
     Pager,
     Toolbar,
     Item,
-    Lookup
+    Lookup,
+    Editing
 } from "devextreme-react/data-grid";
 
 // POP UP PLANTILLA
@@ -57,17 +58,61 @@ const PlantillasAcuerdos = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const [popupVisible, setPopupVisible] = useState(false);
+    const [acuerdos, setAcuerdos] = useState([]);
+    const [formData, setFormData] = useState({
+        mutua: "",
+        año: 2024,
+        informe: "",
+        estadoInforme: "1",
+        tipoAcuerdo: "Bilateral",
+        mes: new Date().getMonth() + 1
+    });
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    const fetchAcuerdos = () => {
+        fetch('/api/PlantillasAcuerdo')
+            .then(response => response.json())
+            .then(data => setAcuerdos(data))
+            .catch(error => console.error('Error al cargar acuerdos:', error));
+    };
 
+    useEffect(() => {
+        fetchAcuerdos();
+    }, []);
+
+    const onRowUpdating = (e) => {
+        const updatedData = { ...e.oldData, ...e.newData };
+        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        })
+        .catch(error => console.error('Error al actualizar:', error));
+    };
+
+    const onRowRemoving = (e) => {
+        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
+            method: 'DELETE'
+        })
+        .catch(error => console.error('Error al eliminar:', error));
+    };
+
+    const handleSave = () => {
+        fetch('/api/PlantillasAcuerdo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (response.ok) {
+                setPopupVisible(false);
+                fetchAcuerdos();
+            }
+        })
+        .catch(error => console.error('Error al guardar:', error));
+    };
     return (
-        
+
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
@@ -75,8 +120,8 @@ const PlantillasAcuerdos = () => {
                     <div className="title"> {t('PLANTILLAS DE ACUERDOS')}</div>
 
                     <div className="BotonesCombo">
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className="boton-action"
                             onClick={() => setPopupVisible(true)}
                         >
@@ -88,7 +133,7 @@ const PlantillasAcuerdos = () => {
                     <div className="table-container">
                         <DataGrid
                             ref={dataGridRef}
-                            dataSource={sampleData}
+                            dataSource={acuerdos}
                             keyExpr="id"
                             showBorders={true}
                             columnAutoWidth={true}
@@ -99,7 +144,15 @@ const PlantillasAcuerdos = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            onRowUpdating={onRowUpdating}
+                            onRowRemoving={onRowRemoving}
                         >
+                            <Editing
+                                mode="row"
+                                allowUpdating={true}
+                                allowDeleting={true}
+                                useIcons={true}
+                            />
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
@@ -148,7 +201,7 @@ const PlantillasAcuerdos = () => {
                             text="Aceptar"
                             type="success"
                             icon="check"
-                            onClick={() => setPopupVisible(false)}
+                            onClick={handleSave}
                         />
                         <Button
                             text="Salir"
@@ -162,20 +215,31 @@ const PlantillasAcuerdos = () => {
                     <div className="popup-row">
                         <div className="popup-field">
                             <label>Mutua</label>
-                            <SelectBox items={["ENTIDAD 1", "ENTIDAD 2", "ENTIDAD 3"]} />
+                            <SelectBox 
+                                items={["MUTUALIA", "PREVENSALUD", "SALUMUT"]} 
+                                value={formData.mutua}
+                                onValueChanged={(e) => setFormData({...formData, mutua: e.value})}
+                            />
                         </div>
 
                         <div className="popup-field">
                             <label>Año</label>
-                            <SelectBox items={["2024", "2025", "2026"]} />
+                            <SelectBox 
+                                items={[2024, 2025, 2026]} 
+                                value={formData.año}
+                                onValueChanged={(e) => setFormData({...formData, año: e.value})}
+                            />
                         </div>
                     </div>
 
                     {/* FILA 2 */}
                     <div className="popup-row">
                         <div className="popup-field full">
-                            <label>Acuerdo</label>
-                            <SelectBox items={["Acuerdo 1", "Acuerdo 2"]} />
+                            <label>Nombre del Informe / Acuerdo</label>
+                            <TextBox 
+                                value={formData.informe}
+                                onValueChanged={(e) => setFormData({...formData, informe: e.value})}
+                            />
                         </div>
                     </div>
 

@@ -1,0 +1,66 @@
+using Microsoft.AspNetCore.Mvc;
+using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Services;
+
+namespace MZAsistencial.Server.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PlantillasAcuerdoController : ControllerBase
+    {
+        private readonly IPlantillasAcuerdoService _service;
+
+        public PlantillasAcuerdoController(IPlantillasAcuerdoService service)
+        {
+            _service = service;
+        }
+
+        // GET: api/PlantillasAcuerdo
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PlantillasAcuerdosDTO>>> GetPlantillasAcuerdos()
+        {
+            var acuerdos = await _service.GetPlantillasAcuerdosAsync();
+            return Ok(acuerdos);
+        }
+
+        // POST: api/PlantillasAcuerdo
+        [HttpPost]
+        public async Task<IActionResult> PostPlantillaAcuerdo([FromBody] PlantillasAcuerdosDTO dto)
+        {
+            if (dto == null) return BadRequest("Los datos no son válidos");
+
+            var success = await _service.CreatePlantillaAcuerdoAsync(dto);
+            
+            if (success)
+                return Ok(new { mensaje = "Plantilla creada correctamente" });
+            
+            return BadRequest("Error al crear la plantilla");
+        }
+
+        // PUT: api/PlantillasAcuerdo/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPlantillaAcuerdo(int id, [FromBody] PlantillasAcuerdosDTO dto)
+        {
+            if (dto == null) return BadRequest("Datos no válidos");
+
+            var success = await _service.UpdatePlantillaAcuerdoAsync(id, dto);
+
+            if (success)
+                return Ok(new { mensaje = "Plantilla actualizada correctamente" });
+            
+            return NotFound($"No se ha encontrado la plantilla con ID {id}");
+        }
+
+        // DELETE: api/PlantillasAcuerdo/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePlantillaAcuerdo(int id)
+        {
+            var success = await _service.DeletePlantillaAcuerdoAsync(id);
+
+            if (success)
+                return Ok(new { mensaje = "Plantilla eliminada correctamente" });
+            
+            return NotFound($"No se ha encontrado la plantilla con ID {id}");
+        }
+    }
+}

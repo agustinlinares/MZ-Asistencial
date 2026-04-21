@@ -22,7 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Configuración local de cada desarrollador
-**/appsettings.Development.json
-**/appsettings.Production.json
