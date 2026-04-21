@@ -100,7 +100,8 @@ StyleCopReport.xml
 
 
 #Ignorar el vite config
-*.vite.config.js
+mzasistencial.client/vite.config.js
+MZAsistencial.Server/appsettings.json
 
 
 

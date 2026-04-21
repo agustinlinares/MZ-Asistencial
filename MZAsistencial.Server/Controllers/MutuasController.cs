@@ -23,20 +23,22 @@ public class MutuasController : ControllerBase
     public async Task<ActionResult<IEnumerable<MutuaDTO>>> GetMutuas()
     {
         var mutuas = await _context.Mutuas
+            .Include(m => m.PoblacionNavigation)
+                .ThenInclude(p => p.Provincia) 
             .Select(m => new MutuaDTO
             {
-<<<<<<< HEAD
                 Nº    = m.MutuaId,
                 //Numero    = m.NumeroMutua ?? "",
                 Mutua     = m.Mutua1 ?? "", //Nombre
-=======
-                Nº = m.MutuaId,
-                Mutua = m.Mutua1 ?? "",
->>>>>>> 0050b40e386026e1ebe9aa21b097c37241f1b699
                 Direccion = m.Direccion ?? "",
                 CP = m.Cp ?? "",
-                Poblacion = "",
-                Provincia = ""
+                Poblacion = m.PoblacionNavigation != null
+                            ? m.PoblacionNavigation.Poblacion ?? ""
+                            : "",
+                Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null
+                            //? m.PoblacionNavigation.Provincia.Provincia1 ?? ""
+                            ? m.PoblacionNavigation.Provincia.Provincia.Trim() ?? ""
+                            : ""
             })
             .ToListAsync();
 
@@ -60,7 +62,7 @@ public class MutuasController : ControllerBase
                             ? m.PoblacionNavigation.Poblacion ?? ""
                             : "",
                 Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null
-                            ? m.PoblacionNavigation.Provincia.Provincia ?? ""
+                            ? m.PoblacionNavigation.Provincia.Provincia.Trim() ?? ""
                             : "",
 
                 //CAMPOS EXTRA PARA LA FICHA
