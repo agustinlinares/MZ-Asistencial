@@ -30,7 +30,7 @@ public class MutuasController : ControllerBase
             {
                 Nº    = m.MutuaId,
                 //Numero    = m.NumeroMutua ?? "",
-                Mutua     = m.Mutua1 ?? "",
+                Mutua     = m.Mutua1 ?? "", //Nombre
                 Direccion = m.Direccion ?? "",
                 CP        = m.Cp ?? "",
                 Poblacion = m.PoblacionNavigation != null
@@ -57,18 +57,24 @@ public class MutuasController : ControllerBase
             .Where(m => m.MutuaId == id)
             .Select(m => new MutuaDTO
             {
-                Nº    = m.MutuaId,
-                //Numero    = m.NumeroMutua ?? "",
-                Mutua     = m.Mutua1 ?? "",
+                Nº = m.MutuaId,
+                Mutua = m.Mutua1 ?? "",
                 Direccion = m.Direccion ?? "",
-                CP        = m.Cp ?? "",
+                CP = m.Cp ?? "",
                 Poblacion = m.PoblacionNavigation != null
                             ? m.PoblacionNavigation.Poblacion ?? ""
                             : "",
                 Provincia = m.PoblacionNavigation != null && m.PoblacionNavigation.Provincia != null
-                            //? m.PoblacionNavigation.Provincia.Provincia1 ?? ""
                             ? m.PoblacionNavigation.Provincia.Provincia ?? ""
-                            : ""
+                            : "",
+
+                //CAMPOS EXTRA PARA LA FICHA
+                NumeroMutua = m.NumeroMutua ?? "",
+                RazonSocial = m.RazonSocial ?? "",
+                Telefono = m.Telefono ?? "",
+                Fax = m.Fax ?? "",
+                DireccionElectronica = m.DireccionElectronica ?? "",
+                PersonaContacto = m.PersonaContacto ?? ""
             })
             .FirstOrDefaultAsync();
 

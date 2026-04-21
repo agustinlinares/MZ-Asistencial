@@ -1,0 +1,270 @@
+/* Overlay semi-transparente que cubre todo (opcionalmente solo la tabla si quieres) */
+.ficha-overlay {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background-color: rgba(0, 0, 0, 0.4); 
+    
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* arriba del contenedor */
+
+    z-index: 1000;
+    padding: 10px; /* espacio desde los bordes */
+    overflow: auto; /* scroll si hay mucho contenido */
+}
+
+/* Contenedor real del popup */
+.ficha-container {
+    background: #fff; /* fondo blanco */
+    border-radius: 8px;
+    
+    width: 80%;
+    max-width: 1200px;
+
+    height: 80%;
+    max-height: 800px;
+    height: 85vh; 
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;       
+    margin-top: 40px;
+}
+
+/* Botón cerrar */
+.Header{
+    display: flex;
+    flex-direction: row;
+    width: 100%;  
+}
+.titleFicha{
+    width: 50%;
+    font-size: 20px;
+    padding-top: 5px;
+}
+.ComboBotones {
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    justify-content: flex-end;
+}
+.ficha-close-btn {
+    top: 10px;
+    right: 10px;
+    background: #267ab9;
+    color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 130px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    margin-left: 5px;
+}
+
+.ficha-close-btn:hover {
+    background: var(--bg-menu-color);
+    color: #fff;
+}
+
+/* Tabs */
+.ficha-tabs {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--bg-menu-color);
+    background: #d9e2eb;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    transition: 0.2s;
+}
+
+.tab-button.active {
+    background: var(--bg-menu-color);
+    color: #fff;
+}
+
+/* Contenido de tabs */
+.tab-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.ficha-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Título de sección */
+.ficha-section h4 {
+    margin-bottom: 10px;
+}
+
+.filtros-box {
+  width: 100%;
+  height: 100%;
+  background: #f7f7f7;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+
+/* ------------------------------- PRIMERA PESTAÑA ------------------------- */
+.general .filtros-content {
+  display: flex;
+  flex-wrap: wrap;      
+  gap: 20px;
+  padding: 0px !important;
+}
+
+.general .filtro-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 420px; 
+  align-items: unset;
+}
+
+.general .filtro-item label {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.general .filtro-item input,
+.general .filtro-item select {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* Inputs tipo fecha (calendario) */
+.general .filtro-item input[type="date"] {
+  cursor: pointer;
+}
+
+/* ------------------------------- SEGUNDA PESTAÑA ------------------------- */
+/* Bloques tipo tarjeta */
+.DatosUtilizacion .bloque {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.DatosUtilizacion .filtro-item{
+    flex-direction: row;
+    align-items: center;
+}
+
+.DatosUtilizacion .filtro-item.justifyCenter{
+    justify-content: center;
+}
+
+.DatosUtilizacion .filtro-item label{
+    margin: 0 5px;
+}
+
+.DatosUtilizacion .bloque-titulo {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.DatosUtilizacion .bloque-sub {
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* Radios */
+.DatosUtilizacion .radio-group {
+  display: flex;
+  gap: 40px;
+  background: #e9eef5;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.DatosUtilizacion .radio-group label{
+    width: 15%;
+    display: flex;
+}
+
+.DatosUtilizacion .radio-group input[type="radio"]{
+    width: 12%;
+}
+
+/* Checkboxes en grid */
+.DatosUtilizacion .checkbox-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 40px;
+  background: #e9eef5;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.DatosUtilizacion .checkbox-grid label{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.DatosUtilizacion .checkbox-grid label input[type="checkbox"]{
+    margin: 5px;
+}
+
+/* Textarea */
+.DatosUtilizacion textarea {
+  min-height: 80px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Fila horizontal */
+.DatosUtilizacion .fila {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+/* Checkbox centrado */
+.DatosUtilizacion .checkbox-center {
+  width: 20px;
+  height: 20px;
+}
+
+/* Inputs dentro de bloques */
+.DatosUtilizacion .bloque input[type="text"],
+.DatosUtilizacion .bloque input[type="date"] {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

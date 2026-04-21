@@ -5,6 +5,7 @@ import './Mutuas.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
+import FichaMutua from './FichaMutua'; // Importamos la ficha
 import DataGrid, {
     Column,
     Paging,
@@ -50,6 +51,8 @@ const Mutuas = () => {
     const dataGridRef = useRef(null);
 
     const [mutuas, setMutuas] = useState([]);
+
+    const [selectedMutua, setSelectedMutua] = useState(null); // Estado para la mutua seleccionada
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
@@ -105,12 +108,22 @@ const Mutuas = () => {
                         </div>
                     </div>
 
-                    <div className="table-container">
+                    <div className="table-container" style={{ position: 'relative' }}>
+
+                        {/* Si hay una mutua seleccionada, mostramos la ficha */}
+                        {selectedMutua && (
+                            <FichaMutua
+                                mutua={selectedMutua}
+                                onClose={() => setSelectedMutua(null)}
+                            />
+                        )}
+
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={mutuas}
                             //dataSource={sampleData}
                             keyExpr="nº"
+                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila
                             //keyExpr="CodigoPersona"
                             showBorders={true}
                             columnAutoWidth={true}

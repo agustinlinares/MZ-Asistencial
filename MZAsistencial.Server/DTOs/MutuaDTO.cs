@@ -8,5 +8,14 @@
         public string CP { get; set; }         // C.P
         public string Poblacion { get; set; }  // Población
         public string Provincia { get; set; }  // Provincia
+
+        public string NumeroMutua { get; set; }
+        public string RazonSocial { get; set; }
+        public string Telefono { get; set; }
+        public string Fax { get; set; }
+        public string DireccionElectronica { get; set; }
+        public string PersonaContacto { get; set; }
+
+
     }
 }
