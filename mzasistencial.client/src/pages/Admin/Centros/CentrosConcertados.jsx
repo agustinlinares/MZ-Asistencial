@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
+import FichaCliente from "./FichaCliente";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
@@ -48,6 +49,10 @@ const onExporting = (e) => {
 const CentrosConcertados = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const [isFichaOpen, setIsFichaOpen] = useState(false);
+    const [selectedCentro, setSelectedCentro] = useState(null);
+    const [isFichaAbierta, setIsFichaAbierta] = useState(false);
+    const [centroSeleccionado, setCentroSeleccionado] = useState(null);
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
@@ -86,8 +91,10 @@ const CentrosConcertados = () => {
 
     // Doble clic para navegar a la ficha de detalle
     const onRowDblClick = (e) => {
-        const idDelCentro = e.data.centroId;
-        navigate(`/fichacliente/${idDelCentro}`); 
+        // Guardamos todos los datos de la fila en la variable
+        setCentroSeleccionado(e.data);
+        // Abrimos la ventana
+        setIsFichaAbierta(true); 
     };
 
     return (
@@ -144,7 +151,7 @@ const CentrosConcertados = () => {
                             <Column dataField="cp" caption="C.P." width={80} />
                             
                             {/* De momento el ID de la población hasta que hacer el Join */}
-                            <Column dataField="poblacionId" caption="Población" width={150} /> 
+                            <Column dataField="poblacionId" caption="Población ID" width={150} /> 
                             <Column dataField="provincia" caption="Provincia" width={130} />
                             <Column dataField="fechaAlta" caption="Fecha Alta" dataType="date" width={110} />
                             
@@ -154,6 +161,13 @@ const CentrosConcertados = () => {
                         </DataGrid>
                     </div>
                 </div>
+                {/* Si isFichaAbierta es true, pintamos el componente y le pasamos los props */}
+                {isFichaAbierta && (
+                    <FichaCliente 
+                        cliente={centroSeleccionado} 
+                        onClose={() => setIsFichaAbierta(false)} 
+                    />
+                )}
             </div>
         </React.Fragment>
     );
