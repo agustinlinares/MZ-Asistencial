@@ -123,3 +123,74 @@
     .tabla-datos tr:hover {
         background: #f9f9f9;
     }
+
+/* ESTILOS POPUP FICHA DOC ADJUNTO */
+.popup-ficha-doc .dx-toolbar {
+    background-color: #efefef !important;
+    padding: 5px 10px;
+}
+
+.popup-ficha-doc .dx-popup-title {
+    background-color: transparent !important;
+    border-bottom: none !important;
+}
+
+.popup-ficha-doc .dx-toolbar-label {
+    font-weight: bold;
+    color: #4a4a4a;
+    text-transform: uppercase;
+}
+
+.btn-aceptar-popup {
+    background-color: #337ab7 !important;
+    color: white !important;
+    border-radius: 4px;
+}
+
+.btn-salir-popup {
+    background-color: #337ab7 !important;
+    color: white !important;
+    border-radius: 4px;
+}
+
+.popup-container {
+    padding: 10px 20px;
+}
+
+.popup-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.popup-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-field.full {
+    flex: 2;
+}
+
+.popup-field label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 3px;
+    color: #333;
+}
+
+/* Campos de lectura con fondo azul claro */
+.popup-field .dx-state-readonly .dx-texteditor-input {
+    background-color: #e8f1f8 !important;
+    color: #333 !important;
+}
+
+.file-uploader-custom {
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.mt-3 { margin-top: 15px; }
+.mt-2 { margin-top: 10px; }
