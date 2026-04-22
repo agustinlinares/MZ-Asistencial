@@ -529,7 +529,7 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
     if (!datos)  return <div style={st.nodata}>No hay datos para este centro y año.</div>;
 
     const camposList = (CAMPOS[tabKey] || []).length > 0
-    ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || (typeof datos[c.key] === "number" ? "number" : "text") }))
+    ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || "number" }))
     : Object.keys(datos)
         .filter(k => !["idIcg","id","centroId","año"].includes(k))
         .map(k => ({ key: k, label: k, type: typeof datos[k] === "number" ? "number" : "text" }));
@@ -543,20 +543,33 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
                 {msg && <span style={st.msg(msg.ok)}>{msg.text}</span>}
             </div>
             <div style={st.fieldGrid}>
-                {camposList.map(({ key, label, type = "number" }) => (
-                    <div key={key} style={st.field}>
-                        <span style={st.fieldLabel}>{label}</span>
-                        <input
-                            style={st.fieldInput}
-                            type={type}
-                            value={datos[key] ?? ""}
-                            onChange={e => handleChange(key, e.target.value)}
-                        />
+                            {camposList.map(({ key, label, type = "number" }) => (
+                                <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
+                                    <span style={st.fieldLabel}>{label}</span>
+                                    {type === "text" ? (
+                                        <textarea
+                                            style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
+                                            value={datos[key] ?? ""}
+                                            onChange={e => handleChange(key, e.target.value)}
+                                            placeholder="Escriba aquí..."
+                                        />
+                                    ) : (
+                                        <input
+                                            style={{
+                                                ...st.fieldInput,
+                                                color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222",
+                                            }}
+                                            type="number"
+                                            value={datos[key] ?? ""}
+                                            onChange={e => handleChange(key, e.target.value)}
+                                            placeholder="0"
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ))}
-            </div>
-        </div>
-    );
+                );
 };
 
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
