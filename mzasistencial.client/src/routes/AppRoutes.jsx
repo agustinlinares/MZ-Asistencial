@@ -22,6 +22,7 @@ const CentrosPropios = lazy(() => import("@pages/Admin/Centros/CentrosPropios"))
 const CentrosConcertados = lazy(() => import("@pages/Admin/Centros/CentrosConcertados"));
 const Conciertos = lazy(() => import("@pages/Admin/Centros/Conciertos"));
 const Fincas = lazy(() => import("@pages/Admin/Centros/Fincas"));
+const FichaFincaPage = lazy(() => import("@pages/Admin/Centros/FichaFincaPage"));
 
 const ICGCentrosPropios = lazy(() => import("@pages/Admin/ICG/ICGCentrosPropios"));
 const ICGPlantillasICG = lazy(() => import("@pages/Admin/ICG/ICGPlantillasICG"));
@@ -87,6 +88,8 @@ const AppRoutes = () => {
                             <Route path="CentrosConcertados" element={<CentrosConcertados />} />
                             <Route path="Conciertos" element={<Conciertos />} />
                             <Route path="Fincas" element={<Fincas />} />
+                            <Route path="Fincas/nueva" element={<FichaFincaPage />} />
+                            <Route path="Fincas/:id" element={<FichaFincaPage />} />
                         </Route>
 
                         <Route path="ICG">

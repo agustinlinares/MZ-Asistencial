@@ -4,7 +4,7 @@ import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import AuthService from "../../../services/auth/AuthService";
-import FichaFinca from './FichaFinca';
+import { useNavigate } from 'react-router-dom';
 import DataGrid, {
     Column,
     Paging,
@@ -50,83 +50,21 @@ const authHeaders = () => {
 
 const Fincas = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const dataGridRef = useRef(null);
     const [fincas, setFincas] = useState([]);
-    const [selectedFinca, setSelectedFinca] = useState(null);
-    const [centros, setCentros] = useState([]);
 
     useEffect(() => {
         const fetchFincas = async () => {
             try {
                 const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
-                if (respuesta.ok) {
-                    const data = await respuesta.json();
-                    setFincas(data);
-                }
+                if (respuesta.ok) setFincas(await respuesta.json());
             } catch (error) {
                 console.error('Error al cargar fincas registrales:', error);
             }
         };
-        const fetchCentros = async () => {
-            try {
-                const respuesta = await fetch('/api/centros/lookup', { headers: authHeaders() });
-                if (respuesta.ok) {
-                    const data = await respuesta.json();
-                    setCentros(data);
-                }
-            } catch (error) {
-                console.error('Error al cargar centros:', error);
-            }
-        };
         fetchFincas();
-        fetchCentros();
     }, []);
-
-    const recargarFincas = async () => {
-        try {
-            const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
-            if (respuesta.ok) setFincas(await respuesta.json());
-        } catch (error) {
-            console.error('Error al recargar fincas:', error);
-        }
-    };
-
-    const handleSaveFinca = async (data) => {
-        try {
-            const isEdit = !!data.finca_id;
-            const url = isEdit
-                ? `/api/FincasRegistrales/${data.finca_id}`
-                : '/api/FincasRegistrales';
-            const method = isEdit ? 'PUT' : 'POST';
-            const payload = {
-                Finca_id: parseInt(data.finca_id) || 0,
-                Centro_id: parseInt(data.centro_id) || 0,
-                Mutua: data.mutua || null,
-                Direccion: data.direccion || null,
-                Superficie: data.superficie !== '' && data.superficie != null ? parseFloat(data.superficie) : null,
-                Coste: data.coste !== '' && data.coste != null ? parseFloat(data.coste) : null,
-                F_Alquiler: data.f_adquisicion || null,
-                Referencia_Catastral: data.ref_catastral || null,
-                F_Inscripcion: data.f_inscripcion || null,
-                F_Baja: data.f_baja || null,
-                TipoFinca: data.tipo_finca_idx != null ? parseInt(data.tipo_finca_idx) : null,
-                Titularidad: data.titularidad || null,
-                OtrosDatos: data.otros_datos || null,
-                Utilizacion: data.utilizacion || null,
-                DireccionGoogle: data.dir_google || null,
-            };
-            const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
-            if (res.ok) {
-                setSelectedFinca(null);
-                await recargarFincas();
-            } else {
-                alert(`Error al guardar: ${res.status} ${res.statusText}`);
-            }
-        } catch (error) {
-            console.error('Error al guardar finca:', error);
-            alert(`Error: ${error.message}`);
-        }
-    };
 
     return (
         <React.Fragment>
@@ -136,24 +74,16 @@ const Fincas = () => {
                     <div className="title"> {t('LISTA FINCAS')}</div>
 
                     <div className="table-container tabla-contenedor">
-                        {selectedFinca && (
-                            <FichaFinca
-                                finca={selectedFinca}
-                                centros={centros}
-                                onClose={() => setSelectedFinca(null)}
-                                onSave={handleSaveFinca}
-                            />
-                        )}
                         <div style={{ marginBottom: 8, textAlign: 'right' }}>
                             <button
                                 className="btn btn-primary btn-sm"
-                                onClick={() => setSelectedFinca({})}
+                                onClick={() => navigate('/admin/Centros/Fincas/nueva')}
                             >
                                 + Nueva Finca
                             </button>
                         </div>
                         <DataGrid
-                            onRowClick={(e) => setSelectedFinca(e.data)}
+                            onRowClick={(e) => navigate(`/admin/Centros/Fincas/${e.data.Finca_id}`, { state: { finca: e.data } })}
                             ref={dataGridRef}
                             dataSource={fincas}
                             keyExpr="Finca_id"
