@@ -6,7 +6,6 @@ import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import FichaCliente from './FichaCliente';
 import DataGrid, { Column, Paging, SearchPanel, FilterRow, HeaderFilter, Selection, GroupPanel, Grouping, ColumnChooser, Export, Scrolling, Sorting, ColumnFixing, Pager } from "devextreme-react/data-grid";
 
 const API_URL = "/api/CentrosPropios";
@@ -51,7 +50,6 @@ const DesactivadoCell = (cell) => {
 const CentrosPropios = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
-    const [selectedCliente, setSelectedCliente] = useState(null);
     const [centros, setCentros] = useState([]);
     const navigate = useNavigate();
 
@@ -70,13 +68,12 @@ const CentrosPropios = () => {
                         t('LISTA CENTROS PROPIOS')
                     ),
                     React.createElement('div', { className: 'table-container', style: { padding: '0 20px 20px 20px', position: 'relative' } },
-                        selectedCliente && React.createElement(FichaCliente, { cliente: selectedCliente, onClose: () => setSelectedCliente(null) }),
                         React.createElement(DataGrid, {
                             ref: dataGridRef, dataSource: centros, keyExpr: 'centroId',
                             showBorders: true, columnAutoWidth: false, allowColumnResizing: true,
                             onExporting: onExporting, className: 'mz-table', rowAlternationEnabled: true,
                             showRowLines: true, showColumnLines: true, wordWrapEnabled: false,
-                            noDataText: t('Sin datos para mostrar'), onRowDblClick: (e) => setSelectedCliente(e.data)
+                            noDataText: t('Sin datos para mostrar'), onRowDblClick: (e) => navigate('/admin/Centros/FichaCentroPropio', { state: { cliente: e.data } })
                         },
                             React.createElement(Scrolling, { mode: 'standard', showScrollbar: 'always' }),
                             React.createElement(Paging, { defaultPageSize: 20 }),

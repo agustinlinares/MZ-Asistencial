@@ -19,6 +19,7 @@ const PlantillasAcuerdos = lazy(() => import("@pages/Admin/Acuerdos/PlantillasAc
 const Analisis = lazy(() => import("@pages/Admin/Acuerdos/Analisis"));
 
 const CentrosPropios = lazy(() => import("@pages/Admin/Centros/CentrosPropios"));
+const FichaCentroPropio = lazy(() => import("@pages/Admin/Centros/FichaCentroPropio"));
 const CentrosConcertados = lazy(() => import("@pages/Admin/Centros/CentrosConcertados"));
 const Conciertos = lazy(() => import("@pages/Admin/Centros/Conciertos"));
 const Fincas = lazy(() => import("@pages/Admin/Centros/Fincas"));
@@ -131,6 +132,7 @@ const AppRoutes = () => {
                             <Route path="Mantenimiento" element={<Mantenimiento />} />
                         </Route>
                     </Route>
+                    <Route path="Centros/FichaCentroPropio" element={<FichaCentroPropio />} />
                 </Route>
             </Routes>
         </Suspense>

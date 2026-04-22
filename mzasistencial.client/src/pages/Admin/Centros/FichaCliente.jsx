@@ -208,7 +208,7 @@ const handleAceptar = async () => {
 
                     {activeTab === "RegistroICG" && (
                         <div className="ficha-datagrid-wrap">
-                            <DataGrid dataSource={registrosICG} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")} className="mz-table" height={400}>mz-table" height={400}>
+                            <DataGrid dataSource={registrosICG} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")} className="mz-table" height={400}>
                                 <Scrolling mode="standard" />
                                 <Paging defaultPageSize={10} />
                                 <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10,20,50]} showPageSizeSelector={true} />
