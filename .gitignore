@@ -98,6 +98,13 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+
+#Ignorar el vite config
+mzasistencial.client/vite.config.js
+MZAsistencial.Server/appsettings.json
+
+
+
 # Chutzpah Test files
 _Chutzpah*
 
@@ -361,3 +368,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+.claude

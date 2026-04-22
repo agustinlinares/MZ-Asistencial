@@ -5,6 +5,7 @@ import './Mutuas.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
+import FichaMutua from './FichaMutua'; // Importamos la ficha
 import DataGrid, {
     Column,
     Paging,
@@ -49,6 +50,10 @@ const Mutuas = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
 
+    const [mutuas, setMutuas] = useState([]);
+
+    const [selectedMutua, setSelectedMutua] = useState(null); // Estado para la mutua seleccionada
+
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
@@ -58,6 +63,17 @@ const Mutuas = () => {
     //         // navigate('/'); 
     //     }
     // }, [isAuthenticated, navigate]); 
+
+    //Conectamos Backend con Frontend
+    useEffect(() => {
+    fetch("/api/mutuas")
+        .then(response => response.json())
+        .then(data => {
+            console.log("Datos recibidos:", data);
+            setMutuas(data);
+        })
+        .catch(error => console.error("Error cargando mutuas:", error));
+    }, []);
 
     return (
         <React.Fragment>
@@ -92,11 +108,23 @@ const Mutuas = () => {
                         </div>
                     </div>
 
-                    <div className="table-container">
+                    <div className="table-container" style={{ position: 'relative' }}>
+
+                        {/* Si hay una mutua seleccionada, mostramos la ficha */}
+                        {selectedMutua && (
+                            <FichaMutua
+                                mutua={selectedMutua}
+                                onClose={() => setSelectedMutua(null)}
+                            />
+                        )}
+
                         <DataGrid
                             ref={dataGridRef}
+                            dataSource={mutuas}
                             //dataSource={sampleData}
-                            keyExpr="CodigoPersona"
+                            keyExpr="nº"
+                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila
+                            //keyExpr="CodigoPersona"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -126,7 +154,8 @@ const Mutuas = () => {
                             {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
 
                             <Column
-                                dataField="id"
+                                //dataField="id"
+                                dataField="nº"
                                 caption="Nº"
                                 fixed={true}
                                 fixedPosition="left"
@@ -134,6 +163,7 @@ const Mutuas = () => {
                             />
 
                             <Column
+                                //dataField="mutua"
                                 dataField="mutua"
                                 caption="Mutua"
                                 fixed={true}

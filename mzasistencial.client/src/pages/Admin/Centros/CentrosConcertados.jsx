@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
+import FichaCliente from "./FichaCentroConcertado";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
+import AuthService from "../../../services/auth/AuthService";
 import DataGrid, {
     Column,
     Paging,
@@ -28,9 +30,6 @@ import DataGrid, {
 
 import { useTranslation } from "react-i18next";
 
-// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
-const sampleData = [];
-
 const onExporting = (e) => {
     e.component.beginUpdate();
     const workbook = new Workbook();
@@ -50,16 +49,60 @@ const onExporting = (e) => {
 const CentrosConcertados = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const [isFichaOpen, setIsFichaOpen] = useState(false);
+    const [selectedCentro, setSelectedCentro] = useState(null);
+    const [isFichaAbierta, setIsFichaAbierta] = useState(false);
+    const [centroSeleccionado, setCentroSeleccionado] = useState(null);
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    // Datos que vienen de la Base de Datos
+    const [centros, setCentros] = useState([]);
+
+    useEffect(() => {
+        const cargarDatos = async () => {
+            try {
+                // Recogida del token de AuthService
+                const token = AuthService.getToken(); 
+                
+                // Petición a tu Controller 
+                const respuesta = await fetch('/api/CentrosConcertados', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : '' // Inyectamos seguridad
+                    }
+                });
+
+                if (respuesta.ok) {
+                    const datos = await respuesta.json();
+                    setCentros(datos); // Volcamos el JSON de Swagger en la tabla
+                } else {
+                    console.error("Error en la respuesta del servidor:", respuesta.status);
+                }
+            } catch (error) {
+                console.error("Error conectando con la API:", error);
+            }
+        };
+
+        cargarDatos();
+    }, []);
+
+    // Doble clic para navegar a la ficha de detalle
+    const onRowDblClick = (e) => {
+        const datosAdaptados = {
+            CentroID: e.data.Centro_id,
+            Localizador: e.data.Ccn,
+            Centro: e.data.Centro,
+            Direccion: e.data.Direccion,
+            Poblacion: e.data.Poblacion,
+            Provincia: e.data.Provincia,
+        };
+
+        setCentroSeleccionado(datosAdaptados);
+        setIsFichaAbierta(true);
+    };
 
     return (
         <React.Fragment>
@@ -76,8 +119,8 @@ const CentrosConcertados = () => {
                     <div className="table-container">
                         <DataGrid
                             ref={dataGridRef}
-                            dataSource={sampleData}
-                            keyExpr="id"
+                            dataSource={centros}
+                            keyExpr="Centro_id"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -87,6 +130,7 @@ const CentrosConcertados = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            onRowDblClick={onRowDblClick}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
@@ -97,29 +141,35 @@ const CentrosConcertados = () => {
                             <Selection mode="multiple" allowSelectAll />
                             <Grouping autoExpandAll={false} />
                             <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
+                            <Export enabled fileName="CentrosConcertados" allowExportSelectedData />
                             <Sorting mode="multiple" />
                             <FilterPanel visible />
                             <ColumnFixing enabled />
 
+                            {/* ── COLUMNAS ── */}
 
+                            <Column dataField="Ccn" caption="CCN" width={100} />
+                            <Column dataField="Cif" caption="CIF" width={110} />
+                            <Column dataField="Centro_id" caption="Centro ID" width={100} />
+                            <Column dataField="Centro" caption="Centro" width={180} />
+                            <Column dataField="Direccion" caption="Dirección" width={200} />
+                            <Column dataField="CP" caption="C.P." width={80} />
 
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
+                            <Column dataField="Poblacion" caption="Población" width={150} />
+                            <Column dataField="Provincia" caption="Provincia" width={130} />
 
-                            <Column dataField="ccn" caption="CCN" width={100} />
-                            <Column dataField="cif" caption="CIF" width={110} />
-                            <Column dataField="centro_id" caption="Centro_id" width={100} />
-                            <Column dataField="centro" caption="Centro" width={180} />
-                            <Column dataField="direccion" caption="Dirección" width={200} />
-                            <Column dataField="cp" caption="C.P." width={80} />
-                            <Column dataField="poblacion" caption="Población" width={150} />
-                            <Column dataField="provincia" caption="Provincia" width={130} />
-                            <Column dataField="fechaAlta" caption="Fecha Alta" width={110} />
-                            <Column dataField="mapa" caption="Mapa" width={80} />
+                            <Column dataField="FechaAlta" caption="Fecha Alta" dataType="date" width={110} />
+                            <Column dataField="Mapa" caption="Mapa" width={80} />
                             <Column dataField="acciones" caption="Acciones" width={100} />
                         </DataGrid>
                     </div>
                 </div>
+                {isFichaAbierta && (
+                    <FichaCliente 
+                        cliente={centroSeleccionado} 
+                        onClose={() => setIsFichaAbierta(false)} 
+                    />
+                )}
             </div>
         </React.Fragment>
     );

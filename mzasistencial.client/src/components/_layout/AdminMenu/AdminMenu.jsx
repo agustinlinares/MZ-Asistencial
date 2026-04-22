@@ -156,11 +156,6 @@ function AdminMenu(props) {
                                     {t('Fincas')}
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink to="Centros/ControlDuplicados">
-                                    {t('Control centros concertado duplicados')}
-                                </NavLink>
-                            </li>
                         </ul>
                     </li>
 

@@ -29,8 +29,6 @@ import DataGrid, {
 import { useTranslation } from "react-i18next";
 
 // ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
-const sampleData = [];
-
 const onExporting = (e) => {
     e.component.beginUpdate();
     const workbook = new Workbook();
@@ -50,16 +48,17 @@ const onExporting = (e) => {
 const Descuadres = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
-
-    // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    // ─── LLAMADA A LA API ─────────────────────────────────────────────
+    const [sampleData, setSampleData] = useState([]);
+
+    useEffect(() => {
+        fetch('https://localhost:7132/api/Descuadres')
+            .then(res => res.json())
+            .then(data => setSampleData(data))
+            .catch(err => console.error('Error al cargar descuadres:', err));
+    }, []);
 
     return (
         <React.Fragment>
@@ -98,11 +97,12 @@ const Descuadres = () => {
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={sampleData}
-                            keyExpr="CodigoPersona"
+                            keyExpr="mutuaId"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
                             onExporting={onExporting}
+                            onRowDblClick={(e) => navigate(`/descuadres/${e.data.mutuaId}`)}
                             className="mz-table"
                             rowAlternationEnabled={true}
                             showRowLines={true}
@@ -118,16 +118,13 @@ const Descuadres = () => {
                             <Selection mode="multiple" allowSelectAll />
                             <Grouping autoExpandAll={false} />
                             <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
+                            <Export enabled fileName="Descuadres" allowExportSelectedData />
                             <Sorting mode="multiple" />
                             <FilterPanel visible />
                             <ColumnFixing enabled />
 
-
-
                             {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
-
-                            <Column dataField="id" caption="Nº" width={80} />
+                            <Column dataField="mutuaId" caption="Nº" width={80} />
                             <Column dataField="mutua" caption="Mutua" width={150} />
                             <Column dataField="gastoPersonal" caption="Gasto Personal" width={130} />
                             <Column dataField="gastoCorrientes" caption="Gasto Corrientes" width={130} />
@@ -135,8 +132,8 @@ const Descuadres = () => {
                             <Column dataField="amortizacion" caption="Amortización" width={130} />
                             <Column dataField="totalCostePropios" caption="TOTAL COSTE PROPIOS" width={150} />
                             <Column dataField="costeConciertos" caption="Coste conciertos" width={130} />
-                            <Column dataField="aplicacion258_1" caption="Aplicacion 258.1" width={130} />
-                            <Column dataField="aplicacion258_2" caption="Aplicacion 258.2" width={130} />
+                            <Column dataField="aplicacion2581" caption="Aplicacion 258.1" width={130} />
+                            <Column dataField="aplicacion2582" caption="Aplicacion 258.2" width={130} />
                             <Column dataField="restoArt25" caption="Resto art. 25" width={130} />
                             <Column dataField="totalArticulo25" caption="TOTAL ARTÍCULO 25" width={150} />
                             <Column dataField="inversionNueva" caption="Inversión nueva" width={130} />

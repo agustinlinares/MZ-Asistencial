@@ -1933,12 +1933,12 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
             entity.Property(e => e.EspecialidadId).HasColumnName("Especialidad_id");
             entity.Property(e => e.Servicio).HasMaxLength(150);
-            entity.Property(e => e.Cantidad).HasDefaultValue(0);
+            entity.Property(e => e.Cantidad).HasDefaultValue(0, "DF_CentrosEspecialidades_Cantidad");
             entity.Property(e => e.CentroEspecialidadId)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("CentroEspecialidad_id");
             entity.Property(e => e.ImporteConIva)
-                .HasDefaultValue(0.0)
+                .HasDefaultValue(0.0, "DF_CentrosEspecialidades_ImporteConIVA_1")
                 .HasColumnName("ImporteConIVA");
             entity.Property(e => e.ServicioId).HasColumnName("Servicio_id");
         });
@@ -2032,7 +2032,7 @@ public partial class MZAsistencialContext : DbContext
             entity.HasKey(e => e.CentroPropioEspecialidadId).HasName("PK_CentrosPropiosEspecialidades_1");
 
             entity.Property(e => e.CentroPropioEspecialidadId).HasColumnName("CentroPropioEspecialidad_id");
-            entity.Property(e => e.Cantidad).HasDefaultValue(0);
+            entity.Property(e => e.Cantidad).HasDefaultValue(0, "DF_CentrosPropiosEspecialidades_Cantidad");
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.EspecialidadId).HasColumnName("Especialidad_id");
             entity.Property(e => e.FechaActualizarDisponibilidad).HasColumnType("datetime");
@@ -2041,7 +2041,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.FechaGeneracionAcreditacion).HasColumnType("datetime");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.ImporteConIva)
-                .HasDefaultValue(0.0)
+                .HasDefaultValue(0.0, "DF_CentrosPropiosEspecialidades_ImporteConIVA_1")
                 .HasColumnName("ImporteConIVA");
             entity.Property(e => e.Servicio).HasMaxLength(150);
             entity.Property(e => e.ServicioId).HasColumnName("Servicio_id");
@@ -2169,14 +2169,14 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasNoKey();
 
-            entity.Property(e => e.Cantidad).HasDefaultValue(0);
+            entity.Property(e => e.Cantidad).HasDefaultValue(0, "DF_ConciertosEspecialidades_Cantidad");
             entity.Property(e => e.ConciertoEspecialidadId)
                 .ValueGeneratedOnAdd()
                 .HasColumnName("ConciertoEspecialidad_id");
             entity.Property(e => e.ConciertoId).HasColumnName("Concierto_id");
             entity.Property(e => e.EspecialidadId).HasColumnName("Especialidad_id");
             entity.Property(e => e.ImporteConIva)
-                .HasDefaultValue(0.0)
+                .HasDefaultValue(0.0, "DF_ConciertosEspecialidades_ImporteConIVA_1")
                 .HasColumnName("ImporteConIVA");
             entity.Property(e => e.ServicioId).HasColumnName("Servicio_id");
         });
@@ -2203,7 +2203,7 @@ public partial class MZAsistencialContext : DbContext
                 .HasColumnName("CP");
             entity.Property(e => e.Delegacion).HasMaxLength(100);
             entity.Property(e => e.PoblacionId)
-                .HasDefaultValue(0)
+                .HasDefaultValue(0, "DF_Delegaciones_Poblacion_id")
                 .HasColumnName("Poblacion_id");
             entity.Property(e => e.ProveedorId).HasColumnName("Proveedor_id");
         });
@@ -2314,7 +2314,7 @@ public partial class MZAsistencialContext : DbContext
 
             entity.Property(e => e.FicheroId).HasColumnName("Fichero_id");
             entity.Property(e => e.ActivoId)
-                .HasDefaultValue(0)
+                .HasDefaultValue(0, "DF_FicherosAcreditaciones_Informes_Activo_id_1")
                 .HasColumnName("Activo_id");
             entity.Property(e => e.DemandaId).HasColumnName("Demanda_id");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
@@ -3202,10 +3202,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.PersSanitGradSupHorasAtep)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("PersSanitGradSupHorasATEP");
-            entity.Property(e => e.PersSanitGradSupHorasCc1)
+            entity.Property(e => e.PersSanitGradSupHorasCc)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("PersSanitGradSupHorasCC");
-            entity.Property(e => e.PersSanitGradSupHorasCp1)
+            entity.Property(e => e.PersSanitGradSupHorasCp)
                 .HasColumnType("numeric(10, 2)")
                 .HasColumnName("PersSanitGradSupHorasCP");
             entity.Property(e => e.PersSanitGradSupHorasIt)
@@ -4147,6 +4147,8 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<Mutua>(entity =>
         {
+            entity.HasKey(e => e.MutuaId).HasFillFactor(100);
+
             entity.Property(e => e.MutuaId)
                 .ValueGeneratedNever()
                 .HasColumnName("Mutua_id");
@@ -4194,6 +4196,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioBajaId).HasColumnName("UsuarioBaja_id");
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.UsuarioModificacionId).HasColumnName("UsuarioModificacion_id");
+            entity.HasOne(d => d.PoblacionNavigation)
+                    .WithMany()
+                    .HasForeignKey(d => d.PoblacionId);
+
         });
 
         modelBuilder.Entity<MutuasBm>(entity =>
@@ -4258,7 +4264,7 @@ public partial class MZAsistencialContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-            entity.Property(e => e.PresupuestoGastosFinancieros).HasDefaultValue(0.0);
+            entity.Property(e => e.PresupuestoGastosFinancieros).HasDefaultValue(0.0, "DF_MutuasPresupuesto_PresupuestoGastosFinancieros_1");
         });
 
         modelBuilder.Entity<Oferta>(entity =>
@@ -4571,7 +4577,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);
             entity.Property(e => e.FechaBaja).HasColumnType("datetime");
             entity.Property(e => e.FechaPassword).HasColumnType("datetime");
-            entity.Property(e => e.LimiteCorreos).HasDefaultValue(0);
+            entity.Property(e => e.LimiteCorreos).HasDefaultValue(0, "DF_Usuarios_LimiteCorreos");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
             entity.Property(e => e.Nombre).HasMaxLength(50);
             entity.Property(e => e.PassTmp)
