@@ -528,7 +528,9 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
     if (loading) return <div style={st.loading}>Cargando…</div>;
     if (!datos)  return <div style={st.nodata}>No hay datos para este centro y año.</div>;
 
-    const camposList = Object.keys(datos)
+    const camposList = (CAMPOS[tabKey] || []).length > 0
+    ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || (typeof datos[c.key] === "number" ? "number" : "text") }))
+    : Object.keys(datos)
         .filter(k => !["idIcg","id","centroId","año"].includes(k))
         .map(k => ({ key: k, label: k, type: typeof datos[k] === "number" ? "number" : "text" }));
 
