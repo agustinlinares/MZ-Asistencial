@@ -77,7 +77,7 @@ const Acuerdos = () => {
 
     return (
         <React.Fragment>
-            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 m-0 p-0">
+            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 m-0 p-0" style={{ overflowY: 'auto', height: '100%' }}>
 
                 {/* FILTROS */}
                 <div style={{ width: '100%', padding: '10px', display: 'flex', flexDirection: 'column' }}>

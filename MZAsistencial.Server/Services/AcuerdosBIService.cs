@@ -17,13 +17,16 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasOferta
                 .Where(x => x.MutuaOfertanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosMutuaDTO
-                {
-                    NumMutua = x.MutuaDemandanteId.ToString(),
-                    MutuaNombre = null,
-                    NumServicios = x.NumServicios,
-                    ContraprestacionEconomica = x.ContraprestacionEconomica
-                })
+                .Join(_context.Mutuas,
+                    x => x.MutuaDemandanteId,
+                    m => m.MutuaId,
+                    (x, m) => new AcuerdosMutuaDTO
+                    {
+                        NumMutua = m.NumeroMutua,
+                        MutuaNombre = m.Mutua1,
+                        NumServicios = x.NumServicios,
+                        ContraprestacionEconomica = x.ContraprestacionEconomica
+                    })
                 .ToListAsync();
         }
 
@@ -31,13 +34,16 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasDemanda
                 .Where(x => x.MutuaDemandanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosMutuaDTO
-                {
-                    NumMutua = x.MutuaOfertanteId.ToString(),
-                    MutuaNombre = null,
-                    NumServicios = x.NumServicios,
-                    ContraprestacionEconomica = x.ContraprestacionEconomica
-                })
+                .Join(_context.Mutuas,
+                    x => x.MutuaOfertanteId,
+                    m => m.MutuaId,
+                    (x, m) => new AcuerdosMutuaDTO
+                    {
+                        NumMutua = m.NumeroMutua,
+                        MutuaNombre = m.Mutua1,
+                        NumServicios = x.NumServicios,
+                        ContraprestacionEconomica = x.ContraprestacionEconomica
+                    })
                 .ToListAsync();
         }
 
@@ -45,15 +51,18 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasProvinciasOferta
                 .Where(x => x.MutuaOfertanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosProvinciaDTO
-                {
-                    NumProvincia = x.ProvinciaId,
-                    Provincia = null,
-                    NumServicios = x.NumServiciosBi,
-                    ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
-                    NumServiciosTerceros = x.NumServiciosTerceros,
-                    ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
-                })
+                .Join(_context.AuxProvincias,
+                    x => x.ProvinciaId,
+                    p => p.ProvinciaId,
+                    (x, p) => new AcuerdosProvinciaDTO
+                    {
+                        NumProvincia = x.ProvinciaId,
+                        Provincia = p.Provincia,
+                        NumServicios = x.NumServiciosBi,
+                        ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
+                        NumServiciosTerceros = x.NumServiciosTerceros,
+                        ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
+                    })
                 .ToListAsync();
         }
 
@@ -61,15 +70,18 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasProvinciasDemanda
                 .Where(x => x.MutuaDemandanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosProvinciaDTO
-                {
-                    NumProvincia = x.ProvinciaId,
-                    Provincia = null,
-                    NumServicios = x.NumServiciosBi,
-                    ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
-                    NumServiciosTerceros = x.NumServiciosTerceros,
-                    ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
-                })
+                .Join(_context.AuxProvincias,
+                    x => x.ProvinciaId,
+                    p => p.ProvinciaId,
+                    (x, p) => new AcuerdosProvinciaDTO
+                    {
+                        NumProvincia = x.ProvinciaId,
+                        Provincia = p.Provincia,
+                        NumServicios = x.NumServiciosBi,
+                        ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
+                        NumServiciosTerceros = x.NumServiciosTerceros,
+                        ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
+                    })
                 .ToListAsync();
         }
 
@@ -77,15 +89,18 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasTipoServicioOferta
                 .Where(x => x.MutuaOfertanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosTipoServicioDTO
-                {
-                    TipoServicio = x.NumTipoServicio,
-                    TipoServicioNombre = null,
-                    NumServicios = x.NumServiciosBi,
-                    ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
-                    NumServiciosTerceros = x.NumServiciosTerceros,
-                    ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
-                })
+                .Join(_context.AuxTipoServicios,
+                    x => x.TipoServicioId,
+                    t => t.TipoServicioId,
+                    (x, t) => new AcuerdosTipoServicioDTO
+                    {
+                        TipoServicio = x.NumTipoServicio,
+                        TipoServicioNombre = t.TipoServicio,
+                        NumServicios = x.NumServiciosBi,
+                        ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
+                        NumServiciosTerceros = x.NumServiciosTerceros,
+                        ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
+                    })
                 .ToListAsync();
         }
 
@@ -93,15 +108,18 @@ namespace MZAsistencial.Server.Services
         {
             return await _context.PsAcuerdosBiMultilateralesMutuasTipoServicioDemanda
                 .Where(x => x.MutuaDemandanteId == mutuaId && x.Anio == anio)
-                .Select(x => new AcuerdosTipoServicioDTO
-                {
-                    TipoServicio = x.NumTipoServicio,
-                    TipoServicioNombre = null,
-                    NumServicios = x.NumServiciosBi,
-                    ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
-                    NumServiciosTerceros = x.NumServiciosTerceros,
-                    ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
-                })
+                .Join(_context.AuxTipoServicios,
+                    x => x.TipoServicioId,
+                    t => t.TipoServicioId,
+                    (x, t) => new AcuerdosTipoServicioDTO
+                    {
+                        TipoServicio = x.NumTipoServicio,
+                        TipoServicioNombre = t.TipoServicio,
+                        NumServicios = x.NumServiciosBi,
+                        ContraprestacionEconomica = x.ContraprestacionEconomicaBi,
+                        NumServiciosTerceros = x.NumServiciosTerceros,
+                        ContraprestacionEconomicaTerceros = x.ContraprestacionEconomicaTerceros
+                    })
                 .ToListAsync();
         }
     }
