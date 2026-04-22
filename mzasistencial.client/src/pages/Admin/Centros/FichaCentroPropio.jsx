@@ -40,7 +40,6 @@ const FichaCentroPropio = () => {
     const cliente = location.state?.cliente;
 
     const [form, setForm] = useState({});
-    const [mapaAbierto, setMapaAbierto] = useState(false);
     const [registrosICG, setRegistrosICG] = useState([]);
     const [seccionActiva, setSeccionActiva] = useState("general");
     const [guardando, setGuardando] = useState(false);
@@ -162,7 +161,7 @@ const FichaCentroPropio = () => {
     if (!cliente) return null;
 
     return (
-        <div className="fcp-page">
+<div className="fcp-page">
             {/* HEADER */}
             <div className="fcp-header">
                 <div className="fcp-header-left">
@@ -286,7 +285,7 @@ const FichaCentroPropio = () => {
                                 <label>Verificar Dirección Google</label>
                                 <div className="fcp-input-icon">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
-                                    <button className="fcp-icon-btn" onClick={() => setMapaAbierto(true)} title="Abrir mapa">
+                                    <button className="fcp-icon-btn" onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })} title="Abrir mapa">
                                         🌐
                                     </button>
                                 </div>
@@ -493,23 +492,10 @@ const FichaCentroPropio = () => {
 
                 </div>
             </div>
-
-            {mapaAbierto && (
-                <MapaModal
-                    latitud={form.Latitud}
-                    longitud={form.Longitud}
-                    direccion={form.DireccionGoogle}
-                    onAceptar={(coords) => setForm(f => ({
-                        ...f,
-                        Latitud: coords.latitud,
-                        Longitud: coords.longitud,
-                        DireccionGoogle: coords.direccion
-                    }))}
-                    onCerrar={() => setMapaAbierto(false)}
-                />
-            )}
         </div>
     );
 };
+
+
 
 export default FichaCentroPropio;
