@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import UseProtectedRoute from '@hooks/UseProtectedRoute';
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
-import { useNavigate } from "react-router-dom";
+import AuthService from "../../../services/auth/AuthService";
+import FichaFinca from './FichaFinca';
 import DataGrid, {
     Column,
     Paging,
@@ -23,13 +23,9 @@ import DataGrid, {
     Pager,
     Toolbar,
     Item,
-    Lookup
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
-
-// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
-const sampleData = [];
 
 const onExporting = (e) => {
     e.component.beginUpdate();
@@ -47,19 +43,90 @@ const onExporting = (e) => {
     e.cancel = true;
 };
 
+const authHeaders = () => {
+    const token = AuthService.getToken();
+    return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
+};
+
 const Fincas = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const [fincas, setFincas] = useState([]);
+    const [selectedFinca, setSelectedFinca] = useState(null);
+    const [centros, setCentros] = useState([]);
 
-    // const { isAuthenticated } = UseProtectedRoute();
-    const navigate = useNavigate();
+    useEffect(() => {
+        const fetchFincas = async () => {
+            try {
+                const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setFincas(data);
+                }
+            } catch (error) {
+                console.error('Error al cargar fincas registrales:', error);
+            }
+        };
+        const fetchCentros = async () => {
+            try {
+                const respuesta = await fetch('/api/centros/lookup', { headers: authHeaders() });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setCentros(data);
+                }
+            } catch (error) {
+                console.error('Error al cargar centros:', error);
+            }
+        };
+        fetchFincas();
+        fetchCentros();
+    }, []);
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    const recargarFincas = async () => {
+        try {
+            const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
+            if (respuesta.ok) setFincas(await respuesta.json());
+        } catch (error) {
+            console.error('Error al recargar fincas:', error);
+        }
+    };
+
+    const handleSaveFinca = async (data) => {
+        try {
+            const isEdit = !!data.finca_id;
+            const url = isEdit
+                ? `/api/FincasRegistrales/${data.finca_id}`
+                : '/api/FincasRegistrales';
+            const method = isEdit ? 'PUT' : 'POST';
+            const payload = {
+                Finca_id: parseInt(data.finca_id) || 0,
+                Centro_id: parseInt(data.centro_id) || 0,
+                Mutua: data.mutua || null,
+                Direccion: data.direccion || null,
+                Superficie: data.superficie !== '' && data.superficie != null ? parseFloat(data.superficie) : null,
+                Coste: data.coste !== '' && data.coste != null ? parseFloat(data.coste) : null,
+                F_Alquiler: data.f_adquisicion || null,
+                Referencia_Catastral: data.ref_catastral || null,
+                F_Inscripcion: data.f_inscripcion || null,
+                F_Baja: data.f_baja || null,
+                TipoFinca: data.tipo_finca_idx != null ? parseInt(data.tipo_finca_idx) : null,
+                Titularidad: data.titularidad || null,
+                OtrosDatos: data.otros_datos || null,
+                Utilizacion: data.utilizacion || null,
+                DireccionGoogle: data.dir_google || null,
+            };
+            const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
+            if (res.ok) {
+                setSelectedFinca(null);
+                await recargarFincas();
+            } else {
+                alert(`Error al guardar: ${res.status} ${res.statusText}`);
+            }
+        } catch (error) {
+            console.error('Error al guardar finca:', error);
+            alert(`Error: ${error.message}`);
+        }
+    };
 
     return (
         <React.Fragment>
@@ -68,11 +135,28 @@ const Fincas = () => {
 
                     <div className="title"> {t('LISTA FINCAS')}</div>
 
-                    <div className="table-container">
+                    <div className="table-container tabla-contenedor">
+                        {selectedFinca && (
+                            <FichaFinca
+                                finca={selectedFinca}
+                                centros={centros}
+                                onClose={() => setSelectedFinca(null)}
+                                onSave={handleSaveFinca}
+                            />
+                        )}
+                        <div style={{ marginBottom: 8, textAlign: 'right' }}>
+                            <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => setSelectedFinca({})}
+                            >
+                                + Nueva Finca
+                            </button>
+                        </div>
                         <DataGrid
+                            onRowClick={(e) => setSelectedFinca(e.data)}
                             ref={dataGridRef}
-                            dataSource={sampleData}
-                            keyExpr="finca_id"
+                            dataSource={fincas}
+                            keyExpr="Finca_id"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -97,26 +181,19 @@ const Fincas = () => {
                             <FilterPanel visible />
                             <ColumnFixing enabled />
 
-
-
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
-
-                            <Column dataField="finca_id" caption="Finca_id" width={90} />
-                            <Column dataField="centro_id" caption="Centro_id" width={90} />
-                            <Column dataField="localizador" caption="Localizador" width={130} />
-                            <Column dataField="mutua" caption="Mutua" width={120} />
-                            <Column dataField="centro" caption="Centro" width={150} />
-                            <Column dataField="direccion" caption="Dirección" width={180} />
-                            <Column dataField="cp" caption="C.P." width={80} />
-                            <Column dataField="provincia" caption="Provincia" width={120} />
-                            <Column dataField="poblacion" caption="Población" width={130} />
-                            <Column dataField="superficie" caption="Superficie" width={100} />
-                            <Column dataField="coste" caption="Coste" width={100} />
-                            <Column dataField="f_alquiler" caption="F. Alquiler" width={110} />
-                            <Column dataField="ref_catastral" caption="Referencia Catastral" width={160} />
-                            <Column dataField="f_inscripcion" caption="F. Inscripción" width={110} />
-                            <Column dataField="f_baja" caption="F. Baja" width={110} />
-                            <Column dataField="mapa" caption="Mapa" width={70} />
+                            <Column dataField="Finca_id" caption="Finca ID" width={90} />
+                            <Column dataField="Centro_id" caption="Centro ID" width={90} />
+                            <Column dataField="Localizador" caption="Localizador" width={130} />
+                            <Column dataField="Centro" caption="Centro" width={180} />
+                            <Column dataField="Direccion" caption="Dirección" width={220} />
+                            <Column dataField="Utilizacion" caption="Utilización" width={120} />
+                            <Column dataField="Superficie" caption="Superficie" width={100} />
+                            <Column dataField="Coste" caption="Coste" width={100} />
+                            <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
+                            <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
+                            <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
+                            <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
+                            <Column dataField="Titularidad" caption="Titularidad" width={180} />
                         </DataGrid>
                     </div>
                 </div>

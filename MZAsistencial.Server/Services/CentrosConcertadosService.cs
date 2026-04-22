@@ -23,7 +23,7 @@ namespace MZAsistencial.Server.Services
             var query = from c in _context.CentrosConcertados
                         join p in _context.AuxPoblaciones on c.PoblacionId equals p.PoblacionId
                         join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId
-                        
+
                         select new CentrosConcertadoDTO
                         {
                             Ccn = c.CodigoMz,      
@@ -32,10 +32,10 @@ namespace MZAsistencial.Server.Services
                             Centro = c.Centro,
                             Direccion = c.Direccion,
                             CP = c.Cp,
-                            
+
                             Poblacion = p.Poblacion, 
                             Provincia = pr.Provincia, 
-                            
+
                             FechaAlta = c.FechaAlta,
                             Mapa = c.MapaValidado.ToString()
                         };

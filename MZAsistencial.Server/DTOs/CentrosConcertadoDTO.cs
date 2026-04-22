@@ -1,4 +1,6 @@
-﻿namespace MZAsistencial.Server.DTOs
+using System;
+
+namespace MZAsistencial.Server.DTOs
 {
     public class CentrosConcertadoDTO
     {
