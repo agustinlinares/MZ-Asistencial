@@ -138,8 +138,8 @@ namespace MZAsistencial.Server.DTOs
         // Personal Sanitario Grado Superior (GradSup)
         public decimal? PersSanitGradSupNumPers          { get; set; }
         public decimal? PersSanitGradSupGastPers         { get; set; }
-        public decimal? PersSanitGradSupHorasCp1         { get; set; }
-        public decimal? PersSanitGradSupHorasCc1         { get; set; }
+        public decimal? PersSanitGradSupHorasCp         { get; set; }
+        public decimal? PersSanitGradSupHorasCc         { get; set; }
         public decimal? PersSanitGradSupHorasIt          { get; set; }
         public decimal? PersSanitGradSupHorasAtep        { get; set; }
         public decimal? PersSanitGradSupHorasAgm         { get; set; }

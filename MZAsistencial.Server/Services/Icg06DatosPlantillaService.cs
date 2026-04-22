@@ -112,7 +112,7 @@ namespace MZAsistencial.Server.Services
             PersSanitArt7RestHorasPersSustInt = e.PersSanitArt7RestHorasPersSustInt,
             // Grado Superior
             PersSanitGradSupNumPers = e.PersSanitGradSupNumPers, PersSanitGradSupGastPers = e.PersSanitGradSupGastPers,
-            PersSanitGradSupHorasCp1 = e.PersSanitGradSupHorasCp1, PersSanitGradSupHorasCc1 = e.PersSanitGradSupHorasCc1,
+            PersSanitGradSupHorasCp = e.PersSanitGradSupHorasCp, PersSanitGradSupHorasCc = e.PersSanitGradSupHorasCc,
             PersSanitGradSupHorasIt = e.PersSanitGradSupHorasIt, PersSanitGradSupHorasAtep = e.PersSanitGradSupHorasAtep,
             PersSanitGradSupHorasAgm = e.PersSanitGradSupHorasAgm,
             PersSanitGradSupNumPersSustInt = e.PersSanitGradSupNumPersSustInt, PersSanitGradSupGastPersSustInt = e.PersSanitGradSupGastPersSustInt,
@@ -232,7 +232,7 @@ namespace MZAsistencial.Server.Services
             e.PersSanitArt7RestNumPersSustInt = dto.PersSanitArt7RestNumPersSustInt; e.PersSanitArt7RestGastPersSustInt = dto.PersSanitArt7RestGastPersSustInt;
             e.PersSanitArt7RestHorasPersSustInt = dto.PersSanitArt7RestHorasPersSustInt;
             e.PersSanitGradSupNumPers = dto.PersSanitGradSupNumPers; e.PersSanitGradSupGastPers = dto.PersSanitGradSupGastPers;
-            e.PersSanitGradSupHorasCp1 = dto.PersSanitGradSupHorasCp1; e.PersSanitGradSupHorasCc1 = dto.PersSanitGradSupHorasCc1;
+            e.PersSanitGradSupHorasCp = dto.PersSanitGradSupHorasCp; e.PersSanitGradSupHorasCc = dto.PersSanitGradSupHorasCc;
             e.PersSanitGradSupHorasIt = dto.PersSanitGradSupHorasIt; e.PersSanitGradSupHorasAtep = dto.PersSanitGradSupHorasAtep;
             e.PersSanitGradSupHorasAgm = dto.PersSanitGradSupHorasAgm;
             e.PersSanitGradSupNumPersSustInt = dto.PersSanitGradSupNumPersSustInt; e.PersSanitGradSupGastPersSustInt = dto.PersSanitGradSupGastPersSustInt;
