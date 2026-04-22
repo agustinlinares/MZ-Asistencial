@@ -204,11 +204,11 @@
 }
 
 .fcp-field label {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: #7a8a99;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #1565c0;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
 }
 
 .fcp-field input[type="text"],
@@ -216,9 +216,11 @@
 .fcp-field input[type="date"],
 .fcp-field select,
 .fcp-input-full {
-    border: 1px solid #d0dae6;
-    border-radius: 4px;
-    padding: 6px 9px;
+    border: none;
+    border-bottom: 1.5px solid #b0bec5;
+    border-radius: 0;
+    padding: 4px 2px;
+    background: transparent;
     font-size: 12.5px;
     font-family: inherit;
     color: #2c3e50;
