@@ -18,7 +18,8 @@ builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<FincaRegistralService>();
- 
+builder.Services.AddScoped<ICentrosConcertadosService, CentrosConcertadosService>();
+
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();
 builder.Services.AddScoped<Icg06AmbService>();

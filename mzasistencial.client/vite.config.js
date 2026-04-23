@@ -55,10 +55,10 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/api': {
-                target: 'http://localhost:5118',
-                changeOrigin: true,
-                secure: false
+            '^/api': {
+                target: 'http://localhost:5118', 
+                secure: false,                   
+                changeOrigin: true
             }
         },
         port: parseInt(env.DEV_SERVER_PORT || '60007'),
@@ -68,4 +68,3 @@ export default defineConfig({
         }
     }
 })
-

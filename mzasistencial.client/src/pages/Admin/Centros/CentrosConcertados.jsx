@@ -92,12 +92,12 @@ const CentrosConcertados = () => {
     // Doble clic para navegar a la ficha de detalle
     const onRowDblClick = (e) => {
         const datosAdaptados = {
-            CentroID: e.data.Centro_id,
-            Localizador: e.data.Ccn,
-            Centro: e.data.Centro,
-            Direccion: e.data.Direccion,
-            Poblacion: e.data.Poblacion,
-            Provincia: e.data.Provincia,
+            CentroID: e.data.centro_id,
+            Localizador: e.data.ccn,
+            Centro: e.data.centro,
+            Direccion: e.data.direccion,
+            Poblacion: e.data.poblacion,
+            Provincia: e.data.provincia,
         };
 
         setCentroSeleccionado(datosAdaptados);
@@ -111,16 +111,11 @@ const CentrosConcertados = () => {
 
                     <div className="title"> {t('LISTA CENTROS CONCERTADOS')}</div>
 
-                    <div className="BotonesCombo">
-                        <button type="button" className="boton-action">{t('Subir Plantilla')}</button>
-                        <button type="button" className="boton-action">{t('Procesar Plantillas')}</button>
-                    </div>
-
                     <div className="table-container">
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={centros}
-                            keyExpr="Centro_id"
+                            keyExpr="centro_id"
                             showBorders={true}
                             columnAutoWidth={true}
                             allowColumnResizing={true}
@@ -148,18 +143,18 @@ const CentrosConcertados = () => {
 
                             {/* ── COLUMNAS ── */}
 
-                            <Column dataField="Ccn" caption="CCN" width={100} />
-                            <Column dataField="Cif" caption="CIF" width={110} />
-                            <Column dataField="Centro_id" caption="Centro ID" width={100} />
-                            <Column dataField="Centro" caption="Centro" width={180} />
-                            <Column dataField="Direccion" caption="Dirección" width={200} />
-                            <Column dataField="CP" caption="C.P." width={80} />
+                            <Column dataField="ccn" caption="CCN" width={100} />
+                            <Column dataField="cif" caption="CIF" width={110} />
+                            <Column dataField="centro_id" caption="Centro ID" width={100} />
+                            <Column dataField="centro" caption="Centro" width={180} />
+                            <Column dataField="direccion" caption="Dirección" width={200} />
+                            <Column dataField="cp" caption="C.P." width={80} />
 
-                            <Column dataField="Poblacion" caption="Población" width={150} />
-                            <Column dataField="Provincia" caption="Provincia" width={130} />
+                            <Column dataField="poblacion" caption="Población" width={150} />
+                            <Column dataField="provincia" caption="Provincia" width={130} />
 
-                            <Column dataField="FechaAlta" caption="Fecha Alta" dataType="date" width={110} />
-                            <Column dataField="Mapa" caption="Mapa" width={80} />
+                            <Column dataField="fechaAlta" caption="Fecha Alta" dataType="date" width={110} />
+                            <Column dataField="mapa" caption="Mapa" width={80} />
                             <Column dataField="acciones" caption="Acciones" width={100} />
                         </DataGrid>
                     </div>
