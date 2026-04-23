@@ -37,5 +37,12 @@ namespace MZAsistencial.Server.Controllers
             if (!result) return NotFound();
             return Ok();
         }
+        [HttpPut("validar")]
+        public async Task<IActionResult> Validar([FromBody] List<int> ids)
+        {
+            var result = await _service.ValidarAsync(ids);
+            if (!result) return BadRequest();
+            return Ok();
+        }
     }
 }
