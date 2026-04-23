@@ -10,9 +10,9 @@ namespace MZAsistencial.Server.Controllers
     [ApiController]
     public class CentrosConcertadosController : ControllerBase
     {
-        private readonly CentrosConcertadosService _service;
+        private readonly ICentrosConcertadosService _service;
 
-        public CentrosConcertadosController(CentrosConcertadosService service)
+        public CentrosConcertadosController(ICentrosConcertadosService service)
         {
             _service = service;
         }

@@ -1,4 +1,4 @@
-﻿import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
@@ -11,7 +11,7 @@ const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
         ? `${env.APPDATA}/ASP.NET/https`
         : `${env.HOME}/.aspnet/https`;
-        
+
 const certificateName = "mzasistencial.client";
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
@@ -55,10 +55,10 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/api': {
-                target: 'http://localhost:5118',
-                changeOrigin: true,
-                secure: false
+            '^/api': {
+                target: 'http://localhost:5118', 
+                secure: false,                   
+                changeOrigin: true
             }
         },
         port: parseInt(env.DEV_SERVER_PORT || '60007'),
@@ -68,4 +68,3 @@ export default defineConfig({
         }
     }
 })
-
