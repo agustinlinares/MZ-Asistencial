@@ -387,6 +387,14 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     });
     const [errors, setErrors] = useState({});
     const [showMapa, setShowMapa] = useState(false);
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        modalRef.current?.focus();
+        const handler = e => { if (e.key === 'Escape' && !showMapa) onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose, showMapa]);
 
     const handleChange = useCallback((field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
@@ -407,25 +415,27 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
 
     return (
         <>
-            <div className="finca-page">
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">✏️ Ficha Finca | {form.finca_id || '—'}</span>
-                    <div className="finca-header-btns">
-                        <button className="finca-btn-primary" onClick={handleSave}>✓ Aceptar</button>
-                        <button className="finca-btn-secondary" onClick={onClose}>✗ Salir</button>
+            <div className="finca-container-inline" role="region" aria-label={`Ficha Finca ${form.finca_id}`}>
+                <div className="finca-inline-content" ref={modalRef} tabIndex={-1}>
+                    <div className="finca-modal-header">
+                        <span className="finca-modal-title">✏️ Ficha Finca | {form.finca_id || '—'}</span>
+                        <div className="finca-header-btns">
+                            <button className="finca-btn-primary" onClick={handleSave}>✓ Aceptar</button>
+                            <button className="finca-btn-secondary" onClick={onClose}>✗ Salir</button>
+                        </div>
                     </div>
-                </div>
 
-                <div className="finca-tabs">
-                    <button className={`finca-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
-                    <button className={`finca-tab ${activeTab === 'costes' ? 'active' : ''}`} onClick={() => setActiveTab('costes')}>Costes</button>
-                </div>
+                    <div className="finca-tabs">
+                        <button className={`finca-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
+                        <button className={`finca-tab ${activeTab === 'costes' ? 'active' : ''}`} onClick={() => setActiveTab('costes')}>Costes</button>
+                    </div>
 
-                <div className="finca-tab-content">
-                    {activeTab === 'general' && (
-                        <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onAbrirMapa={() => setShowMapa(true)} />
-                    )}
-                    {activeTab === 'costes' && <TabCostes fincaId={form.finca_id} />}
+                    <div className="finca-tab-content">
+                        {activeTab === 'general' && (
+                            <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onAbrirMapa={() => setShowMapa(true)} />
+                        )}
+                        {activeTab === 'costes' && <TabCostes fincaId={form.finca_id} />}
+                    </div>
                 </div>
             </div>
 
