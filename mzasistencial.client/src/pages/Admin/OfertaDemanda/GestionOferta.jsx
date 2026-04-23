@@ -26,7 +26,7 @@ import RadioGroup from "devextreme-react/radio-group";
 import { useTranslation } from "react-i18next";
 import './Centros.css';
 
-const API = 'https://localhost:7132/api';
+const API = 'http://localhost:5118/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
 const VISTAS = ['Agrupada', 'Desagrupada'];
 
@@ -129,10 +129,10 @@ const GestionOferta = () => {
             .then(data => {
                 const todos = [{ estadoId: null, estado: 'Todas' }, ...data];
                 setEstados(todos);
-                const pendiente = data.find(e =>
-                    e.estado?.toLowerCase().includes('pendiente asignar')
+                const estadoPendiente = data.find(e =>
+                    e.estado?.toLowerCase().includes('pendiente asign')
                 );
-                setEstadoSeleccionado(pendiente ? pendiente.estadoId : null);
+                setEstadoSeleccionado(estadoPendiente ? estadoPendiente.estadoId : null);
             })
             .catch(err => console.error('Error al cargar estados:', err));
     }, []);
