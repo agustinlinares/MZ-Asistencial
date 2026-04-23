@@ -86,5 +86,21 @@ namespace MZAsistencial.Server.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<bool> ValidarAsync(List<int> ids)
+        {
+            var centros = await _context.CentrosPropios
+                .Where(c => ids.Contains(c.CentroId))
+                .ToListAsync();
+
+            if (!centros.Any()) return false;
+
+            foreach (var centro in centros)
+            {
+                centro.Validado = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
