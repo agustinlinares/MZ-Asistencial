@@ -73,6 +73,30 @@ body#main.sidebar-collapsed #admin-nav{
     overflow-x: hidden;
     list-style: none;
     position: relative;
+    scroll-behavior: smooth;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+    /* Fade inferior para indicar más contenido */
+    mask-image: linear-gradient(to bottom, black calc(100% - 48px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 48px), transparent 100%);
+}
+
+/* Scrollbar webkit (Chrome, Edge, Safari) */
+#list-menuadmin::-webkit-scrollbar {
+    width: 4px;
+}
+#list-menuadmin::-webkit-scrollbar-track {
+    background: transparent;
+}
+#list-menuadmin::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+}
+#list-menuadmin:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.42);
 }
 
 #admin-nav #img-menu{
@@ -157,10 +181,15 @@ body#main.sidebar-collapsed #admin-nav{
 .menu-title {
     display: flex;
     align-items: center;
-    /* justify-content: space-between; */
     padding: 10px;
     cursor: pointer;
     color: white !important;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.menu-title:hover {
+    background-color: var(--e-global-color-primary);
 }
 
 .menu-title i {

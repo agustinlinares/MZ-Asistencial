@@ -136,65 +136,68 @@ const Fincas = () => {
                     <div className="title"> {t('LISTA FINCAS')}</div>
 
                     <div className="table-container tabla-contenedor">
-                        {selectedFinca && (
+                        {selectedFinca ? (
                             <FichaFinca
                                 finca={selectedFinca}
                                 centros={centros}
                                 onClose={() => setSelectedFinca(null)}
                                 onSave={handleSaveFinca}
                             />
-                        )}
-                        <div style={{ marginBottom: 8, textAlign: 'right' }}>
-                            <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => setSelectedFinca({})}
-                            >
-                                + Nueva Finca
-                            </button>
-                        </div>
-                        <DataGrid
-                            onRowClick={(e) => setSelectedFinca(e.data)}
-                            ref={dataGridRef}
-                            dataSource={fincas}
-                            keyExpr="Finca_id"
-                            showBorders={true}
-                            columnAutoWidth={true}
-                            allowColumnResizing={true}
-                            onExporting={onExporting}
-                            className="mz-table"
-                            rowAlternationEnabled={true}
-                            showRowLines={true}
-                            showColumnLines={true}
-                            wordWrapEnabled={false}
-                        >
-                            <Scrolling mode="standard" showScrollbar="always" />
-                            <Paging defaultPageSize={25} />
-                            <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
-                            <SearchPanel visible width={240} placeholder={t('buscar')} />
-                            <FilterRow visible={true} applyFilter="auto" />
-                            <HeaderFilter visible searchMode='contains' />
-                            <Selection mode="multiple" allowSelectAll />
-                            <Grouping autoExpandAll={false} />
-                            <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
-                            <Sorting mode="multiple" />
-                            <FilterPanel visible />
-                            <ColumnFixing enabled />
+                        ) : (
+                            <>
+                                <div style={{ marginBottom: 8, textAlign: 'right' }}>
+                                    <button
+                                        className="btn btn-primary btn-sm"
+                                        onClick={() => setSelectedFinca({})}
+                                    >
+                                        + Nueva Finca
+                                    </button>
+                                </div>
+                                <DataGrid
+                                    onRowClick={(e) => setSelectedFinca(e.data)}
+                                    ref={dataGridRef}
+                                    dataSource={fincas}
+                                    keyExpr="Finca_id"
+                                    showBorders={true}
+                                    columnAutoWidth={true}
+                                    allowColumnResizing={true}
+                                    onExporting={onExporting}
+                                    className="mz-table"
+                                    rowAlternationEnabled={true}
+                                    showRowLines={true}
+                                    showColumnLines={true}
+                                    wordWrapEnabled={false}
+                                >
+                                    <Scrolling mode="standard" showScrollbar="always" />
+                                    <Paging defaultPageSize={25} />
+                                    <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    <SearchPanel visible width={240} placeholder={t('buscar')} />
+                                    <FilterRow visible={true} applyFilter="auto" />
+                                    <HeaderFilter visible searchMode='contains' />
+                                    <Selection mode="multiple" allowSelectAll />
+                                    <Grouping autoExpandAll={false} />
+                                    <ColumnChooser enabled mode="select" />
+                                    <Export enabled fileName="Casos" allowExportSelectedData />
+                                    <Sorting mode="multiple" />
+                                    <FilterPanel visible />
+                                    <ColumnFixing enabled />
 
-                            <Column dataField="Finca_id" caption="Finca ID" width={90} />
-                            <Column dataField="Centro_id" caption="Centro ID" width={90} />
-                            <Column dataField="Localizador" caption="Localizador" width={130} />
-                            <Column dataField="Centro" caption="Centro" width={180} />
-                            <Column dataField="Direccion" caption="Dirección" width={220} />
-                            <Column dataField="Utilizacion" caption="Utilización" width={120} />
-                            <Column dataField="Superficie" caption="Superficie" width={100} />
-                            <Column dataField="Coste" caption="Coste" width={100} />
-                            <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
-                            <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
-                            <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
-                            <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
-                            <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                        </DataGrid>
+                                    <Column dataField="Finca_id" caption="Finca ID" width={90} />
+                                    <Column dataField="Centro_id" caption="Centro ID" width={90} />
+                                    <Column dataField="Localizador" caption="Localizador" width={130} />
+                                    <Column dataField="Centro" caption="Centro" width={180} />
+                                    <Column dataField="Direccion" caption="Dirección" width={220} />
+                                    <Column dataField="Utilizacion" caption="Utilización" width={120} />
+                                    <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="Coste" caption="Coste" width={100} />
+                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
+                                    <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
+                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
+                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
+                                    <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                </DataGrid>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
