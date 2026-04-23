@@ -27,7 +27,7 @@ const ICGConciertos = () => {
 
         const loadData = async () => {
             try {
-                const response = await fetch("/api/IgcConciertos");
+                const response = await fetch("/api/IcgConciertos");
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
