@@ -265,68 +265,11 @@
 }
 
 /* ── SUBMODAL MAPA ────────────────────────────────────────────── */
-.mapa-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 3000;
-}
-
-.mapa-modal {
-    background: #fff;
-    border-radius: 8px;
-    width: 88vw;
-    max-width: 700px;
-    max-height: 88vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
-    overflow: hidden;
-    outline: none;
-}
-
-.mapa-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    border-bottom: 1px solid #e0e0e0;
-    flex-shrink: 0;
-}
-
-.mapa-modal-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a2a4a;
-    margin: 0;
-}
-
-.mapa-modal-header .finca-header-btns {
-    display: flex;
-    gap: 8px;
-}
-
-.mapa-body {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    flex: 1;
-    overflow-y: auto;
-}
-
-.mapa-coords-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
-
+/* Estilos de mapa específicos movidos a TabMapa */
 .mapa-view-tabs {
     display: flex;
     border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 10px;
 }
 
 .mapa-view-tab {
@@ -348,54 +291,10 @@
 }
 
 .mapa-container {
-    height: 300px;
     border-radius: 6px;
     position: relative;
     overflow: hidden;
     border: 1px solid #b8ccd8;
-}
-
-.mapa-placeholder {
-    text-align: center;
-    color: #7a9ab0;
-    font-size: 13px;
-}
-
-.mapa-placeholder-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
-.mapa-placeholder-note {
-    margin-top: 6px;
-    font-size: 11px;
-    color: #aac0cc;
-}
-
-.mapa-marker-wrap {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -100%);
-    cursor: default;
-    font-size: 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.mapa-marker-tooltip {
-    position: absolute;
-    bottom: calc(100% + 4px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.78);
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    white-space: nowrap;
-    pointer-events: none;
 }
 
 /* ── TABLA COSTES ─────────────────────────────────────────────── */
