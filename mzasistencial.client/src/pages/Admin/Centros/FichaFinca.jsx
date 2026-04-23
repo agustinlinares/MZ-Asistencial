@@ -415,8 +415,8 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
 
     return (
         <>
-            <div className="finca-backdrop" role="dialog" aria-modal="true" aria-label={`Ficha Finca ${form.finca_id}`}>
-                <div className="finca-modal" ref={modalRef} tabIndex={-1}>
+            <div className="finca-container-inline" role="region" aria-label={`Ficha Finca ${form.finca_id}`}>
+                <div className="finca-inline-content" ref={modalRef} tabIndex={-1}>
                     <div className="finca-modal-header">
                         <span className="finca-modal-title">✏️ Ficha Finca | {form.finca_id || '—'}</span>
                         <div className="finca-header-btns">

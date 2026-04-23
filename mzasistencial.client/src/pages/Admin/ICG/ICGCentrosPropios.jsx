@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -483,8 +483,7 @@ const st = {
     fieldGrid:  { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "10px 20px" },
     field:      { display: "flex", flexDirection: "column" },
     fieldLabel: { fontSize: 10.5, color: "#1565c0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 2 },
-    fieldInput: { border: "none", borderBottom: "1.5px solid #b0bec5", borderRadius: 0, padding: "4px 2px", fontSize: 13, outline: "none", background: "transparent", color: "#212121", width: "100%", boxSizing: "border-box", fontFamily: "inherit" },
-    fieldInput: { border: "1px solid #d0d0d0", borderRadius: 3, padding: "4px 8px", fontSize: 13, outline: "none", background: "#fff", color: "#222" },
+    fieldInput: { border: "1px solid #d0d0d0", borderRadius: 3, padding: "4px 8px", fontSize: 13, outline: "none", background: "#fff", color: "#222", width: "100%", boxSizing: "border-box", fontFamily: "inherit" },
     saveBar:    { display: "flex", gap: 10, marginTop: 16, alignItems: "center" },
     saveBtn:    { border: "none", borderRadius: 4, padding: "6px 22px", fontSize: 13, cursor: "pointer", fontWeight: 600, background: "#2e7d32", color: "#fff" },
     msg: (ok)  => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828" }),
