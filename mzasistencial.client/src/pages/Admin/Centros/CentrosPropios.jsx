@@ -72,7 +72,7 @@ const CentrosPropios = () => {
 
     const handleExportarExcel = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance;
+        const grid = dataGridRef.current.instance();
         if (!grid) return;
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet('CentrosPropios');
@@ -85,7 +85,7 @@ const CentrosPropios = () => {
 
     const handleExportarPDF = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance;
+        const grid = dataGridRef.current.instance();
         if (!grid) return;
         import('devextreme/pdf_exporter').then(({ exportDataGrid: exportPDF }) => {
             import('jspdf').then(({ jsPDF }) => {
