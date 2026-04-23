@@ -17,6 +17,7 @@ builder.Services.AddDbContext<MZAsistencialContext>(options =>
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();
+builder.Services.AddScoped<FincaRegistralService>();
  
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();
