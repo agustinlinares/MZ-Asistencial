@@ -153,17 +153,19 @@ const Fincas = () => {
                                         + Nueva Finca
                                     </button>
                                 </div>
-                                <DataGrid
-                                    onRowClick={(e) => setSelectedFinca(e.data)}
-                                    ref={dataGridRef}
-                                    dataSource={fincas}
-                                    keyExpr="Finca_id"
-                                    showBorders={true}
-                                    columnAutoWidth={true}
-                                    allowColumnResizing={true}
-                                    onExporting={onExporting}
-                                    className="mz-table"
-                                    rowAlternationEnabled={true}
+                                <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 230px)', width: '100%' }}>
+                                    <DataGrid
+                                        onRowClick={(e) => setSelectedFinca(e.data)}
+                                        ref={dataGridRef}
+                                        dataSource={fincas}
+                                        keyExpr="Finca_id"
+                                        showBorders={true}
+                                        columnAutoWidth={true}
+                                        allowColumnResizing={true}
+                                        onExporting={onExporting}
+                                        className="mz-table"
+                                        height="100%"
+                                        rowAlternationEnabled={true}
                                     showRowLines={true}
                                     showColumnLines={true}
                                     wordWrapEnabled={false}
@@ -195,7 +197,8 @@ const Fincas = () => {
                                     <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
                                     <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
                                     <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                                </DataGrid>
+                                    </DataGrid>
+                                </div>
                             </>
                         )}
                     </div>
