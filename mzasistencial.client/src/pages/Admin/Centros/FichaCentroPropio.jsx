@@ -361,7 +361,13 @@ const FichaCentroPropio = () => {
                         <div className="fcp-grid fcp-grid--3">
                             <div className="fcp-field">
                                 <label>Fecha de Baja</label>
-                                <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")} />
+                                <input 
+                                    type="date" 
+                                    value={form.FechaBaja || ""} 
+                                    onChange={set("FechaBaja")}
+                                    disabled={!form.CentroDesactivado}
+                                    style={{ opacity: !form.CentroDesactivado ? 0.4 : 1, cursor: !form.CentroDesactivado ? "not-allowed" : "default" }}
+                                />
                             </div>
                             <div className="fcp-field fcp-field--center">
                                 <label>Traslado</label>
@@ -374,7 +380,14 @@ const FichaCentroPropio = () => {
                         </div>
                         <div className="fcp-bloque">
                             <p className="fcp-bloque-titulo">Nuevo Centro</p>
-                            <input type="text" value={form.NuevoCentro || ""} onChange={set("NuevoCentro")} className="fcp-input-full" />
+                            <input 
+                                type="text" 
+                                value={form.NuevoCentro || ""} 
+                                onChange={set("NuevoCentro")} 
+                                className="fcp-input-full"
+                                disabled={!form.Traslado}
+                                style={{ opacity: !form.Traslado ? 0.4 : 1, cursor: !form.Traslado ? "not-allowed" : "default" }}
+                            />
                         </div>
                     </section>
 

@@ -446,15 +446,15 @@ const TABS = [
     { key: "area",           label: "Área Asistencial",          api: "Icg06AreaAsistencial" },
     { key: "poblacion",      label: "Población Protegida",       api: "Icg06PoblacionProtegida" },
     { key: "especialidades", label: "Especialidades / Servicios",api: "Icg06Especialidad" },
-    { key: "hos",            label: "Act. Sust. Conciertos (H)", api: "Icg06Hos" },
+    { key: "hos",            label: "Act. Sust. Conciertos (H)", api: "Icg06Hos",     hospitalario: true },
     { key: "amb",            label: "Act. Sust. Conciertos",     api: "Icg06Amb" },
-    { key: "convHos",        label: "Conv. Sectorial ITCC (H)",  api: "Icg06ConvHos" },
+    { key: "convHos",        label: "Conv. Sectorial ITCC (H)",  api: "Icg06ConvHos", hospitalario: true },
     { key: "convAmb",        label: "Conv. Sectorial ITCC",      api: "Icg06ConvAmb" },
-    { key: "itHos",          label: "Control IT CC (H)",         api: "Icg06ItHos" },
+    { key: "itHos",          label: "Control IT CC (H)",         api: "Icg06ItHos",   hospitalario: true },
     { key: "itAmb",          label: "Control IT CC",             api: "Icg06ItAmb" },
-    { key: "otrasHos",       label: "Otras Asistencias (H)",     api: "Icg06OtrasHos" },
+    { key: "otrasHos",       label: "Otras Asistencias (H)",     api: "Icg06OtrasHos",hospitalario: true },
     { key: "otrasAmb",       label: "Otras Asistencias",         api: "Icg06OtrasAmb" },
-    { key: "asProHos",       label: "AS Cont. Prof. (H)",        api: "Icg06AsProHos" },
+    { key: "asProHos",       label: "AS Cont. Prof. (H)",        api: "Icg06AsProHos",hospitalario: true },
     { key: "asPro",          label: "AS Cont. Profesionales",    api: "Icg06AsPro" },
 ];
 
@@ -576,7 +576,9 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
 const FichaICG06 = ({ centro, año, onBack }) => {
     const [tabActiva, setTabActiva] = useState("generales");
+    const [esHospitalario, setEsHospitalario] = useState(true);
     const tab = TABS.find(t => t.key === tabActiva);
+    const tabsVisibles = TABS.filter(t => !t.hospitalario || esHospitalario);
 
     return (
         <div>
@@ -589,11 +591,17 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                     <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
                 </div>
                 <div style={st.tabBar}>
-                    {TABS.map(t => (
-                        <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
-                            {t.label}
-                        </button>
-                    ))}
+                <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: "#1565c0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                        <input type="checkbox" checked={esHospitalario} onChange={e => { setEsHospitalario(e.target.checked); setTabActiva("generales"); }} />
+                        Centro Hospitalario
+                    </label>
+                </div>
+                {tabsVisibles.map(t => (
+                    <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
+                        {t.label}
+                    </button>
+                ))}
                 </div>
                 <div style={st.tabContent}>
                     {tab && (
