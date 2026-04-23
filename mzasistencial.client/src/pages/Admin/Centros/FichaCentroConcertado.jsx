@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-lea
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../../../styles/FichaGlobal.css';
+import AuthService from "../../../services/auth/AuthService";
 
 // Configuración de iconos de Leaflet para Vite
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -16,6 +17,10 @@ const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const ATTR_OSM = '&copy; OpenStreetMap';
 const ATTR_SAT = 'Tiles &copy; Esri';
+const authHeaders = () => {
+    const token = AuthService.getToken();
+    return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
+};
 
 /* ── HELPERS LEAFLET ───────────────────────────────────────────── */
 const MapClickHandler = ({ onMapClick }) => {
@@ -95,23 +100,24 @@ const TabMapa = ({ form, onChange }) => {
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
-const TabGeneral = ({ form, onChange, errors, onGoToMap }) => (
+const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
     <div className="ficha-grid">
         <div className="ficha-field">
-            <label>Localizador (CCN)</label>
-            <input type="text" value={form.localizador || ''} readOnly />
-        </div>
-        <div className="ficha-field">
             <label>Proveedor</label>
-            <select value={form.proveedor || ''} onChange={e => onChange('proveedor', e.target.value)}>
+            <select value={form.proveedor || ''} onChange={e => {
+                onChange('proveedor', e.target.value);
+                onChange('delegacion', ''); // Limpiamos la delegación al cambiar proveedor
+            }}>
                 <option value="">— Seleccionar —</option>
+                {opts.proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
             </select>
         </div>
 
         <div className="ficha-field">
             <label>Delegación</label>
-            <select value={form.delegacion || ''} onChange={e => onChange('delegacion', e.target.value)}>
+            <select value={form.delegacion || ''} onChange={e => onChange('delegacion', e.target.value)} disabled={!form.proveedor}>
                 <option value="">— Seleccionar —</option>
+                {opts.delegaciones.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
             </select>
         </div>
         <div className="ficha-field">
@@ -121,14 +127,19 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap }) => (
 
         <div className="ficha-field">
             <label>Provincia</label>
-            <select value={form.provincia || ''} onChange={e => onChange('provincia', e.target.value)}>
-                <option value="">{form.provincia || '— Seleccionar —'}</option>
+            <select value={form.provincia || ''} onChange={e => {
+                onChange('provincia', e.target.value);
+                onChange('poblacion', ''); // Limpiamos la población al cambiar provincia
+            }}>
+                <option value="">— Seleccionar —</option>
+                {opts.provincias.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
             </select>
         </div>
         <div className="ficha-field">
             <label>Población</label>
-            <select value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)}>
-                <option value="">{form.poblacion || '— Seleccionar —'}</option>
+            <select value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
+                <option value="">— Seleccionar —</option>
+                {opts.poblaciones.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
             </select>
         </div>
 
@@ -216,6 +227,52 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         comentarios: '', motivo_baja: '', latitud: '', longitud: ''
     });
 
+    const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
+
+    // Carga inicial de datos maestros (Provincias y Proveedores)
+    useEffect(() => {
+        const fetchMaestros = async () => {
+            try {
+                const headers = authHeaders();
+                const [resProv, resProvdd] = await Promise.all([
+                    fetch('/api/AuxCentrosConcertados/Provincias', { headers }),
+                    fetch('/api/AuxCentrosConcertados/Proveedores', { headers })
+                ]);
+                
+                if (resProv.ok && resProvdd.ok) {
+                    const provincias = await resProv.json();
+                    const proveedores = await resProvdd.json();
+                    setOpts(prev => ({ ...prev, provincias, proveedores }));
+                }
+            } catch (error) {
+                console.error("Error cargando maestros:", error);
+            }
+        };
+        fetchMaestros();
+    }, []);
+
+    // Carga en cascada de Poblaciones cuando cambia la Provincia
+    useEffect(() => {
+        if (!form.provincia) {
+            setOpts(prev => ({ ...prev, poblaciones: [] }));
+            return;
+        }
+        fetch(`/api/AuxCentrosConcertados/Poblaciones/${form.provincia}`, { headers: authHeaders() })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setOpts(prev => ({ ...prev, poblaciones: data })));
+    }, [form.provincia]);
+
+    // Carga en cascada de Delegaciones cuando cambia el Proveedor
+    useEffect(() => {
+        if (!form.proveedor) {
+            setOpts(prev => ({ ...prev, delegaciones: [] }));
+            return;
+        }
+        fetch(`/api/AuxCentrosConcertados/Delegaciones/${form.proveedor}`, { headers: authHeaders() })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
+    }, [form.proveedor]);
+
     const [errors, setErrors] = useState({});
     const modalRef = useRef(null);
 
@@ -258,7 +315,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 </div>
 
                 <div className="ficha-tab-content">
-                    {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} />}
+                    {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
                     
                     {activeTab === 'registroICG' && (
                         <TabDataGrid datos={[]}>
