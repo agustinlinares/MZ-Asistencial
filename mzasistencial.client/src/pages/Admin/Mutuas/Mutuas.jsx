@@ -40,7 +40,7 @@ const onExporting = (e) => {
         autoFilterEnabled: true,
     }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Mutuas.xlsx');
         });
     })
     e.cancel = true;
@@ -54,6 +54,10 @@ const Mutuas = () => {
 
     const [selectedMutua, setSelectedMutua] = useState(null); // Estado para la mutua seleccionada
 
+    //Menú para acciones
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
@@ -64,16 +68,100 @@ const Mutuas = () => {
     //     }
     // }, [isAuthenticated, navigate]); 
 
-    //Conectamos Backend con Frontend
+
+    // Al montar el componente cargamos los datos
     useEffect(() => {
-    fetch("/api/mutuas")
-        .then(response => response.json())
-        .then(data => {
-            console.log("Datos recibidos:", data);
-            setMutuas(data);
-        })
-        .catch(error => console.error("Error cargando mutuas:", error));
+        cargarMutuas();
     }, []);
+
+    // Cerrar menú al hacer click fuera
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    
+
+    //Conectamos Backend con Frontend
+    //Extraemos el fetch a una función reutilizable
+    const cargarMutuas = () => {
+        fetch("/api/mutuas")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Datos recibidos:", data);
+                setMutuas(data);
+            })
+            .catch(error => console.error("Error cargando mutuas:", error));
+    };
+
+    // Función que cierra la ficha Y recarga los datos
+    const handleCerrarFicha = () => {
+        setSelectedMutua(null);
+        cargarMutuas(); // recarga la lista con los datos actualizados
+    };
+
+    // Abrir ficha vacia
+    const handleNuevo = () => {
+        setMenuAbierto(false);
+        setSelectedMutua({}); // Ficha vacia
+    };
+
+    //Exportar a excel
+    const handleExportarExcel = () => {
+        setMenuAbierto(false);
+        const grid = dataGridRef.current.instance();
+        if (!grid) return;
+
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Mutuas');
+
+        exportDataGrid({
+            component: grid,
+            worksheet,
+            autoFilterEnabled: true
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer]), 'Mutuas.xlsx');
+            });
+        });
+    };
+
+    //Exportar a PDF
+    const handleExportarPDF = () => {
+        setMenuAbierto(false);
+        const grid = dataGridRef.current.instance();
+        if (!grid) return;
+
+        import('devextreme/pdf_exporter').then(({ exportDataGrid }) => {
+            import('jspdf').then(({ jsPDF }) => {
+                const doc = new jsPDF({ orientation: 'landscape' });
+
+                exportDataGrid({
+                    jsPDFDocument: doc,
+                    component: grid,
+                    indent: 5,
+                }).then(() => {
+                    doc.save('Mutuas.pdf');
+                });
+            });
+        });
+    };
+
+    //Estrucutra de flijo
+    // Si hay mutua seleccionada mostramos la ficha
+    if (selectedMutua) {
+        return (
+            <FichaMutua
+                mutua={selectedMutua}
+                onClose={handleCerrarFicha}
+            />
+        );
+    }
 
     return (
         <React.Fragment>
@@ -85,27 +173,35 @@ const Mutuas = () => {
                             {t('Lista de mutuas')}
                         </div>
 
-                        <div className="acciones-container">
-                            <div className="acciones-btn">
+                        <div className="acciones-container" ref={menuRef}>
+    
+                            <div 
+                                className="acciones-btn"
+                                onClick={() => setMenuAbierto(v => !v)}
+                            >
                                 {t('Acciones')}
                                 <i className="ri-more-2-fill"></i>
                             </div>
 
-                            <div className="acciones-menu">
-                                <div className="acciones-item">
-                                    <i className="ri-add-line"></i>
-                                    Nuevo
+                            {menuAbierto && (
+                                <div className="acciones-menu">
+                                    <div className="acciones-item" onClick={handleNuevo}>
+                                        <i className="ri-add-line"></i>
+                                        Nuevo
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarExcel}>
+                                        <i className="ri-file-excel-2-line"></i>
+                                        Exportar Excel
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarPDF}>
+                                        <i className="ri-file-pdf-line"></i>
+                                        Exportar PDF
+                                    </div>
                                 </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-excel-2-line"></i>
-                                    Exportar Excel
-                                </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-pdf-line"></i>
-                                    Exportar PDF
-                                </div>
-                            </div>
-                        </div>
+                            )}
+                        </div>  
                     </div>
 
                     <div className="table-container" style={{ position: 'relative' }}>
@@ -114,7 +210,8 @@ const Mutuas = () => {
                         {selectedMutua && (
                             <FichaMutua
                                 mutua={selectedMutua}
-                                onClose={() => setSelectedMutua(null)}
+                                //onClose={() => setSelectedMutua(null)}
+                                onClose={handleCerrarFicha}
                             />
                         )}
 
@@ -122,8 +219,8 @@ const Mutuas = () => {
                             ref={dataGridRef}
                             dataSource={mutuas}
                             //dataSource={sampleData}
-                            keyExpr="nº"
-                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila
+                            keyExpr="numeroId"
+                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila para cargar sus fichas
                             //keyExpr="CodigoPersona"
                             showBorders={true}
                             columnAutoWidth={true}
@@ -152,15 +249,18 @@ const Mutuas = () => {
 
 
                             {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
+                            
 
                             <Column
                                 //dataField="id"
-                                dataField="nº"
+                                dataField="numeroId"
                                 caption="Nº"
                                 fixed={true}
                                 fixedPosition="left"
                                 width={80}
                             />
+
+                            <Column dataField="numeroMutua" caption="Número de Mutua" fixed={true} fixedPosition="left"width={160} />
 
                             <Column
                                 //dataField="mutua"
@@ -171,19 +271,33 @@ const Mutuas = () => {
                                 width={150}
                             />
 
-                            <Column dataField="direccion" caption="Dirección" width={200} />
+
+                            <Column dataField="direccion" caption="Dirección" width={250} />
                             <Column dataField="cp" caption="C.P" width={100} />
                             <Column dataField="poblacion" caption="Población" width={150} />
                             <Column dataField="provincia" caption="Provincia" width={150} />
+
 
                             <Column
                                 dataField="acciones"
                                 caption="Acciones"
                                 fixed={true}
                                 fixedPosition="right"
-                                width={100}
-                                cellRender={() => <div className="text-center">...</div>}
+                                width={130}
+                                alignment="center"
+                                cellRender={(cellData) => (
+                                    <div 
+                                        style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Evita conflictos con el grid
+                                            setSelectedMutua(cellData.data); //Abre solo con un click
+                                        }}
+                                    >
+                                        <i className="ri-edit-line"></i>
+                                    </div>
+                                )}
                             />
+
                         </DataGrid>
                     </div>
                 </div>

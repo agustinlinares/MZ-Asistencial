@@ -27,8 +27,8 @@ public class MutuasController : ControllerBase
                 .ThenInclude(p => p.Provincia) 
             .Select(m => new MutuaDTO
             {
-                Nº    = m.MutuaId,
-                //Numero    = m.NumeroMutua ?? "",
+                NumeroId    = m.MutuaId,
+                NumeroMutua = m.NumeroMutua ?? "", //Columna Extra
                 Mutua     = m.Mutua1 ?? "", //Nombre
                 Direccion = m.Direccion ?? "",
                 CP = m.Cp ?? "",
@@ -54,10 +54,11 @@ public class MutuasController : ControllerBase
             .Where(m => m.MutuaId == id)
             .Select(m => new MutuaDTO
             {
-                Nº = m.MutuaId,
+                NumeroId = m.MutuaId,
                 Mutua = m.Mutua1 ?? "",
                 Direccion = m.Direccion ?? "",
                 CP = m.Cp ?? "",
+                PoblacionId = m.PoblacionId, //
                 Poblacion = m.PoblacionNavigation != null
                             ? m.PoblacionNavigation.Poblacion ?? ""
                             : "",
@@ -82,24 +83,54 @@ public class MutuasController : ControllerBase
     }
 
     // POST: api/mutuas
-    // Crea una nueva mutua recibiendo el modelo completo
+    // Crea una nueva mutua recibiendo los campos del DTO
     [HttpPost]
-    public async Task<ActionResult<MutuaDTO>> CreateMutua(Mutua mutua)
+    public async Task<ActionResult<MutuaDTO>> PostMutua(MutuaDTO dto)
     {
+        var mutua = new Mutua
+        {
+            Mutua1 = dto.Mutua,
+            RazonSocial = dto.RazonSocial,
+            Direccion = dto.Direccion,
+            Cp = dto.CP,
+            Telefono = dto.Telefono,
+            Fax = dto.Fax,
+            DireccionElectronica = dto.DireccionElectronica,
+            PersonaContacto = dto.PersonaContacto,
+            NumeroMutua = dto.NumeroMutua,
+            PoblacionId = dto.PoblacionId // IMPORTANTE si se usa
+        };
+
         _context.Mutuas.Add(mutua);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetMutua), new { id = mutua.MutuaId }, mutua);
+
+        return Ok(mutua);
     }
 
     // PUT: api/mutuas/5
     // Actualiza una mutua existente
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateMutua(int id, Mutua mutua)
+    public async Task<IActionResult> UpdateMutua(int id, MutuaDTO dto)
     {
-        if (id != mutua.MutuaId)
-            return BadRequest();
+    // 👇 Añade esto para ver qué llega
+    Console.WriteLine($"PUT recibido - id URL: {id}, dto.NumeroId: {dto?.NumeroId}, dto.Mutua: {dto?.Mutua}");
 
-        _context.Entry(mutua).State = EntityState.Modified;
+        var mutua = await _context.Mutuas.FindAsync(id);
+        if (mutua == null) return NotFound();
+        if (id != dto?.NumeroId) return BadRequest();
+
+        // Solo actualizamos los campos editables
+        mutua.Mutua1 = dto.Mutua;
+        mutua.Direccion = dto.Direccion;
+        mutua.Cp = dto.CP;
+        mutua.PoblacionId = dto.PoblacionId;//
+        mutua.RazonSocial = dto.RazonSocial;
+        mutua.Telefono = dto.Telefono;
+        mutua.Fax = dto.Fax;
+        mutua.DireccionElectronica = dto.DireccionElectronica;
+        mutua.PersonaContacto = dto.PersonaContacto;
+        mutua.NumeroMutua = dto.NumeroMutua;
+
         await _context.SaveChangesAsync();
         return NoContent();
     }
