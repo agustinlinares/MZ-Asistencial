@@ -54,6 +54,9 @@ const Fincas = () => {
     const [fincas, setFincas] = useState([]);
     const [selectedFinca, setSelectedFinca] = useState(null);
     const [centros, setCentros] = useState([]);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
 
     useEffect(() => {
         const fetchFincas = async () => {
@@ -81,6 +84,18 @@ const Fincas = () => {
         fetchFincas();
         fetchCentros();
     }, []);
+
+    // Cerrar menú al hacer click fuera
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
 
     const recargarFincas = async () => {
         try {
@@ -128,12 +143,87 @@ const Fincas = () => {
         }
     };
 
+    const handleNuevo = () => {
+        setMenuAbierto(false);
+        setSelectedFinca({});
+    };
+
+    const handleExportarExcel = () => {
+        setMenuAbierto(false);
+        const grid = dataGridRef.current.instance();
+        if (!grid) return;
+
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Fincas');
+
+        exportDataGrid({
+            component: grid,
+            worksheet,
+            autoFilterEnabled: true
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer]), 'Fincas.xlsx');
+            });
+        });
+    };
+
+    const handleExportarPDF = () => {
+        setMenuAbierto(false);
+        const grid = dataGridRef.current.instance();
+        if (!grid) return;
+
+        import('devextreme/pdf_exporter').then(({ exportDataGrid }) => {
+            import('jspdf').then(({ jsPDF }) => {
+                const doc = new jsPDF({ orientation: 'landscape' });
+                exportDataGrid({
+                    jsPDFDocument: doc,
+                    component: grid,
+                    indent: 5,
+                }).then(() => {
+                    doc.save('Fincas.pdf');
+                });
+            });
+        });
+    };
+
+
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="title"> {t('LISTA FINCAS')}</div>
+                    <div className="header-page">
+                        <div className="title"> {t('LISTA FINCAS')}</div>
+
+                        <div className="acciones-container" ref={menuRef}>
+                            <div 
+                                className="acciones-btn"
+                                onClick={() => setMenuAbierto(v => !v)}
+                            >
+                                {t('Acciones')}
+                                <i className="ri-more-2-fill"></i>
+                            </div>
+
+                            {menuAbierto && (
+                                <div className="acciones-menu">
+                                    <div className="acciones-item" onClick={handleNuevo}>
+                                        <i className="ri-add-line"></i>
+                                        {t('Nuevo')}
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarExcel}>
+                                        <i className="ri-file-excel-2-line"></i>
+                                        {t('Exportar a Excel')}
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarPDF}>
+                                        <i className="ri-file-pdf-line"></i>
+                                        {t('Exportar a PDF')}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="table-container tabla-contenedor">
                         {selectedFinca ? (
@@ -145,15 +235,8 @@ const Fincas = () => {
                             />
                         ) : (
                             <>
-                                <div style={{ marginBottom: 8, textAlign: 'right' }}>
-                                    <button
-                                        className="btn btn-primary btn-sm"
-                                        onClick={() => setSelectedFinca({})}
-                                    >
-                                        + Nueva Finca
-                                    </button>
-                                </div>
-                                <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 230px)', width: '100%' }}>
+                                <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 190px)', width: '100%' }}>
+
                                     <DataGrid
                                         onRowClick={(e) => setSelectedFinca(e.data)}
                                         ref={dataGridRef}
