@@ -121,7 +121,6 @@ const CentrosPropios = () => {
             });
             if (res.ok) {
                 setMsg({ ok: true, text: `${ids.length} registro(s) validado(s) correctamente.` });
-                // Recargar datos
                 fetch(API_URL)
                     .then(r => r.json())
                     .then(data => setCentros(data));
@@ -237,10 +236,15 @@ const CentrosPropios = () => {
                         <Column dataField="telefono" caption="Telefono" width={120} />
                         <Column dataField="latitud" caption="Mapa" width={90} alignment="center" cellRender={MapaCell} />
                         <Column dataField="desactivado" caption="Desactivado" width={110} alignment="center" cellRender={DesactivadoCell} />
+                        {/* ✅ CORREGIDO: ahora el lápiz navega a la ficha */}
                         <Column
                             caption="Acciones" width={80} fixed={true} fixedPosition="right" alignment="center"
-                            cellRender={() => React.createElement('div', {
-                                style: { color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }
+                            cellRender={(cell) => React.createElement('div', {
+                                style: { color: '#2f5da8', cursor: 'pointer', textAlign: 'center' },
+                                onClick: (e) => {
+                                    e.stopPropagation();
+                                    navigate('/admin/Centros/FichaCentroPropio', { state: { cliente: cell.data } });
+                                }
                             }, React.createElement('i', { className: 'ri-edit-line' }))}
                         />
                     </DataGrid>
