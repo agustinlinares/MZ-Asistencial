@@ -1,0 +1,402 @@
+/* ─── FichaCentroPropio.css ─────────────────────────────────────────────── */
+
+.fcp-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #f4f6f9;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    color: #2c3e50;
+}
+
+/* HEADER */
+.fcp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1a3a5c;
+    color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 100;
+    flex-shrink: 0;
+}
+
+.fcp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.fcp-btn-volver {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 5px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fcp-btn-volver:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+.fcp-header-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.fcp-header-titulo {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.fcp-header-subtitulo {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 1px;
+}
+
+.fcp-btn-guardar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2ecc71;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fcp-btn-guardar:hover:not(:disabled) {
+    background: #27ae60;
+}
+
+.fcp-btn-guardar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* LAYOUT */
+.fcp-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* SIDEBAR */
+.fcp-sidebar {
+    width: 210px;
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e0e6ed;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+}
+
+.fcp-sidebar-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    font-size: 12.5px;
+    color: #556;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.fcp-sidebar-item:hover {
+    background: #f0f4f8;
+    color: #1a3a5c;
+}
+
+.fcp-sidebar-item.active {
+    background: #e8f0fa;
+    border-left-color: #1a3a5c;
+    color: #1a3a5c;
+    font-weight: 600;
+}
+
+/* CONTENT */
+.fcp-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* SECCIÓN */
+.fcp-seccion {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    padding: 24px;
+    scroll-margin-top: 20px;
+}
+
+.fcp-seccion-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e8f0fa;
+}
+
+.fcp-seccion-titulo {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a3a5c;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* GRID DE CAMPOS */
+.fcp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 20px;
+}
+
+.fcp-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+    .fcp-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .fcp-grid { grid-template-columns: 1fr; }
+    .fcp-sidebar { display: none; }
+}
+
+.fcp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fcp-field--span2 {
+    grid-column: span 2;
+}
+
+.fcp-field--center {
+    align-items: center;
+}
+
+.fcp-field label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #1565c0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fcp-field input[type="text"],
+.fcp-field input[type="email"],
+.fcp-field input[type="date"],
+.fcp-field select,
+.fcp-input-full {
+    border: none;
+    border-bottom: 1.5px solid #b0bec5;
+    border-radius: 0;
+    padding: 4px 2px;
+    background: transparent;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #2c3e50;
+    background: #fff;
+    transition: border-color 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fcp-field input:focus,
+.fcp-field select:focus,
+.fcp-input-full:focus {
+    outline: none;
+    border-color: #1a3a5c;
+    box-shadow: 0 0 0 2px rgba(26,58,92,0.1);
+}
+
+.fcp-field input.readonly,
+.fcp-field input[readonly] {
+    background: #f4f6f9;
+    color: #889;
+    cursor: default;
+}
+
+.fcp-check-center {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+/* INPUT CON ICONO */
+.fcp-input-icon {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.fcp-input-icon input {
+    flex: 1;
+}
+
+.fcp-icon-btn {
+    background: none;
+    border: 1px solid #d0dae6;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: background 0.15s;
+}
+
+.fcp-icon-btn:hover {
+    background: #e8f0fa;
+}
+
+/* BLOQUES */
+.fcp-bloque {
+    margin-bottom: 20px;
+}
+
+.fcp-bloque-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a3a5c;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin: 0 0 10px 0;
+}
+
+.fcp-bloque-sub {
+    font-size: 12px;
+    color: #889;
+    margin: 0 0 8px 0;
+}
+
+.fcp-radio-group {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.fcp-radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.fcp-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px;
+}
+
+.fcp-checkbox-grid label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.fcp-textarea {
+    width: 100%;
+    border: 1px solid #d0dae6;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #2c3e50;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.fcp-textarea:focus {
+    outline: none;
+    border-color: #1a3a5c;
+    box-shadow: 0 0 0 2px rgba(26,58,92,0.1);
+}
+
+/* FILTROS */
+.fcp-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 20px;
+    margin-bottom: 16px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e8eef4;
+}
+
+.fcp-filtros .fcp-field {
+    min-width: 160px;
+    flex: 1;
+}
+
+/* ACCIONES BOTTOM */
+.fcp-acciones-bottom {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.fcp-btn-accion {
+    padding: 7px 18px;
+    border-radius: 4px;
+    border: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #1a3a5c;
+    color: #fff;
+    transition: background 0.15s;
+}
+
+.fcp-btn-accion:hover {
+    background: #15304d;
+}
+
+.fcp-btn-accion--cancelar {
+    background: #e8eef4;
+    color: #556;
+}
+
+.fcp-btn-accion--cancelar:hover {
+    background: #d5dfe9;
+}
+
+/* DATAGRID WRAPPER */
+.fcp-seccion .mz-table {
+    border-radius: 4px;
+    overflow: hidden;
+}

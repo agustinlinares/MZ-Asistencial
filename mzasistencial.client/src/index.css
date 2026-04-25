@@ -20,6 +20,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbar global para todo el proyecto */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(130, 130, 130, 0.4);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(130, 130, 130, 0.7);
+}
+
 .dx-widget {
   font-family: var(--font-family);
 }

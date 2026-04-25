@@ -1,213 +1,352 @@
-import React, { useState, useEffect } from "react";
-import DataGrid, { Column, Scrolling, Paging, SearchPanel } from "devextreme-react/data-grid";
-import './FichaCentroConcertado.css'; 
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import DataGrid, { Column, Scrolling } from "devextreme-react/data-grid";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import '../../../styles/FichaGlobal.css';
+import AuthService from "../../../services/auth/AuthService";
 
-const ToolbarExport = () => (
-    <div className="toolbar-export">
-        <a href="#" className="btn-export">
-            <i className="dx-icon-xlsxfile"></i> Exportar a Excel
-        </a>
-        <a href="#" className="btn-export">
-            <i className="dx-icon-exportpdf"></i> Exportar a PDF
-        </a>
+// Configuración de iconos de Leaflet para Vite
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+
+const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const ATTR_OSM = '&copy; OpenStreetMap';
+const ATTR_SAT = 'Tiles &copy; Esri';
+const authHeaders = () => {
+    const token = AuthService.getToken();
+    return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
+};
+
+/* ── HELPERS LEAFLET ───────────────────────────────────────────── */
+const MapClickHandler = ({ onMapClick }) => {
+    useMapEvents({ click: e => onMapClick(e.latlng.lat, e.latlng.lng) });
+    return null;
+};
+
+const FlyTo = ({ lat, lng }) => {
+    const map = useMap();
+    useEffect(() => {
+        const la = parseFloat(lat);
+        const lo = parseFloat(lng);
+        if (!isNaN(la) && !isNaN(lo)) map.flyTo([la, lo], 15);
+    }, [lat, lng, map]);
+    return null;
+};
+
+/* ── PESTAÑA MAPA ──────────────────────────────────────────────── */
+const TabMapa = ({ form, onChange }) => {
+    const [vistaTab, setVistaTab] = useState('mapa');
+    const [flyKey, setFlyKey] = useState(0);
+
+    const parsedLat = parseFloat(form.latitud);
+    const parsedLng = parseFloat(form.longitud);
+    const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
+
+    const handleMapClick = (la, lo) => {
+        onChange('latitud', String(la.toFixed(6)));
+        onChange('longitud', String(lo.toFixed(6)));
+    };
+
+    const handleBuscar = () => setFlyKey(k => k + 1);
+    const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
+
+    return (
+        <div className="ficha-tab-mapa">
+            <div className="ficha-grid" style={{ marginBottom: 15 }}>
+                <div className="ficha-field span2">
+                    <label>Dirección Google / Localización</label>
+                    <input 
+                        type="text" 
+                        value={form.dir_google || ''} 
+                        onChange={e => onChange('dir_google', e.target.value)} 
+                        placeholder="Ej: Calle Mayor 1, Madrid"
+                    />
+                </div>
+                <div className="ficha-field">
+                    <label>Latitud</label>
+                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={handleBuscar} />
+                </div>
+                <div className="ficha-field">
+                    <label>Longitud</label>
+                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={handleBuscar} />
+                </div>
+            </div>
+
+            <div className="mapa-view-tabs">
+                <button className={`mapa-view-tab ${vistaTab === 'mapa' ? 'active' : ''}`} onClick={() => setVistaTab('mapa')}>Mapa</button>
+                <button className={`mapa-view-tab ${vistaTab === 'satelite' ? 'active' : ''}`} onClick={() => setVistaTab('satelite')}>Satélite</button>
+            </div>
+
+            <div className="mapa-container" style={{ height: 400 }}>
+                <MapContainer center={defaultCenter} zoom={tieneCoords ? 15 : 6} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer key={vistaTab} url={vistaTab === 'satelite' ? TILE_SAT : TILE_OSM} attribution={vistaTab === 'satelite' ? ATTR_SAT : ATTR_OSM} />
+                    <MapClickHandler onMapClick={handleMapClick} />
+                    {tieneCoords && (
+                        <>
+                            <Marker position={[parsedLat, parsedLng]} />
+                            <FlyTo key={flyKey} lat={form.latitud} lng={form.longitud} />
+                        </>
+                    )}
+                </MapContainer>
+            </div>
+            <p className="mapa-hint" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>📍 Haz clic en el mapa para situar el centro o introduce las coordenadas manualmente.</p>
+        </div>
+    );
+};
+
+/* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
+const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
+    <div className="ficha-grid">
+        <div className="ficha-field">
+            <label>Proveedor</label>
+            <select value={form.proveedor || ''} onChange={e => {
+                onChange('proveedor', e.target.value);
+                onChange('delegacion', ''); // Limpiamos la delegación al cambiar proveedor
+            }}>
+                <option value="">— Seleccionar —</option>
+                {opts.proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+        </div>
+
+        <div className="ficha-field">
+            <label>Delegación</label>
+            <select value={form.delegacion || ''} onChange={e => onChange('delegacion', e.target.value)} disabled={!form.proveedor}>
+                <option value="">— Seleccionar —</option>
+                {opts.delegaciones.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
+            </select>
+        </div>
+        <div className="ficha-field">
+            <label>Centro</label>
+            <input className={errors.centro ? 'error' : ''} type="text" value={form.centro || ''} onChange={e => onChange('centro', e.target.value)} />
+        </div>
+
+        <div className="ficha-field">
+            <label>Provincia</label>
+            <select value={form.provincia || ''} onChange={e => {
+                onChange('provincia', e.target.value);
+                onChange('poblacion', ''); // Limpiamos la población al cambiar provincia
+            }}>
+                <option value="">— Seleccionar —</option>
+                {opts.provincias.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+        </div>
+        <div className="ficha-field">
+            <label>Población</label>
+            <select value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
+                <option value="">— Seleccionar —</option>
+                {opts.poblaciones.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+            </select>
+        </div>
+
+        <div className="ficha-field">
+            <label>CIF / NIF</label>
+            <input type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
+        </div>
+        <div className="ficha-field">
+            <label>Código Postal</label>
+            <select value={form.cp || ''} onChange={e => onChange('cp', e.target.value)}>
+                <option value="">{form.cp || '— Seleccionar —'}</option>
+            </select>
+        </div>
+
+        <div className="ficha-field">
+            <label>Dirección</label>
+            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
+        </div>
+        <div className="ficha-field">
+            <label>Número</label>
+            <input type="text" value={form.numero || ''} onChange={e => onChange('numero', e.target.value)} />
+        </div>
+
+        <div className="ficha-field">
+            <label>Teléfono</label>
+            <input type="text" value={form.telefono || ''} onChange={e => onChange('telefono', e.target.value)} />
+        </div>
+        <div className="ficha-field">
+            <label>Nº de Registro Sanitario</label>
+            <input type="text" value={form.registro_sanitario || ''} onChange={e => onChange('registro_sanitario', e.target.value)} />
+        </div>
+
+        <div className="ficha-field">
+            <label>Ubicación</label>
+            <button className="ficha-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left' }}>
+                🌐 {form.latitud && form.longitud ? `${form.latitud}, ${form.longitud}` : 'Ver / Editar en mapa'}
+            </button>
+        </div>
+        <div className="ficha-field">
+            <label>Fecha de baja</label>
+            <input type="date" value={form.fecha_baja || ''} onChange={e => onChange('fecha_baja', e.target.value)} />
+        </div>
+
+        <div className="ficha-field span2">
+            <label>Comentarios</label>
+            <textarea rows={3} value={form.comentarios || ''} onChange={e => onChange('comentarios', e.target.value)} />
+        </div>
+
+        <div className="ficha-field span2">
+            <label>Motivo de la baja</label>
+            <textarea rows={3} value={form.motivo_baja || ''} onChange={e => onChange('motivo_baja', e.target.value)} />
+        </div>
     </div>
 );
 
-const FichaCentroConcertado = ({ cliente, onClose }) => {
-  const [activeTab, setActiveTab] = useState("general");
+/* ── PESTAÑAS DE TABLAS SECUNDARIAS ────────────────────────────── */
+const TabDataGrid = ({ datos, children }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginBottom: '10px' }}>
+             <button className="ficha-btn-secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>📊 Excel</button>
+             <button className="ficha-btn-secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>📄 PDF</button>
+        </div>
+        <DataGrid dataSource={datos} showBorders={true} noDataText="Sin datos para mostrar" height={350}>
+            <Scrolling mode="standard" />
+            {children}
+        </DataGrid>
+    </div>
+);
 
-  // Estado para el formulario
-  const [formData, setFormData] = useState({});
-
-  useEffect(() => {
-    if (cliente) {
-      setFormData({ ...cliente});
-    }
-  }, [cliente]);
-
-  // Función para escribir en los inputs
-  const handleChange = (e) => {
-    const { name, defaultValue } = e.target;
-    console.log(`Cambiando campo [${name}] a:`, defaultValue);
-    setFormData({
-      ...formData,
-      [name]: defaultValue
+/* ── COMPONENTE PRINCIPAL ──────────────────────────────────────── */
+const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
+    const [activeTab, setActiveTab] = useState('general');
+    
+    const [form, setForm] = useState({
+        centro_id: cliente?.CentroID ?? cliente?.centro_id ?? '',
+        localizador: cliente?.Localizador ?? cliente?.ccn ?? '',
+        centro: cliente?.Centro ?? cliente?.centro ?? '',
+        direccion: cliente?.Direccion ?? cliente?.direccion ?? '',
+        poblacion: cliente?.Poblacion ?? cliente?.poblacion ?? '',
+        provincia: cliente?.Provincia ?? cliente?.provincia ?? '',
+        cif: cliente?.Cif ?? cliente?.cif ?? '',
+        cp: cliente?.CP ?? cliente?.cp ?? '',
+        proveedor: '', delegacion: '', numero: '', telefono: '', 
+        registro_sanitario: '', dir_google: '', fecha_baja: '', 
+        comentarios: '', motivo_baja: '', latitud: '', longitud: ''
     });
-  };
 
-  // Datos de ejemplo hasta que los endpoints sean reales)
-  const datosICG = []; 
-  const datosMutuas = [];
-  const datosEspecialidades = [];
+    const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
 
-  return (
-    <div className="ficha-overlay">
-      <div className="ficha-container">
+    // Carga inicial de datos maestros (Provincias y Proveedores)
+    useEffect(() => {
+        const fetchMaestros = async () => {
+            try {
+                const headers = authHeaders();
+                const [resProv, resProvdd] = await Promise.all([
+                    fetch('/api/AuxCentrosConcertados/Provincias', { headers }),
+                    fetch('/api/AuxCentrosConcertados/Proveedores', { headers })
+                ]);
+                
+                if (resProv.ok && resProvdd.ok) {
+                    const provincias = await resProv.json();
+                    const proveedores = await resProvdd.json();
+                    setOpts(prev => ({ ...prev, provincias, proveedores }));
+                }
+            } catch (error) {
+                console.error("Error cargando maestros:", error);
+            }
+        };
+        fetchMaestros();
+    }, []);
 
-        <div className="Header">
-          <div className="titleFicha">Ficha Centro Concertado</div>
-          <div className="ComboBotones">
-              {/* Aquí se puede enviar el formData a tu API al pulsar Aceptar */}
-              <button className="ficha-close-btn" onClick={() => console.log("Guardando:", formData)}> ☑ Aceptar</button>
-              <button className="ficha-close-btn" onClick={onClose}>× Salir</button>
-          </div>
-        </div>
+    // Carga en cascada de Poblaciones cuando cambia la Provincia
+    useEffect(() => {
+        if (!form.provincia) {
+            setOpts(prev => ({ ...prev, poblaciones: [] }));
+            return;
+        }
+        fetch(`/api/AuxCentrosConcertados/Poblaciones/${form.provincia}`, { headers: authHeaders() })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setOpts(prev => ({ ...prev, poblaciones: data })));
+    }, [form.provincia]);
 
-        <div className="ficha-tabs">
-          <button className={`tab-button ${activeTab === "general" ? "active" : ""}`} onClick={() => setActiveTab("general")}>General</button>
-          <button className={`tab-button ${activeTab === "registroICG" ? "active" : ""}`} onClick={() => setActiveTab("registroICG")}>Registro ICG</button>
-          <button className={`tab-button ${activeTab === "mutuasAsignadas" ? "active" : ""}`} onClick={() => setActiveTab("mutuasAsignadas")}>Mutuas Asignadas</button>
-          <button className={`tab-button ${activeTab === "especialidades" ? "active" : ""}`} onClick={() => setActiveTab("especialidades")}>Especialidades / Serv.</button>
-        </div>
+    // Carga en cascada de Delegaciones cuando cambia el Proveedor
+    useEffect(() => {
+        if (!form.proveedor) {
+            setOpts(prev => ({ ...prev, delegaciones: [] }));
+            return;
+        }
+        fetch(`/api/AuxCentrosConcertados/Delegaciones/${form.proveedor}`, { headers: authHeaders() })
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
+    }, [form.proveedor]);
 
-        <div className="tab-content">
-          
-          {/* Pestaña general */}
-          {activeTab === "general" && (
-            <div className="filtros-box general">
-                <div className="filtros-content">
-                  
-                  {/* Fila 1 */}
-                  <div className="filtro-item">
-                    <label>Localizador</label>
-                    <input type="text" name="Localizador" defaultValue={formData.Localizador || ""} onChange={handleChange} />
-                  </div>
-                  <div className="filtro-item">
-                    <label>Proveedor</label>
-                    <select name="Proveedor" defaultValue={formData.Proveedor || ""} onChange={handleChange}>
-                      <option></option>
-                    </select>
-                  </div>
+    const [errors, setErrors] = useState({});
+    const modalRef = useRef(null);
 
-                  {/* Fila 2 */}
-                  <div className="filtro-item">
-                    <label>Delegación</label>
-                    <select name="Delegacion" defaultValue={formData.Delegacion || ""} onChange={handleChange}>
-                      <option></option>
-                    </select>
-                  </div>
-                  <div className="filtro-item">
-                    <label>Centro</label>
-                    <input type="text" name="Centro" defaultValue={formData.Centro || ""} onChange={handleChange} />
-                  </div>
+    useEffect(() => {
+        modalRef.current?.focus();
+        const handler = e => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
 
-                  {/* Fila 3 */}
-                  <div className="filtro-item">
-                    <label>Provincia</label>
-                    <select name="Provincia" defaultValue={formData.Provincia || ""} onChange={handleChange}>
-                      <option>{formData.Provincia}</option>
-                    </select>
-                  </div>
-                  <div className="filtro-item">
-                    <label>Poblacion</label>
-                    <select name="Poblacion" defaultValue={formData.Poblacion || ""} onChange={handleChange}>
-                      <option>{formData.Poblacion}</option>
-                    </select>
-                  </div>
+    const handleChange = useCallback((field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+        setErrors(prev => ({ ...prev, [field]: false }));
+    }, []);
 
-                  {/* Fila 4 */}
-                  <div className="filtro-item">
-                    <label>CIF / NIF</label>
-                    <input type="text" name="Cif" defaultValue={formData.Cif || ""} onChange={handleChange} />
-                  </div>
-                  <div className="filtro-item">
-                    <label>Código Postal</label>
-                    <select name="CP" defaultValue={formData.CP || ""} onChange={handleChange}>
-                      <option>{formData.CP}</option>
-                    </select>
-                  </div>
-                  <div className="filtro-item">
-                    <label>Dirección</label>
-                    <input type="text" name="Direccion" defaultValue={formData.Direccion || ""} onChange={handleChange} />
-                  </div>
+    const handleSave = () => {
+        const newErrors = {};
+        if (!form.centro) newErrors.centro = true;
+        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+        onSave?.(form);
+    };
 
-                  {/* Fila 5 */}
-                  <div className="filtro-item">
-                    <label>Número</label>
-                    <input type="text" name="Numero" defaultValue={formData.Numero || ""} onChange={handleChange} />
-                  </div>
-                  <div className="filtro-item">
-                    <label>Teléfono</label>
-                    <input type="text" name="Telefono" defaultValue={formData.Telefono || ""} onChange={handleChange} />
-                  </div>
-                  <div className="filtro-item">
-                    <label>Nº de Registro Sanitario</label>
-                    <input type="text" name="RegistroSanitario" defaultValue={formData.RegistroSanitario || ""} onChange={handleChange} />
-                  </div>
+    return (
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">🏥 Ficha Centro Concertado | {form.localizador || 'Nuevo'}</span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleSave}>✓ Aceptar</button>
+                        <button className="ficha-btn-secondary" onClick={onClose}>✗ Salir</button>
+                    </div>
+                </div>
 
-                  {/* Fila 6 */}
-                  <div className="filtro-item">
-                    <label>Dirección Google</label>
-                    <input type="text" name="DireccionGoogle" defaultValue={formData.DireccionGoogle || ""} onChange={handleChange} />
-                  </div>
-                  <div className="filtro-item justifyCenter">
-                    <label>Verificar dirección Google</label>
-                    <span>🌎</span>
-                  </div>
-                  <div className="filtro-item">
-                    <label>Fecha de baja</label>
-                    <input type="date" name="FechaBaja" defaultValue={formData.FechaBaja || ""} onChange={handleChange} />
-                  </div>
+                <div className="ficha-tabs">
+                    <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
+                    <button className={`ficha-tab ${activeTab === 'registroICG' ? 'active' : ''}`} onClick={() => setActiveTab('registroICG')}>Registro ICG</button>
+                    <button className={`ficha-tab ${activeTab === 'mutuasAsignadas' ? 'active' : ''}`} onClick={() => setActiveTab('mutuasAsignadas')}>Mutuas Asignadas</button>
+                    <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades / Serv.</button>
+                    <button className={`ficha-tab ${activeTab === 'mapa' ? 'active' : ''}`} onClick={() => setActiveTab('mapa')}>Mapa / Ubicación</button>
+                </div>
 
-                  {/* Textareas */}
-                  <div className="bloque" style={{ width: "100%", marginTop: "15px" }}>
-                    <label className="bloque-titulo">Comentarios</label>
-                    <textarea name="Comentarios" defaultValue={formData.Comentarios || ""} onChange={handleChange} style={{ width: "100%", height: "60px" }}></textarea>
-                  </div>
+                <div className="ficha-tab-content">
+                    {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
+                    
+                    {activeTab === 'registroICG' && (
+                        <TabDataGrid datos={[]}>
+                            <Column dataField="anyo" caption="Año" width={100} />
+                            <Column dataField="mutua" caption="Mutua" />
+                            <Column dataField="centro" caption="Centro" />
+                            <Column dataField="fechaActualizacion" caption="Fecha Act." dataType="date" width={150} />
+                            <Column dataField="usuario" caption="Usuario" width={150} />
+                        </TabDataGrid>
+                    )}
 
-                  <div className="bloque" style={{ width: "100%", marginTop: "15px" }}>
-                    <label className="bloque-titulo">Motivo de la baja</label>
-                    <textarea name="MotivoBaja" defaultValue={formData.MotivoBaja || ""} onChange={handleChange} style={{ width: "100%", height: "60px" }}></textarea>
-                  </div>
+                    {activeTab === 'mutuasAsignadas' && (
+                        <TabDataGrid datos={[]}>
+                            <Column dataField="mutua" caption="Mutua" />
+                        </TabDataGrid>
+                    )}
 
+                    {activeTab === 'especialidades' && (
+                        <TabDataGrid datos={[]}>
+                            <Column dataField="anyo" caption="Año" width={100} />
+                            <Column dataField="servicio" caption="Servicio" />
+                            <Column dataField="especialidad" caption="Especialidad" />
+                            <Column dataField="cantidad" caption="Cantidad" width={100} />
+                        </TabDataGrid>
+                    )}
+
+                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
                 </div>
             </div>
-          )}
-
-          {/* Pestaña de registro ICG */}
-          {activeTab === "registroICG" && (
-            <div className="filtros-box tab-tabla">
-               <ToolbarExport />
-               <DataGrid dataSource={datosICG} showBorders={true} noDataText="Sin datos para mostrar" height={400}>
-                  <Scrolling mode="standard" />
-                  <Column dataField="anyo" caption="Año" width={100} />
-                  <Column dataField="mutua" caption="Mutua" />
-                  <Column dataField="centro" caption="Centro" />
-                  <Column dataField="fechaActualizacion" caption="Fecha de Actualización" dataType="date" width={150} />
-                  <Column dataField="usuario" caption="Usuario" width={150} />
-               </DataGrid>
-            </div>
-          )}
-
-          {/* Pestaña de mutuas asignadas */}
-          {activeTab === "mutuasAsignadas" && (
-            <div className="filtros-box tab-tabla">
-               <ToolbarExport />
-               <DataGrid dataSource={datosMutuas} showBorders={true} noDataText="Sin datos para mostrar" height={400}>
-                  <Scrolling mode="standard" />
-                  <Column dataField="mutua" caption="Mutua" />
-               </DataGrid>
-            </div>
-          )}
-
-          {/* Pestaña de especialidades */}
-          {activeTab === "especialidades" && (
-            <div className="filtros-box tab-tabla">
-               <ToolbarExport />
-               <DataGrid dataSource={datosEspecialidades} showBorders={true} noDataText="Sin datos para mostrar" height={400}>
-                  <Scrolling mode="standard" />
-                  <Column dataField="anyo" caption="Año" width={100} />
-                  <Column dataField="servicio" caption="Servicio" />
-                  <Column dataField="especialidad" caption="Especialidad" />
-                  <Column dataField="cantidad" caption="Cantidad" width={100} />
-               </DataGrid>
-            </div>
-          )}
-
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default FichaCentroConcertado;

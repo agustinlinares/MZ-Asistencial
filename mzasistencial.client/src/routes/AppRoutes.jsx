@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
 
+const MapaPage = lazy(() => import("@pages/Admin/Centros/MapaPage"));
 
 // Layouts
 const AdminLayout = lazy(() => import("../components/_layout/AdminLayout"));
@@ -18,10 +19,10 @@ const Acuerdos = lazy(() => import("../pages/Admin/Acuerdos/Acuerdos"));
 const PlantillasAcuerdos = lazy(() => import("../pages/Admin/Acuerdos/PlantillasAcuerdos"));
 const Analisis = lazy(() => import("../pages/Admin/Acuerdos/Analisis"));
 
-const CentrosPropios = lazy(() => import("../pages/Admin/Centros/CentrosPropios"));
-const CentrosConcertados = lazy(() => import("../pages/Admin/Centros/CentrosConcertados"));
-const Conciertos = lazy(() => import("../pages/Admin/Centros/Conciertos"));
-const Fincas = lazy(() => import("../pages/Admin/Centros/Fincas"));
+const CentrosPropios = lazy(() => import("@pages/Admin/Centros/CentrosPropios"));
+const CentrosConcertados = lazy(() => import("@pages/Admin/Centros/CentrosConcertados"));
+const Conciertos = lazy(() => import("@pages/Admin/Centros/Conciertos"));
+const Fincas = lazy(() => import("@pages/Admin/Centros/Fincas"));
 
 const ICGCentrosPropios = lazy(() => import("../pages/Admin/ICG/ICGCentrosPropios"));
 const ICGPlantillasICG = lazy(() => import("../pages/Admin/ICG/ICGPlantillasICG"));
@@ -63,7 +64,6 @@ const AppRoutes = () => {
                 <Route path="/" element={<LoginPage />} />
                 <Route path="admin" element={<PrivateRoute />}>
                     <Route element={<AdminLayout />}>
-
                         <Route path="resumendeGastos" element={<ResumendeGastos />} />
 
                         <Route path="Proveedores">
@@ -87,6 +87,8 @@ const AppRoutes = () => {
                             <Route path="CentrosConcertados" element={<CentrosConcertados />} />
                             <Route path="Conciertos" element={<Conciertos />} />
                             <Route path="Fincas" element={<Fincas />} />
+                            <Route path="Fincas/nueva" element={<FichaFincaPage />} />
+                            <Route path="Fincas/:id" element={<FichaFincaPage />} />
                         </Route>
 
                         <Route path="ICG">
@@ -131,6 +133,8 @@ const AppRoutes = () => {
                             <Route path="Mantenimiento" element={<Mantenimiento />} />
                         </Route>
                     </Route>
+                    <Route path="Centros/FichaCentroPropio" element={<FichaCentroPropio />} />
+                    <Route path="Centros/MapaPage" element={<MapaPage />} />
                 </Route>
             </Routes>
         </Suspense>

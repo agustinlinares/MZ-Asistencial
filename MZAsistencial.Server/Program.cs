@@ -1,42 +1,67 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
-using MZAsistencial.Server.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Infraestructura ──────────────────────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:60007", "http://localhost:60007")
-              .AllowAnyHeader()
+        policy.WithOrigins(
+     "https://localhost:60007",
+     "http://localhost:60007",
+     "https://localhost:60008",
+     "http://localhost:60008",
+     "https://localhost:5173",
+     "http://localhost:5173"
+ )
+               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.PropertyNamingPolicy = null);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// Conexión a la base de datos
-builder.Services.AddDbContext<MZAsistencial.Server.Data.MZAsistencialContext>(options =>
+// ── Conexión a la base de datos ──────────────────────────────────────────────
+builder.Services.AddDbContext<MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Servicios
+// ── Servicios existentes ─────────────────────────────────────────────────────
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
-builder.Services.AddScoped<IMutuasService, MutuasService>();
-builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
+builder.Services.AddScoped<CentrosPropiosService>();
+builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<FincaRegistralService>();
+builder.Services.AddScoped<ICentrosConcertadosService, CentrosConcertadosService>();
 builder.Services.AddScoped<CentroPropioIcgService>();
 builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
-builder.Services.AddScoped<CentrosConcertadosService>();
+builder.Services.AddScoped<IMutuasService, MutuasService>();
+builder.Services.AddScoped<IListaOfertasService, ListaOfertasService>();
 
+// ── Servicios ICG06 ──────────────────────────────────────────────────────────
+builder.Services.AddScoped<Icg06HosService>();
+builder.Services.AddScoped<Icg06AmbService>();
+builder.Services.AddScoped<Icg06ConvHosService>();
+builder.Services.AddScoped<Icg06ConvAmbService>();
+builder.Services.AddScoped<Icg06ItHosService>();
+builder.Services.AddScoped<Icg06ItAmbService>();
+builder.Services.AddScoped<Icg06OtrasHosService>();
+builder.Services.AddScoped<Icg06OtrasAmbService>();
+builder.Services.AddScoped<Icg06AsProService>();
+builder.Services.AddScoped<Icg06AreaAsistencialService>();
+builder.Services.AddScoped<Icg06DatosEconomicosService>();
+builder.Services.AddScoped<Icg06DatosGeneralesService>();
+builder.Services.AddScoped<Icg06DatosPlantillaService>();
+builder.Services.AddScoped<Icg06EspecialidadService>();
+builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
 
+// ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -46,8 +71,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
+
 app.Run();

@@ -29,7 +29,7 @@ import DataGrid, {
 
 // POP UP PLANTILLA
 import { useTranslation } from "react-i18next";
-import Popup from "devextreme-react/popup";
+import { Popup, ToolbarItem } from "devextreme-react/popup";
 import SelectBox from "devextreme-react/select-box";
 import TextBox from "devextreme-react/text-box";
 import FileUploader from "devextreme-react/file-uploader";
@@ -74,14 +74,14 @@ const PlantillasAcuerdos = () => {
     const navigate = useNavigate();
 
     const fetchAcuerdos = () => {
-        fetch('/api/PlantillasAcuerdo')
+        fetch('https://localhost:7132/api/PlantillasAcuerdo')
             .then(response => response.json())
             .then(data => setAcuerdos(data))
             .catch(error => console.error('Error al cargar acuerdos:', error));
     };
 
     const fetchMutuas = () => {
-        fetch('/api/mutuas')
+        fetch('https://localhost:7132/api/PlantillasAcuerdo/mutuas')
             .then(response => response.json())
             .then(data => setMutuasList(data.map(m => m.mutua)))
             .catch(error => console.error('Error al cargar mutuas:', error));
@@ -94,7 +94,7 @@ const PlantillasAcuerdos = () => {
 
     const onRowUpdating = (e) => {
         const updatedData = { ...e.oldData, ...e.newData };
-        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
+        fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedData)
@@ -103,14 +103,27 @@ const PlantillasAcuerdos = () => {
     };
 
     const onRowRemoving = (e) => {
-        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
+        fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
             method: 'DELETE'
         })
         .catch(error => console.error('Error al eliminar:', error));
     };
 
+    const [fileName, setFileName] = useState("");
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setFileName(file.name);
+            setFormData({...formData, file: file});
+        } else {
+            setFileName("");
+        }
+    };
+
     const handleSave = () => {
-        fetch('/api/PlantillasAcuerdo', {
+        // ... (resto del código del handleSave se mantiene)
+        fetch('https://localhost:7132/api/PlantillasAcuerdo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
@@ -137,9 +150,11 @@ const PlantillasAcuerdos = () => {
                             className="boton-action"
                             onClick={() => setPopupVisible(true)}
                         >
-                            <i className="ri-search-line"></i> {t('Subir Plantilla')}
+                            <i className="ri-file-upload-line"></i> {t('Subir Plantilla')}
                         </button>
-                        <button type="button" className="boton-action">{t('Procesar Plantillas')}</button>
+                        <button type="button" className="boton-action">
+                            <i className="ri-settings-4-line"></i> {t('Procesar Plantillas')}
+                        </button>
                     </div>
 
                     <div className="table-container">
@@ -207,32 +222,30 @@ const PlantillasAcuerdos = () => {
                 height="auto"
                 className="popup-ficha-doc"
             >
-                <Toolbar itemVisible={true}>
-                    <Item
-                        widget="dxButton"
-                        toolbar="top"
-                        location="after"
-                        options={{
-                            text: "Aceptar",
-                            type: "default",
-                            icon: "check",
-                            onClick: handleSave,
-                            elementAttr: { class: "btn-aceptar-popup" }
-                        }}
-                    />
-                    <Item
-                        widget="dxButton"
-                        toolbar="top"
-                        location="after"
-                        options={{
-                            text: "Salir",
-                            type: "normal",
-                            icon: "close",
-                            onClick: () => setPopupVisible(false),
-                            elementAttr: { class: "btn-salir-popup" }
-                        }}
-                    />
-                </Toolbar>
+                <ToolbarItem
+                    widget="dxButton"
+                    toolbar="top"
+                    location="after"
+                    options={{
+                        text: "Aceptar",
+                        type: "default",
+                        icon: "todo",
+                        onClick: handleSave,
+                        elementAttr: { class: "btn-aceptar-popup" }
+                    }}
+                />
+                <ToolbarItem
+                    widget="dxButton"
+                    toolbar="top"
+                    location="after"
+                    options={{
+                        text: "Salir",
+                        type: "normal",
+                        icon: "close",
+                        onClick: () => setPopupVisible(false),
+                        elementAttr: { class: "btn-salir-popup" }
+                    }}
+                />
 
                 <div className="popup-container">
                     {/* FILA 1: Mutua y Año */}
@@ -260,7 +273,7 @@ const PlantillasAcuerdos = () => {
 
                     {/* FILA 2: Acuerdo */}
                     <div className="popup-row">
-                        <div className="popup-field full">
+                        <div className="popup-field">
                             <label>Acuerdo</label>
                             <SelectBox 
                                 items={["Acuerdo 1", "Acuerdo 2", "Acuerdo 3"]}
@@ -269,6 +282,8 @@ const PlantillasAcuerdos = () => {
                                 placeholder=""
                             />
                         </div>
+                        {/* Espacio vacío para que ocupe la mitad derecha */}
+                        <div className="popup-field"></div>
                     </div>
 
                     {/* FILA 3: Fichero */}
@@ -276,11 +291,21 @@ const PlantillasAcuerdos = () => {
                         <div className="popup-field full">
                             <label>Fichero</label>
                             <div className="file-uploader-custom">
-                                <FileUploader
-                                    selectButtonText="Examinar..."
-                                    labelText="Seleccionar un archivo..."
-                                    uploadMode="useForm"
+                                <input 
+                                    type="text" 
+                                    className="file-text-mock" 
+                                    placeholder="Seleccionar un archivo..." 
+                                    value={fileName}
+                                    readOnly 
                                 />
+                                <div className="file-btn-mock">
+                                    <span>Examinar...</span>
+                                    <input 
+                                        type="file" 
+                                        className="file-input-hidden" 
+                                        onChange={handleFileChange}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import '../Centros/FichaFinca.css';
 import './Acuerdos.css';
 
 const API = 'https://localhost:7132/api';
@@ -7,23 +8,19 @@ const API = 'https://localhost:7132/api';
 const Acuerdos = () => {
     const { t } = useTranslation();
 
-    // Filtros
     const [mutuas, setMutuas] = useState([]);
     const [años, setAños] = useState([]);
     const [mutuaSeleccionada, setMutuaSeleccionada] = useState('');
     const [añoSeleccionado, setAñoSeleccionado] = useState('');
 
-    // Secciones colapsables
-    const [seccionMutua, setSeccionMutua] = useState(false);
+    const [seccionMutua, setSeccionMutua] = useState(true);
     const [seccionProvincia, setSeccionProvincia] = useState(false);
     const [seccionTipoServicio, setSeccionTipoServicio] = useState(false);
 
-    // Pestañas activas
     const [tabMutua, setTabMutua] = useState('oferta');
     const [tabProvincia, setTabProvincia] = useState('oferta');
     const [tabTipoServicio, setTabTipoServicio] = useState('oferta');
 
-    // Datos
     const [datosMutuaOferta, setDatosMutuaOferta] = useState([]);
     const [datosMutuaDemanda, setDatosMutuaDemanda] = useState([]);
     const [datosProvinciaOferta, setDatosProvinciaOferta] = useState([]);
@@ -31,7 +28,6 @@ const Acuerdos = () => {
     const [datosTipoServicioOferta, setDatosTipoServicioOferta] = useState([]);
     const [datosTipoServicioDemanda, setDatosTipoServicioDemanda] = useState([]);
 
-    // Carga inicial de filtros
     useEffect(() => {
         fetch(`${API}/Mutuas`)
             .then(res => res.json())
@@ -49,184 +45,185 @@ const Acuerdos = () => {
             .catch(err => console.error('Error al cargar años:', err));
     }, []);
 
-    // Carga de datos cuando cambian los filtros
     useEffect(() => {
         if (!mutuaSeleccionada || !añoSeleccionado) return;
-
         const params = `mutuaId=${mutuaSeleccionada}&anio=${añoSeleccionado}`;
 
         fetch(`${API}/AcuerdosBI/mutuas/oferta?${params}`)
             .then(res => res.json()).then(setDatosMutuaOferta).catch(console.error);
-
         fetch(`${API}/AcuerdosBI/mutuas/demanda?${params}`)
             .then(res => res.json()).then(setDatosMutuaDemanda).catch(console.error);
-
         fetch(`${API}/AcuerdosBI/provincias/oferta?${params}`)
             .then(res => res.json()).then(setDatosProvinciaOferta).catch(console.error);
-
         fetch(`${API}/AcuerdosBI/provincias/demanda?${params}`)
             .then(res => res.json()).then(setDatosProvinciaDemanda).catch(console.error);
-
         fetch(`${API}/AcuerdosBI/tiposervicio/oferta?${params}`)
             .then(res => res.json()).then(setDatosTipoServicioOferta).catch(console.error);
-
         fetch(`${API}/AcuerdosBI/tiposervicio/demanda?${params}`)
             .then(res => res.json()).then(setDatosTipoServicioDemanda).catch(console.error);
-
     }, [mutuaSeleccionada, añoSeleccionado]);
 
     return (
-        <React.Fragment>
-            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 m-0 p-0" style={{ overflowY: 'auto', height: '100%' }}>
+        <div className="finca-container-inline">
+            <div className="finca-inline-content">
 
-                {/* FILTROS */}
-                <div style={{ width: '100%', padding: '10px', display: 'flex', flexDirection: 'column' }}>
-                    <div className="title">{t('Acuerdos')}</div>
-                    <div className="filtros-box">
-                        <div className="filtros-title">{t('Filtros')}</div>
-                        <div className="filtros-content">
-                            <div className="filtro-item">
-                                <label>Mutua</label>
-                                <select className="filtro-select" value={mutuaSeleccionada} onChange={e => setMutuaSeleccionada(e.target.value)}>
-                                    <option value="">-- Selecciona una mutua --</option>
-                                    {mutuas.map(m => (
-                                        <option key={m.nº} value={m.nº}>
-                                            {m.mutua}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="filtro-item">
-                                <label>Año</label>
-                                <select className="filtro-select" value={añoSeleccionado} onChange={e => setAñoSeleccionado(e.target.value)}>
-                                    <option value="">-- Selecciona un año --</option>
-                                    {años.map(año => (
-                                        <option key={año} value={año}>{año}</option>
-                                    ))}
-                                </select>
-                            </div>
+                <div className="finca-modal-header">
+                    <span className="finca-modal-title">{t('Acuerdos')}</span>
+                </div>
+
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
+                    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                        <div className="finca-field" style={{ minWidth: 220, maxWidth: 300 }}>
+                            <label>Mutua</label>
+                            <select value={mutuaSeleccionada} onChange={e => setMutuaSeleccionada(e.target.value)}>
+                                <option value="">-- Selecciona una mutua --</option>
+                                {mutuas.map(m => (
+                                    <option key={m.nº} value={m.nº}>{m.mutua}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="finca-field" style={{ minWidth: 120, maxWidth: 180 }}>
+                            <label>Año</label>
+                            <select value={añoSeleccionado} onChange={e => setAñoSeleccionado(e.target.value)}>
+                                <option value="">-- Selecciona un año --</option>
+                                {años.map(año => (
+                                    <option key={año} value={año}>{año}</option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                {/* SECCIÓN MUTUA */}
-                <div className="seccion-box">
-                    <div className="seccion-header" onClick={() => setSeccionMutua(!seccionMutua)}>
-                        <span>Acuerdos Bilaterales o Multilaterales Mutua</span>
-                        <span>{seccionMutua ? '−' : '+'}</span>
-                    </div>
-                    {seccionMutua && (
-                        <div className="seccion-content">
-                            <div className="tabs">
-                                <button className={tabMutua === 'oferta' ? 'tab activo' : 'tab'} onClick={() => setTabMutua('oferta')}>Oferta</button>
-                                <button className={tabMutua === 'demanda' ? 'tab activo' : 'tab'} onClick={() => setTabMutua('demanda')}>Demanda</button>
-                            </div>
-                            <table className="tabla-datos">
-                                <thead>
-                                    <tr>
-                                        <th>Num Mutua</th>
-                                        <th>Mutua {tabMutua === 'oferta' ? 'Demandante' : 'Ofertante'}</th>
-                                        <th>Num Servicios</th>
-                                        <th>Contraprestacion Economica</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda).map((row, i) => (
-                                        <tr key={i}>
-                                            <td>{row.numMutua}</td>
-                                            <td>{row.mutuaNombre}</td>
-                                            <td>{row.numServicios}</td>
-                                            <td>{row.contraprestacionEconomica}</td>
+                <div className="finca-tab-content">
+
+                    <div className="acuerdos-seccion">
+                        <div className="acuerdos-seccion-header" onClick={() => setSeccionMutua(!seccionMutua)}>
+                            <span>Acuerdos Bilaterales o Multilaterales Mutua</span>
+                            <span>{seccionMutua ? '−' : '+'}</span>
+                        </div>
+                        {seccionMutua && (
+                            <div className="acuerdos-seccion-content">
+                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`finca-tab ${tabMutua === 'oferta' ? 'active' : ''}`} onClick={() => setTabMutua('oferta')}>Oferta</button>
+                                    <button className={`finca-tab ${tabMutua === 'demanda' ? 'active' : ''}`} onClick={() => setTabMutua('demanda')}>Demanda</button>
+                                </div>
+                                <table className="acuerdos-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Num Mutua</th>
+                                            <th>Mutua {tabMutua === 'oferta' ? 'Demandante' : 'Ofertante'}</th>
+                                            <th>Num Servicios</th>
+                                            <th>Contraprestación Económica</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* SECCIÓN PROVINCIA */}
-                <div className="seccion-box">
-                    <div className="seccion-header" onClick={() => setSeccionProvincia(!seccionProvincia)}>
-                        <span>Acuerdos Bilaterales o Multilaterales Provincia</span>
-                        <span>{seccionProvincia ? '−' : '+'}</span>
-                    </div>
-                    {seccionProvincia && (
-                        <div className="seccion-content">
-                            <div className="tabs">
-                                <button className={tabProvincia === 'oferta' ? 'tab activo' : 'tab'} onClick={() => setTabProvincia('oferta')}>Oferta</button>
-                                <button className={tabProvincia === 'demanda' ? 'tab activo' : 'tab'} onClick={() => setTabProvincia('demanda')}>Demanda</button>
+                                    </thead>
+                                    <tbody>
+                                        {(tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda).length === 0 ? (
+                                            <tr><td colSpan={4} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                        ) : (
+                                            (tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda).map((row, i) => (
+                                                <tr key={i}>
+                                                    <td>{row.numMutua}</td>
+                                                    <td>{row.mutuaNombre}</td>
+                                                    <td>{row.numServicios}</td>
+                                                    <td>{row.contraprestacionEconomica}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                            <table className="tabla-datos">
-                                <thead>
-                                    <tr>
-                                        <th>Num Provincia</th>
-                                        <th>Provincia</th>
-                                        <th>Num Servicios</th>
-                                        <th>Contraprestacion Economica</th>
-                                        <th>Num Servicios Terceros</th>
-                                        <th>Contraprestacion Economica Terceros</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).map((row, i) => (
-                                        <tr key={i}>
-                                            <td>{row.numProvincia}</td>
-                                            <td>{row.provincia}</td>
-                                            <td>{row.numServicios}</td>
-                                            <td>{row.contraprestacionEconomica}</td>
-                                            <td>{row.numServiciosTerceros}</td>
-                                            <td>{row.contraprestacionEconomicaTerceros}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* SECCIÓN TIPO SERVICIO */}
-                <div className="seccion-box">
-                    <div className="seccion-header" onClick={() => setSeccionTipoServicio(!seccionTipoServicio)}>
-                        <span>Acuerdos Bilaterales o Multilaterales Tipo de Servicio</span>
-                        <span>{seccionTipoServicio ? '−' : '+'}</span>
+                        )}
                     </div>
-                    {seccionTipoServicio && (
-                        <div className="seccion-content">
-                            <div className="tabs">
-                                <button className={tabTipoServicio === 'oferta' ? 'tab activo' : 'tab'} onClick={() => setTabTipoServicio('oferta')}>Oferta</button>
-                                <button className={tabTipoServicio === 'demanda' ? 'tab activo' : 'tab'} onClick={() => setTabTipoServicio('demanda')}>Demanda</button>
-                            </div>
-                            <table className="tabla-datos">
-                                <thead>
-                                    <tr>
-                                        <th>Tipo de Servicio</th>
-                                        <th>Tipo Servicio</th>
-                                        <th>Num Servicios</th>
-                                        <th>Contraprestacion Economica</th>
-                                        {tabTipoServicio === 'demanda' && <th>Num Servicios Terceros</th>}
-                                        {tabTipoServicio === 'demanda' && <th>Contraprestacion Economica Terceros</th>}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda).map((row, i) => (
-                                        <tr key={i}>
-                                            <td>{row.tipoServicio}</td>
-                                            <td>{row.tipoServicioNombre}</td>
-                                            <td>{row.numServicios}</td>
-                                            <td>{row.contraprestacionEconomica}</td>
-                                            {tabTipoServicio === 'demanda' && <td>{row.numServiciosTerceros}</td>}
-                                            {tabTipoServicio === 'demanda' && <td>{row.contraprestacionEconomicaTerceros}</td>}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
 
+                    <div className="acuerdos-seccion">
+                        <div className="acuerdos-seccion-header" onClick={() => setSeccionProvincia(!seccionProvincia)}>
+                            <span>Acuerdos Bilaterales o Multilaterales Provincia</span>
+                            <span>{seccionProvincia ? '−' : '+'}</span>
+                        </div>
+                        {seccionProvincia && (
+                            <div className="acuerdos-seccion-content">
+                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`finca-tab ${tabProvincia === 'oferta' ? 'active' : ''}`} onClick={() => setTabProvincia('oferta')}>Oferta</button>
+                                    <button className={`finca-tab ${tabProvincia === 'demanda' ? 'active' : ''}`} onClick={() => setTabProvincia('demanda')}>Demanda</button>
+                                </div>
+                                <table className="acuerdos-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Num Provincia</th>
+                                            <th>Provincia</th>
+                                            <th>Num Servicios</th>
+                                            <th>Contraprestación Económica</th>
+                                            <th>Num Servicios Terceros</th>
+                                            <th>Contraprestación Económica Terceros</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).length === 0 ? (
+                                            <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                        ) : (
+                                            (tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).map((row, i) => (
+                                                <tr key={i}>
+                                                    <td>{row.numProvincia}</td>
+                                                    <td>{row.provincia}</td>
+                                                    <td>{row.numServicios}</td>
+                                                    <td>{row.contraprestacionEconomica}</td>
+                                                    <td>{row.numServiciosTerceros}</td>
+                                                    <td>{row.contraprestacionEconomicaTerceros}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="acuerdos-seccion">
+                        <div className="acuerdos-seccion-header" onClick={() => setSeccionTipoServicio(!seccionTipoServicio)}>
+                            <span>Acuerdos Bilaterales o Multilaterales Tipo de Servicio</span>
+                            <span>{seccionTipoServicio ? '−' : '+'}</span>
+                        </div>
+                        {seccionTipoServicio && (
+                            <div className="acuerdos-seccion-content">
+                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`finca-tab ${tabTipoServicio === 'oferta' ? 'active' : ''}`} onClick={() => setTabTipoServicio('oferta')}>Oferta</button>
+                                    <button className={`finca-tab ${tabTipoServicio === 'demanda' ? 'active' : ''}`} onClick={() => setTabTipoServicio('demanda')}>Demanda</button>
+                                </div>
+                                <table className="acuerdos-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo de Servicio</th>
+                                            <th>Tipo Servicio</th>
+                                            <th>Num Servicios</th>
+                                            <th>Contraprestación Económica</th>
+                                            {tabTipoServicio === 'demanda' && <th>Num Servicios Terceros</th>}
+                                            {tabTipoServicio === 'demanda' && <th>Contraprestación Económica Terceros</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda).length === 0 ? (
+                                            <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                        ) : (
+                                            (tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda).map((row, i) => (
+                                                <tr key={i}>
+                                                    <td>{row.tipoServicio}</td>
+                                                    <td>{row.tipoServicioNombre}</td>
+                                                    <td>{row.numServicios}</td>
+                                                    <td>{row.contraprestacionEconomica}</td>
+                                                    {tabTipoServicio === 'demanda' && <td>{row.numServiciosTerceros}</td>}
+                                                    {tabTipoServicio === 'demanda' && <td>{row.contraprestacionEconomicaTerceros}</td>}
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
             </div>
-        </React.Fragment>
+        </div>
     );
 };
 
