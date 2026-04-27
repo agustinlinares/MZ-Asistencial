@@ -43,7 +43,7 @@ namespace MZAsistencial.Server.Controllers
 
         // POST: api/PlantillasAcuerdo
         [HttpPost]
-        public async Task<IActionResult> PostPlantillaAcuerdo([FromBody] PlantillasAcuerdosDTO dto)
+        public async Task<IActionResult> PostPlantillaAcuerdo([FromForm] PlantillaUploadDTO dto)
         {
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             if (dto == null) return BadRequest("Los datos no son válidos");
@@ -54,6 +54,19 @@ namespace MZAsistencial.Server.Controllers
                 return Ok(new { mensaje = "Plantilla creada correctamente" });
             
             return BadRequest("Error al crear la plantilla");
+        }
+
+        // POST: api/PlantillasAcuerdo/procesar
+        [HttpPost("procesar")]
+        public async Task<IActionResult> PostProcesarPlantillas()
+        {
+            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            var success = await _service.ProcessPlantillasAsync();
+
+            if (success)
+                return Ok(new { mensaje = "Plantillas procesadas correctamente" });
+            
+            return BadRequest("Error al procesar las plantillas o no hay plantillas pendientes");
         }
 
         // PUT: api/PlantillasAcuerdo/5

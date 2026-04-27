@@ -159,6 +159,13 @@ const PlantillasAcuerdos = () => {
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
+            if (!file.name.toLowerCase().endsWith('.xlsx')) {
+                setFileName("");
+                setSelectedFile(null);
+                setErrors(prev => ({ ...prev, fichero: "Solo se permiten archivos Excel (.xlsx)." }));
+                e.target.value = ""; // Limpiar el input
+                return;
+            }
             setFileName(file.name);
             setSelectedFile(file);
             clearFieldError('fichero');
@@ -166,6 +173,20 @@ const PlantillasAcuerdos = () => {
             setFileName("");
             setSelectedFile(null);
         }
+    };
+
+    const handleProcesar = () => {
+        fetch('https://localhost:7132/api/PlantillasAcuerdo/procesar', {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                fetchAcuerdos(); // Recargar la tabla para ver los estados en 2
+            } else {
+                console.error("Error procesando plantillas");
+            }
+        })
+        .catch(error => console.error('Error al procesar:', error));
     };
 
     const handleSave = async () => {
@@ -196,13 +217,12 @@ const PlantillasAcuerdos = () => {
         }
 
         const data = new FormData();
-        data.append("file", selectedFile);
-        data.append("mutua", formData.mutua);
-        data.append("año", formData.año);
-        data.append("tipoAcuerdoId", formData.tipoAcuerdoId);
-        data.append("estadoInforme", "1");
-        data.append("mes", new Date().getMonth() + 1);
-        data.append("usuario", sessionUsuario);
+        data.append("File", selectedFile);
+        data.append("Mutua", formData.mutua);
+        data.append("Año", formData.año);
+        data.append("TipoAcuerdoId", formData.tipoAcuerdoId);
+        data.append("Mes", new Date().getMonth() + 1);
+        data.append("Usuario", sessionUsuario);
 
         fetch('https://localhost:7132/api/PlantillasAcuerdo', {
             method: 'POST',
@@ -236,7 +256,7 @@ const PlantillasAcuerdos = () => {
                         >
                             <i className="ri-file-upload-line"></i> {t('Subir Plantilla')}
                         </button>
-                        <button type="button" className="boton-action">
+                        <button type="button" className="boton-action" onClick={handleProcesar}>
                             <i className="ri-settings-4-line"></i> {t('Procesar Plantillas')}
                         </button>
                     </div>
@@ -390,7 +410,6 @@ const PlantillasAcuerdos = () => {
                                     <input
                                         type="file"
                                         className="file-input-hidden"
-                                        accept=".xlsx"
                                         onChange={handleFileChange}
                                     />
                                 </div>
