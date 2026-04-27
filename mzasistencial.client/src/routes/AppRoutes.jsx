@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
@@ -6,57 +6,55 @@ import LoginPage from "../pages/LoginPage/LoginPage";
 const MapaPage = lazy(() => import("@pages/Admin/Centros/MapaPage"));
 
 // Layouts
-const AdminLayout = lazy(() => import("@layouts/AdminLayout"));
-const ResumendeGastos = lazy(() => import('@pages/Admin/ResumendeGastos/ResumendeGastos'));
+const AdminLayout = lazy(() => import("../components/_layout/AdminLayout"));
+const ResumendeGastos = lazy(() => import("../pages/Admin/ResumendeGastos/ResumendeGastos"));
 
-const Proveedores = lazy(() => import("@pages/Admin/Proveedores/Proveedores"));
-const Delegaciones = lazy(() => import("@pages/Admin/Proveedores/Delegaciones"));
+const Proveedores = lazy(() => import("../pages/Admin/Proveedores/Proveedores"));
+const Delegaciones = lazy(() => import("../pages/Admin/Proveedores/Delegaciones"));
 
-const Mutuas = lazy(() => import("@pages/Admin/Mutuas/Mutuas"));
-const Descuadres = lazy(() => import("@pages/Admin/Mutuas/Descuadres"));
+const Mutuas = lazy(() => import("../pages/Admin/Mutuas/Mutuas"));
+const Descuadres = lazy(() => import("../pages/Admin/Mutuas/Descuadres"));
 
-const Acuerdos = lazy(() => import("@pages/Admin/Acuerdos/Acuerdos"));
-const PlantillasAcuerdos = lazy(() => import("@pages/Admin/Acuerdos/PlantillasAcuerdos"));
-const Analisis = lazy(() => import("@pages/Admin/Acuerdos/Analisis"));
+const Acuerdos = lazy(() => import("../pages/Admin/Acuerdos/Acuerdos"));
+const PlantillasAcuerdos = lazy(() => import("../pages/Admin/Acuerdos/PlantillasAcuerdos"));
+const Analisis = lazy(() => import("../pages/Admin/Acuerdos/Analisis"));
 
 const CentrosPropios = lazy(() => import("@pages/Admin/Centros/CentrosPropios"));
-const FichaCentroPropio = lazy(() => import("@pages/Admin/Centros/FichaCentroPropio"));
 const CentrosConcertados = lazy(() => import("@pages/Admin/Centros/CentrosConcertados"));
 const Conciertos = lazy(() => import("@pages/Admin/Centros/Conciertos"));
 const Fincas = lazy(() => import("@pages/Admin/Centros/Fincas"));
-const FichaFincaPage = lazy(() => import("@pages/Admin/Centros/FichaFincaPage"));
 
-const ICGCentrosPropios = lazy(() => import("@pages/Admin/ICG/ICGCentrosPropios"));
-const ICGPlantillasICG = lazy(() => import("@pages/Admin/ICG/ICGPlantillasICG"));
-const ICGConciertos = lazy(() => import("@pages/Admin/ICG/ICGConciertos"));
+const ICGCentrosPropios = lazy(() => import("../pages/Admin/ICG/ICGCentrosPropios"));
+const ICGPlantillasICG = lazy(() => import("../pages/Admin/ICG/ICGPlantillasICG"));
+const ICGConciertos = lazy(() => import("../pages/Admin/ICG/ICGConciertos"));
 
-const GestionOferta = lazy(() => import("@pages/Admin/OfertaDemanda/GestionOferta"));
-const GestionDemanda = lazy(() => import("@pages/Admin/OfertaDemanda/GestionDemanda"));
-const AcreditacionesSectoriales = lazy(() => import("@pages/Admin/OfertaDemanda/AcreditacionesSectoriales"));
-const AcreditacionesIndividuales = lazy(() => import("@pages/Admin/OfertaDemanda/AcreditacionesIndividuales"));
-const GenerarInformes = lazy(() => import("@pages/Admin/OfertaDemanda/GenerarInformes"));
+const GestionOferta = lazy(() => import("../pages/Admin/OfertaDemanda/GestionOferta"));
+const GestionDemanda = lazy(() => import("../pages/Admin/OfertaDemanda/GestionDemanda"));
+const AcreditacionesSectoriales = lazy(() => import("../pages/Admin/OfertaDemanda/AcreditacionesSectoriales"));
+const AcreditacionesIndividuales = lazy(() => import("../pages/Admin/OfertaDemanda/AcreditacionesIndividuales"));
+const GenerarInformes = lazy(() => import("../pages/Admin/OfertaDemanda/GenerarInformes"));
 
-const SolicitarCitacion = lazy(() => import("@pages/Admin/GestionReserva/SolicitarCitacion"));
-const ConcederCitacion = lazy(() => import("@pages/Admin/GestionReserva/ConcederCitacion"));
+const SolicitarCitacion = lazy(() => import("../pages/Admin/GestionReserva/SolicitarCitacion"));
+const ConcederCitacion = lazy(() => import("../pages/Admin/GestionReserva/ConcederCitacion"));
 
-const CuadroMedico = lazy(() => import("@pages/Admin/CuadroMedico/CuadroMedico"));
+const CuadroMedico = lazy(() => import("../pages/Admin/CuadroMedico/CuadroMedico"));
 
-const AnalisisView = lazy(() => import("@pages/Admin/Analisis/AnalisisView"));
-const AnalisisSense = lazy(() => import("@pages/Admin/Analisis/AnalisisSense"));
+const AnalisisView = lazy(() => import("../pages/Admin/Analisis/AnalisisView"));
+const AnalisisSense = lazy(() => import("../pages/Admin/Analisis/AnalisisSense"));
 
-const Usuarios = lazy(() => import("@pages/Admin/Admin/Usuarios"));
-const Perfiles = lazy(() => import("@pages/Admin/Admin/Perfiles"));
-const PresupuestosLiquidados = lazy(() => import("@pages/Admin/Admin/PresupuestosLiquidados"));
-const Ejercicios = lazy(() => import("@pages/Admin/Admin/Ejercicios"));
-const Ficheros = lazy(() => import("@pages/Admin/Admin/Ficheros"));
-const ExportarAccess = lazy(() => import("@pages/Admin/Admin/ExportarAccess"));
-const RegistrosActividad = lazy(() => import("@pages/Admin/Admin/RegistrosActividad"));
-const RegistrosError = lazy(() => import("@pages/Admin/Admin/RegistrosError"));
-const CIEP = lazy(() => import("@pages/Admin/Admin/CIEP"));
-const Tarifas = lazy(() => import("@pages/Admin/Admin/Tarifas"));
-const TiposDemanda = lazy(() => import("@pages/Admin/Admin/TiposDemanda"));
-const Configuracion = lazy(() => import("@pages/Admin/Admin/Configuracion"));
-const Mantenimiento = lazy(() => import("@pages/Admin/Admin/Mantenimiento"));
+const Usuarios = lazy(() => import("../pages/Admin/Admin/Usuarios"));
+const Perfiles = lazy(() => import("../pages/Admin/Admin/Perfiles"));
+const PresupuestosLiquidados = lazy(() => import("../pages/Admin/Admin/PresupuestosLiquidados"));
+const Ejercicios = lazy(() => import("../pages/Admin/Admin/Ejercicios"));
+const Ficheros = lazy(() => import("../pages/Admin/Admin/Ficheros"));
+const ExportarAccess = lazy(() => import("../pages/Admin/Admin/ExportarAccess"));
+const RegistrosActividad = lazy(() => import("../pages/Admin/Admin/RegistrosActividad"));
+const RegistrosError = lazy(() => import("../pages/Admin/Admin/RegistrosError"));
+const CIEP = lazy(() => import("../pages/Admin/Admin/CIEP"));
+const Tarifas = lazy(() => import("../pages/Admin/Admin/Tarifas"));
+const TiposDemanda = lazy(() => import("../pages/Admin/Admin/TiposDemanda"));
+const Configuracion = lazy(() => import("../pages/Admin/Admin/Configuracion"));
+const Mantenimiento = lazy(() => import("../pages/Admin/Admin/Mantenimiento"));
 
 const AppRoutes = () => {
     return (

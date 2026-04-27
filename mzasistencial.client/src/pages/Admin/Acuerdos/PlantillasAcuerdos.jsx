@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
+import AuthService from '@services/auth/AuthService';
 import { Workbook } from 'exceljs';
 import './Acuerdos.css';
 import { saveAs } from 'file-saver-es';
@@ -27,7 +28,6 @@ import DataGrid, {
     Editing
 } from "devextreme-react/data-grid";
 
-// POP UP PLANTILLA
 import { useTranslation } from "react-i18next";
 import { Popup, ToolbarItem } from "devextreme-react/popup";
 import SelectBox from "devextreme-react/select-box";
@@ -35,7 +35,14 @@ import TextBox from "devextreme-react/text-box";
 import FileUploader from "devextreme-react/file-uploader";
 import Button from "devextreme-react/button";
 
-// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
+// ─── CONSTANTES ──────────────────────────────────────────────────────────────
+
+const acuerdosTipos = [
+    { id: 1, nombre: "Acuerdo 1 (Acuerdos mutua)" },
+    { id: 2, nombre: "Acuerdo 2 (Acuerdo provincia)" },
+    { id: 3, nombre: "Acuerdo 3 (Acuerdos tipo de servicio)" },
+];
+
 const sampleData = [];
 
 const onExporting = (e) => {
@@ -50,41 +57,66 @@ const onExporting = (e) => {
         workbook.xlsx.writeBuffer().then((buffer) => {
             saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
         });
-    })
+    });
     e.cancel = true;
 };
+
+// Valida extensión .xlsx y magic bytes (ZIP: 50 4B 03 04)
+const validateXlsx = (file) =>
+    new Promise((resolve) => {
+        if (!file.name.toLowerCase().endsWith('.xlsx')) {
+            resolve(false);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const arr = new Uint8Array(ev.target.result);
+            resolve(arr[0] === 0x50 && arr[1] === 0x4B && arr[2] === 0x03 && arr[3] === 0x04);
+        };
+        reader.readAsArrayBuffer(file.slice(0, 4));
+    });
+
+// ─── COMPONENTE ──────────────────────────────────────────────────────────────
 
 const PlantillasAcuerdos = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const navigate = useNavigate();
+
     const [popupVisible, setPopupVisible] = useState(false);
     const [acuerdos, setAcuerdos] = useState([]);
     const [mutuasList, setMutuasList] = useState([]);
+
     const currentYear = new Date().getFullYear();
     const añosList = Array.from({ length: currentYear - 2008 + 1 }, (_, i) => 2008 + i).reverse();
 
-    const [formData, setFormData] = useState({
-        mutua: "",
+    const sessionUsuario = AuthService.getUser();
+
+    const emptyForm = {
+        mutua: null,
         año: currentYear,
-        informe: "",
-        estadoInforme: "1",
-        tipoAcuerdo: "Bilateral",
-        mes: new Date().getMonth() + 1
-    });
-    const navigate = useNavigate();
+        tipoAcuerdoId: null,
+    };
+
+    const [formData, setFormData] = useState(emptyForm);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [fileName, setFileName] = useState("");
+    const [errors, setErrors] = useState({});
+
+    // ── Fetch ────────────────────────────────────────────────────────────────
 
     const fetchAcuerdos = () => {
         fetch('https://localhost:7132/api/PlantillasAcuerdo')
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => setAcuerdos(data))
-            .catch(error => console.error('Error al cargar acuerdos:', error));
+            .catch(err => console.error('Error al cargar acuerdos:', err));
     };
 
     const fetchMutuas = () => {
         fetch('https://localhost:7132/api/PlantillasAcuerdo/mutuas')
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => setMutuasList(data.map(m => m.mutua)))
-            .catch(error => console.error('Error al cargar mutuas:', error));
+            .catch(err => console.error('Error al cargar mutuas:', err));
     };
 
     useEffect(() => {
@@ -92,57 +124,107 @@ const PlantillasAcuerdos = () => {
         fetchMutuas();
     }, []);
 
+    // ── DataGrid handlers ────────────────────────────────────────────────────
+
     const onRowUpdating = (e) => {
         const updatedData = { ...e.oldData, ...e.newData };
         fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedData)
-        })
-        .catch(error => console.error('Error al actualizar:', error));
+            body: JSON.stringify(updatedData),
+        }).catch(err => console.error('Error al actualizar:', err));
     };
 
     const onRowRemoving = (e) => {
         fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
-            method: 'DELETE'
-        })
-        .catch(error => console.error('Error al eliminar:', error));
+            method: 'DELETE',
+        }).catch(err => console.error('Error al eliminar:', err));
     };
 
-    const [fileName, setFileName] = useState("");
+    // ── Popup handlers ───────────────────────────────────────────────────────
+
+    const handlePopupHide = () => {
+        setPopupVisible(false);
+        setFormData(emptyForm);
+        setSelectedFile(null);
+        setFileName("");
+        setErrors({});
+    };
+
+    const clearFieldError = (field) =>
+        setErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
             setFileName(file.name);
-            setFormData({...formData, file: file});
+            setSelectedFile(file);
+            clearFieldError('fichero');
         } else {
             setFileName("");
+            setSelectedFile(null);
         }
     };
 
-    const handleSave = () => {
-        // ... (resto del código del handleSave se mantiene)
+    const handleSave = async () => {
+        // Validar campos obligatorios en orden
+        if (!formData.mutua) {
+            setErrors({ mutua: "La mutua es obligatoria." });
+            return;
+        }
+        if (!formData.año) {
+            setErrors({ año: "El año es obligatorio." });
+            return;
+        }
+        if (!formData.tipoAcuerdoId) {
+            setErrors({ tipoAcuerdoId: "El acuerdo es obligatorio." });
+            return;
+        }
+        if (!selectedFile) {
+            setErrors({ fichero: "El fichero es obligatorio." });
+            return;
+        }
+
+        setErrors({});
+
+        const isValidXlsx = await validateXlsx(selectedFile);
+        if (!isValidXlsx) {
+            setErrors({ fichero: "Solo se permiten ficheros .xlsx válidos." });
+            return;
+        }
+
+        const data = new FormData();
+        data.append("file", selectedFile);
+        data.append("mutua", formData.mutua);
+        data.append("año", formData.año);
+        data.append("tipoAcuerdoId", formData.tipoAcuerdoId);
+        data.append("estadoInforme", "1");
+        data.append("mes", new Date().getMonth() + 1);
+        data.append("usuario", sessionUsuario);
+
         fetch('https://localhost:7132/api/PlantillasAcuerdo', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: data,
         })
-        .then(response => {
-            if (response.ok) {
-                setPopupVisible(false);
-                fetchAcuerdos();
-            }
-        })
-        .catch(error => console.error('Error al guardar:', error));
+            .then(response => {
+                if (response.ok) {
+                    handlePopupHide();
+                    fetchAcuerdos();
+                } else {
+                    return response.text().then(msg => { throw new Error(msg || "Error al guardar el registro."); });
+                }
+            })
+            .catch(err => setErrors({ general: err.message }));
     };
-    return (
 
+    // ── Render ───────────────────────────────────────────────────────────────
+
+    return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="title"> {t('PLANTILLAS DE ACUERDOS')}</div>
+                    <div className="title">{t('PLANTILLAS DE ACUERDOS')}</div>
 
                     <div className="BotonesCombo">
                         <button
@@ -174,12 +256,7 @@ const PlantillasAcuerdos = () => {
                             onRowUpdating={onRowUpdating}
                             onRowRemoving={onRowRemoving}
                         >
-                            <Editing
-                                mode="row"
-                                allowUpdating={true}
-                                allowDeleting={true}
-                                useIcons={true}
-                            />
+                            <Editing mode="row" allowUpdating={true} allowDeleting={true} useIcons={true} />
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
@@ -193,10 +270,6 @@ const PlantillasAcuerdos = () => {
                             <Sorting mode="multiple" />
                             <FilterPanel visible />
                             <ColumnFixing enabled />
-
-
-
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
 
                             <Column dataField="informe" caption="Informe" />
                             <Column dataField="estadoInforme" caption="Estado Informe" />
@@ -213,7 +286,7 @@ const PlantillasAcuerdos = () => {
 
             <Popup
                 visible={popupVisible}
-                onHiding={() => setPopupVisible(false)}
+                onHiding={handlePopupHide}
                 dragEnabled={true}
                 closeOnOutsideClick={true}
                 showCloseButton={false}
@@ -242,79 +315,93 @@ const PlantillasAcuerdos = () => {
                         text: "Salir",
                         type: "normal",
                         icon: "close",
-                        onClick: () => setPopupVisible(false),
+                        onClick: handlePopupHide,
                         elementAttr: { class: "btn-salir-popup" }
                     }}
                 />
 
                 <div className="popup-container">
+                    {/* Error general */}
+                    {errors.general && (
+                        <div className="field-error mb-2">{errors.general}</div>
+                    )}
+
                     {/* FILA 1: Mutua y Año */}
                     <div className="popup-row">
                         <div className="popup-field">
-                            <label>Mutua</label>
-                            <SelectBox 
-                                items={mutuasList} 
+                            <label>Mutua <span className="required">*</span></label>
+                            <SelectBox
+                                items={mutuasList}
                                 value={formData.mutua}
-                                onValueChanged={(e) => setFormData({...formData, mutua: e.value})}
+                                onValueChanged={(e) => { setFormData({ ...formData, mutua: e.value }); clearFieldError('mutua'); }}
                                 placeholder=""
+                                isValid={!errors.mutua}
                             />
+                            {errors.mutua && <div className="field-error">{errors.mutua}</div>}
                         </div>
 
                         <div className="popup-field">
-                            <label>Año</label>
-                            <SelectBox 
-                                items={añosList} 
+                            <label>Año <span className="required">*</span></label>
+                            <SelectBox
+                                items={añosList}
                                 value={formData.año}
-                                onValueChanged={(e) => setFormData({...formData, año: e.value})}
+                                onValueChanged={(e) => { setFormData({ ...formData, año: e.value }); clearFieldError('año'); }}
                                 placeholder=""
+                                isValid={!errors.año}
                             />
+                            {errors.año && <div className="field-error">{errors.año}</div>}
                         </div>
                     </div>
 
                     {/* FILA 2: Acuerdo */}
                     <div className="popup-row">
                         <div className="popup-field">
-                            <label>Acuerdo</label>
-                            <SelectBox 
-                                items={["Acuerdo 1", "Acuerdo 2", "Acuerdo 3"]}
-                                value={formData.informe}
-                                onValueChanged={(e) => setFormData({...formData, informe: e.value})}
+                            <label>Acuerdo <span className="required">*</span></label>
+                            <SelectBox
+                                items={acuerdosTipos}
+                                value={formData.tipoAcuerdoId}
+                                displayExpr="nombre"
+                                valueExpr="id"
+                                onValueChanged={(e) => { setFormData({ ...formData, tipoAcuerdoId: e.value }); clearFieldError('tipoAcuerdoId'); }}
                                 placeholder=""
+                                isValid={!errors.tipoAcuerdoId}
                             />
+                            {errors.tipoAcuerdoId && <div className="field-error">{errors.tipoAcuerdoId}</div>}
                         </div>
-                        {/* Espacio vacío para que ocupe la mitad derecha */}
                         <div className="popup-field"></div>
                     </div>
 
                     {/* FILA 3: Fichero */}
                     <div className="popup-row mt-3">
                         <div className="popup-field full">
-                            <label>Fichero</label>
-                            <div className="file-uploader-custom">
-                                <input 
-                                    type="text" 
-                                    className="file-text-mock" 
-                                    placeholder="Seleccionar un archivo..." 
+                            <label>Fichero <span className="required">*</span></label>
+                            <div className={`file-uploader-custom${errors.fichero ? ' is-invalid' : ''}`}>
+                                <input
+                                    type="text"
+                                    className="file-text-mock"
+                                    placeholder="Seleccionar un archivo..."
                                     value={fileName}
-                                    readOnly 
+                                    readOnly
                                 />
                                 <div className="file-btn-mock">
                                     <span>Examinar...</span>
-                                    <input 
-                                        type="file" 
-                                        className="file-input-hidden" 
+                                    <input
+                                        type="file"
+                                        className="file-input-hidden"
+                                        accept=".xlsx"
                                         onChange={handleFileChange}
                                     />
                                 </div>
                             </div>
+                            {errors.fichero && <div className="field-error">{errors.fichero}</div>}
                         </div>
                     </div>
 
-                    {/* FILA 4: Info Usuario y Fecha */}
+                    {/* FILA 4: Usuario y Fecha de subida (solo lectura) */}
                     <div className="popup-row mt-2">
                         <div className="popup-field">
                             <label>Usuario</label>
-                            <TextBox value="TestDev" readOnly stylingMode="filled" />
+                            <TextBox value={sessionUsuario} readOnly stylingMode="filled" />
                         </div>
 
                         <div className="popup-field">
@@ -324,7 +411,6 @@ const PlantillasAcuerdos = () => {
                     </div>
                 </div>
             </Popup>
-
         </React.Fragment>
     );
 };
