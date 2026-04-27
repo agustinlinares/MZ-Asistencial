@@ -1,4 +1,4 @@
-﻿using MZAsistencial.Server.Data;
+using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,21 +19,40 @@ namespace MZAsistencial.Server.Services
             return await _context.CentrosPropios
                 .Select(c => new CentrosPropiosDTO
                 {
-                    Localizador = c.Localizador,
-                    CentroId    = c.CentroId,
-                    MutuaId     = c.MutuaId,
-                    Centro      = c.Centro,
-                    Cp          = c.Cp,
-                    PoblacionId = c.PoblacionId,
-                    Telefono    = c.Telefono,
-                    Latitud     = c.Latitud,
-                    Longitud    = c.Longitud,
-                    CodigoMz    = c.CodigoMz,
-                    Direccion   = c.Direccion,
+                    Localizador     = c.Localizador,
+                    CentroId        = c.CentroId,
+                    MutuaId         = c.MutuaId,
+                    Centro          = c.Centro,
+                    Cp              = c.Cp,
+                    PoblacionId     = c.PoblacionId,
+                    Telefono        = c.Telefono,
+                    Latitud         = c.Latitud,
+                    Longitud        = c.Longitud,
+                    CodigoMz        = c.CodigoMz,
+                    Direccion       = c.Direccion,
+                    Numero          = c.Numero,
+                    Piso            = c.Piso,
+                    Puerta          = c.Puerta,
                     DireccionGoogle = c.DireccionGis,
-                    Email       = c.DireccionElectronica,
+                    Email           = c.DireccionElectronica,
                     PersonaContacto = c.PersonaContacto,
-                    Desactivado = c.Desactivado,
+                    OtrosDatos      = c.OtrosDatos,
+                    ServiciosEspeciales     = c.ServiciosEspeciales,
+                    Desactivado             = c.Desactivado,
+                    Traslado                = c.Traslado,
+                    MotivoBaja              = c.MotivoBaja,
+                    FechaBaja               = c.FechaBaja,
+                    AsistenciaHospitalaria  = c.AsistenciaHospitalaria,
+                    AsistenciaAmbulatoria   = c.AsistenciaAmbulatoria,
+                    Rehabilitacion          = c.Rehabilitacion,
+                    IncapacidadTransitoria  = c.IncapacidadTransitoria,
+                    Prevencion              = c.Prevencion,
+                    Administracion          = c.Administracion,
+                    OtrasActividades        = c.OtrasActividades,
+                    Fautocom                = c.Fautocom,
+                    Fpufuncio               = c.Fpufuncio,
+                    Fcalisuf                = c.Fcalisuf,
+                    TipoCentro              = c.TipoCentro,
                 })
                 .ToListAsync();
         }
@@ -47,21 +66,40 @@ namespace MZAsistencial.Server.Services
 
             return new CentrosPropiosDTO
             {
-                Localizador = c.Localizador,
-                CentroId    = c.CentroId,
-                MutuaId     = c.MutuaId,
-                Centro      = c.Centro,
-                Cp          = c.Cp,
-                PoblacionId = c.PoblacionId,
-                Telefono    = c.Telefono,
-                Latitud     = c.Latitud,
-                Longitud    = c.Longitud,
-                CodigoMz    = c.CodigoMz,
-                Direccion   = c.Direccion,
+                Localizador     = c.Localizador,
+                CentroId        = c.CentroId,
+                MutuaId         = c.MutuaId,
+                Centro          = c.Centro,
+                Cp              = c.Cp,
+                PoblacionId     = c.PoblacionId,
+                Telefono        = c.Telefono,
+                Latitud         = c.Latitud,
+                Longitud        = c.Longitud,
+                CodigoMz        = c.CodigoMz,
+                Direccion       = c.Direccion,
+                Numero          = c.Numero,
+                Piso            = c.Piso,
+                Puerta          = c.Puerta,
                 DireccionGoogle = c.DireccionGis,
-                Email       = c.DireccionElectronica,
+                Email           = c.DireccionElectronica,
                 PersonaContacto = c.PersonaContacto,
-                Desactivado = c.Desactivado,
+                OtrosDatos      = c.OtrosDatos,
+                ServiciosEspeciales     = c.ServiciosEspeciales,
+                Desactivado             = c.Desactivado,
+                Traslado                = c.Traslado,
+                MotivoBaja              = c.MotivoBaja,
+                FechaBaja               = c.FechaBaja,
+                AsistenciaHospitalaria  = c.AsistenciaHospitalaria,
+                AsistenciaAmbulatoria   = c.AsistenciaAmbulatoria,
+                Rehabilitacion          = c.Rehabilitacion,
+                IncapacidadTransitoria  = c.IncapacidadTransitoria,
+                Prevencion              = c.Prevencion,
+                Administracion          = c.Administracion,
+                OtrasActividades        = c.OtrasActividades,
+                Fautocom                = c.Fautocom,
+                Fpufuncio               = c.Fpufuncio,
+                Fcalisuf                = c.Fcalisuf,
+                TipoCentro              = c.TipoCentro,
             };
         }
 
@@ -72,20 +110,42 @@ namespace MZAsistencial.Server.Services
 
             if (centro is null) return false;
 
+            centro.MutuaId              = dto.MutuaId;
             centro.Centro               = dto.Centro;
             centro.Cp                   = dto.Cp;
             centro.Telefono             = dto.Telefono;
             centro.Latitud              = dto.Latitud;
             centro.Longitud             = dto.Longitud;
             centro.Direccion            = dto.Direccion;
+            centro.Numero               = dto.Numero;
+            centro.Piso                 = dto.Piso;
+            centro.Puerta               = dto.Puerta;
             centro.DireccionGis         = dto.DireccionGoogle;
             centro.DireccionElectronica = dto.Email;
             centro.PersonaContacto      = dto.PersonaContacto;
+            centro.OtrosDatos           = dto.OtrosDatos;
+            centro.ServiciosEspeciales  = dto.ServiciosEspeciales;
             centro.Desactivado          = dto.Desactivado;
+            centro.Traslado             = dto.Traslado;
+            centro.MotivoBaja           = dto.MotivoBaja;
+            centro.FechaBaja            = dto.FechaBaja;
+            centro.AsistenciaHospitalaria  = dto.AsistenciaHospitalaria;
+            centro.AsistenciaAmbulatoria   = dto.AsistenciaAmbulatoria;
+            centro.Rehabilitacion          = dto.Rehabilitacion;
+            centro.IncapacidadTransitoria  = dto.IncapacidadTransitoria;
+            centro.Prevencion              = dto.Prevencion;
+            centro.Administracion          = dto.Administracion;
+            centro.OtrasActividades        = dto.OtrasActividades;
+            centro.Fautocom                = dto.Fautocom;
+            centro.Fpufuncio               = dto.Fpufuncio;
+            centro.Fcalisuf                = dto.Fcalisuf;
+            centro.TipoCentro              = dto.TipoCentro;
+            centro.FechaModificacion       = DateTime.Now;
 
             await _context.SaveChangesAsync();
             return true;
         }
+
         public async Task<bool> ValidarAsync(List<int> ids)
         {
             var centros = await _context.CentrosPropios

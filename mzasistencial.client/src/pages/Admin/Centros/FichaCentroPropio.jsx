@@ -110,29 +110,53 @@ const FichaCentroPropio = () => {
     };
 
     const handleGuardar = async () => {
-        setGuardando(true);
-        try {
-            const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    localizador: form.Localizador, centroId: form.CentroId,
-                    mutuaId: form.Mutua || 0, centro: form.Centro,
-                    cp: form.Cp, poblacionId: form.PoblacionId || 0,
-                    telefono: form.Telefono, latitud: form.Latitud,
-                    longitud: form.Longitud, direccion: form.Direccion,
-                    direccionGoogle: form.DireccionGoogle, email: form.Email,
-                    personaContacto: form.PersonaContacto, desactivado: form.CentroDesactivado,
-                })
-            });
-            if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
-            else { alert('Error al guardar el centro'); }
-        } catch (err) {
-            alert('Error de conexión: ' + err.message);
-        } finally {
-            setGuardando(false);
-        }
-    };
+    setGuardando(true);
+    try {
+        const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                centroId:               form.CentroId,
+                localizador:            form.Localizador,
+                mutuaId:                parseInt(form.Mutua) || 0,
+                centro:                 form.Centro,
+                cp:                     form.Cp,
+                poblacionId:            form.PoblacionId || 0,
+                telefono:               form.Telefono,
+                latitud:                form.Latitud,
+                longitud:               form.Longitud,
+                direccion:              form.Direccion,
+                numero:                 form.Numero,
+                piso:                   form.Piso,
+                puerta:                 form.Puerta,
+                direccionGoogle:        form.DireccionGoogle,
+                email:                  form.Email,
+                personaContacto:        form.PersonaContacto,
+                otrosDatos:             form.OtrosDatos,
+                desactivado:            form.CentroDesactivado,
+                traslado:               form.Traslado,
+                motivoBaja:             form.MotivoBaja,
+                fechaBaja:              form.FechaBaja || null,
+                asistenciaHospitalaria: form.ActividadHospitalaria,
+                asistenciaAmbulatoria:  form.ActividadAmbulatoria,
+                rehabilitacion:         form.ActividadRehabilitacion,
+                incapacidadTransitoria: form.ActividadControlIT,
+                prevencion:             form.ActividadPrevencion,
+                otrasActividades:       form.ActividadOtras,
+                administracion:         form.ActividadAdmon,
+                fautocom:               form.Autorizacion || null,
+                fpufuncio:              form.PuestaFuncionamiento || null,
+                fcalisuf:               form.Calificacion || null,
+            })
+        });
+        if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
+        else { alert('Error al guardar el centro'); }
+    } catch (err) {
+        alert('Error de conexión: ' + err.message);
+    } finally {
+        setGuardando(false);
+    }
+};
 
     if (!cliente) return null;
 
