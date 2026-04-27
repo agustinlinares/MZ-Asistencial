@@ -23,7 +23,8 @@ const CentrosPropios = lazy(() => import("@pages/Admin/Centros/CentrosPropios"))
 const CentrosConcertados = lazy(() => import("@pages/Admin/Centros/CentrosConcertados"));
 const Conciertos = lazy(() => import("@pages/Admin/Centros/Conciertos"));
 const Fincas = lazy(() => import("@pages/Admin/Centros/Fincas"));
-
+const FichaCentroPropio = lazy(() => import("@pages/Admin/Centros/FichaCentroPropio"));
+const FichaFincaPage = lazy(() => import("@pages/Admin/Centros/FichaFincaPage"));
 const ICGCentrosPropios = lazy(() => import("../pages/Admin/ICG/ICGCentrosPropios"));
 const ICGPlantillasICG = lazy(() => import("../pages/Admin/ICG/ICGPlantillasICG"));
 const ICGConciertos = lazy(() => import("../pages/Admin/ICG/ICGConciertos"));
