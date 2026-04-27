@@ -111,6 +111,7 @@ const PlantillasAcuerdos = () => {
             .then(data => setAcuerdos(data))
             .catch(err => console.error('Error al cargar acuerdos:', err));
     };
+    //Aquí vamos a traer todas las plantilla de la base de datos y las vamos a cargar todas las plantillas en el data grid
 
     const fetchMutuas = () => {
         fetch('https://localhost:7132/api/PlantillasAcuerdo/mutuas')
@@ -118,12 +119,13 @@ const PlantillasAcuerdos = () => {
             .then(data => setMutuasList(data.map(m => m.mutua)))
             .catch(err => console.error('Error al cargar mutuas:', err));
     };
+    //Aquí vamos a traer mutuas de la tabla mutuas
 
     useEffect(() => {
         fetchAcuerdos();
         fetchMutuas();
     }, []);
-
+//Después las cargamos en el useEffect
     // ── DataGrid handlers ────────────────────────────────────────────────────
 
     const onRowUpdating = (e) => {
