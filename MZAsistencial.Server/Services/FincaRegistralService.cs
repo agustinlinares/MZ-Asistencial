@@ -51,7 +51,9 @@ namespace MZAsistencial.Server.Services
                                   TipoFinca = f.TipoFinca,
                                   Titularidad = f.Titinmueble,
                                   OtrosDatos = f.OtrosDatos,
-                                  DireccionGoogle = f.DireccionElectronica
+                                  DireccionGoogle = f.DireccionElectronica,
+                                  Latitud = f.Latitud,
+                                  Longitud = f.Longitud
                               }).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (data, total);
@@ -87,7 +89,9 @@ namespace MZAsistencial.Server.Services
                     TipoFinca = x.fi.TipoFinca,
                     Titularidad = x.fi.Titinmueble,
                     OtrosDatos = x.fi.OtrosDatos,
-                    DireccionGoogle = x.fi.DireccionElectronica
+                    DireccionGoogle = x.fi.DireccionElectronica,
+                    Latitud = x.fi.Latitud,
+                    Longitud = x.fi.Longitud
                 }).FirstOrDefaultAsync();
 
             if (f != null)
@@ -122,7 +126,9 @@ namespace MZAsistencial.Server.Services
                 TipoFinca = fi.TipoFinca,
                 Titularidad = fi.Titinmueble,
                 OtrosDatos = fi.OtrosDatos,
-                DireccionGoogle = fi.DireccionElectronica
+                DireccionGoogle = fi.DireccionElectronica,
+                Latitud = fi.Latitud,
+                Longitud = fi.Longitud
             };
         }
 
@@ -150,6 +156,8 @@ namespace MZAsistencial.Server.Services
             finca.Titinmueble = dto.Titularidad;
             finca.OtrosDatos = dto.OtrosDatos;
             finca.DireccionElectronica = dto.DireccionGoogle;
+            finca.Latitud = dto.Latitud;
+            finca.Longitud = dto.Longitud;
 
             finca.FechaModificacion = DateTime.UtcNow;
 
@@ -177,6 +185,8 @@ namespace MZAsistencial.Server.Services
                 Titinmueble = dto.Titularidad,
                 OtrosDatos = dto.OtrosDatos,
                 DireccionElectronica = dto.DireccionGoogle,
+                Latitud = dto.Latitud,
+                Longitud = dto.Longitud,
                 FechaAlta = DateTime.UtcNow,
                 FechaModificacion = DateTime.UtcNow
             };
@@ -263,7 +273,9 @@ namespace MZAsistencial.Server.Services
                               TipoFinca = f.TipoFinca,
                               Titularidad = f.Titinmueble,
                               OtrosDatos = f.OtrosDatos,
-                              DireccionGoogle = f.DireccionElectronica
+                              DireccionGoogle = f.DireccionElectronica,
+                              Latitud = f.Latitud,
+                              Longitud = f.Longitud
                           }).ToListAsync();
         }
     }

@@ -50,6 +50,7 @@ const FlyTo = ({ lat, lng }) => {
 const TabMapa = ({ form, onChange }) => {
     const [vistaTab, setVistaTab] = useState('mapa');
     const [flyKey, setFlyKey] = useState(0);
+    const [buscando, setBuscando] = useState(false);
 
     const parsedLat = parseFloat(form.latitud);
     const parsedLng = parseFloat(form.longitud);
@@ -60,42 +61,82 @@ const TabMapa = ({ form, onChange }) => {
         onChange('longitud', String(lo.toFixed(6)));
     };
 
-    const handleBuscar = () => setFlyKey(k => k + 1);
+    const handleBuscar = async () => {
+        if (!form.dir_google) { setFlyKey(k => k + 1); return; }
+        
+        setBuscando(true);
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.dir_google)}&limit=1`,
+                { headers: { 'Accept-Language': 'es' } }
+            );
+            const data = await res.json();
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                onChange('latitud', lat);
+                onChange('longitud', lon);
+                setFlyKey(k => k + 1);
+            }
+        } catch (error) {
+            console.error("Error buscando dirección:", error);
+        } finally {
+            setBuscando(false);
+        }
+    };
+
     const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
+
+    // URLs de Tiles de Google Maps (lyrs: m=callejero, s=satelite, y=hibrido)
+    const GOOGLE_STREET = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+    const GOOGLE_SATELLITE = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}';
+    const GOOGLE_HYBRID = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
 
     return (
         <div className="tab-mapa-container">
             <div className="finca-grid" style={{ marginBottom: 15 }}>
                 <div className="finca-field span2">
-                    <label>Dirección Google / Localización</label>
-                    <input 
-                        type="text" 
-                        value={form.dir_google || ''} 
-                        onChange={e => onChange('dir_google', e.target.value)} 
-                        placeholder="Ej: Calle Mayor 1, Madrid"
-                    />
+                    <label>Buscador de Dirección (Google Maps)</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <input 
+                            type="text" 
+                            style={{ flex: 1 }}
+                            value={form.dir_google || ''} 
+                            onChange={e => onChange('dir_google', e.target.value)} 
+                            onKeyDown={e => e.key === 'Enter' && handleBuscar()}
+                            placeholder="Ej: Calle Mayor 1, Madrid"
+                        />
+                        <button 
+                            className="finca-btn-primary" 
+                            onClick={handleBuscar} 
+                            disabled={buscando}
+                            style={{ width: 'auto', padding: '0 15px' }}
+                        >
+                            {buscando ? '...' : '🔍'}
+                        </button>
+                    </div>
                 </div>
                 <div className="finca-field">
                     <label>Latitud</label>
-                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={handleBuscar} />
+                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
                 </div>
                 <div className="finca-field">
                     <label>Longitud</label>
-                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={handleBuscar} />
+                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
                 </div>
             </div>
 
             <div className="mapa-view-tabs">
-                <button className={`mapa-view-tab ${vistaTab === 'mapa' ? 'active' : ''}`} onClick={() => setVistaTab('mapa')}>Mapa</button>
+                <button className={`mapa-view-tab ${vistaTab === 'mapa' ? 'active' : ''}`} onClick={() => setVistaTab('mapa')}>Callejero</button>
                 <button className={`mapa-view-tab ${vistaTab === 'satelite' ? 'active' : ''}`} onClick={() => setVistaTab('satelite')}>Satélite</button>
+                <button className={`mapa-view-tab ${vistaTab === 'hibrido' ? 'active' : ''}`} onClick={() => setVistaTab('hibrido')}>Híbrido</button>
             </div>
 
             <div className="mapa-container" style={{ height: 400, borderRadius: 8, overflow: 'hidden', border: '1px solid #ddd', zIndex: 0 }}>
                 <MapContainer center={defaultCenter} zoom={tieneCoords ? 15 : 6} style={{ height: '100%', width: '100%' }}>
                     <TileLayer
                         key={vistaTab}
-                        url={vistaTab === 'satelite' ? TILE_SAT : TILE_OSM}
-                        attribution={vistaTab === 'satelite' ? ATTR_SAT : ATTR_OSM}
+                        url={vistaTab === 'satelite' ? GOOGLE_SATELLITE : vistaTab === 'hibrido' ? GOOGLE_HYBRID : GOOGLE_STREET}
+                        attribution="&copy; Google Maps"
                     />
                     <MapClickHandler onMapClick={handleMapClick} />
                     {tieneCoords && (
@@ -106,7 +147,7 @@ const TabMapa = ({ form, onChange }) => {
                     )}
                 </MapContainer>
             </div>
-            <p className="mapa-hint">📍 Haz clic en el mapa para situar la finca o introduce las coordenadas manualmente.</p>
+            <p className="mapa-hint">📍 Haz clic en el mapa para situar la finca o busca una dirección arriba.</p>
         </div>
     );
 };
@@ -355,8 +396,8 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
         f_inscripcion: finca?.F_Inscripcion ? String(finca.F_Inscripcion).substring(0, 10) : (finca?.f_inscripcion ?? ''),
         f_baja:        finca?.F_Baja        ? String(finca.F_Baja).substring(0, 10) : (finca?.f_baja ?? ''),
         dir_google:    finca?.DireccionGoogle ?? finca?.dir_google  ?? '',
-        latitud:       finca?.latitud       ?? '',
-        longitud:      finca?.longitud      ?? '',
+        latitud:       finca?.Latitud       ?? finca?.latitud       ?? '',
+        longitud:      finca?.Longitud      ?? finca?.longitud      ?? '',
         otros_datos:   finca?.OtrosDatos    ?? finca?.otros_datos   ?? '',
     });
     const [errors, setErrors] = useState({});

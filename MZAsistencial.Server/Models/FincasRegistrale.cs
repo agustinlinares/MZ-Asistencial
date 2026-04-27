@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace MZAsistencial.Server.Models;
@@ -52,6 +52,9 @@ public partial class FincasRegistrale
     public string? DireccionElectronica { get; set; }
 
     public string? PersonaContacto { get; set; }
+
+    public string? Latitud { get; set; }
+    public string? Longitud { get; set; }
 
     public virtual ICollection<FincasRegistralesCostesPorAño> FincasRegistralesCostesPorAños { get; set; } = new List<FincasRegistralesCostesPorAño>();
 }
