@@ -53,8 +53,7 @@ namespace MZAsistencial.Server.Services
                                   OtrosDatos = f.OtrosDatos,
                                   DireccionGoogle = f.DireccionElectronica,
                                   Latitud = f.Latitud,
-                                  Longitud = f.Longitud,
-                                  CentroValidado = c.Validado ?? false
+                                  Longitud = f.Longitud
                               }).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (data, total);
@@ -92,8 +91,7 @@ namespace MZAsistencial.Server.Services
                     OtrosDatos = x.fi.OtrosDatos,
                     DireccionGoogle = x.fi.DireccionElectronica,
                     Latitud = x.fi.Latitud,
-                    Longitud = x.fi.Longitud,
-                    CentroValidado = x.c.Validado ?? false
+                    Longitud = x.fi.Longitud
                 }).FirstOrDefaultAsync();
 
             if (f != null)
@@ -130,8 +128,7 @@ namespace MZAsistencial.Server.Services
                 OtrosDatos = fi.OtrosDatos,
                 DireccionGoogle = fi.DireccionElectronica,
                 Latitud = fi.Latitud,
-                Longitud = fi.Longitud,
-                CentroValidado = false
+                Longitud = fi.Longitud
             };
         }
 
@@ -139,16 +136,6 @@ namespace MZAsistencial.Server.Services
         {
             var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
             if (finca == null) return null;
-
-            // Validacin: No permitir cambios si el centro est validado
-            if (finca.CentroId.HasValue)
-            {
-                var centro = await _context.CentrosPropios.FindAsync(finca.CentroId.Value);
-                if (centro != null && centro.Validado == true)
-                {
-                    throw new InvalidOperationException("No se puede modificar una finca de un centro ya validado.");
-                }
-            }
 
             // prevent changing PK
             if (dto.Finca_id != 0 && dto.Finca_id != id)
@@ -164,17 +151,7 @@ namespace MZAsistencial.Server.Services
             finca.Finscreg = dto.F_Inscripcion;
             finca.FechaBaja = dto.F_Baja;
             finca.ReferenciaCatastral = dto.Referencia_Catastral;
-            
-            // Inferencia de utilizacin
-            if (string.IsNullOrEmpty(dto.Utilizacion) && dto.TipoFinca.HasValue)
-            {
-                finca.Utilizacion = InferirUtilizacion(dto.TipoFinca.Value);
-            }
-            else
-            {
-                finca.Utilizacion = dto.Utilizacion;
-            }
-
+            finca.Utilizacion = dto.Utilizacion;
             finca.TipoFinca = dto.TipoFinca;
             finca.Titinmueble = dto.Titularidad;
             finca.OtrosDatos = dto.OtrosDatos;
@@ -190,34 +167,8 @@ namespace MZAsistencial.Server.Services
             return updated;
         }
 
-        private string? InferirUtilizacion(int tipoFincaIdx)
-        {
-            // Mapeo segn los nuevos tipos requeridos:
-            // 0: Locales asistenciales, 1: Garajes, 2: Almacenes, 3: Stanos, 4: Terrazas, 5: Archivos
-            return tipoFincaIdx switch
-            {
-                0 => "LOCAL ASISTENCIAL",
-                1 => "GARAJE",
-                2 => "ALMACÉN",
-                3 => "SÓTANO",
-                4 => "TERRAZA",
-                5 => "ARCHIVO",
-                _ => null
-            };
-        }
-
         public async Task<FincaRegistralDTO?> CrearFinca(FincaRegistralDTO dto)
         {
-            // Validacin: No permitir si el centro ya est validado
-            if (dto.Centro_id != 0)
-            {
-                var centro = await _context.CentrosPropios.FindAsync(dto.Centro_id);
-                if (centro != null && centro.Validado == true)
-                {
-                    throw new InvalidOperationException("No se puede añadir una finca a un centro ya validado.");
-                }
-            }
-
             var finca = new FincasRegistrale
             {
                 CentroId = dto.Centro_id != 0 ? dto.Centro_id : null,
@@ -229,9 +180,7 @@ namespace MZAsistencial.Server.Services
                 ReferenciaCatastral = dto.Referencia_Catastral,
                 Finscreg = dto.F_Inscripcion,
                 FechaBaja = dto.F_Baja,
-                Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) && dto.TipoFinca.HasValue 
-                              ? InferirUtilizacion(dto.TipoFinca.Value) 
-                              : dto.Utilizacion,
+                Utilizacion = dto.Utilizacion,
                 TipoFinca = dto.TipoFinca,
                 Titinmueble = dto.Titularidad,
                 OtrosDatos = dto.OtrosDatos,
@@ -259,8 +208,6 @@ namespace MZAsistencial.Server.Services
 
         public async Task<FincaCosteDTO> CrearCoste(FincaCosteDTO dto)
         {
-            await ValidarFincaParaEdicion(dto.FincaId);
-
             var entity = new FincasRegistralesCostesPorAño
             {
                 FincaId = dto.FincaId,
@@ -276,8 +223,6 @@ namespace MZAsistencial.Server.Services
 
         public async Task<FincaCosteDTO?> ActualizarCoste(int id, FincaCosteDTO dto)
         {
-            await ValidarFincaParaEdicion(dto.FincaId);
-
             var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
             if (entity == null) return null;
             entity.Localizador = dto.Localizador;
@@ -292,25 +237,9 @@ namespace MZAsistencial.Server.Services
         {
             var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
             if (entity == null) return false;
-
-            await ValidarFincaParaEdicion(entity.FincaId);
-
             _context.FincasRegistralesCostesPorAños.Remove(entity);
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        private async Task ValidarFincaParaEdicion(int fincaId)
-        {
-            var finca = await _context.FincasRegistrales.FindAsync(fincaId);
-            if (finca != null && finca.CentroId.HasValue)
-            {
-                var centro = await _context.CentrosPropios.FindAsync(finca.CentroId.Value);
-                if (centro != null && centro.Validado == true)
-                {
-                    throw new InvalidOperationException("No se pueden modificar costes de una finca de un centro ya validado.");
-                }
-            }
         }
 
         public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas()
@@ -346,8 +275,7 @@ namespace MZAsistencial.Server.Services
                               OtrosDatos = f.OtrosDatos,
                               DireccionGoogle = f.DireccionElectronica,
                               Latitud = f.Latitud,
-                              Longitud = f.Longitud,
-                              CentroValidado = c.Validado ?? false
+                              Longitud = f.Longitud
                           }).ToListAsync();
         }
     }
