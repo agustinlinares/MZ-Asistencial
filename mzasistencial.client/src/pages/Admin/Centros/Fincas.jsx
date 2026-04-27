@@ -37,7 +37,7 @@ const onExporting = (e) => {
         autoFilterEnabled: true,
     }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Fincas.xlsx');
         });
     })
     e.cancel = true;
@@ -129,6 +129,8 @@ const Fincas = () => {
                 OtrosDatos: data.otros_datos || null,
                 Utilizacion: data.utilizacion || null,
                 DireccionGoogle: data.dir_google || null,
+                Latitud: data.latitud || null,
+                Longitud: data.longitud || null,
             };
             const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
             if (res.ok) {

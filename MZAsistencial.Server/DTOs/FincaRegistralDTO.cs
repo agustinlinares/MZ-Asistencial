@@ -46,5 +46,11 @@ namespace MZAsistencial.Server.DTOs
         public string? OtrosDatos { get; set; }
         [JsonPropertyName("DireccionGoogle")]
         public string? DireccionGoogle { get; set; }
+
+        [JsonPropertyName("Latitud")]
+        public string? Latitud { get; set; }
+
+        [JsonPropertyName("Longitud")]
+        public string? Longitud { get; set; }
     }
 }
