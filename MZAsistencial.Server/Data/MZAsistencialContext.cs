@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -144,6 +144,8 @@ public partial class MZAsistencialContext : DbContext
     public virtual DbSet<Icg06Especialidad> Icg06Especialidades { get; set; }
 
     public virtual DbSet<Icg07> Icg07s { get; set; }
+
+    public virtual DbSet<IcgConcierto> IcgConciertos { get; set; }
 
     public virtual DbSet<Informe> Informes { get; set; }
 
@@ -4079,6 +4081,22 @@ public partial class MZAsistencialContext : DbContext
                 .HasColumnName("RestoArticulo25SCon");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioModificacionId).HasColumnName("UsuarioModificacion_id");
+        });
+
+        modelBuilder.Entity<IcgConcierto>(entity =>
+        {
+            entity.HasKey(e => e.Id_Icg);
+
+            entity.ToTable("IcgConciertos");
+
+            entity.Property(e => e.Id_Icg).HasColumnName("Id_Icg");
+            entity.Property(e => e.Concierto_id).HasColumnName("Concierto_id");
+            entity.Property(e => e.CodCASA).HasColumnName("CodCasa");
+            entity.Property(e => e.Centro_id).HasColumnName("Centro_id");
+            entity.Property(e => e.AsistenciaSanitaria).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.IncapacidadTemp).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Gastos).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<Informe>(entity =>

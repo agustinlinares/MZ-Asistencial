@@ -18,7 +18,7 @@ namespace MZAsistencial.Server.Services
             return await _context.Mutuas
                 .Select(m => new MutuaDTO
                 {
-                    Nº = m.MutuaId,
+                    NumeroId = m.MutuaId,
                     Mutua = m.Mutua1 ?? "",
                     Direccion = m.Direccion ?? "",
                     CP = m.Cp ?? "",
