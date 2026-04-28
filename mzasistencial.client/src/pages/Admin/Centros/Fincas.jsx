@@ -194,38 +194,40 @@ const Fincas = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="header-page">
-                        <div className="title"> {t('LISTA FINCAS')}</div>
+                    {!selectedFinca && (
+                        <div className="header-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
+                            <div className="title"> {t('LISTA FINCAS')}</div>
 
-                        <div className="acciones-container" ref={menuRef}>
-                            <div 
-                                className="acciones-btn"
-                                onClick={() => setMenuAbierto(v => !v)}
-                            >
-                                {t('Acciones')}
-                                <i className="ri-more-2-fill"></i>
-                            </div>
-
-                            {menuAbierto && (
-                                <div className="acciones-menu">
-                                    <div className="acciones-item" onClick={handleNuevo}>
-                                        <i className="ri-add-line"></i>
-                                        {t('Nuevo')}
-                                    </div>
-
-                                    <div className="acciones-item" onClick={handleExportarExcel}>
-                                        <i className="ri-file-excel-2-line"></i>
-                                        {t('Exportar a Excel')}
-                                    </div>
-
-                                    <div className="acciones-item" onClick={handleExportarPDF}>
-                                        <i className="ri-file-pdf-line"></i>
-                                        {t('Exportar a PDF')}
-                                    </div>
+                            <div className="acciones-container" ref={menuRef}>
+                                <div 
+                                    className="acciones-btn"
+                                    onClick={() => setMenuAbierto(v => !v)}
+                                >
+                                    {t('Acciones')}
+                                    <i className="ri-more-2-fill"></i>
                                 </div>
-                            )}
+
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item" onClick={handleNuevo}>
+                                            <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
+                                            {t('Nuevo')}
+                                        </div>
+
+                                        <div className="acciones-item" onClick={handleExportarExcel}>
+                                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                            {t('Exportar a Excel')}
+                                        </div>
+
+                                        <div className="acciones-item" onClick={handleExportarPDF}>
+                                            <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                                            {t('Exportar a PDF')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="table-container tabla-contenedor">
                         {selectedFinca ? (
@@ -276,6 +278,25 @@ const Fincas = () => {
                                     <Column dataField="Direccion" caption="Dirección" width={220} />
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
                                     <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="TipoFinca" caption="Tipo" width={120} />
+                                    <Column
+                                        caption="Acciones"
+                                        width={80}
+                                        fixed={true}
+                                        fixedPosition="right"
+                                        alignment="center"
+                                        cellRender={(cell) => (
+                                            <div 
+                                                style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedFinca(cell.data);
+                                                }}
+                                            >
+                                                <i className="ri-edit-line"></i>
+                                            </div>
+                                        )}
+                                    />
                                     <Column dataField="Coste" caption="Coste" width={100} />
                                     <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
                                     <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />

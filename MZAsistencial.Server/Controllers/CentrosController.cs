@@ -32,7 +32,7 @@ public class CentrosController : ControllerBase
         var items = await _context.CentrosPropios
             .Where(c => !c.Desactivado)
             .OrderBy(c => c.Centro)
-            .Select(c => new { id = c.CentroId, nombre = c.Centro })
+            .Select(c => new { id = c.CentroId, nombre = c.Centro, validado = c.Validado })
             .ToListAsync();
 
         return Ok(items);

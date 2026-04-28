@@ -12,12 +12,19 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
 
-const TIPOS_FINCA = ['SÓTANO', 'PLANTA BAJA', 'PISO', 'LOCAL', 'GARAJE', 'TRASTERO'];
+const TIPOS_FINCA = [
+    'Locales asistenciales',
+    'Garajes',
+    'Almacenes',
+    'Sótanos',
+    'Terrazas',
+    'Archivos'
+];
 
 const TITULARIDADES = [
-    'Patrimonio Histórico',
-    'Patrimonio de la Seguridad Social',
-    'Terceros distintos de los anteriores',
+    'Propiedad',
+    'Alquiler',
+    'Arrendamiento',
 ];
 
 const authHeaders = () => {
@@ -28,26 +35,27 @@ const authHeaders = () => {
 const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 const ATTR_OSM = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-const ATTR_SAT = 'Tiles &copy; Esri';
 
-/* ── HELPERS LEAFLET ───────────────────────────────────────────── */
-const MapClickHandler = ({ onMapClick }) => {
-    useMapEvents({ click: e => onMapClick(e.latlng.lat, e.latlng.lng) });
-    return null;
-};
-
+/* ── COMPONENTES MAPA ─────────────────────────────────────────── */
 const FlyTo = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
-        const la = parseFloat(lat);
-        const lo = parseFloat(lng);
-        if (!isNaN(la) && !isNaN(lo)) map.flyTo([la, lo], 15);
+        const l = parseFloat(lat);
+        const g = parseFloat(lng);
+        if (!isNaN(l) && !isNaN(g)) map.flyTo([l, g], 15);
     }, [lat, lng, map]);
     return null;
 };
 
+const MapClickHandler = ({ onMapClick }) => {
+    useMapEvents({
+        click: (e) => onMapClick(e.latlng.lat, e.latlng.lng)
+    });
+    return null;
+};
+
 /* ── PESTAÑA MAPA ──────────────────────────────────────────────── */
-const TabMapa = ({ form, onChange }) => {
+const TabMapa = ({ form, onChange, esSoloLectura }) => {
     const [vistaTab, setVistaTab] = useState('mapa');
     const [flyKey, setFlyKey] = useState(0);
     const [buscando, setBuscando] = useState(false);
@@ -57,6 +65,7 @@ const TabMapa = ({ form, onChange }) => {
     const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
     const handleMapClick = (la, lo) => {
+        if (esSoloLectura) return;
         onChange('latitud', String(la.toFixed(6)));
         onChange('longitud', String(lo.toFixed(6)));
     };
@@ -86,7 +95,6 @@ const TabMapa = ({ form, onChange }) => {
 
     const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
 
-    // URLs de Tiles de Google Maps (lyrs: m=callejero, s=satelite, y=hibrido)
     const GOOGLE_STREET = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
     const GOOGLE_SATELLITE = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}';
     const GOOGLE_HYBRID = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
@@ -104,11 +112,12 @@ const TabMapa = ({ form, onChange }) => {
                             onChange={e => onChange('dir_google', e.target.value)} 
                             onKeyDown={e => e.key === 'Enter' && handleBuscar()}
                             placeholder="Ej: Calle Mayor 1, Madrid"
+                            disabled={esSoloLectura}
                         />
                         <button 
                             className="finca-btn-primary" 
                             onClick={handleBuscar} 
-                            disabled={buscando}
+                            disabled={buscando || esSoloLectura}
                             style={{ width: 'auto', padding: '0 15px' }}
                         >
                             {buscando ? '...' : '🔍'}
@@ -117,11 +126,11 @@ const TabMapa = ({ form, onChange }) => {
                 </div>
                 <div className="finca-field">
                     <label>Latitud</label>
-                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
+                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} disabled={esSoloLectura} />
                 </div>
                 <div className="finca-field">
                     <label>Longitud</label>
-                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
+                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} disabled={esSoloLectura} />
                 </div>
             </div>
 
@@ -153,7 +162,7 @@ const TabMapa = ({ form, onChange }) => {
 };
 
 /* ── PESTAÑA COSTES ────────────────────────────────────────────── */
-const TabCostes = ({ fincaId }) => {
+const TabCostes = ({ fincaId, esSoloLectura }) => {
     const [costes, setCostes] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [editando, setEditando] = useState(null);
@@ -174,6 +183,7 @@ const TabCostes = ({ fincaId }) => {
     }, [fincaId]);
 
     const handleGuardar = async (coste) => {
+        if (esSoloLectura) return;
         const h = authHeaders();
         if (coste.Id) {
             const res = await fetch(`/api/FincasRegistrales/${fincaId}/costes/${coste.Id}`, {
@@ -197,6 +207,7 @@ const TabCostes = ({ fincaId }) => {
     };
 
     const handleEliminar = async (id) => {
+        if (esSoloLectura) return;
         if (!window.confirm('¿Eliminar este coste?')) return;
         const res = await fetch(`/api/FincasRegistrales/${fincaId}/costes/${id}`, { method: 'DELETE', headers: authHeaders() });
         if (res.ok) setCostes(prev => prev.filter(c => c.Id !== id));
@@ -228,11 +239,11 @@ const TabCostes = ({ fincaId }) => {
                     {costes.map(c =>
                         editando?.Id === c.Id ? (
                             <tr key={c.Id}>
-                                <td><input type="number" value={editando.Año} onChange={e => setEditando(p => ({ ...p, Año: parseInt(e.target.value) || 0 }))} /></td>
-                                <td><input type="number" step="0.01" value={editando.Coste ?? ''} onChange={e => setEditando(p => ({ ...p, Coste: parseFloat(e.target.value) || null }))} /></td>
-                                <td><input type="text" value={editando.Localizador ?? ''} onChange={e => setEditando(p => ({ ...p, Localizador: e.target.value }))} /></td>
+                                <td><input type="number" value={editando.Año} onChange={e => setEditando(p => ({ ...p, Año: parseInt(e.target.value) || 0 }))} disabled={esSoloLectura} /></td>
+                                <td><input type="number" step="0.01" value={editando.Coste ?? ''} onChange={e => setEditando(p => ({ ...p, Coste: parseFloat(e.target.value) || null }))} disabled={esSoloLectura} /></td>
+                                <td><input type="text" value={editando.Localizador ?? ''} onChange={e => setEditando(p => ({ ...p, Localizador: e.target.value }))} disabled={esSoloLectura} /></td>
                                 <td>
-                                    <button className="finca-btn-primary" style={{ marginRight: 4 }} onClick={() => handleGuardar(editando)}>💾</button>
+                                    <button className="finca-btn-primary" style={{ marginRight: 4 }} onClick={() => handleGuardar(editando)} disabled={esSoloLectura}>💾</button>
                                     <button className="finca-btn-secondary" onClick={() => setEditando(null)}>✗</button>
                                 </td>
                             </tr>
@@ -242,11 +253,29 @@ const TabCostes = ({ fincaId }) => {
                                 <td>{c.Coste != null ? c.Coste.toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '—'}</td>
                                 <td>{c.Localizador ?? '—'}</td>
                                 <td>
-                                    <button className="finca-btn-secondary" style={{ marginRight: 4 }} onClick={() => setEditando({ ...c })}>✏️</button>
-                                    <button className="finca-btn-secondary" onClick={() => handleEliminar(c.Id)}>🗑️</button>
+                                    <button 
+                                        className="finca-btn-secondary" 
+                                        style={{ marginRight: 4 }} 
+                                        onClick={() => setEditando({ ...c })}
+                                        disabled={esSoloLectura}
+                                    >✏️</button>
+                                    <button 
+                                        className="finca-btn-secondary" 
+                                        onClick={() => handleEliminar(c.Id)}
+                                        disabled={esSoloLectura}
+                                    >🗑️</button>
                                 </td>
                             </tr>
                         )
+                    )}
+                    {!nuevaFila && !esSoloLectura && (
+                        <tr>
+                            <td colSpan={4} style={{ padding: '8px 0' }}>
+                                <button className="finca-btn-primary" style={{ width: '100%' }} onClick={() => setNuevaFila({ Año: new Date().getFullYear(), Coste: null, Localizador: '' })}>
+                                    + Añadir coste anual
+                                </button>
+                            </td>
+                        </tr>
                     )}
                     {nuevaFila && (
                         <tr>
@@ -261,62 +290,53 @@ const TabCostes = ({ fincaId }) => {
                     )}
                 </tbody>
             </table>
-            <div style={{ marginTop: 8 }}>
-                <button className="finca-btn-primary" onClick={() => setNuevaFila({ Año: new Date().getFullYear(), Coste: null, Localizador: '' })}>
-                    + Añadir coste
-                </button>
-            </div>
         </div>
     );
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
-const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
+const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, esSoloLectura }) => (
     <div className="finca-grid">
-        <div className="finca-field">
-            <label>Finca ID</label>
-            <input type="text" value={form.finca_id || ''} readOnly />
-        </div>
-        <div className="finca-field">
-            <label>Centro</label>
-            <select
-                className={errors.centro_id ? 'error' : ''}
-                value={form.centro_id || ''}
+        <div className={`finca-field ${errors.centro_id ? 'error' : ''}`}>
+            <label>Centro Propios</label>
+            <select 
+                value={form.centro_id || ''} 
                 onChange={e => onChange('centro_id', e.target.value)}
+                disabled={esSoloLectura}
             >
                 <option value="">— Seleccionar —</option>
                 {(centros || []).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
             </select>
         </div>
-
         <div className="finca-field">
             <label>Mutua</label>
-            <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
+            <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} disabled={esSoloLectura} />
         </div>
+
         <div className="finca-field">
-            <label>Coste Alquiler</label>
-            <div className="finca-input-suffix">
-                <input type="number" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} />
+            <label>Coste de la Finca (dato estático)</label>
+            <div className="input-with-icon">
+                <input type="number" step="0.01" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} disabled={esSoloLectura} />
                 <span>€</span>
             </div>
         </div>
 
         <div className="finca-field">
             <label>Dirección</label>
-            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
+            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} disabled={esSoloLectura} />
         </div>
         <div className="finca-field">
             <label>Superficie Construida</label>
-            <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} />
+            <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} disabled={esSoloLectura} />
         </div>
 
         <div className="finca-field">
             <label>Referencia Catastral</label>
-            <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} />
+            <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} disabled={esSoloLectura} />
         </div>
         <div className="finca-field">
             <label>Utilización</label>
-            <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} />
+            <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} disabled={esSoloLectura} />
         </div>
 
         <div className="finca-field">
@@ -328,6 +348,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
                     onChange('tipo_finca', e.target.value);
                     onChange('tipo_finca_idx', idx >= 0 ? idx : null);
                 }}
+                disabled={esSoloLectura}
             >
                 <option value="">— Seleccionar —</option>
                 {TIPOS_FINCA.map(t => <option key={t} value={t}>{t}</option>)}
@@ -345,7 +366,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
             <div className="finca-radio-group">
                 {TITULARIDADES.map(t => (
                     <label key={t}>
-                        <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} />
+                        <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} disabled={esSoloLectura} />
                         {t}
                     </label>
                 ))}
@@ -356,22 +377,22 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
             <div className="finca-grid-3">
                 <div className="finca-field">
                     <label>Fecha de Adquisición</label>
-                    <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} />
+                    <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} disabled={esSoloLectura} />
                 </div>
                 <div className="finca-field">
                     <label>Fecha de Inscripción</label>
-                    <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} />
+                    <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} disabled={esSoloLectura} />
                 </div>
                 <div className="finca-field">
                     <label>Fecha de Baja</label>
-                    <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} />
+                    <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} disabled={esSoloLectura} />
                 </div>
             </div>
         </div>
 
         <div className="finca-field span2">
             <label>Otros Datos</label>
-            <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} />
+            <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} disabled={esSoloLectura} />
         </div>
     </div>
 );
@@ -379,6 +400,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
 /* ── COMPONENTE PRINCIPAL ──────────────────────────────────────── */
 const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     const [activeTab, setActiveTab] = useState('general');
+    
     const tipoFincaIdx = finca?.TipoFinca ?? finca?.tipo_finca_idx ?? null;
     const [form, setForm] = useState({
         finca_id:      finca?.Finca_id      ?? finca?.finca_id      ?? '',
@@ -400,6 +422,8 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
         longitud:      finca?.Longitud      ?? finca?.longitud      ?? '',
         otros_datos:   finca?.OtrosDatos    ?? finca?.otros_datos   ?? '',
     });
+
+    const esSoloLectura = centros.find(c => c.id == form.centro_id)?.validado === true;
     const [errors, setErrors] = useState({});
     const modalRef = useRef(null);
 
@@ -416,6 +440,7 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     }, []);
 
     const handleSave = () => {
+        if (esSoloLectura) return;
         const newErrors = {};
         if (!form.centro_id) newErrors.centro_id = true;
         if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
@@ -426,9 +451,9 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
         <div className="finca-container-inline" role="region" aria-label={`Ficha Finca ${form.finca_id}`}>
             <div className="finca-inline-content" ref={modalRef} tabIndex={-1}>
                 <div className="finca-modal-header">
-                    <span className="finca-modal-title">✏️ Ficha Finca | {form.finca_id || '—'}</span>
+                    <span className="finca-modal-title">✏️ Ficha Finca | {form.finca_id || '—'} {esSoloLectura && <span style={{ color: '#c62828', fontSize: 12, marginLeft: 10 }}>(Centro Validado - Solo Lectura)</span>}</span>
                     <div className="finca-header-btns">
-                        <button className="finca-btn-primary" onClick={handleSave}>✓ Aceptar</button>
+                        {!esSoloLectura && <button className="finca-btn-primary" onClick={handleSave}>✓ Aceptar</button>}
                         <button className="finca-btn-secondary" onClick={onClose}>✗ Salir</button>
                     </div>
                 </div>
@@ -441,10 +466,10 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
 
                 <div className="finca-tab-content">
                     {activeTab === 'general' && (
-                        <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} />
+                        <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} esSoloLectura={esSoloLectura} />
                     )}
-                    {activeTab === 'costes' && <TabCostes fincaId={form.finca_id} />}
-                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    {activeTab === 'costes' && <TabCostes fincaId={form.finca_id} esSoloLectura={esSoloLectura} />}
+                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} esSoloLectura={esSoloLectura} />}
                 </div>
             </div>
         </div>

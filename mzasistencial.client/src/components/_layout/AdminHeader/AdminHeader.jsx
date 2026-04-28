@@ -238,22 +238,24 @@ function AdminHeader(props) {
                             </div>
 
                         </div>
-                        <div className='item-admin-action actions-dropdown'>
-                            <DropDownButton
-                                text="Acciones"
-                                icon="overflow"
-                                items={actions}
-                                keyExpr="id"
-                                displayExpr="text"
-                                onItemClick={handleActionClick}
-                                stylingMode="outlined"
-                                splitButton={false}
-                                elementAttr={{ class: 'btn-acciones-custom' }}
-                                dropDownOptions={{
-                                    width: 220
-                                }}
-                            />
-                        </div>                      
+                        {!window.location.pathname.includes('/Fincas') && (
+                            <div className='item-admin-action actions-dropdown'>
+                                <DropDownButton
+                                    text="Acciones"
+                                    icon="overflow"
+                                    items={actions}
+                                    keyExpr="id"
+                                    displayExpr="text"
+                                    onItemClick={handleActionClick}
+                                    stylingMode="outlined"
+                                    splitButton={false}
+                                    elementAttr={{ class: 'btn-acciones-custom' }}
+                                    dropDownOptions={{
+                                        width: 220
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
