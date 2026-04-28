@@ -30,6 +30,13 @@ namespace MZAsistencial.Server.Controllers
             return Ok(result);
         }
 
+        [HttpGet("siguiente-localizador/{mutuaId:int}")]
+        public async Task<ActionResult<string>> GetSiguienteLocalizador(int mutuaId)
+        {
+            var result = await _service.GetSiguienteLocalizadorAsync(mutuaId);
+            return Ok(result);
+        }
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CentrosPropiosDTO dto)
         {
@@ -37,6 +44,7 @@ namespace MZAsistencial.Server.Controllers
             if (!result) return NotFound();
             return Ok();
         }
+
         [HttpPut("validar")]
         public async Task<IActionResult> Validar([FromBody] List<int> ids)
         {

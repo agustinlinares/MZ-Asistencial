@@ -6,7 +6,7 @@ import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
 import './FichaCentroPropio.css';
 
-const PROVINCIAS = ["Alava","Albacete","Alicante","Almeria","Avila","Badajoz","Barcelona","Burgos","Caceres","Cadiz","Castellon","Ciudad Real","Cordoba","Cuenca","Girona","Granada","Guadalajara","Guipuzcoa","Huelva","Huesca","Jaen","La Rioja","Las Palmas","Leon","Lerida","Lugo","Madrid","Malaga","Murcia","Navarra","Orense","Palencia","Pontevedra","Salamanca","Santa Cruz de Tenerife","Segovia","Sevilla","Soria","Tarragona","Teruel","Toledo","Valencia","Valladolid","Vizcaya","Zamora","Zaragoza"];
+// PROVINCIAS y POBLACIONES se cargan dinámicamente desde la BD
 const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
 const ESPECIALIDADES_LIST = ["Medicina General","Traumatologia","Rehabilitacion","Fisioterapia","Psicologia","Enfermeria","Radiologia","Cirugia","Cardiologia","Neurologia","Dermatologia","Oftalmologia","Urgencias","Pediatria"];
@@ -38,17 +38,40 @@ const FichaCentroPropio = () => {
     const cliente = location.state?.cliente;
 
     const [MUTUOS, setMUTUOS] = useState([]);
+    const [PROVINCIAS, setProvincias] = useState([]);
+    const [POBLACIONES, setPoblaciones] = useState([]);
     const [form, setForm] = useState({});
     const [registrosICG, setRegistrosICG] = useState([]);
     const [tabActiva, setTabActiva] = useState("general");
     const [guardando, setGuardando] = useState(false);
 
+    // Cargar mutuas
     useEffect(() => {
         fetch("/api/mutuas")
             .then(r => r.ok ? r.json() : [])
             .then(data => setMUTUOS(data))
             .catch(() => setMUTUOS([]));
     }, []);
+
+    // Cargar provincias desde la BD
+    useEffect(() => {
+        fetch("/api/auxprovincias")
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setProvincias(data))
+            .catch(() => setProvincias([]));
+    }, []);
+
+    // Cargar poblaciones cuando cambie la provincia
+    useEffect(() => {
+        if (form.ProvinciaId) {
+            fetch(`/api/auxpoblaciones/${form.ProvinciaId}`)
+                .then(r => r.ok ? r.json() : [])
+                .then(data => setPoblaciones(data))
+                .catch(() => setPoblaciones([]));
+        } else {
+            setPoblaciones([]);
+        }
+    }, [form.ProvinciaId]);
 
     useEffect(() => {
         if (!cliente) { navigate(-1); return; }
@@ -58,8 +81,8 @@ const FichaCentroPropio = () => {
             CentroId: cliente.centroId || cliente.CentroId || "",
             Centro: cliente.centro || cliente.Centro || "",
             Mutua: cliente.mutuaId || cliente.Mutua || "",
-            Provincia: cliente.Provincia || "",
-            Poblacion: cliente.Poblacion || "",
+            ProvinciaId: cliente.provinciaId || cliente.ProvinciaId || "",
+            PoblacionId: cliente.poblacionId || cliente.PoblacionId || "",
             Cp: cliente.cp || cliente.Cp || "",
             ViaPublica: cliente.ViaPublica || "AVENIDA",
             Direccion: cliente.Direccion || "",
@@ -104,59 +127,77 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
+    // Localizador automático al seleccionar mutua en centro nuevo
+    useEffect(() => {
+        if (!form.CentroId && form.Mutua) {
+            fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
+                .then(r => r.ok ? r.text() : null)
+                .then(localizador => {
+                    if (localizador) setForm(f => ({ ...f, Localizador: localizador.replace(/"/g, '') }));
+                })
+                .catch(() => {});
+        }
+    }, [form.Mutua, form.CentroId]);
+
     const set = (key) => (e) => {
         const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
         setForm(f => ({ ...f, [key]: val }));
     };
 
+    // Handler especial para provincia: cambia ProvinciaId y resetea PoblacionId
+    const handleProvinciaChange = (e) => {
+        const provinciaId = e.target.value;
+        setForm(f => ({ ...f, ProvinciaId: provinciaId, PoblacionId: "" }));
+    };
+
     const handleGuardar = async () => {
-    setGuardando(true);
-    try {
-        const res = await fetch(`https://localhost:60007/api/CentrosPropios/${form.CentroId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                centroId:               form.CentroId,
-                localizador:            form.Localizador,
-                mutuaId:                parseInt(form.Mutua) || 0,
-                centro:                 form.Centro,
-                cp:                     form.Cp,
-                poblacionId:            form.PoblacionId || 0,
-                telefono:               form.Telefono,
-                latitud:                form.Latitud,
-                longitud:               form.Longitud,
-                direccion:              form.Direccion,
-                numero:                 form.Numero,
-                piso:                   form.Piso,
-                puerta:                 form.Puerta,
-                direccionGoogle:        form.DireccionGoogle,
-                email:                  form.Email,
-                personaContacto:        form.PersonaContacto,
-                otrosDatos:             form.OtrosDatos,
-                desactivado:            form.CentroDesactivado,
-                traslado:               form.Traslado,
-                motivoBaja:             form.MotivoBaja,
-                fechaBaja:              form.FechaBaja || null,
-                asistenciaHospitalaria: form.ActividadHospitalaria,
-                asistenciaAmbulatoria:  form.ActividadAmbulatoria,
-                rehabilitacion:         form.ActividadRehabilitacion,
-                incapacidadTransitoria: form.ActividadControlIT,
-                prevencion:             form.ActividadPrevencion,
-                otrasActividades:       form.ActividadOtras,
-                administracion:         form.ActividadAdmon,
-                fautocom:               form.Autorizacion || null,
-                fpufuncio:              form.PuestaFuncionamiento || null,
-                fcalisuf:               form.Calificacion || null,
-            })
-        });
-        if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
-        else { alert('Error al guardar el centro'); }
-    } catch (err) {
-        alert('Error de conexión: ' + err.message);
-    } finally {
-        setGuardando(false);
-    }
-};
+        setGuardando(true);
+        try {
+            const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    centroId:               form.CentroId,
+                    localizador:            form.Localizador,
+                    mutuaId:                parseInt(form.Mutua) || 0,
+                    centro:                 form.Centro,
+                    cp:                     form.Cp,
+                    poblacionId:            parseInt(form.PoblacionId) || 0,
+                    telefono:               form.Telefono,
+                    latitud:                form.Latitud,
+                    longitud:               form.Longitud,
+                    direccion:              form.Direccion,
+                    numero:                 form.Numero,
+                    piso:                   form.Piso,
+                    puerta:                 form.Puerta,
+                    direccionGoogle:        form.DireccionGoogle,
+                    email:                  form.Email,
+                    personaContacto:        form.PersonaContacto,
+                    otrosDatos:             form.OtrosDatos,
+                    desactivado:            form.CentroDesactivado,
+                    traslado:               form.Traslado,
+                    motivoBaja:             form.MotivoBaja,
+                    fechaBaja:              form.FechaBaja || null,
+                    asistenciaHospitalaria: form.ActividadHospitalaria,
+                    asistenciaAmbulatoria:  form.ActividadAmbulatoria,
+                    rehabilitacion:         form.ActividadRehabilitacion,
+                    incapacidadTransitoria: form.ActividadControlIT,
+                    prevencion:             form.ActividadPrevencion,
+                    otrasActividades:       form.ActividadOtras,
+                    administracion:         form.ActividadAdmon,
+                    fautocom:               form.Autorizacion || null,
+                    fpufuncio:              form.PuestaFuncionamiento || null,
+                    fcalisuf:               form.Calificacion || null,
+                })
+            });
+            if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
+            else { alert('Error al guardar el centro'); }
+        } catch (err) {
+            alert('Error de conexión: ' + err.message);
+        } finally {
+            setGuardando(false);
+        }
+    };
 
     if (!cliente) return null;
 
@@ -224,21 +265,27 @@ const FichaCentroPropio = () => {
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
-                                    {MUTUOS.map(m => <option key={m.nº} value={m.nº}>{m.nº} - {m.mutua}</option>)}
+                                    {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field">
                                 <label>Provincia</label>
-                                <select value={form.Provincia || ""} onChange={set("Provincia")}>
+                                {/* ✅ Cargado dinámicamente desde Aux_Provincias */}
+                                <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
                                     <option value="">— Seleccionar —</option>
-                                    {PROVINCIAS.map(p => <option key={p}>{p}</option>)}
+                                    {PROVINCIAS.map(p => (
+                                        <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
                                 <label>Población</label>
-                                <select value={form.Poblacion || ""} onChange={set("Poblacion")}>
+                                {/* ✅ Cargado dinámicamente desde Aux_Poblaciones filtrado por provincia */}
+                                <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
                                     <option value="">— Seleccionar —</option>
-                                    {PROVINCIAS.map(p => <option key={p}>{p}</option>)}
+                                    {POBLACIONES.map(p => (
+                                        <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
@@ -440,7 +487,7 @@ const FichaCentroPropio = () => {
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
-                                    {MUTUOS.map(m => <option key={m.nº} value={m.nº}>{m.nº} - {m.mutua}</option>)}
+                                    {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
@@ -485,7 +532,7 @@ const FichaCentroPropio = () => {
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
-                                    {MUTUOS.map(m => <option key={m.nº} value={m.nº}>{m.nº} - {m.mutua}</option>)}
+                                    {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
