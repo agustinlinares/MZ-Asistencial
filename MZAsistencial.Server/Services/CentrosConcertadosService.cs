@@ -33,10 +33,23 @@ namespace MZAsistencial.Server.Services
                             Direccion = c.Direccion,
                             CP = c.Cp,
 
-                            Poblacion = p.Poblacion, 
-                            Provincia = pr.Provincia, 
+                            // Espacios limpios con Trim()
+                            Poblacion = p.Poblacion != null ? p.Poblacion.Trim() : null, 
+                            Provincia = pr.Provincia != null ? pr.Provincia.Trim() : null, 
 
+                            // IDs necesarios para React
+                            ProvinciaId = pr.ProvinciaId, 
+                            PoblacionId = c.PoblacionId,
+                            ProveedorId = c.ProveedorId,
+                            DelegacionId = c.DelegacionId,
+
+                            // Resto de datos de la ficha
+                            Telefono = c.Telefono != null ? c.Telefono.Trim() : null,
                             FechaAlta = c.FechaAlta,
+                            FechaBaja = c.FechaBaja,
+                            Latitud = c.Latitud,
+                            Longitud = c.Longitud,
+                            
                             Mapa = c.MapaValidado.ToString()
                         };
 

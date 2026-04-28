@@ -129,17 +129,28 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
             <label>Provincia</label>
             <select value={form.provincia || ''} onChange={e => {
                 onChange('provincia', e.target.value);
-                onChange('poblacion', ''); // Limpiamos la población al cambiar provincia
+                onChange('poblacion', ''); 
             }}>
                 <option value="">— Seleccionar —</option>
-                {opts.provincias.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                {opts.provincias.map(p => (
+                    // Usamos provinciaId y provincia en lugar de Id y Nombre
+                    <option key={p.provinciaId} value={p.provinciaId}>
+                        {p.provincia}
+                    </option>
+                ))}
             </select>
         </div>
+
         <div className="ficha-field">
             <label>Población</label>
             <select value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
                 <option value="">— Seleccionar —</option>
-                {opts.poblaciones.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                {opts.poblaciones.map(p => (
+                    // Verifica si el JSON de poblaciones también usa poblacionId/poblacion
+                    <option key={p.poblacionId} value={p.poblacionId}>
+                        {p.poblacion}
+                    </option>
+                ))}
             </select>
         </div>
 
@@ -178,6 +189,12 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
                 🌐 {form.latitud && form.longitud ? `${form.latitud}, ${form.longitud}` : 'Ver / Editar en mapa'}
             </button>
         </div>
+
+        <div className="ficha-field">
+            <label>Fecha de alta</label>
+            <input type="date" value={form.fecha_alta || ''} readOnly className="readonly" /> 
+        </div>
+
         <div className="ficha-field">
             <label>Fecha de baja</label>
             <input type="date" value={form.fecha_baja || ''} onChange={e => onChange('fecha_baja', e.target.value)} />
@@ -213,18 +230,41 @@ const TabDataGrid = ({ datos, children }) => (
 const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     const [activeTab, setActiveTab] = useState('general');
     
+    // Función para convertir fechas de DD/MM/YYYY o ISO a YYYY-MM-DD
+    const parseDateForInput = (dateStr) => {
+        if (!dateStr) return '';
+        // Si ya viene con la T de SQL (ej. 2024-01-01T00:00:00)
+        if (dateStr.includes('T')) return dateStr.split('T')[0];
+        // Si viene en formato español (ej. 1/1/2024 o 01/01/2024)
+        if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            const dia = parts[0].padStart(2, '0');
+            const mes = parts[1].padStart(2, '0');
+            const ano = parts[2];
+            return `${ano}-${mes}-${dia}`;
+        }
+        return dateStr;
+    };
+    console.log("Datos que llegan de la tabla:", cliente);
+
     const [form, setForm] = useState({
-        centro_id: cliente?.CentroID ?? cliente?.centro_id ?? '',
+        centro_id: cliente?.CentroId ?? cliente?.centro_id ?? '',
         localizador: cliente?.Localizador ?? cliente?.ccn ?? '',
         centro: cliente?.Centro ?? cliente?.centro ?? '',
         direccion: cliente?.Direccion ?? cliente?.direccion ?? '',
-        poblacion: cliente?.Poblacion ?? cliente?.poblacion ?? '',
-        provincia: cliente?.Provincia ?? cliente?.provincia ?? '',
-        cif: cliente?.Cif ?? cliente?.cif ?? '',
-        cp: cliente?.CP ?? cliente?.cp ?? '',
-        proveedor: '', delegacion: '', numero: '', telefono: '', 
-        registro_sanitario: '', dir_google: '', fecha_baja: '', 
-        comentarios: '', motivo_baja: '', latitud: '', longitud: ''
+        cif: cliente?.Cifnif ?? cliente?.Cif ?? cliente?.cif ?? '',
+        cp: cliente?.Cp ?? cliente?.cp ?? '',
+        
+        proveedor: cliente?.ProveedorId ?? cliente?.proveedorId ?? '',
+        delegacion: cliente?.DelegacionId ?? cliente?.delegacionId ?? '',
+        provincia: cliente?.ProvinciaId ?? cliente?.provinciaId ?? '',
+        poblacion: cliente?.PoblacionId ?? cliente?.poblacionId ?? '',
+        
+        fecha_alta: parseDateForInput(cliente?.FechaAlta ?? cliente?.fechaAlta),
+        fecha_baja: parseDateForInput(cliente?.FechaBaja ?? cliente?.fechaBaja),
+        
+        numero: '', telefono: '', registro_sanitario: '', dir_google: '', 
+        comentarios: '', motivo_baja: '', latitud: cliente?.Latitud ?? '', longitud: cliente?.Longitud ?? ''
     });
 
     const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
@@ -234,10 +274,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         const fetchMaestros = async () => {
             try {
                 const headers = authHeaders();
-                const [resProv, resProvdd] = await Promise.all([
-                    fetch('/api/AuxCentrosConcertados/Provincias', { headers }),
-                    fetch('/api/AuxCentrosConcertados/Proveedores', { headers })
-                ]);
+                const resProv = await fetch('/api/AuxProvincias', { headers });
+                const resProvdd = await fetch('/api/AuxCentrosConcertados/Proveedores', { headers }); 
                 
                 if (resProv.ok && resProvdd.ok) {
                     const provincias = await resProv.json();
@@ -257,7 +295,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             setOpts(prev => ({ ...prev, poblaciones: [] }));
             return;
         }
-        fetch(`/api/AuxCentrosConcertados/Poblaciones/${form.provincia}`, { headers: authHeaders() })
+        fetch(`/api/AuxPoblaciones/${form.provincia}`, { headers: authHeaders() })
             .then(r => r.ok ? r.json() : [])
             .then(data => setOpts(prev => ({ ...prev, poblaciones: data })));
     }, [form.provincia]);
