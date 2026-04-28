@@ -112,7 +112,7 @@ const FichaCentroPropio = () => {
     const handleGuardar = async () => {
     setGuardando(true);
     try {
-        const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
+        const res = await fetch(`https://localhost:60007/api/CentrosPropios/${form.CentroId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

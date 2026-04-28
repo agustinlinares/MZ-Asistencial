@@ -39,19 +39,19 @@ public partial class CentrosPropio
 
     public int? ServiciosEspeciales { get; set; }
 
-    public bool? AsistenciaHospitalaria { get; set; }
+    public bool AsistenciaHospitalaria { get; set; }
 
-    public bool? AsistenciaAmbulatoria { get; set; }
+    public bool AsistenciaAmbulatoria { get; set; }
 
-    public bool? Rehabilitacion { get; set; }
+    public bool Rehabilitacion { get; set; }
 
-    public bool? IncapacidadTransitoria { get; set; }
+    public bool IncapacidadTransitoria { get; set; }
 
-    public bool? Prevencion { get; set; }
+    public bool Prevencion { get; set; }
 
-    public bool? Administracion { get; set; }
+    public bool Administracion { get; set; }
 
-    public bool? OtrasActividades { get; set; }
+    public bool OtrasActividades { get; set; }
 
     public bool? AsistenciaSanitaria { get; set; }
 
