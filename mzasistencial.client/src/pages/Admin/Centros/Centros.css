@@ -140,69 +140,7 @@
     padding: 10px 20px;
 }
 
-/* BOTÓN ACCIONES */
-.acciones-container {
-    position: relative;
-}
 
-.acciones-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.2s;
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-}
-
-.acciones-btn:hover {
-    background: #f0f1f5;
-}
-
-.acciones-btn i {
-    font-size: 18px;
-    color: #666;
-}
-
-/* MENÚ DESPLEGABLE */
-.acciones-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    min-width: 190px;
-    z-index: 1000;
-    margin-top: 5px;
-}
-
-/* ITEMS DEL MENÚ */
-.acciones-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 13.5px;
-    color: #444;
-    transition: background 0.2s;
-}
-
-.acciones-item:hover {
-    background: #f5f6fa;
-    color: #2f5da8;
-}
-
-.acciones-item i {
-    font-size: 16px;
-    width: 18px;
-    text-align: center;
-}
 
 .acciones-directas {
     display: flex;

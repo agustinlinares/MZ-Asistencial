@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 using System.Collections.Generic;
@@ -17,9 +17,9 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<FincaRegistralDTO>>> Get()
+        public async Task<ActionResult<List<FincaRegistralDTO>>> Get([FromQuery] int? centroId)
         {
-            return Ok(await _service.ObtenerTodasLasFincas());
+            return Ok(await _service.ObtenerTodasLasFincas(centroId));
         }
 
         [HttpPost]
@@ -38,6 +38,14 @@ namespace MZAsistencial.Server.Controllers
             if (result == null)
                 return NotFound();
             return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var ok = await _service.EliminarFinca(id);
+            if (!ok) return NotFound();
+            return Ok();
         }
 
         [HttpGet("{id}/costes")]

@@ -294,25 +294,49 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
             <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
         </div>
         <div className="finca-field">
-            <label>Coste Alquiler</label>
+            <label>F. Alquiler (€/año)</label>
             <div className="finca-input-suffix">
-                <input type="number" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} />
+                <input type="number" step="0.01" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} placeholder="0,00" />
                 <span>€</span>
             </div>
         </div>
 
-        <div className="finca-field">
-            <label>Dirección</label>
-            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
-        </div>
-        <div className="finca-field">
-            <label>Superficie Construida</label>
-            <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} />
+        <div className="finca-field span2">
+            <div className="finca-grid-3">
+                <div className="finca-field">
+                    <label>Dirección</label>
+                    <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} placeholder="Vía Pública" />
+                </div>
+                <div className="finca-field">
+                    <label>Número</label>
+                    <input type="text" value={form.numero || ''} onChange={e => onChange('numero', e.target.value)} />
+                </div>
+                <div className="finca-field">
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ flex: 1 }}>
+                            <label>Piso</label>
+                            <input type="text" value={form.piso || ''} onChange={e => onChange('piso', e.target.value)} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label>Puerta</label>
+                            <input type="text" value={form.puerta || ''} onChange={e => onChange('puerta', e.target.value)} />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div className="finca-field">
-            <label>Referencia Catastral</label>
-            <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} />
+            <label>Superficie (m²)</label>
+            <div className="finca-input-suffix">
+                <input type="number" step="0.01" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} placeholder="0,00" />
+                <span>m²</span>
+            </div>
+        </div>
+
+        <div className="finca-field">
+            <label>Ref. Catastral</label>
+            <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} placeholder="Ej: 1234567AB1234C0001DE" />
         </div>
         <div className="finca-field">
             <label>Utilización</label>
@@ -355,15 +379,15 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
         <div className="finca-field span2">
             <div className="finca-grid-3">
                 <div className="finca-field">
-                    <label>Fecha de Adquisición</label>
+                    <label>F. Alquiler</label>
                     <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} />
                 </div>
                 <div className="finca-field">
-                    <label>Fecha de Inscripción</label>
+                    <label>F. Inscripción</label>
                     <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} />
                 </div>
                 <div className="finca-field">
-                    <label>Fecha de Baja</label>
+                    <label>F. Baja</label>
                     <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} />
                 </div>
             </div>
@@ -386,6 +410,9 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
         mutua:         finca?.Mutua         ?? finca?.mutua         ?? '',
         coste:         finca?.Coste         ?? finca?.coste         ?? '',
         direccion:     finca?.Direccion     ?? finca?.direccion     ?? '',
+        numero:        finca?.Numero        ?? finca?.numero        ?? '',
+        piso:          finca?.Piso          ?? finca?.piso          ?? '',
+        puerta:        finca?.Puerta        ?? finca?.puerta        ?? '',
         superficie:    finca?.Superficie    ?? finca?.superficie    ?? '',
         ref_catastral: finca?.Referencia_Catastral ?? finca?.ref_catastral ?? '',
         utilizacion:   finca?.Utilizacion   ?? finca?.utilizacion   ?? '',

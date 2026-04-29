@@ -44,6 +44,7 @@ const FichaCentroPropio = () => {
     const [registrosICG, setRegistrosICG] = useState([]);
     const [tabActiva, setTabActiva] = useState("general");
     const [guardando, setGuardando] = useState(false);
+    const [fincas, setFincas] = useState([]);
 
     // Cargar mutuas
     useEffect(() => {
@@ -124,6 +125,16 @@ const FichaCentroPropio = () => {
                 .then(res => res.json())
                 .then(data => setRegistrosICG(data))
                 .catch(() => setRegistrosICG([]));
+        }
+    }, [form.CentroId]);
+
+    // Cargar fincas registrales del centro
+    useEffect(() => {
+        if (form.CentroId) {
+            fetch(`/api/FincasRegistrales?centroId=${form.CentroId}`)
+                .then(res => res.json())
+                .then(data => setFincas(data))
+                .catch(() => setFincas([]));
         }
     }, [form.CentroId]);
 
@@ -456,7 +467,7 @@ const FichaCentroPropio = () => {
                 {/* FINCAS REGISTRALES */}
                 {tabActiva === "fincasRegistrales" && (
                     <div className="fcp-seccion">
-                        <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true}
+                        <DataGrid dataSource={fincas} showBorders={true} rowAlternationEnabled={true}
                             noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "FincasRegistrales")}
                             className="mz-table" height={450}>
                             <Scrolling mode="standard" />
@@ -466,14 +477,23 @@ const FichaCentroPropio = () => {
                             <HeaderFilter visible={true} />
                             <Sorting mode="multiple" />
                             <Export enabled={true} />
-                            <Column dataField="codigo" caption="Código" width={90} />
-                            <Column dataField="cFinca" caption="C. Finca" width={100} />
-                            <Column dataField="direccion" caption="Dirección" width={220} />
-                            <Column dataField="superficie" caption="Superficie" width={100} />
-                            <Column dataField="titularidad" caption="Titularidad" width={120} />
-                            <Column dataField="coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
-                            <Column dataField="fechaAlquiler" caption="Fecha Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
-                            <Column dataField="fechaInscripcion" caption="Fecha Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="Finca_id" caption="ID" width={70} />
+                            <Column dataField="Localizador" caption="Localizador" width={110} />
+                            <Column 
+                                caption="Dirección" 
+                                width={250} 
+                                cellRender={(cell) => (
+                                    <span>
+                                        {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
+                                        {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
+                                    </span>
+                                )}
+                            />
+                            <Column dataField="Superficie" caption="Superficie" width={100} />
+                            <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                            <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
+                            <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
                         </DataGrid>
                     </div>
                 )}

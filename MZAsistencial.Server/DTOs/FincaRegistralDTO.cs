@@ -16,6 +16,16 @@ namespace MZAsistencial.Server.DTOs
         public string? Centro { get; set; }
         [JsonPropertyName("Direccion")]
         public string? Direccion { get; set; }
+
+        [JsonPropertyName("Numero")]
+        public string? Numero { get; set; }
+
+        [JsonPropertyName("Piso")]
+        public string? Piso { get; set; }
+
+        [JsonPropertyName("Puerta")]
+        public string? Puerta { get; set; }
+
         [JsonPropertyName("CP")]
         public string? CP { get; set; }
         [JsonPropertyName("Provincia")]

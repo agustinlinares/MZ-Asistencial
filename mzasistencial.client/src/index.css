@@ -611,3 +611,83 @@ Fichas
   }
 
 }
+
+/*==========================================================================
+   ESTÁNDAR DE BOTONES DE ACCIONES (FORMATO MUTUAS)
+==========================================================================*/
+.acciones-container {
+    position: relative;
+    display: inline-block;
+}
+
+.acciones-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+}
+
+.acciones-btn:hover {
+    background: #f5f7fa;
+    border-color: #d1d5db;
+    color: #2f5da8;
+}
+
+.acciones-btn i {
+    font-size: 18px;
+    color: #2f5da8;
+}
+
+.acciones-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    min-width: 200px;
+    z-index: 9999;
+    overflow: hidden;
+    animation: fadeInScale 0.15s ease-out;
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.acciones-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.acciones-item:last-child {
+    border-bottom: none;
+}
+
+.acciones-item:hover {
+    background: #f9fafb;
+    color: #1d4ed8;
+}
+
+.acciones-item i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}

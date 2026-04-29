@@ -118,6 +118,9 @@ const Fincas = () => {
                 Centro_id: parseInt(data.centro_id) || 0,
                 Mutua: data.mutua || null,
                 Direccion: data.direccion || null,
+                Numero: data.numero || null,
+                Piso: data.piso || null,
+                Puerta: data.puerta || null,
                 Superficie: data.superficie !== '' && data.superficie != null ? parseFloat(data.superficie) : null,
                 Coste: data.coste !== '' && data.coste != null ? parseFloat(data.coste) : null,
                 F_Alquiler: data.f_adquisicion || null,
@@ -142,6 +145,20 @@ const Fincas = () => {
         } catch (error) {
             console.error('Error al guardar finca:', error);
             alert(`Error: ${error.message}`);
+        }
+    };
+
+    const handleEliminar = async (id) => {
+        if (!window.confirm(t('¿Está seguro de que desea eliminar esta finca?'))) return;
+        try {
+            const res = await fetch(`/api/FincasRegistrales/${id}`, { method: 'DELETE', headers: authHeaders() });
+            if (res.ok) {
+                await recargarFincas();
+            } else {
+                alert(t('Error al eliminar'));
+            }
+        } catch (error) {
+            console.error('Error al eliminar finca:', error);
         }
     };
 
@@ -275,9 +292,18 @@ const Fincas = () => {
                                     <Column dataField="Centro_id" caption="Centro ID" width={90} />
                                     <Column dataField="Localizador" caption="Localizador" width={130} />
                                     <Column dataField="Centro" caption="Centro" width={180} />
-                                    <Column dataField="Direccion" caption="Dirección" width={220} />
+                                    <Column 
+                                        caption="Dirección" 
+                                        width={250} 
+                                        cellRender={(cell) => (
+                                            <span>
+                                                {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
+                                                {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
+                                            </span>
+                                        )}
+                                    />
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
-                                    <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="Superficie" caption="Superficie" width={110} format="#,##0.00 m²" />
                                     <Column dataField="TipoFinca" caption="Tipo" width={120} />
                                     <Column
                                         caption="Acciones"
@@ -286,22 +312,35 @@ const Fincas = () => {
                                         fixedPosition="right"
                                         alignment="center"
                                         cellRender={(cell) => (
-                                            <div 
-                                                style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedFinca(cell.data);
-                                                }}
-                                            >
-                                                <i className="ri-edit-line"></i>
+                                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', color: '#2f5da8' }}>
+                                                <div 
+                                                    style={{ cursor: 'pointer' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedFinca(cell.data);
+                                                    }}
+                                                    title={t('Editar')}
+                                                >
+                                                    <i className="ri-edit-line"></i>
+                                                </div>
+                                                <div 
+                                                    style={{ cursor: 'pointer', color: '#c62828' }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEliminar(cell.data.Finca_id);
+                                                    }}
+                                                    title={t('Eliminar')}
+                                                >
+                                                    <i className="ri-delete-bin-line"></i>
+                                                </div>
                                             </div>
                                         )}
                                     />
-                                    <Column dataField="Coste" caption="Coste" width={100} />
-                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
+                                    <Column dataField="Coste" caption="Coste" width={110} format={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
                                     <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
-                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
-                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
+                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
+                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
                                     <Column dataField="Titularidad" caption="Titularidad" width={180} />
                                     </DataGrid>
                                 </div>

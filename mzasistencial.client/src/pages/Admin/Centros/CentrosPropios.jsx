@@ -149,45 +149,36 @@ const CentrosPropios = () => {
                                 {msg.text}
                             </span>
                         )}
-                        {/* BOTÓN ACCIONES */}
-                        <div ref={menuRef} style={{ position: 'relative' }}>
-                            <button
+                        <div className="acciones-container" ref={menuRef}>
+                            <div 
+                                className="acciones-btn"
                                 onClick={() => setMenuAbierto(v => !v)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: 6,
-                                    background: '#1a3a5c', color: '#fff', border: 'none',
-                                    borderRadius: 5, padding: '7px 16px', fontSize: 13,
-                                    fontWeight: 600, cursor: 'pointer'
-                                }}
                             >
-                                Acciones <span style={{ fontSize: 10 }}>▼</span>
-                            </button>
+                                {t('Acciones')}
+                                <i className="ri-more-2-fill"></i>
+                            </div>
+
                             {menuAbierto && (
-                                <div style={{
-                                    position: 'absolute', top: '100%', right: 0, marginTop: 4,
-                                    background: '#fff', border: '1px solid #e0e6ed',
-                                    borderRadius: 6, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                                    minWidth: 180, zIndex: 999
-                                }}>
-                                    {[
-                                        { icon: '➕', label: 'Nuevo', action: handleNuevo, color: '#1976d2' },
-                                        { icon: '📊', label: 'Exportar a Excel', action: handleExportarExcel, color: '#2e7d32' },
-                                        { icon: '📄', label: 'Exportar a PDF', action: handleExportarPDF, color: '#c62828' },
-                                        { icon: '✅', label: validando ? 'Validando...' : 'Validar Registros', action: handleValidar, color: '#e65100' },
-                                    ].map(({ icon, label, action, color }) => (
-                                        <button key={label} onClick={action} style={{
-                                            display: 'flex', alignItems: 'center', gap: 10,
-                                            width: '100%', padding: '10px 16px', border: 'none',
-                                            background: 'none', cursor: 'pointer', fontSize: 13,
-                                            color: '#2c3e50', textAlign: 'left',
-                                            borderBottom: '1px solid #f0f4f8'
-                                        }}
-                                            onMouseEnter={e => e.currentTarget.style.background = '#f0f4f8'}
-                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                                        >
-                                            <span style={{ color }}>{icon}</span> {label}
-                                        </button>
-                                    ))}
+                                <div className="acciones-menu">
+                                    <div className="acciones-item" onClick={handleNuevo}>
+                                        <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
+                                        {t('Nuevo')}
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarExcel}>
+                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                        {t('Exportar a Excel')}
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleExportarPDF}>
+                                        <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                                        {t('Exportar a PDF')}
+                                    </div>
+
+                                    <div className="acciones-item" onClick={handleValidar}>
+                                        <i className="ri-checkbox-circle-line" style={{ color: '#e65100' }}></i>
+                                        {validando ? t('Validando...') : t('Validar Registros')}
+                                    </div>
                                 </div>
                             )}
                         </div>

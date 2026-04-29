@@ -143,31 +143,7 @@ function AdminHeader(props) {
         dispatch({ type: 'SET_FIELD', field, value });
     };
 
-    const actions = [
-        { id: 'new', text: 'Nuevo', icon: 'plus' },
-        { id: 'print', text: 'Imprimir ICG06', icon: 'print' },
-        { id: 'excel', text: 'Exportar a Excel', icon: 'xlsxfile' },
-        { id: 'pdf', text: 'Exportar a PDF', icon: 'pdffile' },
-    ];
 
-    const handleActionClick = (e) => {
-        switch (e.item.id) {
-            case 'new':
-                console.log('Nuevo');
-                break;
-            case 'print':
-                console.log('Imprimir');
-                break;
-            case 'excel':
-                console.log('Exportar Excel');
-                break;
-            case 'pdf':
-                console.log('Exportar PDF');
-                break;
-            default:
-                break;
-        }
-    };
 
     return (
         <React.Fragment>
@@ -238,24 +214,7 @@ function AdminHeader(props) {
                             </div>
 
                         </div>
-                        {!window.location.pathname.includes('/Fincas') && (
-                            <div className='item-admin-action actions-dropdown'>
-                                <DropDownButton
-                                    text="Acciones"
-                                    icon="overflow"
-                                    items={actions}
-                                    keyExpr="id"
-                                    displayExpr="text"
-                                    onItemClick={handleActionClick}
-                                    stylingMode="outlined"
-                                    splitButton={false}
-                                    elementAttr={{ class: 'btn-acciones-custom' }}
-                                    dropDownOptions={{
-                                        width: 220
-                                    }}
-                                />
-                            </div>
-                        )}
+
                     </div>
                 </div>
             </header>

@@ -33,10 +33,10 @@ namespace MZAsistencial.Server.Services
                                   Localizador = f.Localizador,
                                   Mutua = null,
                                   Centro = c != null ? c.Centro : null,
-                                  Direccion = (f.NombreVia ?? "")
-                                              + (f.Numero != null ? " " + f.Numero : "")
-                                              + (f.Piso != null ? ", " + f.Piso : "")
-                                              + (f.Puerta != null ? ", " + f.Puerta : ""),
+                                  Direccion = f.NombreVia,
+                                  Numero = f.Numero,
+                                  Piso = f.Piso,
+                                  Puerta = f.Puerta,
                                   CP = null,
                                   Provincia = null,
                                   Poblacion = null,
@@ -52,8 +52,8 @@ namespace MZAsistencial.Server.Services
                                   Titularidad = f.Titinmueble,
                                   OtrosDatos = f.OtrosDatos,
                                   DireccionGoogle = f.DireccionElectronica,
-                                  Latitud = f.Latitud,
-                                  Longitud = f.Longitud
+                                  Latitud = null,
+                                  Longitud = null
                               }).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return (data, total);
@@ -71,10 +71,10 @@ namespace MZAsistencial.Server.Services
                     Localizador = x.fi.Localizador,
                     Mutua = null,
                     Centro = x.c.Centro,
-                    Direccion = (x.fi.NombreVia ?? "")
-                                + (x.fi.Numero != null ? " " + x.fi.Numero : "")
-                                + (x.fi.Piso != null ? ", " + x.fi.Piso : "")
-                                + (x.fi.Puerta != null ? ", " + x.fi.Puerta : ""),
+                    Direccion = x.fi.NombreVia,
+                    Numero = x.fi.Numero,
+                    Piso = x.fi.Piso,
+                    Puerta = x.fi.Puerta,
                     CP = null,
                     Provincia = null,
                     Poblacion = null,
@@ -90,8 +90,8 @@ namespace MZAsistencial.Server.Services
                     Titularidad = x.fi.Titinmueble,
                     OtrosDatos = x.fi.OtrosDatos,
                     DireccionGoogle = x.fi.DireccionElectronica,
-                    Latitud = x.fi.Latitud,
-                    Longitud = x.fi.Longitud
+                    Latitud = null,
+                    Longitud = null
                 }).FirstOrDefaultAsync();
 
             if (f != null)
@@ -108,10 +108,10 @@ namespace MZAsistencial.Server.Services
                 Localizador = fi.Localizador,
                 Mutua = null,
                 Centro = null,
-                Direccion = (fi.NombreVia ?? "")
-                            + (fi.Numero != null ? " " + fi.Numero : "")
-                            + (fi.Piso != null ? ", " + fi.Piso : "")
-                            + (fi.Puerta != null ? ", " + fi.Puerta : ""),
+                Direccion = fi.NombreVia,
+                Numero = fi.Numero,
+                Piso = fi.Piso,
+                Puerta = fi.Puerta,
                 CP = null,
                 Provincia = null,
                 Poblacion = null,
@@ -145,6 +145,9 @@ namespace MZAsistencial.Server.Services
             if (!string.IsNullOrEmpty(dto.Localizador))
                 finca.Localizador = dto.Localizador;
             finca.NombreVia = dto.Direccion;
+            finca.Numero = dto.Numero;
+            finca.Piso = dto.Piso;
+            finca.Puerta = dto.Puerta;
             finca.Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null;
             finca.Coste = dto.Coste.HasValue ? (double?)dto.Coste : null;
             finca.Fadqoarr = dto.F_Alquiler;
@@ -174,6 +177,9 @@ namespace MZAsistencial.Server.Services
                 CentroId = dto.Centro_id != 0 ? dto.Centro_id : null,
                 Localizador = dto.Localizador,
                 NombreVia = dto.Direccion,
+                Numero = dto.Numero,
+                Piso = dto.Piso,
+                Puerta = dto.Puerta,
                 Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null,
                 Coste = dto.Coste.HasValue ? (double?)dto.Coste : null,
                 Fadqoarr = dto.F_Alquiler,
@@ -242,9 +248,27 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas()
+        public async Task<bool> EliminarFinca(int id)
         {
-            return await (from f in _context.FincasRegistrales
+            var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
+            if (finca == null) return false;
+
+            // Optional: Also delete related costs if needed, or check if they exist
+            var costs = await _context.FincasRegistralesCostesPorAños.Where(c => c.FincaId == id).ToListAsync();
+            if (costs.Any()) _context.FincasRegistralesCostesPorAños.RemoveRange(costs);
+
+            _context.FincasRegistrales.Remove(finca);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId = null)
+        {
+            var query = _context.FincasRegistrales.AsQueryable();
+            if (centroId.HasValue)
+                query = query.Where(f => f.CentroId == centroId.Value);
+
+            return await (from f in query
                           join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
                           from c in cg.DefaultIfEmpty()
                           orderby f.FincaId
@@ -255,10 +279,10 @@ namespace MZAsistencial.Server.Services
                               Localizador = f.Localizador,
                               Mutua = null,
                               Centro = c != null ? c.Centro : null,
-                              Direccion = (f.NombreVia ?? "")
-                                          + (f.Numero != null ? " " + f.Numero : "")
-                                          + (f.Piso != null ? ", " + f.Piso : "")
-                                          + (f.Puerta != null ? ", " + f.Puerta : ""),
+                              Direccion = f.NombreVia,
+                              Numero = f.Numero,
+                              Piso = f.Piso,
+                              Puerta = f.Puerta,
                               CP = null,
                               Provincia = null,
                               Poblacion = null,
@@ -274,8 +298,8 @@ namespace MZAsistencial.Server.Services
                               Titularidad = f.Titinmueble,
                               OtrosDatos = f.OtrosDatos,
                               DireccionGoogle = f.DireccionElectronica,
-                              Latitud = f.Latitud,
-                              Longitud = f.Longitud
+                              Latitud = null,
+                              Longitud = null
                           }).ToListAsync();
         }
     }
