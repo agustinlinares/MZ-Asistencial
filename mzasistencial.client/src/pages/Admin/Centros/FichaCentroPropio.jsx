@@ -50,6 +50,11 @@ const FichaCentroPropio = () => {
         if (cliente) clienteRef.current = cliente;
     }, [cliente]);
 
+    const clienteRef = useRef(cliente);
+    useEffect(() => {
+        if (cliente) clienteRef.current = cliente;
+    }, [cliente]);
+
     // Cargar mutuas
     useEffect(() => {
         fetch("/api/mutuas")
