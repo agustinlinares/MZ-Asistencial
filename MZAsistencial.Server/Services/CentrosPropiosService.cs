@@ -2,18 +2,18 @@ using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
- 
+
 namespace MZAsistencial.Server.Services
 {
     public class CentrosPropiosService
     {
         private readonly MZAsistencialContext _context;
- 
+
         public CentrosPropiosService(MZAsistencialContext context)
         {
             _context = context;
         }
- 
+
         public async Task<List<CentrosPropiosDTO>> GetAllAsync()
         {
             return await _context.CentrosPropios
@@ -53,17 +53,18 @@ namespace MZAsistencial.Server.Services
                     Fpufuncio              = c.Fpufuncio,
                     Fcalisuf               = c.Fcalisuf,
                     TipoCentro             = c.TipoCentro,
+                    MapaValidado           = c.MapaValidado,
                 })
                 .ToListAsync();
         }
- 
+
         public async Task<CentrosPropiosDTO?> GetByIdAsync(int centroId)
         {
             var c = await _context.CentrosPropios
                 .FirstOrDefaultAsync(x => x.CentroId == centroId);
- 
+
             if (c is null) return null;
- 
+
             return new CentrosPropiosDTO
             {
                 Localizador     = c.Localizador,
@@ -100,16 +101,20 @@ namespace MZAsistencial.Server.Services
                 Fpufuncio              = c.Fpufuncio,
                 Fcalisuf               = c.Fcalisuf,
                 TipoCentro             = c.TipoCentro,
+                MapaValidado           = c.MapaValidado,
             };
         }
- 
+
         public async Task<bool> UpdateAsync(int centroId, CentrosPropiosDTO dto)
         {
+            // ✅ LOG DIAGNÓSTICO — eliminar tras verificar
+            Console.WriteLine($"[UPDATE] DireccionGoogle='{dto.DireccionGoogle}' MapaValidado={dto.MapaValidado}");
+
             var centro = await _context.CentrosPropios
                 .FirstOrDefaultAsync(x => x.CentroId == centroId);
- 
+
             if (centro is null) return false;
- 
+
             centro.MutuaId              = dto.MutuaId;
             centro.Centro               = dto.Centro;
             centro.Cp                   = dto.Cp;
@@ -141,42 +146,44 @@ namespace MZAsistencial.Server.Services
             centro.Fcalisuf                = dto.Fcalisuf;
             centro.TipoCentro              = dto.TipoCentro;
             centro.FechaModificacion       = DateTime.Now;
- 
+            // ✅ Actualiza MapaValidado: preserva el valor existente si llega null
+            centro.MapaValidado            = dto.MapaValidado ?? centro.MapaValidado;
+
             await _context.SaveChangesAsync();
             return true;
         }
- 
+
         public async Task<bool> ValidarAsync(List<int> ids)
         {
             var centros = await _context.CentrosPropios
                 .Where(c => ids.Contains(c.CentroId))
                 .ToListAsync();
- 
+
             if (!centros.Any()) return false;
- 
+
             foreach (var centro in centros)
             {
                 centro.Validado = true;
             }
- 
+
             await _context.SaveChangesAsync();
             return true;
         }
- 
+
         public async Task<string> GetSiguienteLocalizadorAsync(int mutuaId)
         {
             var mutua = await _context.Mutuas
                 .FirstOrDefaultAsync(m => m.MutuaId == mutuaId);
- 
+
             if (mutua is null) return "";
- 
+
             var prefijo = mutua.NumeroMutua ?? $"M{mutuaId:D2}";
- 
+
             var localizadores = await _context.CentrosPropios
                 .Where(c => c.Localizador != null && c.Localizador.StartsWith(prefijo + "-"))
                 .Select(c => c.Localizador)
                 .ToListAsync();
- 
+
             int siguiente = 1;
             if (localizadores.Any())
             {
@@ -186,11 +193,11 @@ namespace MZAsistencial.Server.Services
                         return partes.Length > 1 && int.TryParse(partes[1], out int n) ? n : 0;
                     })
                     .Where(n => n > 0);
- 
+
                 if (numeros.Any())
                     siguiente = numeros.Max() + 1;
             }
- 
+
             return $"{prefijo}-{siguiente:D2}";
         }
     }

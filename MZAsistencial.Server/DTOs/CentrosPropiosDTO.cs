@@ -37,5 +37,7 @@ namespace MZAsistencial.Server.DTOs
         public DateTime? Fpufuncio            { get; set; }
         public DateTime? Fcalisuf             { get; set; }
         public int?      TipoCentro           { get; set; }
+        // ✅ Nuevo: indica si las coordenadas han sido validadas desde el mapa
+        public bool?     MapaValidado         { get; set; }
     }
 }

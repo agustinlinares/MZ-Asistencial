@@ -1,46 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const MapaPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { latitud, longitud, direccion } = location.state || {};
+    const s = location.state || {};
 
-    const [lat, setLat] = useState(latitud || "");
-    const [lng, setLng] = useState(longitud || "");
-    const [dir, setDir] = useState(direccion || "");
+    const [lat, setLat] = useState(s.latitud !== undefined ? String(s.latitud) : "");
+    const [lng, setLng] = useState(s.longitud !== undefined ? String(s.longitud) : "");
+    const [dir, setDir] = useState(s.direccion || "");
     const [mapUrl, setMapUrl] = useState(
-        latitud && longitud
-            ? `https://maps.google.com/maps?q=${latitud},${longitud}&z=15&output=embed`
+        s.latitud && s.longitud
+            ? `https://maps.google.com/maps?q=${s.latitud},${s.longitud}&z=15&output=embed`
             : "https://maps.google.com/maps?q=Espana&z=6&output=embed"
     );
 
-    const handleBuscar = async () => {
-        if (dir) {
+    const handleBuscar = async (buscarDir) => {
+        const dirBuscar = buscarDir || dir;
+        if (dirBuscar) {
             try {
                 const res = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dir)}&limit=1`,
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dirBuscar)}&limit=1`,
                     { headers: { 'Accept-Language': 'es' } }
                 );
                 const data = await res.json();
                 if (data && data.length > 0) {
-                    const { lat: newLat, lon: newLng } = data[0];
+                    const { lat: newLat, lon: newLng, display_name } = data[0];
                     setLat(newLat);
                     setLng(newLng);
+                    setDir(display_name);
                     setMapUrl(`https://maps.google.com/maps?q=${newLat},${newLng}&z=15&output=embed`);
                 } else {
-                    setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
+                    setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dirBuscar)}&z=15&output=embed`);
                 }
             } catch {
-                setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
+                setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dirBuscar)}&z=15&output=embed`);
             }
         } else if (lat && lng) {
             setMapUrl(`https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`);
         }
     };
 
+    useEffect(() => {
+        if (s.direccion && !s.latitud && !s.longitud) {
+            handleBuscar(s.direccion);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ✅ Usa sessionStorage para pasar datos de vuelta a FichaCentroPropio
     const handleAceptar = () => {
-        navigate(-1, { state: { latitud: lat, longitud: lng, direccion: dir, fromMapa: true } });
+        sessionStorage.setItem('mapaRetorno', JSON.stringify({
+            latitud: lat,
+            longitud: lng,
+            direccion: dir,
+            mapaValidado: true,
+        }));
+        navigate(-1);
     };
 
     return (
@@ -61,8 +76,8 @@ const MapaPage = () => {
                     <label style={{ fontSize: 10.5, fontWeight: 700, color: "#1565c0", textTransform: "uppercase", letterSpacing: "0.4px" }}>Dirección</label>
                     <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
                         <input type="text" value={dir} onChange={e => setDir(e.target.value)} onKeyDown={e => e.key === "Enter" && handleBuscar()} placeholder="Introduce una dirección..."
-                            style={{ flex: 1, border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit" }} />
-                        <button onClick={handleBuscar} style={{ background: "#1976d2", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                            style={{ flex: 1, border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit", color: "#333" }} />
+                        <button onClick={() => handleBuscar()} style={{ background: "#1976d2", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                             Buscar
                         </button>
                     </div>
@@ -70,12 +85,12 @@ const MapaPage = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <label style={{ fontSize: 10.5, fontWeight: 700, color: "#1565c0", textTransform: "uppercase", letterSpacing: "0.4px" }}>Latitud</label>
                     <input type="text" value={lat} onChange={e => setLat(e.target.value)} placeholder="ej: 40.4168"
-                        style={{ border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit" }} />
+                        style={{ border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit", color: "#333" }} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <label style={{ fontSize: 10.5, fontWeight: 700, color: "#1565c0", textTransform: "uppercase", letterSpacing: "0.4px" }}>Longitud</label>
                     <input type="text" value={lng} onChange={e => setLng(e.target.value)} placeholder="ej: -3.7038"
-                        style={{ border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit" }} />
+                        style={{ border: "none", borderBottom: "1.5px solid #b0bec5", padding: "5px 2px", fontSize: 13, background: "transparent", outline: "none", fontFamily: "inherit", color: "#333" }} />
                 </div>
             </div>
             <div style={{ flex: 1, position: "relative" }}>

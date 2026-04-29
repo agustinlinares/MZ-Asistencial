@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -6,7 +6,6 @@ import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
 import './FichaCentroPropio.css';
 
-// PROVINCIAS y POBLACIONES se cargan dinámicamente desde la BD
 const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
 const ESPECIALIDADES_LIST = ["Medicina General","Traumatologia","Rehabilitacion","Fisioterapia","Psicologia","Enfermeria","Radiologia","Cirugia","Cardiologia","Neurologia","Dermatologia","Oftalmologia","Urgencias","Pediatria"];
@@ -46,6 +45,11 @@ const FichaCentroPropio = () => {
     const [guardando, setGuardando] = useState(false);
     const [fincas, setFincas] = useState([]);
 
+    const clienteRef = useRef(cliente);
+    useEffect(() => {
+        if (cliente) clienteRef.current = cliente;
+    }, [cliente]);
+
     // Cargar mutuas
     useEffect(() => {
         fetch("/api/mutuas")
@@ -54,7 +58,7 @@ const FichaCentroPropio = () => {
             .catch(() => setMUTUOS([]));
     }, []);
 
-    // Cargar provincias desde la BD
+    // Cargar provincias
     useEffect(() => {
         fetch("/api/auxprovincias")
             .then(r => r.ok ? r.json() : [])
@@ -74,6 +78,7 @@ const FichaCentroPropio = () => {
         }
     }, [form.ProvinciaId]);
 
+    // Inicializar form desde cliente
     useEffect(() => {
         if (!cliente) { navigate(-1); return; }
         setForm({
@@ -116,8 +121,29 @@ const FichaCentroPropio = () => {
             Traslado: cliente.Traslado ?? false,
             CentroDesactivado: cliente.desactivado ?? cliente.CentroDesactivado ?? false,
             NuevoCentro: cliente.NuevoCentro || "",
+            MapaValidado: cliente.mapaValidado ?? cliente.MapaValidado ?? false,
         });
     }, [cliente]);
+
+    // ✅ Leer datos del mapa desde sessionStorage al montar
+// ✅ Leer datos del mapa desde sessionStorage con delay para que el form esté inicializado
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const mapaData = sessionStorage.getItem('mapaRetorno');
+            if (mapaData) {
+                const { latitud, longitud, direccion, mapaValidado } = JSON.parse(mapaData);
+                sessionStorage.removeItem('mapaRetorno');
+                setForm(f => ({
+                    ...f,
+                    Latitud: latitud || f.Latitud,
+                    Longitud: longitud || f.Longitud,
+                    DireccionGoogle: direccion || f.DireccionGoogle,
+                    MapaValidado: mapaValidado === true ? true : f.MapaValidado,
+                }));
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (form.CentroId) {
@@ -155,7 +181,6 @@ const FichaCentroPropio = () => {
         setForm(f => ({ ...f, [key]: val }));
     };
 
-    // Handler especial para provincia: cambia ProvinciaId y resetea PoblacionId
     const handleProvinciaChange = (e) => {
         const provinciaId = e.target.value;
         setForm(f => ({ ...f, ProvinciaId: provinciaId, PoblacionId: "" }));
@@ -199,6 +224,7 @@ const FichaCentroPropio = () => {
                     fautocom:               form.Autorizacion || null,
                     fpufuncio:              form.PuestaFuncionamiento || null,
                     fcalisuf:               form.Calificacion || null,
+                    mapaValidado:           form.MapaValidado ?? false,
                 })
             });
             if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
@@ -281,7 +307,6 @@ const FichaCentroPropio = () => {
                             </div>
                             <div className="fcp-field">
                                 <label>Provincia</label>
-                                {/* ✅ Cargado dinámicamente desde Aux_Provincias */}
                                 <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
                                     <option value="">— Seleccionar —</option>
                                     {PROVINCIAS.map(p => (
@@ -291,7 +316,6 @@ const FichaCentroPropio = () => {
                             </div>
                             <div className="fcp-field">
                                 <label>Población</label>
-                                {/* ✅ Cargado dinámicamente desde Aux_Poblaciones filtrado por provincia */}
                                 <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
                                     <option value="">— Seleccionar —</option>
                                     {POBLACIONES.map(p => (

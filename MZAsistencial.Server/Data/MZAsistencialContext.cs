@@ -1945,9 +1945,10 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.ServicioId).HasColumnName("Servicio_id");
         });
 
-        modelBuilder.Entity<CentrosPropio>(entity =>
-        {
-            entity.HasNoKey();
+            modelBuilder.Entity<CentrosPropio>(entity =>
+            {
+                entity.HasKey(e => e.CentroId);
+                entity.Property(e => e.CentroId).HasColumnName("Centro_id");
 
             entity.Property(e => e.Centro).HasMaxLength(150);
             entity.Property(e => e.CentroCesionarioId).HasColumnName("CentroCesionario_id");
