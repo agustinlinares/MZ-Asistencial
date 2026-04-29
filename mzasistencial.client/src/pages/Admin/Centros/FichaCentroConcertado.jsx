@@ -326,11 +326,70 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         setErrors(prev => ({ ...prev, [field]: false }));
     }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const newErrors = {};
         if (!form.centro) newErrors.centro = true;
-        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
-        onSave?.(form);
+        
+        if (Object.keys(newErrors).length > 0) { 
+            setErrors(newErrors); 
+            return; 
+        }
+
+        // Construimos el objeto exacto que espera el CentrosConcertadoDTO de C#
+        const payload = {
+            // C# espera un int. Si es nuevo (""), le pasamos 0. Si editamos, lo parseamos.
+            centro_id: form.centro_id ? parseInt(form.centro_id) : 0, 
+            
+            // Textos básicos. React usa 'localizador', el DTO espera 'ccn'
+            ccn: form.localizador, 
+            cif: form.cif,
+            centro: form.centro,
+            direccion: form.direccion,
+            cp: form.cp,
+            
+            // Los IDs deben llamarse igual que en el DTO y ser números enteros (o null)
+            provinciaId: form.provincia ? parseInt(form.provincia) : null,
+            poblacionId: form.poblacion ? parseInt(form.poblacion) : null,
+            proveedorId: form.proveedor ? parseInt(form.proveedor) : null,
+            delegacionId: form.delegacion ? parseInt(form.delegacion) : null,
+            
+            telefono: form.telefono,
+            fechaAlta: form.fecha_alta || null,
+            fechaBaja: form.fecha_baja || null,
+            latitud: form.latitud,
+            longitud: form.longitud
+        };
+
+        try {
+            const url = payload.centro_id > 0
+                ? `/api/CentrosConcertados/${payload.centro_id}` // Actualizar
+                : '/api/CentrosConcertados';                     // Crear nuevo
+            
+            const method = payload.centro_id > 0 ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    ...authHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                // Enviamos nuestro objeto limpio, no el form crudo
+                body: JSON.stringify(payload) 
+            });
+
+            if (!response.ok) {
+                // Capturamos el error real del backend si falla
+                const errorText = await response.text();
+                throw new Error(errorText); 
+            }
+
+            // Si todo va bien, cerramos la ficha y recargamos la tabla
+            onSave?.(payload); 
+
+        } catch (error) {
+            console.error("Error al guardar en BD:", error);
+            alert("Hubo un problema al guardar los datos en el servidor. Revisa la consola.");
+        }
     };
 
     return (

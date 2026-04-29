@@ -53,34 +53,58 @@ const CentrosConcertados = () => {
     // Estados simplificados para el patrón Master/Detail inline
     const [centros, setCentros] = useState([]);
     const [selectedCentro, setSelectedCentro] = useState(null);
+    const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
+    const [gridInstance, setGridInstance] = useState(null);
+
+    const cargarDatos = async () => {
+        try {
+            const respuesta = await fetch('/api/CentrosConcertados', { 
+                method: 'GET',
+                headers: authHeaders() 
+            });
+
+            if (respuesta.ok) {
+                const datos = await respuesta.json();
+                setCentros(datos);
+            } else {
+                console.error("Error en la respuesta del servidor:", respuesta.status);
+                }
+        } catch (error) {
+            console.error("Error conectando con la API:", error);
+        }
+    };
 
     useEffect(() => {
-        const cargarDatos = async () => {
-            try {
-                const respuesta = await fetch('/api/CentrosConcertados', { 
-                    method: 'GET',
-                    headers: authHeaders() 
-                });
-
-                if (respuesta.ok) {
-                    const datos = await respuesta.json();
-                    setCentros(datos);
-                } else {
-                    console.error("Error en la respuesta del servidor:", respuesta.status);
-                }
-            } catch (error) {
-                console.error("Error conectando con la API:", error);
-            }
-        };
-
         cargarDatos();
     }, []);
 
-    // Función mockeada para cuando implementes el guardado
-    const handleSaveCentro = async (data) => {
-        console.log("Guardando centro:", data);
-        // Aquí irá tu fetch PUT/POST en el futuro
-        setSelectedCentro(null); // Cerramos la ficha al guardar
+    const handleSaveCentro = (data) => {
+        // Cerramos la ficha visualmente
+        setSelectedCentro(null); 
+        
+        // Refrescamos la tabla llamando de nuevo a la base de datos
+        cargarDatos(); 
+    };
+
+    const exportarManualExcel = (soloSeleccionados) => {
+        if (!gridInstance) {
+            console.error("La instancia de la tabla aún no está lista.");
+            return;
+        }
+
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Main sheet');
+        
+        exportDataGrid({
+            component: gridInstance, 
+            worksheet: worksheet,
+            autoFilterEnabled: true,
+            selectedRowsOnly: soloSeleccionados 
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'centros_concertados.xlsx');
+            });
+        });
     };
 
     return (
@@ -92,13 +116,92 @@ const CentrosConcertados = () => {
 
                     {/* Botones superiores solo visibles si estamos en el listado */}
                     {!selectedCentro && (
-                        <div className="BotonesCombo" style={{ marginBottom: '10px', textAlign: 'right' }}>
+                        <div 
+                            className="BotonesCombo" 
+                            style={{ 
+                                marginBottom: '10px', 
+                                display: 'flex',               // Activamos Flexbox
+                                justifyContent: 'flex-end',    // Empujamos todo a la derecha
+                                position: 'relative' 
+                            }}
+                        >
                             <button 
-                                className="btn btn-primary btn-sm mx-1" 
-                                onClick={() => setSelectedCentro({})} // Objeto vacío para "Nuevo Centro"
+                                className="btn btn-primary btn-sm" 
+                                style={{ marginRight: '4px' }} // Separación sutil del borde derecho
+                                onClick={() => setMenuAccionesAbierto(!menuAccionesAbierto)}
                             >
-                                + Nuevo Centro
+                                ⚙️ Acciones {menuAccionesAbierto ? '▲' : '▼'}
                             </button>
+
+                            {/* Desplegable flotante */}
+                            {menuAccionesAbierto && (
+                                <div style={{
+                                    position: 'absolute', 
+                                    right: '4px', 
+                                    top: '100%', 
+                                    backgroundColor: '#fff', 
+                                    border: '1px solid #ccc', 
+                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', 
+                                    zIndex: 1000, 
+                                    borderRadius: '4px', 
+                                    minWidth: '240px', 
+                                    textAlign: 'left',
+                                    marginTop: '5px'
+                                }}>
+                                    {/* Nuevo centro */}
+                                    <div 
+                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                        onClick={() => { 
+                                            setSelectedCentro({}); 
+                                            setMenuAccionesAbierto(false); 
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                    >
+                                        ➕ Nuevo Centro
+                                    </div>
+
+                                    {/* Selector de columnas */}
+                                    <div 
+                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                        onClick={() => { 
+                                            const btnChooser = document.querySelector('.dx-datagrid-column-chooser-button');
+                                            if (btnChooser) btnChooser.click();
+                                            setMenuAccionesAbierto(false); 
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                    >
+                                        🎛️ Selector de columnas
+                                    </div>
+
+                                    {/* Exportar todo */}
+                                    <div 
+                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
+                                        onClick={() => { 
+                                            exportarManualExcel(false); // false = exportar toda la tabla
+                                            setMenuAccionesAbierto(false); 
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                    >
+                                        📄 Exportar todo a Excel
+                                    </div>
+
+                                    {/* Exportar seleccionados */}
+                                    <div 
+                                        style={{ padding: '10px 15px', cursor: 'pointer' }}
+                                        onClick={() => { 
+                                            exportarManualExcel(true);  // true = exportar solo las filas con el check marcado
+                                            setMenuAccionesAbierto(false); 
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                    >
+                                        ☑️ Exportar filas seleccionadas
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -113,6 +216,7 @@ const CentrosConcertados = () => {
                             <div className="grid-wrapper-centros" style={{ height: 'calc(100vh - 230px)', width: '100%' }}>
                                 <DataGrid
                                     ref={dataGridRef}
+                                    onInitialized={(e) => setGridInstance(e.component)}
                                     dataSource={centros}
                                     keyExpr="centro_id" 
                                     showBorders={true}
@@ -126,6 +230,15 @@ const CentrosConcertados = () => {
                                     showColumnLines={true}
                                     wordWrapEnabled={false}
                                     onRowDblClick={(e) => setSelectedCentro(e.data)} // Abrimos ficha al doble clic
+                                    onToolbarPreparing={(e) => {
+                                        // Mantenemos los botones originales en el DOM para poder hacerles clic, 
+                                        // pero los ocultamos visualmente inyectándoles display: none
+                                        e.toolbarOptions.items.forEach(item => {
+                                            if (item.name === 'exportButton' || item.name === 'columnChooserButton') {
+                                                item.cssClass = 'd-none'; // Clase de Bootstrap para ocultar
+                                            }
+                                        });
+                                    }}
                                 >
                                     <Scrolling mode="standard" showScrollbar="always" />
                                     <Paging defaultPageSize={25} />
@@ -135,8 +248,8 @@ const CentrosConcertados = () => {
                                     <HeaderFilter visible searchMode='contains' />
                                     <Selection mode="multiple" allowSelectAll />
                                     <Grouping autoExpandAll={false} />
-                                    <ColumnChooser enabled mode="select" />
-                                    <Export enabled fileName="CentrosConcertados" allowExportSelectedData />
+                                    <ColumnChooser enabled={true} mode="select" />
+                                    <Export enabled={true} fileName="CentrosConcertados" allowExportSelectedData />
                                     <Sorting mode="multiple" />
                                     <FilterPanel visible />
                                     <ColumnFixing enabled />

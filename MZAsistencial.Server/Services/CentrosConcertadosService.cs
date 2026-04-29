@@ -7,6 +7,9 @@ namespace MZAsistencial.Server.Services
     public interface ICentrosConcertadosService
     {
         Task<IEnumerable<CentrosConcertadoDTO>> GetCabecerasAsync();
+        // Métodos para guardar
+        Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto);
+        Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto);
     }
 
     public class CentrosConcertadosService : ICentrosConcertadosService
@@ -54,6 +57,63 @@ namespace MZAsistencial.Server.Services
                         };
 
             return await query.ToListAsync();
+        }
+
+        public async Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto)
+        {
+            // Creamos una nueva entidad basada en el modelo de la BD
+            var nuevoCentro = new MZAsistencial.Server.Models.CentrosConcertado 
+            {
+                CodigoMz = dto.Ccn,
+                Cifnif = dto.Cif,
+                Centro = dto.Centro,
+                Direccion = dto.Direccion,
+                Cp = dto.CP,
+                PoblacionId = dto.PoblacionId,
+                ProveedorId = dto.ProveedorId,
+                DelegacionId = dto.DelegacionId,
+                Telefono = dto.Telefono,
+                FechaAlta = dto.FechaAlta ?? DateTime.Now, // Si no viene fecha, ponemos la de hoy
+                FechaBaja = dto.FechaBaja,
+                Latitud = dto.Latitud,
+                Longitud = dto.Longitud
+            };
+
+            _context.CentrosConcertados.Add(nuevoCentro);
+            await _context.SaveChangesAsync();
+
+            // Devolvemos el DTO con el nuevo ID autogenerado por SQL
+            dto.Centro_id = nuevoCentro.CentroId;
+            return dto;
+        }
+
+        public async Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto)
+        {
+            // Buscamos el centro existente
+            var centroExistente = await _context.CentrosConcertados.FindAsync(id);
+            if (centroExistente == null) return false;
+
+            // Actualizamos solo los campos que nos interesan
+            centroExistente.CodigoMz = dto.Ccn;
+            centroExistente.Cifnif = dto.Cif;
+            centroExistente.Centro = dto.Centro;
+            centroExistente.Direccion = dto.Direccion;
+            centroExistente.Cp = dto.CP;
+            
+            // IDs de los desplegables
+            centroExistente.PoblacionId = dto.PoblacionId;
+            centroExistente.ProveedorId = dto.ProveedorId;
+            centroExistente.DelegacionId = dto.DelegacionId;
+            
+            // Resto de la ficha
+            centroExistente.Telefono = dto.Telefono;
+            centroExistente.FechaAlta = dto.FechaAlta;
+            centroExistente.FechaBaja = dto.FechaBaja;
+            centroExistente.Latitud = dto.Latitud;
+            centroExistente.Longitud = dto.Longitud;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
