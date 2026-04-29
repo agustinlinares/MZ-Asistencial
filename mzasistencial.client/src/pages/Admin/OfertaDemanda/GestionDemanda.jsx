@@ -583,4 +583,4 @@ const GestionDemanda = () => {
     );
 };
 
-export default Fincas;
+export default GestionDemanda;

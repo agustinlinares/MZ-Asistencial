@@ -242,9 +242,24 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas()
+        public async Task<bool> EliminarFinca(int id)
         {
-            return await (from f in _context.FincasRegistrales
+            var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
+            if (finca == null) return false;
+
+            _context.FincasRegistrales.Remove(finca);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId)
+        {
+            var query = _context.FincasRegistrales.AsQueryable();
+
+            if (centroId.HasValue)
+                query = query.Where(f => f.CentroId == centroId.Value);
+
+            return await (from f in query
                           join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
                           from c in cg.DefaultIfEmpty()
                           orderby f.FincaId
