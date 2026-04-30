@@ -1,5 +1,6 @@
-﻿import React, { useState } from "react";
-import "./MapaModal.css";
+import React, { useState } from "react";
+import "../../../styles/FichaGlobal.css";
+
 
 const MapaModal = ({ latitud, longitud, direccion, onAceptar, onCerrar }) => {
     const [lat, setLat] = useState(latitud || "");
@@ -41,33 +42,33 @@ const handleBuscar = async () => {
     };
 
     return (
-        <div className="mapa-overlay">
-            <div className="mapa-container">
-                <div className="mapa-header">
-                    <span className="mapa-title">Mapa</span>
-                    <div className="mapa-header-btns">
-                        <button className="mapa-btn mapa-btn--aceptar" onClick={handleAceptar}>Aceptar</button>
-                        <button className="mapa-btn mapa-btn--salir" onClick={onCerrar}>Salir</button>
+        <div className="ficha-overlay">
+            <div className="ficha-container-inline" style={{ maxWidth: '900px', height: '90vh' }}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title"><i className="ri-map-2-line"></i> Mapa</span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleAceptar}>Aceptar</button>
+                        <button className="ficha-btn-secondary" onClick={onCerrar}>Salir</button>
                     </div>
                 </div>
-                <div className="mapa-fields">
-                    <div className="mapa-field mapa-field--full">
+                <div className="ficha-grid" style={{ padding: '14px 20px', background: '#f8fafc', borderBottom: '1px solid #e0e0e0', gridTemplateColumns: '1fr 1fr', gap: '10px 16px' }}>
+                    <div className="ficha-field span2">
                         <label>Direccion</label>
-                        <div className="mapa-busqueda-row">
-                            <input type="text" value={dir} onChange={e => setDir(e.target.value)} onKeyDown={e => e.key === "Enter" && handleBuscar()} placeholder="Introduce una direccion..." />
-                            <button className="mapa-btn-buscar" onClick={handleBuscar}>Buscar</button>
+                        <div className="ficha-input-suffix">
+                            <input type="text" value={dir} onChange={e => setDir(e.target.value)} onKeyDown={e => e.key === "Enter" && handleBuscar()} placeholder="Introduce una direccion..." style={{ flex: 1 }} />
+                            <button className="ficha-btn-primary" onClick={handleBuscar}>Buscar</button>
                         </div>
                     </div>
-                    <div className="mapa-field">
+                    <div className="ficha-field">
                         <label>Latitud</label>
                         <input type="text" value={lat} onChange={e => setLat(e.target.value)} placeholder="ej: 40.4168" />
                     </div>
-                    <div className="mapa-field">
+                    <div className="ficha-field">
                         <label>Longitud</label>
                         <input type="text" value={lng} onChange={e => setLng(e.target.value)} placeholder="ej: -3.7038" />
                     </div>
                 </div>
-                <div className="mapa-iframe-wrap">
+                <div className="ficha-iframe-wrap">
                     <iframe title="Mapa Google" src={mapUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
                 </div>
             </div>

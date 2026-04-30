@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
-import './FichaCliente.css';
+import React, { useState, useEffect } from "react";
+import '../../../styles/FichaGlobal.css';
 import MapaModal from './MapaModal';
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -118,12 +118,12 @@ const handleAceptar = async () => {
 };
     return (
         <div className="ficha-overlay">
-            <div className="ficha-container">
-                <div className="ficha-header">
-                    <span className="ficha-header-title">Ficha Centros Propios</span>
+            <div className="ficha-container-inline">
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">Ficha Centros Propios</span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn ficha-btn--aceptar" onClick={handleAceptar}>Aceptar</button>
-                        <button className="ficha-btn ficha-btn--salir" onClick={onClose}>Salir</button>
+                        <button className="ficha-btn-primary" onClick={handleAceptar}>Aceptar</button>
+                        <button className="ficha-btn-secondary" onClick={onClose}>Salir</button>
                     </div>
                 </div>
                 <div className="ficha-tabs">
@@ -131,26 +131,26 @@ const handleAceptar = async () => {
                         <button key={t.key} className={"ficha-tab" + (activeTab === t.key ? " active" : "")} onClick={() => setActiveTab(t.key)}>{t.label}</button>
                     ))}
                 </div>
-                <div className="ficha-body">
+                <div className="ficha-tab-content">
 
                     {activeTab === "general" && (
                         <div className="ficha-grid">
                             <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador} onChange={set("Localizador")} /></div>
                             <div className="ficha-field"><label>Tipo de Centro</label><input type="text" value={form.TipoCentro} onChange={set("TipoCentro")} readOnly className="readonly" /></div>
                             <div className="ficha-field"><label>Centro ID</label><input type="text" value={form.CentroId} readOnly className="readonly" /></div>
-                            <div className="ficha-field ficha-field--wide"><label>Centro</label><input type="text" value={form.Centro} onChange={set("Centro")} /></div>
+                            <div className="ficha-field span2"><label>Centro</label><input type="text" value={form.Centro} onChange={set("Centro")} /></div>
                             <div className="ficha-field"><label>Mutua</label><select value={form.Mutua} onChange={set("Mutua")}><option value=""></option>{MUTUOS.map(m => <option key={m}>{m}</option>)}</select></div>
                             <div className="ficha-field"><label>Provincia</label><select value={form.Provincia} onChange={set("Provincia")}><option value=""></option>{PROVINCIAS.map(p => <option key={p}>{p}</option>)}</select></div>
                             <div className="ficha-field"><label>Poblacion</label><select value={form.Poblacion} onChange={set("Poblacion")}><option value=""></option>{PROVINCIAS.map(p => <option key={p}>{p}</option>)}</select></div>
                             <div className="ficha-field"><label>Codigo Postal</label><input type="text" value={form.Cp} onChange={set("Cp")} /></div>
                             <div className="ficha-field"><label>Via Publica</label><select value={form.ViaPublica} onChange={set("ViaPublica")}>{VIAS.map(v => <option key={v}>{v}</option>)}</select></div>
-                            <div className="ficha-field ficha-field--wide"><label>Direccion</label><input type="text" value={form.Direccion} onChange={set("Direccion")} /></div>
+                            <div className="ficha-field span2"><label>Direccion</label><input type="text" value={form.Direccion} onChange={set("Direccion")} /></div>
                             <div className="ficha-field"><label>Numero</label><input type="text" value={form.Numero} onChange={set("Numero")} /></div>
                             <div className="ficha-field"><label>Piso</label><input type="text" value={form.Piso} onChange={set("Piso")} /></div>
                             <div className="ficha-field"><label>Puerta</label><input type="text" value={form.Puerta} onChange={set("Puerta")} /></div>
                             <div className="ficha-field"><label>Servicios Especiales</label><select value={form.ServiciosEspeciales} onChange={set("ServiciosEspeciales")}><option value=""></option>{SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}</select></div>
                             <div className="ficha-field"><label>Telefono</label><input type="text" value={form.Telefono} onChange={set("Telefono")} /></div>
-                            <div className="ficha-field ficha-field--wide"><label>Direccion Google</label><input type="text" value={form.DireccionGoogle} onChange={set("DireccionGoogle")} /></div>
+                            <div className="ficha-field span2"><label>Direccion Google</label><input type="text" value={form.DireccionGoogle} onChange={set("DireccionGoogle")} /></div>
                             <div className="ficha-field">
                                 <label>Verificar direccion Google</label>
                                 <div style={{display:'flex', alignItems:'center', gap:'6px'}}>
@@ -282,8 +282,8 @@ const handleAceptar = async () => {
                                 <Column dataField="total" caption="Total" width={70} dataType="number" />
                             </DataGrid>
                             <div className="ficha-acciones-bottom">
-                                <button className="ficha-btn ficha-btn--actualizar">Actualizar</button>
-                                <button className="ficha-btn ficha-btn--cancelar">Cancelar</button>
+                                <button className="ficha-btn-primary">Actualizar</button>
+                                <button className="ficha-btn-secondary">Cancelar</button>
                             </div>
                         </div>
                     )}
@@ -309,8 +309,8 @@ const handleAceptar = async () => {
                                 <Column dataField="catalogoCompletoServ" caption="Catalogo Completo de Servicios" width={250} />
                             </DataGrid>
                             <div className="ficha-acciones-bottom">
-                                <button className="ficha-btn ficha-btn--actualizar">Actualizar</button>
-                                <button className="ficha-btn ficha-btn--cancelar">Cancelar</button>
+                                <button className="ficha-btn-primary">Actualizar</button>
+                                <button className="ficha-btn-secondary">Cancelar</button>
                             </div>
                         </div>
                     )}

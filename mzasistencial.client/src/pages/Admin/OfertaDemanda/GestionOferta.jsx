@@ -12,7 +12,7 @@ import SelectBox from "devextreme-react/select-box";
 import TextBox from "devextreme-react/text-box";
 import RadioGroup from "devextreme-react/radio-group";
 import { useTranslation } from "react-i18next";
-import '../Centros/FichaFinca.css';
+import '../../../styles/FichaGlobal.css';
 
 const API = 'https://localhost:7132/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
@@ -132,86 +132,86 @@ const GestionOferta = () => {
     };
 
     return (
-        <div className="finca-container-inline">
-            <div className="finca-inline-content">
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content">
 
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">{t('LISTA OFERTAS')}</span>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">{t('LISTA OFERTAS')}</span>
                 </div>
 
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                        <div className="finca-field">
+                        <div className="ficha-field">
                             <label>Tipo</label>
                             <RadioGroup items={TIPOS} value={tipo} onValueChanged={e => setTipo(e.value)} layout="horizontal" />
                         </div>
-                        <div className="finca-field" style={{ minWidth: 200 }}>
+                        <div className="ficha-field" style={{ minWidth: 200 }}>
                             <label>Año</label>
                             <SelectBox items={años} value={añoSeleccionado} onValueChanged={e => setAñoSeleccionado(e.value)} placeholder="Selecciona un año" width={200} />
                         </div>
-                        <div className="finca-field" style={{ minWidth: 220 }}>
+                        <div className="ficha-field" style={{ minWidth: 220 }}>
                             <label>Estado</label>
                             <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Selecciona un estado" width={220} />
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 32, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
-                        <div className="finca-field">
+                        <div className="ficha-field">
                             <label>Vista</label>
                             <RadioGroup items={VISTAS} value={vista} onValueChanged={e => setVista(e.value)} layout="horizontal" />
                         </div>
-                        <button type="button" className="finca-btn-primary" style={{ marginTop: 16 }} onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
+                        <button type="button" className="ficha-btn-primary" style={{ marginTop: 16 }} onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
                             {filtrosExpandidos ? '− Filtros' : '+ Filtros'}
                         </button>
                     </div>
 
                     {filtrosExpandidos && (
                         <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px 24px', paddingTop: 16, borderTop: '1px solid #e0e0e0' }}>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Solicitud Desde</label>
                                 <DateBox value={fechaSolicitudDesde} onValueChanged={e => setFechaSolicitudDesde(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Solicitud Hasta</label>
                                 <DateBox value={fechaSolicitudHasta} onValueChanged={e => setFechaSolicitudHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Asignación Desde</label>
                                 <DateBox value={fechaAsignacionDesde} onValueChanged={e => setFechaAsignacionDesde(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Asignación Hasta</label>
                                 <DateBox value={fechaAsignacionHasta} onValueChanged={e => setFechaAsignacionHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Confirmación Desde</label>
                                 <DateBox value={fechaConfirmacionDesde} onValueChanged={e => setFechaConfirmacionDesde(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Fecha Confirmación Hasta</label>
                                 <DateBox value={fechaConfirmacionHasta} onValueChanged={e => setFechaConfirmacionHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Necesidades para el Servicio</label>
                                 <TextBox value={necesidadesServicio} onValueChanged={e => setNecesidadesServicio(e.value)} showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Contestación a las Necesidades</label>
                                 <TextBox value={contestacionNecesidades} onValueChanged={e => setContestacionNecesidades(e.value)} showClearButton width="100%" />
                             </div>
-                            <div className="finca-field">
+                            <div className="ficha-field">
                                 <label>Demanda ID</label>
                                 <TextBox value={demandaId} onValueChanged={e => setDemandaId(e.value)} showClearButton width="100%" />
                             </div>
                             <div style={{ gridColumn: '3', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', gap: 8 }}>
-                                <button type="button" className="finca-btn-secondary" onClick={limpiarFiltros}>Limpiar Filtros</button>
-                                <button type="button" className="finca-btn-primary" onClick={buscar}>Buscar</button>
+                                <button type="button" className="ficha-btn-secondary" onClick={limpiarFiltros}>Limpiar Filtros</button>
+                                <button type="button" className="ficha-btn-primary" onClick={buscar}>Buscar</button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="finca-tab-content" style={{ padding: '16px' }}>
+                <div className="ficha-tab-content" style={{ padding: '16px' }}>
                     <DataGrid
                         ref={dataGridRef}
                         dataSource={datos}
@@ -273,7 +273,7 @@ const GestionOferta = () => {
                             fixed
                             fixedPosition="right"
                             cellRender={() => (
-                                <button type="button" className="finca-btn-secondary" style={{ padding: '2px 8px', fontSize: 11 }}>
+                                <button type="button" className="ficha-btn-secondary" style={{ padding: '2px 8px', fontSize: 11 }}>
                                     ...
                                 </button>
                             )}

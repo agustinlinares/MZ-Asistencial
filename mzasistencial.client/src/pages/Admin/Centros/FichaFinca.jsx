@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import './FichaFinca.css';
+
+import '../../../styles/FichaGlobal.css';
 import FincasService from "../../../services/admin/FincasService";
 import { useTranslation } from "react-i18next";
 
@@ -91,8 +92,8 @@ const TabMapa = ({ form, onChange }) => {
 
     return (
         <div className="tab-mapa-container">
-            <div className="finca-grid" style={{ marginBottom: 15 }}>
-                <div className="finca-field span2">
+            <div className="ficha-grid" style={{ marginBottom: 15 }}>
+                <div className="ficha-field span2">
                     <label>Buscador de Dirección (Google Maps)</label>
                     <div style={{ display: 'flex', gap: 8 }}>
                         <input 
@@ -104,7 +105,7 @@ const TabMapa = ({ form, onChange }) => {
                             placeholder="Ej: Calle Mayor 1, Madrid"
                         />
                         <button 
-                            className="finca-btn-primary" 
+                            className="ficha-btn-primary" 
                             onClick={handleBuscar} 
                             disabled={buscando}
                             style={{ width: 'auto', padding: '0 15px' }}
@@ -113,11 +114,11 @@ const TabMapa = ({ form, onChange }) => {
                         </button>
                     </div>
                 </div>
-                <div className="finca-field">
+                <div className="ficha-field">
                     <label>Latitud</label>
                     <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
                 </div>
-                <div className="finca-field">
+                <div className="ficha-field">
                     <label>Longitud</label>
                     <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={() => setFlyKey(k => k + 1)} />
                 </div>
@@ -207,7 +208,7 @@ const TabCostes = ({ fincaId }) => {
 
     return (
         <div style={{ padding: '8px 0' }}>
-            <table className="finca-costes-table">
+            <table className="ficha-secundaria-table">
                 <thead>
                     <tr>
                         <th>Año</th>
@@ -227,10 +228,10 @@ const TabCostes = ({ fincaId }) => {
                                 <td><input type="number" step="0.01" value={editando.Coste ?? ''} onChange={e => setEditando(p => ({ ...p, Coste: parseFloat(e.target.value) || null }))} /></td>
                                 <td><input type="text" value={editando.Localizador ?? ''} onChange={e => setEditando(p => ({ ...p, Localizador: e.target.value }))} /></td>
                                 <td>
-                                    <button className="finca-btn-primary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => handleGuardar(editando)}>
+                                    <button className="ficha-btn-primary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => handleGuardar(editando)}>
                                         <i className="ri-save-line"></i>
                                     </button>
-                                    <button className="finca-btn-secondary" style={{ padding: '4px 10px' }} onClick={() => setEditando(null)}>
+                                    <button className="ficha-btn-secondary" style={{ padding: '4px 10px' }} onClick={() => setEditando(null)}>
                                         <i className="ri-close-line"></i>
                                     </button>
                                 </td>
@@ -241,10 +242,10 @@ const TabCostes = ({ fincaId }) => {
                                 <td>{c.Coste != null ? c.Coste.toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '—'}</td>
                                 <td>{c.Localizador ?? '—'}</td>
                                 <td>
-                                    <button className="finca-btn-secondary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => setEditando({ ...c })}>
+                                    <button className="ficha-btn-secondary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => setEditando({ ...c })}>
                                         <i className="ri-edit-line"></i>
                                     </button>
-                                    <button className="finca-btn-secondary" style={{ padding: '4px 10px', color: '#c62828' }} onClick={() => handleEliminar(c.Id)}>
+                                    <button className="ficha-btn-secondary" style={{ padding: '4px 10px', color: '#c62828' }} onClick={() => handleEliminar(c.Id)}>
                                         <i className="ri-delete-bin-line"></i>
                                     </button>
                                 </td>
@@ -257,10 +258,10 @@ const TabCostes = ({ fincaId }) => {
                             <td><input type="number" step="0.01" value={nuevaFila.Coste ?? ''} onChange={e => setNuevaFila(p => ({ ...p, Coste: parseFloat(e.target.value) || null }))} /></td>
                             <td><input type="text" value={nuevaFila.Localizador ?? ''} onChange={e => setNuevaFila(p => ({ ...p, Localizador: e.target.value }))} /></td>
                             <td>
-                                <button className="finca-btn-primary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => handleGuardar(nuevaFila)}>
+                                <button className="ficha-btn-primary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => handleGuardar(nuevaFila)}>
                                     <i className="ri-save-line"></i>
                                 </button>
-                                <button className="finca-btn-secondary" style={{ padding: '4px 10px' }} onClick={() => setNuevaFila(null)}>
+                                <button className="ficha-btn-secondary" style={{ padding: '4px 10px' }} onClick={() => setNuevaFila(null)}>
                                     <i className="ri-close-line"></i>
                                 </button>
                             </td>
@@ -269,7 +270,7 @@ const TabCostes = ({ fincaId }) => {
                 </tbody>
             </table>
             <div style={{ marginTop: 8 }}>
-                <button className="finca-btn-primary" onClick={() => setNuevaFila({ Anio: new Date().getFullYear(), Coste: null, Localizador: '' })}>
+                <button className="ficha-btn-primary" onClick={() => setNuevaFila({ Anio: new Date().getFullYear(), Coste: null, Localizador: '' })}>
                     + Añadir coste
                 </button>
             </div>
@@ -279,12 +280,12 @@ const TabCostes = ({ fincaId }) => {
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
 const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
-    <div className="finca-grid">
-        <div className="finca-field">
+    <div className="ficha-grid">
+        <div className="ficha-field">
             <label>Finca ID</label>
             <input type="text" value={form.finca_id || ''} readOnly />
         </div>
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Centro</label>
             <select
                 className={errors.centro_id ? 'error' : ''}
@@ -296,37 +297,37 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
             </select>
         </div>
 
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Mutua</label>
             <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
         </div>
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Coste Alquiler</label>
-            <div className="finca-input-suffix">
+            <div className="ficha-input-suffix">
                 <input type="number" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} />
                 <span>€</span>
             </div>
         </div>
 
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Dirección</label>
             <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
         </div>
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Superficie Construida</label>
             <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} />
         </div>
 
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Referencia Catastral</label>
             <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} />
         </div>
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Utilización</label>
             <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} />
         </div>
 
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Tipo de Finca</label>
             <select
                 value={form.tipo_finca || ''}
@@ -340,17 +341,17 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
                 {TIPOS_FINCA.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
         </div>
-        <div className="finca-field">
+        <div className="ficha-field">
             <label>Ubicación</label>
-            <button className="finca-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left', justifyContent: 'flex-start', gap: '8px' }}>
+            <button className="ficha-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left', justifyContent: 'flex-start', gap: '8px' }}>
                 <i className="ri-map-pin-line" style={{ color: '#1a5fa8' }}></i>
                 {form.latitud ? `${form.latitud}, ${form.longitud}` : 'Ver en mapa'}
             </button>
         </div>
 
-        <div className="finca-field span2">
+        <div className="ficha-field span2">
             <label>Titularidad</label>
-            <div className="finca-radio-group">
+            <div className="ficha-radio-group">
                 {TITULARIDADES.map(t => (
                     <label key={t}>
                         <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} />
@@ -360,24 +361,24 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
             </div>
         </div>
 
-        <div className="finca-field span2">
-            <div className="finca-grid-3">
-                <div className="finca-field">
+        <div className="ficha-field span2">
+            <div className="ficha-grid-3">
+                <div className="ficha-field">
                     <label>Fecha de Adquisición</label>
                     <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} />
                 </div>
-                <div className="finca-field">
+                <div className="ficha-field">
                     <label>Fecha de Inscripción</label>
                     <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} />
                 </div>
-                <div className="finca-field">
+                <div className="ficha-field">
                     <label>Fecha de Baja</label>
                     <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} />
                 </div>
             </div>
         </div>
 
-        <div className="finca-field span2">
+        <div className="ficha-field span2">
             <label>Otros Datos</label>
             <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} />
         </div>
@@ -432,33 +433,33 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     };
 
     return (
-        <div className="finca-container-inline" role="region" aria-label={`Ficha Finca ${form.finca_id}`}>
-            <div className="finca-inline-content" ref={modalRef} tabIndex={-1}>
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">
+        <div className="ficha-container-inline" role="region" aria-label={`Ficha Finca ${form.finca_id}`}>
+            <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">
                         <i className="ri-edit-box-line"></i> {t('Ficha Finca')} | {form.finca_id || t('Nueva')}
                     </span>
-                    <div className="finca-header-btns">
-                        <button className="finca-btn-primary" onClick={handleSave}>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleSave}>
                             <i className="ri-check-line"></i> {t('Aceptar')}
                         </button>
-                        <button className="finca-btn-secondary" onClick={onClose}>
+                        <button className="ficha-btn-secondary" onClick={onClose}>
                             <i className="ri-close-line"></i> {t('Salir')}
                         </button>
                     </div>
                 </div>
 
-                <div className="finca-tabs">
-                    <button className={`finca-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
-                    <button className={`finca-tab ${activeTab === 'costes' ? 'active' : ''}`} onClick={() => setActiveTab('costes')}>Costes</button>
-                    <button className={`finca-tab ${activeTab === 'mapa' ? 'active' : ''}`} onClick={() => setActiveTab('mapa')}>Mapa / Ubicación</button>
+                <div className="ficha-tabs">
+                    <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
+                    <button className={`ficha-tab ${activeTab === 'costes' ? 'active' : ''}`} onClick={() => setActiveTab('costes')}>Costes</button>
+                    <button className={`ficha-tab ${activeTab === 'mapa' ? 'active' : ''}`} onClick={() => setActiveTab('mapa')}>Mapa / Ubicación</button>
                 </div>
 
-                <div className="finca-tab-content">
+                <div className="ficha-tab-content">
                     {activeTab === 'general' && (
                         <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} />
                     )}
-                    {activeTab === 'costes' && <TabCostes fincaId={form.finca_id} />}
+                    {activeTab === 'costes' && <TabCostes className="ficha-secundaria-table" fincaId={form.finca_id} />}
                     {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
                 </div>
             </div>

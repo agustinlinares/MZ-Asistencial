@@ -8,7 +8,7 @@ import DataGrid, {
     Sorting, FilterPanel, ColumnFixing, Pager, Toolbar, Item,
 } from "devextreme-react/data-grid";
 import { useTranslation } from "react-i18next";
-import '../Centros/FichaFinca.css';
+import '../../../styles/FichaGlobal.css';
 
 const API = 'https://localhost:7132/api';
 
@@ -34,19 +34,19 @@ const Descuadres = () => {
     }, []);
 
     return (
-        <div className="finca-container-inline">
-            <div className="finca-inline-content">
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content">
 
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">{t('Lista de descuadres')}</span>
-                    <div className="finca-header-btns">
-                        <button className="finca-btn-primary" onClick={() => dataGridRef.current?.instance.exportToExcel(false)}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">{t('Lista de descuadres')}</span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={() => dataGridRef.current?.instance.exportToExcel(false)}>
                             📥 Exportar Excel
                         </button>
                     </div>
                 </div>
 
-                <div className="finca-tab-content" style={{ padding: '16px' }}>
+                <div className="ficha-tab-content" style={{ padding: '16px' }}>
                     <DataGrid
                         ref={dataGridRef}
                         dataSource={datos}
