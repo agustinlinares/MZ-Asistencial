@@ -13,6 +13,22 @@ import DataGrid, {
 
 const API_URL = "/api/CentrosPropios";
 
+// ✅ Helper: obtener usuario de sesión
+const getUsuarioSesion = () => {
+    try {
+        const raw = sessionStorage.getItem('user');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+};
+
+// ✅ Helper: determinar si el usuario es admin (perfilId === 1)
+const esAdmin = () => {
+    const user = getUsuarioSesion();
+    return user?.perfilId === 1;
+};
+
 const MapaCell = (cell) => {
     const d = cell.data;
     if (d.latitud && d.longitud) {
@@ -46,15 +62,21 @@ const CentrosPropios = () => {
     const [msg, setMsg] = useState(null);
     const navigate = useNavigate();
     const menuRef = useRef(null);
+    const admin = esAdmin();
 
     useEffect(() => {
         fetch(API_URL)
             .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
-            .then(data => setCentros(data))
+            .then(data => {
+                // ✅ Filtrar centros desactivados o con fecha de baja para usuarios no-admin
+                const filtrados = admin
+                    ? data
+                    : data.filter(c => !c.desactivado && !c.fechaBaja);
+                setCentros(filtrados);
+            })
             .catch(err => console.error('Error cargando centros:', err));
-    }, []);
+    }, [admin]);
 
-    // Cierra el menú al hacer clic fuera
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -123,7 +145,12 @@ const CentrosPropios = () => {
                 setMsg({ ok: true, text: `${ids.length} registro(s) validado(s) correctamente.` });
                 fetch(API_URL)
                     .then(r => r.json())
-                    .then(data => setCentros(data));
+                    .then(data => {
+                        const filtrados = admin
+                            ? data
+                            : data.filter(c => !c.desactivado && !c.fechaBaja);
+                        setCentros(filtrados);
+                    });
             } else {
                 setMsg({ ok: false, text: 'Error al validar los registros.' });
             }
@@ -150,7 +177,7 @@ const CentrosPropios = () => {
                             </span>
                         )}
                         <div className="acciones-container" ref={menuRef}>
-                            <div 
+                            <div
                                 className="acciones-btn"
                                 onClick={() => setMenuAbierto(v => !v)}
                             >
@@ -160,10 +187,13 @@ const CentrosPropios = () => {
 
                             {menuAbierto && (
                                 <div className="acciones-menu">
-                                    <div className="acciones-item" onClick={handleNuevo}>
-                                        <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
-                                        {t('Nuevo')}
-                                    </div>
+                                    {/* ✅ Solo admin puede crear nuevos centros */}
+                                    {admin && (
+                                        <div className="acciones-item" onClick={handleNuevo}>
+                                            <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
+                                            {t('Nuevo')}
+                                        </div>
+                                    )}
 
                                     <div className="acciones-item" onClick={handleExportarExcel}>
                                         <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
@@ -175,10 +205,13 @@ const CentrosPropios = () => {
                                         {t('Exportar a PDF')}
                                     </div>
 
-                                    <div className="acciones-item" onClick={handleValidar}>
-                                        <i className="ri-checkbox-circle-line" style={{ color: '#e65100' }}></i>
-                                        {validando ? t('Validando...') : t('Validar Registros')}
-                                    </div>
+                                    {/* ✅ Solo admin puede validar registros */}
+                                    {admin && (
+                                        <div className="acciones-item" onClick={handleValidar}>
+                                            <i className="ri-checkbox-circle-line" style={{ color: '#e65100' }}></i>
+                                            {validando ? t('Validando...') : t('Validar Registros')}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -226,8 +259,10 @@ const CentrosPropios = () => {
                         <Column dataField="poblacionId" caption="Poblacion" width={100} />
                         <Column dataField="telefono" caption="Telefono" width={120} />
                         <Column dataField="latitud" caption="Mapa" width={90} alignment="center" cellRender={MapaCell} />
-                        <Column dataField="desactivado" caption="Desactivado" width={110} alignment="center" cellRender={DesactivadoCell} />
-                        {/* ✅ CORREGIDO: ahora el lápiz navega a la ficha */}
+                        {/* ✅ Solo admin ve la columna Desactivado */}
+                        {admin && (
+                            <Column dataField="desactivado" caption="Desactivado" width={110} alignment="center" cellRender={DesactivadoCell} />
+                        )}
                         <Column
                             caption="Acciones" width={80} fixed={true} fixedPosition="right" alignment="center"
                             cellRender={(cell) => React.createElement('div', {
