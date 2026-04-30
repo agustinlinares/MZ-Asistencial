@@ -267,6 +267,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         comentarios: '', motivo_baja: '', latitud: cliente?.Latitud ?? '', longitud: cliente?.Longitud ?? ''
     });
 
+    const [datosMutuas, setDatosMutuas] = useState([]);
+
     const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
 
     // Carga inicial de datos maestros (Provincias y Proveedores)
@@ -310,6 +312,34 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             .then(r => r.ok ? r.json() : [])
             .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
     }, [form.proveedor]);
+
+    // Carga de las Mutuas Asignadas al abrir el modal
+    useEffect(() => {
+        // Si estamos creando un centro nuevo, no hacemos la petición
+        if (!form.centro_id || form.centro_id === 0) {
+            setDatosMutuas([]);
+            return;
+        }
+
+        const fetchMutuasAsignadas = async () => {
+            try {
+                const response = await fetch(`/api/CentrosConcertados/${form.centro_id}/Mutuas`, {
+                    headers: authHeaders()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setDatosMutuas(data);
+                } else {
+                    console.error("Error en la respuesta del servidor al cargar mutuas");
+                }
+            } catch (error) {
+                console.error("Error de red cargando mutuas:", error);
+            }
+        };
+
+        fetchMutuasAsignadas();
+    }, [form.centro_id]); // Se ejecuta cuando el ID del centro cambia
 
     const [errors, setErrors] = useState({});
     const modalRef = useRef(null);
@@ -396,7 +426,9 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         <div className="ficha-container-inline">
             <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
                 <div className="ficha-modal-header">
-                    <span className="ficha-modal-title">🏥 Ficha Centro Concertado | {form.localizador || 'Nuevo'}</span>
+                    <div className="ficha-modal-title">
+                        Ficha Centro Concertado | {form.centro_id ? form.centro : 'Nuevo'}
+                    </div>
                     <div className="ficha-header-btns">
                         <button className="ficha-btn-primary" onClick={handleSave}>✓ Aceptar</button>
                         <button className="ficha-btn-secondary" onClick={onClose}>✗ Salir</button>
@@ -425,8 +457,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     )}
 
                     {activeTab === 'mutuasAsignadas' && (
-                        <TabDataGrid datos={[]}>
+                        <TabDataGrid datos={datosMutuas}>
                             <Column dataField="mutua" caption="Mutua" />
+                            <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
+                            <Column dataField="localizador" caption="Localizador" width={150} />
                         </TabDataGrid>
                     )}
 

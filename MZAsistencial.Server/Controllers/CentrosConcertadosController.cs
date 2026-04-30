@@ -61,5 +61,19 @@ namespace MZAsistencial.Server.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpGet("{centroId}/Mutuas")]
+        public async Task<ActionResult<IEnumerable<MutuaAsignadaDTO>>> GetMutuasAsignadas(int centroId)
+        {
+            try
+            {
+                var mutuas = await _service.GetMutuasPorCentroAsync(centroId);
+                return Ok(mutuas);
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
     }
 }
