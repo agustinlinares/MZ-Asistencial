@@ -275,7 +275,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             try {
                 const headers = authHeaders();
                 const resProv = await fetch('/api/AuxProvincias', { headers });
-                const resProvdd = await fetch('/api/AuxCentrosConcertados/Proveedores', { headers }); 
+                const resProvdd = await fetch('/api/AuxProveedores', { headers }); 
                 
                 if (resProv.ok && resProvdd.ok) {
                     const provincias = await resProv.json();
@@ -306,7 +306,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             setOpts(prev => ({ ...prev, delegaciones: [] }));
             return;
         }
-        fetch(`/api/AuxCentrosConcertados/Delegaciones/${form.proveedor}`, { headers: authHeaders() })
+        fetch(`/api/AuxDelegaciones/PorProveedor/${form.proveedor}`, { headers: authHeaders() })
             .then(r => r.ok ? r.json() : [])
             .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
     }, [form.proveedor]);
