@@ -4590,7 +4590,8 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.Contraseña)
                 .HasMaxLength(10)
-                .IsFixedLength();
+                .IsFixedLength()
+                .HasColumnName("ContraseÃ±a");
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);
             entity.Property(e => e.DgossrecibeCorreo).HasColumnName("DGOSSRecibeCorreo");
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);
