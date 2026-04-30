@@ -2380,7 +2380,7 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorAño");
+            entity.ToTable("FincasRegistrales_CostesPorAnio");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
@@ -4590,7 +4590,8 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.Contraseña)
                 .HasMaxLength(10)
-                .IsFixedLength();
+                .IsFixedLength()
+                .HasColumnName("ContraseÃ±a");
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);
             entity.Property(e => e.DgossrecibeCorreo).HasColumnName("DGOSSRecibeCorreo");
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);

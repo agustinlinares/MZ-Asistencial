@@ -280,20 +280,24 @@ const Mutuas = () => {
 
                             <Column
                                 dataField="acciones"
-                                caption="Acciones"
+                                caption={t('Acciones')}
                                 fixed={true}
                                 fixedPosition="right"
-                                width={130}
+                                width={100}
                                 alignment="center"
                                 cellRender={(cellData) => (
-                                    <div 
-                                        style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Evita conflictos con el grid
-                                            setSelectedMutua(cellData.data); //Abre solo con un click
-                                        }}
-                                    >
-                                        <i className="ri-edit-line"></i>
+                                    <div className="grid-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                        <div 
+                                            className="action-icon edit"
+                                            style={{ color: '#2f5da8', cursor: 'pointer', fontSize: '18px' }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedMutua(cellData.data);
+                                            }}
+                                            title={t('Editar')}
+                                        >
+                                            <i className="ri-edit-line"></i>
+                                        </div>
                                     </div>
                                 )}
                             />

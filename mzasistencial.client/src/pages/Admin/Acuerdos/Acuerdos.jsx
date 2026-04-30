@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import '../Centros/FichaFinca.css';
+import '../../../styles/FichaGlobal.css';
 import './Acuerdos.css';
 
 const API = 'https://localhost:7132/api';
@@ -64,16 +64,16 @@ const Acuerdos = () => {
     }, [mutuaSeleccionada, añoSeleccionado]);
 
     return (
-        <div className="finca-container-inline">
-            <div className="finca-inline-content">
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content">
 
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">{t('Acuerdos')}</span>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">{t('Acuerdos')}</span>
                 </div>
 
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                        <div className="finca-field" style={{ minWidth: 220, maxWidth: 300 }}>
+                        <div className="ficha-field" style={{ minWidth: 220, maxWidth: 300 }}>
                             <label>Mutua</label>
                             <select value={mutuaSeleccionada} onChange={e => setMutuaSeleccionada(e.target.value)}>
                                 <option value="">-- Selecciona una mutua --</option>
@@ -82,7 +82,7 @@ const Acuerdos = () => {
                                 ))}
                             </select>
                         </div>
-                        <div className="finca-field" style={{ minWidth: 120, maxWidth: 180 }}>
+                        <div className="ficha-field" style={{ minWidth: 120, maxWidth: 180 }}>
                             <label>Año</label>
                             <select value={añoSeleccionado} onChange={e => setAñoSeleccionado(e.target.value)}>
                                 <option value="">-- Selecciona un año --</option>
@@ -94,7 +94,7 @@ const Acuerdos = () => {
                     </div>
                 </div>
 
-                <div className="finca-tab-content">
+                <div className="ficha-tab-content">
 
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionMutua(!seccionMutua)}>
@@ -103,9 +103,9 @@ const Acuerdos = () => {
                         </div>
                         {seccionMutua && (
                             <div className="acuerdos-seccion-content">
-                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
-                                    <button className={`finca-tab ${tabMutua === 'oferta' ? 'active' : ''}`} onClick={() => setTabMutua('oferta')}>Oferta</button>
-                                    <button className={`finca-tab ${tabMutua === 'demanda' ? 'active' : ''}`} onClick={() => setTabMutua('demanda')}>Demanda</button>
+                                <div className="ficha-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`ficha-tab ${tabMutua === 'oferta' ? 'active' : ''}`} onClick={() => setTabMutua('oferta')}>Oferta</button>
+                                    <button className={`ficha-tab ${tabMutua === 'demanda' ? 'active' : ''}`} onClick={() => setTabMutua('demanda')}>Demanda</button>
                                 </div>
                                 <table className="acuerdos-tabla">
                                     <thead>
@@ -142,9 +142,9 @@ const Acuerdos = () => {
                         </div>
                         {seccionProvincia && (
                             <div className="acuerdos-seccion-content">
-                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
-                                    <button className={`finca-tab ${tabProvincia === 'oferta' ? 'active' : ''}`} onClick={() => setTabProvincia('oferta')}>Oferta</button>
-                                    <button className={`finca-tab ${tabProvincia === 'demanda' ? 'active' : ''}`} onClick={() => setTabProvincia('demanda')}>Demanda</button>
+                                <div className="ficha-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`ficha-tab ${tabProvincia === 'oferta' ? 'active' : ''}`} onClick={() => setTabProvincia('oferta')}>Oferta</button>
+                                    <button className={`ficha-tab ${tabProvincia === 'demanda' ? 'active' : ''}`} onClick={() => setTabProvincia('demanda')}>Demanda</button>
                                 </div>
                                 <table className="acuerdos-tabla">
                                     <thead>
@@ -185,9 +185,9 @@ const Acuerdos = () => {
                         </div>
                         {seccionTipoServicio && (
                             <div className="acuerdos-seccion-content">
-                                <div className="finca-tabs" style={{ padding: 0, marginBottom: 12 }}>
-                                    <button className={`finca-tab ${tabTipoServicio === 'oferta' ? 'active' : ''}`} onClick={() => setTabTipoServicio('oferta')}>Oferta</button>
-                                    <button className={`finca-tab ${tabTipoServicio === 'demanda' ? 'active' : ''}`} onClick={() => setTabTipoServicio('demanda')}>Demanda</button>
+                                <div className="ficha-tabs" style={{ padding: 0, marginBottom: 12 }}>
+                                    <button className={`ficha-tab ${tabTipoServicio === 'oferta' ? 'active' : ''}`} onClick={() => setTabTipoServicio('oferta')}>Oferta</button>
+                                    <button className={`ficha-tab ${tabTipoServicio === 'demanda' ? 'active' : ''}`} onClick={() => setTabTipoServicio('demanda')}>Demanda</button>
                                 </div>
                                 <table className="acuerdos-tabla">
                                     <thead>
