@@ -9,6 +9,12 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     min-height: 500px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── INLINE CONTENT ───────────────────────────────────────────── */
@@ -97,8 +103,9 @@
 
 .finca-tab.active {
     color: #1a5fa8;
-    border-bottom-color: #1a5fa8;
+    border-bottom: 3px solid #1a5fa8;
     font-weight: 600;
+    background: rgba(26, 95, 168, 0.05);
 }
 
 /* ── TAB CONTENT ──────────────────────────────────────────────── */

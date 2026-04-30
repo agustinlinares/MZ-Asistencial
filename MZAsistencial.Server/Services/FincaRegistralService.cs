@@ -13,122 +13,102 @@ namespace MZAsistencial.Server.Services
         {
             _context = context;
         }
+
+        private string FixEncoding(string? value)
+        {
+            if (string.IsNullOrEmpty(value)) return "";
+            try
+            {
+                byte[] bytes = System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(value);
+                return System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            catch { return value ?? ""; }
+        }
+
         public async Task<(List<FincaRegistralDTO> Data, int Total)> ObtenerFincasPaginadas(int page, int pageSize, int? centroId)
         {
             var query = _context.FincasRegistrales.AsQueryable();
-
             if (centroId.HasValue)
                 query = query.Where(f => f.CentroId == centroId.Value);
 
             var total = await query.CountAsync();
 
-            var data = await (from f in query
-                              join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
-                              from c in cg.DefaultIfEmpty()
-                              orderby f.FincaId
-                              select new FincaRegistralDTO
-                              {
-                                  Finca_id = f.FincaId,
-                                  Centro_id = f.CentroId ?? 0,
-                                  Localizador = f.Localizador,
-                                  Mutua = null,
-                                  Centro = c != null ? c.Centro : null,
-                                  Direccion = (f.NombreVia ?? "")
-                                              + (f.Numero != null ? " " + f.Numero : "")
-                                              + (f.Piso != null ? ", " + f.Piso : "")
-                                              + (f.Puerta != null ? ", " + f.Puerta : ""),
-                                  CP = null,
-                                  Provincia = null,
-                                  Poblacion = null,
-                                  Utilizacion = f.Utilizacion,
-                                  Superficie = f.Superficie == null ? (decimal?)null : (decimal?)f.Superficie,
-                                  Coste = f.Coste == null ? (decimal?)null : (decimal?)f.Coste,
-                                  F_Alquiler = f.Fadqoarr,
-                                  Referencia_Catastral = f.ReferenciaCatastral,
-                                  F_Inscripcion = f.Finscreg,
-                                  F_Baja = f.FechaBaja,
-                                  Mapa = null,
-                                  TipoFinca = f.TipoFinca,
-                                  Titularidad = f.Titinmueble,
-                                  OtrosDatos = f.OtrosDatos,
-                                  DireccionGoogle = f.DireccionElectronica,
-                                  Latitud = f.Latitud,
-                                  Longitud = f.Longitud
-                              }).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var rawData = await (from f in query
+                               join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
+                               from c in cg.DefaultIfEmpty()
+                               orderby f.FincaId
+                               select new 
+                               { 
+                                   f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
+                                   f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
+                                   f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
+                                   CentroNombre = c != null ? c.Centro : null 
+                               })
+                               .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            var data = rawData.Select(x => new FincaRegistralDTO
+            {
+                Finca_id = x.FincaId,
+                Centro_id = x.CentroId ?? 0,
+                Localizador = x.Localizador,
+                Centro = x.CentroNombre,
+                Direccion = FixEncoding((x.NombreVia ?? "")
+                            + (x.Numero != null ? " " + x.Numero : "")
+                            + (x.Piso != null ? ", " + x.Piso : "")
+                            + (x.Puerta != null ? ", " + x.Puerta : "")),
+                Utilizacion = FixEncoding(x.Utilizacion),
+                Superficie = x.Superficie == null ? (decimal?)null : (decimal?)x.Superficie,
+                Coste = x.Coste == null ? (decimal?)null : (decimal?)x.Coste,
+                F_Alquiler = x.Fadqoarr,
+                Referencia_Catastral = x.ReferenciaCatastral,
+                F_Inscripcion = x.Finscreg,
+                F_Baja = x.FechaBaja,
+                TipoFinca = x.TipoFinca,
+                Titularidad = FixEncoding(x.Titinmueble),
+                OtrosDatos = FixEncoding(x.OtrosDatos),
+                DireccionGoogle = x.DireccionElectronica,
+            }).ToList();
 
             return (data, total);
         }
 
         public async Task<FincaRegistralDTO?> ObtenerFincaPorId(int id)
         {
-            var f = await _context.FincasRegistrales
+            var x = await _context.FincasRegistrales
                 .Where(x => x.FincaId == id)
-                .Join(_context.CentrosPropios, fi => fi.CentroId, c => c.CentroId, (fi, c) => new { fi, c })
-                .Select(x => new FincaRegistralDTO
-                {
-                    Finca_id = x.fi.FincaId,
-                    Centro_id = x.fi.CentroId ?? 0,
-                    Localizador = x.fi.Localizador,
-                    Mutua = null,
-                    Centro = x.c.Centro,
-                    Direccion = (x.fi.NombreVia ?? "")
-                                + (x.fi.Numero != null ? " " + x.fi.Numero : "")
-                                + (x.fi.Piso != null ? ", " + x.fi.Piso : "")
-                                + (x.fi.Puerta != null ? ", " + x.fi.Puerta : ""),
-                    CP = null,
-                    Provincia = null,
-                    Poblacion = null,
-                    Utilizacion = x.fi.Utilizacion,
-                    Superficie = x.fi.Superficie == null ? (decimal?)null : (decimal?)x.fi.Superficie,
-                    Coste = x.fi.Coste == null ? (decimal?)null : (decimal?)x.fi.Coste,
-                    F_Alquiler = x.fi.Fadqoarr,
-                    Referencia_Catastral = x.fi.ReferenciaCatastral,
-                    F_Inscripcion = x.fi.Finscreg,
-                    F_Baja = x.fi.FechaBaja,
-                    Mapa = null,
-                    TipoFinca = x.fi.TipoFinca,
-                    Titularidad = x.fi.Titinmueble,
-                    OtrosDatos = x.fi.OtrosDatos,
-                    DireccionGoogle = x.fi.DireccionElectronica,
-                    Latitud = x.fi.Latitud,
-                    Longitud = x.fi.Longitud
-                }).FirstOrDefaultAsync();
+                .GroupJoin(_context.CentrosPropios, fi => fi.CentroId, c => c.CentroId, (fi, c) => new { fi, c })
+                .SelectMany(x => x.c.DefaultIfEmpty(), (x, c) => new 
+                { 
+                    x.fi.FincaId, x.fi.CentroId, x.fi.Localizador, x.fi.NombreVia, x.fi.Numero, x.fi.Piso, x.fi.Puerta,
+                    x.fi.Utilizacion, x.fi.Superficie, x.fi.Coste, x.fi.Fadqoarr, x.fi.ReferenciaCatastral,
+                    x.fi.Finscreg, x.fi.FechaBaja, x.fi.TipoFinca, x.fi.Titinmueble, x.fi.OtrosDatos, x.fi.DireccionElectronica,
+                    CentroNombre = c != null ? c.Centro : null 
+                })
+                .FirstOrDefaultAsync();
 
-            if (f != null)
-                return f;
-
-            // If no centro relation, try to fetch finca alone
-            var fi = await _context.FincasRegistrales.FirstOrDefaultAsync(x => x.FincaId == id);
-            if (fi == null) return null;
+            if (x == null) return null;
 
             return new FincaRegistralDTO
             {
-                Finca_id = fi.FincaId,
-                Centro_id = fi.CentroId ?? 0,
-                Localizador = fi.Localizador,
-                Mutua = null,
-                Centro = null,
-                Direccion = (fi.NombreVia ?? "")
-                            + (fi.Numero != null ? " " + fi.Numero : "")
-                            + (fi.Piso != null ? ", " + fi.Piso : "")
-                            + (fi.Puerta != null ? ", " + fi.Puerta : ""),
-                CP = null,
-                Provincia = null,
-                Poblacion = null,
-                Utilizacion = fi.Utilizacion,
-                Superficie = fi.Superficie == null ? (decimal?)null : (decimal?)fi.Superficie,
-                Coste = fi.Coste == null ? (decimal?)null : (decimal?)fi.Coste,
-                F_Alquiler = fi.Fadqoarr,
-                Referencia_Catastral = fi.ReferenciaCatastral,
-                F_Inscripcion = fi.Finscreg,
-                F_Baja = fi.FechaBaja,
-                Mapa = null,
-                TipoFinca = fi.TipoFinca,
-                Titularidad = fi.Titinmueble,
-                OtrosDatos = fi.OtrosDatos,
-                DireccionGoogle = fi.DireccionElectronica,
-                Latitud = fi.Latitud,
-                Longitud = fi.Longitud
+                Finca_id = x.FincaId,
+                Centro_id = x.CentroId ?? 0,
+                Localizador = x.Localizador,
+                Centro = x.CentroNombre,
+                Direccion = FixEncoding((x.NombreVia ?? "")
+                            + (x.Numero != null ? " " + x.Numero : "")
+                            + (x.Piso != null ? ", " + x.Piso : "")
+                            + (x.Puerta != null ? ", " + x.Puerta : "")),
+                Utilizacion = FixEncoding(x.Utilizacion),
+                Superficie = x.Superficie == null ? (decimal?)null : (decimal?)x.Superficie,
+                Coste = x.Coste == null ? (decimal?)null : (decimal?)x.Coste,
+                F_Alquiler = x.Fadqoarr,
+                Referencia_Catastral = x.ReferenciaCatastral,
+                F_Inscripcion = x.Finscreg,
+                F_Baja = x.FechaBaja,
+                TipoFinca = x.TipoFinca,
+                Titularidad = FixEncoding(x.Titinmueble),
+                OtrosDatos = FixEncoding(x.OtrosDatos),
+                DireccionGoogle = x.DireccionElectronica,
             };
         }
 
@@ -137,13 +117,8 @@ namespace MZAsistencial.Server.Services
             var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
             if (finca == null) return null;
 
-            // prevent changing PK
-            if (dto.Finca_id != 0 && dto.Finca_id != id)
-                throw new ArgumentException("Finca id cannot be modified");
-
-            finca.CentroId = dto.Centro_id != 0 ? dto.Centro_id : finca.CentroId;
-            if (!string.IsNullOrEmpty(dto.Localizador))
-                finca.Localizador = dto.Localizador;
+            finca.CentroId = dto.Centro_id != 0 ? dto.Centro_id : null;
+            finca.Localizador = dto.Localizador;
             finca.NombreVia = dto.Direccion;
             finca.Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null;
             finca.Coste = dto.Coste.HasValue ? (double?)dto.Coste : null;
@@ -156,15 +131,11 @@ namespace MZAsistencial.Server.Services
             finca.Titinmueble = dto.Titularidad;
             finca.OtrosDatos = dto.OtrosDatos;
             finca.DireccionElectronica = dto.DireccionGoogle;
-            finca.Latitud = dto.Latitud;
-            finca.Longitud = dto.Longitud;
 
             finca.FechaModificacion = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-
-            var updated = await ObtenerFincaPorId(id);
-            return updated;
+            return await ObtenerFincaPorId(id);
         }
 
         public async Task<FincaRegistralDTO?> CrearFinca(FincaRegistralDTO dto)
@@ -185,8 +156,6 @@ namespace MZAsistencial.Server.Services
                 Titinmueble = dto.Titularidad,
                 OtrosDatos = dto.OtrosDatos,
                 DireccionElectronica = dto.DireccionGoogle,
-                Latitud = dto.Latitud,
-                Longitud = dto.Longitud,
                 FechaAlta = DateTime.UtcNow,
                 FechaModificacion = DateTime.UtcNow
             };
@@ -194,15 +163,14 @@ namespace MZAsistencial.Server.Services
             _context.FincasRegistrales.Add(finca);
             await _context.SaveChangesAsync();
 
-            var created = await ObtenerFincaPorId(finca.FincaId);
-            return created;
+            return await ObtenerFincaPorId(finca.FincaId);
         }
 
         public async Task<List<FincaCosteDTO>> ObtenerCostesFinca(int fincaId)
         {
             return await _context.FincasRegistralesCostesPorAños
                 .Where(c => c.FincaId == fincaId)
-                .Select(c => new FincaCosteDTO { Id = c.Id, FincaId = c.FincaId, Localizador = c.Localizador, Año = c.Año, Coste = c.Coste })
+                .Select(c => new FincaCosteDTO { Id = c.Id, FincaId = c.FincaId, Localizador = c.Localizador, Anio = c.Anio, Coste = c.Coste })
                 .ToListAsync();
         }
 
@@ -212,7 +180,7 @@ namespace MZAsistencial.Server.Services
             {
                 FincaId = dto.FincaId,
                 Localizador = dto.Localizador,
-                Año = dto.Año,
+                Anio = dto.Anio,
                 Coste = dto.Coste
             };
             _context.FincasRegistralesCostesPorAños.Add(entity);
@@ -226,7 +194,7 @@ namespace MZAsistencial.Server.Services
             var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
             if (entity == null) return null;
             entity.Localizador = dto.Localizador;
-            entity.Año = dto.Año;
+            entity.Anio = dto.Anio;
             entity.Coste = dto.Coste;
             await _context.SaveChangesAsync();
             dto.Id = id;
@@ -242,41 +210,56 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas()
+        public async Task<bool> EliminarFinca(int id)
         {
-            return await (from f in _context.FincasRegistrales
-                          join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
-                          from c in cg.DefaultIfEmpty()
-                          orderby f.FincaId
-                          select new FincaRegistralDTO
-                          {
-                              Finca_id = f.FincaId,
-                              Centro_id = f.CentroId ?? 0,
-                              Localizador = f.Localizador,
-                              Mutua = null,
-                              Centro = c != null ? c.Centro : null,
-                              Direccion = (f.NombreVia ?? "")
-                                          + (f.Numero != null ? " " + f.Numero : "")
-                                          + (f.Piso != null ? ", " + f.Piso : "")
-                                          + (f.Puerta != null ? ", " + f.Puerta : ""),
-                              CP = null,
-                              Provincia = null,
-                              Poblacion = null,
-                              Utilizacion = f.Utilizacion,
-                              Superficie = f.Superficie == null ? (decimal?)null : (decimal?)f.Superficie,
-                              Coste = f.Coste == null ? (decimal?)null : (decimal?)f.Coste,
-                              F_Alquiler = f.Fadqoarr,
-                              Referencia_Catastral = f.ReferenciaCatastral,
-                              F_Inscripcion = f.Finscreg,
-                              F_Baja = f.FechaBaja,
-                              Mapa = null,
-                              TipoFinca = f.TipoFinca,
-                              Titularidad = f.Titinmueble,
-                              OtrosDatos = f.OtrosDatos,
-                              DireccionGoogle = f.DireccionElectronica,
-                              Latitud = f.Latitud,
-                              Longitud = f.Longitud
-                          }).ToListAsync();
+            var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
+            if (finca == null) return false;
+
+            _context.FincasRegistrales.Remove(finca);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId)
+        {
+            var query = _context.FincasRegistrales.AsQueryable();
+            if (centroId.HasValue)
+                query = query.Where(f => f.CentroId == centroId.Value);
+
+            var rawList = await (from f in query
+                           join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
+                           from c in cg.DefaultIfEmpty()
+                           orderby f.FincaId
+                           select new 
+                           { 
+                               f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
+                               f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
+                               f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
+                               CentroNombre = c != null ? c.Centro : null 
+                           }).ToListAsync();
+
+            return rawList.Select(x => new FincaRegistralDTO
+            {
+                Finca_id = x.FincaId,
+                Centro_id = x.CentroId ?? 0,
+                Localizador = x.Localizador,
+                Centro = x.CentroNombre,
+                Direccion = FixEncoding((x.NombreVia ?? "")
+                            + (x.Numero != null ? " " + x.Numero : "")
+                            + (x.Piso != null ? ", " + x.Piso : "")
+                            + (x.Puerta != null ? ", " + x.Puerta : "")),
+                Utilizacion = FixEncoding(x.Utilizacion),
+                Superficie = x.Superficie == null ? (decimal?)null : (decimal?)x.Superficie,
+                Coste = x.Coste == null ? (decimal?)null : (decimal?)x.Coste,
+                F_Alquiler = x.Fadqoarr,
+                Referencia_Catastral = x.ReferenciaCatastral,
+                F_Inscripcion = x.Finscreg,
+                F_Baja = x.FechaBaja,
+                TipoFinca = x.TipoFinca,
+                Titularidad = FixEncoding(x.Titinmueble),
+                OtrosDatos = FixEncoding(x.OtrosDatos),
+                DireccionGoogle = x.DireccionElectronica,
+            }).ToList();
         }
     }
 }

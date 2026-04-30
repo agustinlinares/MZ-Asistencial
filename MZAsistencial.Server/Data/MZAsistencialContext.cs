@@ -2380,7 +2380,7 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorAño");
+            entity.ToTable("FincasRegistrales_CostesPorAnio");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
