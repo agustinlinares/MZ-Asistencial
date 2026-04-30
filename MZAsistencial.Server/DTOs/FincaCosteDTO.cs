@@ -10,8 +10,8 @@ namespace MZAsistencial.Server.DTOs
         public int FincaId { get; set; }
         [JsonPropertyName("Localizador")]
         public string? Localizador { get; set; }
-        [JsonPropertyName("Año")]
-        public int Año { get; set; }
+        [JsonPropertyName("Anio")]
+        public int Anio { get; set; }
         [JsonPropertyName("Coste")]
         public double? Coste { get; set; }
     }

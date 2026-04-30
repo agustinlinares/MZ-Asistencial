@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace MZAsistencial.Server.Models;
@@ -9,7 +9,7 @@ public partial class FincasRegistralesCostesPorAño
 
     public string? Localizador { get; set; }
 
-    public int Año { get; set; }
+    public int Anio { get; set; }
 
     public double? Coste { get; set; }
 
