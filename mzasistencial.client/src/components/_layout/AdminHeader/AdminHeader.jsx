@@ -139,9 +139,15 @@ function AdminHeader(props) {
         document.body.classList.toggle('sidebar-collapsed');
     };
 
-    const updateField = (field, value) => {
-        dispatch({ type: 'SET_FIELD', field, value });
-    };
+    const actions = [
+            { id: 'logout', text: 'Cerrar sesión', icon: 'runner' },
+            { id: 'password', text: 'Cambiar contraseña', icon: 'key' },
+        ];
+
+        const handleActionClick = (e) => {
+            if (e.itemData.id === 'logout') handleShowLogout();
+            if (e.itemData.id === 'password') handleShowPasswordData();
+        };
 
 
 

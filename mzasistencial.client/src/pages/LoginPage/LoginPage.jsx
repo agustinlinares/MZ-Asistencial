@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 import './LoginPage.css';
 
-// 1. Estado inicial
 const initialState = {
     username: "",
     password: "",
@@ -15,7 +14,6 @@ const initialState = {
     isLoading: false,
 };
 
-// 2. Lógica del Reducer
 function loginReducer(state, action) {
     switch (action.type) {
         case 'SET_FIELD':
@@ -38,11 +36,7 @@ function loginReducer(state, action) {
 const LoginPage = () => {
     const navigate = useNavigate();
     const txtUserRef = useRef(null);
-
-    // 3. Inicialización del Reducer
     const [state, dispatch] = useReducer(loginReducer, initialState);
-
-    // Desestructuración para facilitar el uso en el JSX
     const { username, password, toastVisible, toastMessage, showPassword, isLoading } = state;
 
     const handleLogin = async () => {
@@ -54,20 +48,31 @@ const LoginPage = () => {
         }
 
         try {
-            // Lógica para el LOGIN
-            sessionStorage.setItem('username', JSON.stringify(username));
+            const res = await fetch('/api/Auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario: username, contrasena: password }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                dispatch({ type: 'LOGIN_ERROR', message: err.message || 'Usuario o contraseña incorrectos.' });
+                return;
+            }
+
+            const data = await res.json();
+            // Guardar datos del usuario en sessionStorage
+            sessionStorage.setItem('user', JSON.stringify(data));
             dispatch({ type: 'LOGIN_SUCCESS' });
             navigate("/Admin/ResumendeGastos");
         } catch (error) {
-            console.error("Error en la llamada al login:", error);
-            dispatch({ type: 'LOGIN_ERROR', message: error.message || 'Se produjo un error en la llamada API.' });
+            console.error("Error en login:", error);
+            dispatch({ type: 'LOGIN_ERROR', message: 'Error de conexión. Inténtelo de nuevo.' });
         }
     };
 
     const handleFocus = () => {
-        if (toastVisible) {
-            dispatch({ type: 'HIDE_TOAST' });
-        }
+        if (toastVisible) dispatch({ type: 'HIDE_TOAST' });
     };
 
     useEffect(() => {
@@ -118,16 +123,13 @@ const LoginPage = () => {
                             <Button
                                 className="btn-form"
                                 text={"Ingresar"}
-                                type="default" 
-                                onClick={handleLogin} 
+                                type="default"
+                                onClick={handleLogin}
                                 useSubmitBehavior={false}
                             />
                         </div>
                         <div className="help-cover">
-                            <CheckBox
-                                text={"Recuerdame"}
-                                hint={"Recuerdame"}
-                            />
+                            <CheckBox text={"Recuerdame"} hint={"Recuerdame"} />
                             <button type="button" className="reset_password">{"¿Olvidaste tu contraseña?"}</button>
                         </div>
 
@@ -143,7 +145,6 @@ const LoginPage = () => {
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     );
