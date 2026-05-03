@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import './FichaMutua.css';
 
 // Recibimos dos props:
@@ -24,6 +24,9 @@ const FichaMutua = ({ mutua, onClose }) => {
     // IDs seleccionados para filtrar
     const [provinciaId, setProvinciaId] = useState(null);
 
+    // Referencia para el foco inicial igual que FichaFinca
+    const modalRef = useRef(null);
+
     // Función helper para actualizar un campo del form
     // "key" es el nombre del campo, "e" es el evento del input
     const set = (key) => (e) => {
@@ -32,6 +35,14 @@ const FichaMutua = ({ mutua, onClose }) => {
 
     //Sirve para detectar si la mutua que se va a guarda es nueva
     const esNuevo = !mutua.numeroId;
+
+    // Igual que FichaFinca: foco al abrir y cerrar con Escape
+    useEffect(() => {
+        modalRef.current?.focus();
+        const handler = e => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
 
     // Cuando se abre la ficha, pedimos los datos del DTO
     // useEffect se ejecuta automáticamente cuando el componente aparece en pantalla
@@ -128,7 +139,9 @@ const FichaMutua = ({ mutua, onClose }) => {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    numeroId: mutua.numeroId,
+                    //numeroId: mutua.numeroId,
+                    ...(esNuevo ? {} : { numeroId: mutua.numeroId }),
+
                     mutua: form.mutua,
                     razonSocial: form.razonSocial,
                     direccion: form.direccion,
@@ -138,7 +151,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                     fax: form.fax,
                     direccionElectronica: form.direccionElectronica,
                     personaContacto: form.personaContacto,
-                    numeroMutua: form.numeroMutua,
+                    //numeroMutua: form.numeroMutua,
                 })
             });
 
@@ -155,201 +168,166 @@ const FichaMutua = ({ mutua, onClose }) => {
         }
     };
 
-
-
     return (
-        <div className="fm-page">
+        <div className="fm-container-inline" role="region" aria-label={`Ficha Mutua ${datosMutua.numeroMutua}`}>
+            <div className="fm-inline-content" ref={modalRef} tabIndex={-1}>
 
-            {/* HEADER */}
-            <div className="fm-header">
-                <div className="fm-header-left">
-                    <button className="fm-btn-volver" onClick={onClose}>
-                        <i className="ri-arrow-left-line" /> Volver
-                    </button>
-                    <div className="fm-header-info">
-                        <span className="fm-header-titulo">Ficha Mutua</span>
-                        <span className="fm-header-subtitulo">
-                            {datosMutua.numeroMutua} — {datosMutua.mutua}
-                        </span>
+                {/* HEADER */}
+                <div className="fm-modal-header">
+                    <span className="fm-modal-title">
+                        {/*✏️ Ficha Mutua | {datosMutua.numeroMutua || '—'}*/}
+                         Ficha Mutua | {datosMutua.numeroMutua || '—'} | {datosMutua.mutua || '—'}
+                    </span>
+                    <div className="fm-header-btns">
+                        <button className="fm-btn-primary" onClick={handleGuardar}>✓ Aceptar</button>
+                        <button className="fm-btn-secondary" onClick={onClose}>✗ Salir</button>
                     </div>
                 </div>
-                <button className="fm-btn-guardar" onClick={handleGuardar}>
-                    <i className="ri-save-line" /> Guardar
-                </button>
-            </div>
 
-            {/* LAYOUT con sidebar lateral */}
-            <div className="fm-layout">
-
-                {/* SIDEBAR con pestañas verticales */}
-                <nav className="fm-sidebar">
+                {/* PESTAÑAS HORIZONTALES*/}
+                <div className="fm-tabs">
                     <button
-                        className={"fm-sidebar-item" + (activeTab === "general" ? " active" : "")}
+                        className={`fm-tab ${activeTab === "general" ? "active" : ""}`}
                         onClick={() => setActiveTab("general")}
                     >
                         General
                     </button>
                     <button
-                        className={"fm-sidebar-item" + (activeTab === "centrosPropios" ? " active" : "")}
+                        className={`fm-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
                         onClick={() => setActiveTab("centrosPropios")}
                     >
                         Centros Propios
                     </button>
                     <button
-                        className={"fm-sidebar-item" + (activeTab === "conciertos" ? " active" : "")}
+                        className={`fm-tab ${activeTab === "conciertos" ? "active" : ""}`}
                         onClick={() => setActiveTab("conciertos")}
                     >
                         Conciertos
                     </button>
                     <button
-                        className={"fm-sidebar-item" + (activeTab === "especialidadesPropios" ? " active" : "")}
+                        className={`fm-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
                         onClick={() => setActiveTab("especialidadesPropios")}
                     >
                         Especialidades / Serv. (Propios)
                     </button>
                     <button
-                        className={"fm-sidebar-item" + (activeTab === "especialidadesConciertos" ? " active" : "")}
+                        className={`fm-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
                         onClick={() => setActiveTab("especialidadesConciertos")}
                     >
                         Especialidades / Serv. (Conciertos)
                     </button>
-                </nav>
+                </div>
 
-                {/* CONTENIDO principal con scroll */}
-                <div className="fm-content">
+                {/* CONTENIDO DE CADA PESTAÑA */}
+                <div className="fm-tab-content">
 
                     {/* PESTAÑA GENERAL — muestra los datos de la mutua */}
                     {activeTab === "general" && (
-                        <section className="fm-seccion">
-                            <div className="fm-seccion-header">
-                                <h2 className="fm-seccion-titulo">General</h2>
-                            </div>
-                            <div className="fm-grid">
+                        <div className="fm-grid">
 
-                                <div className="fm-field">
-                                    <label>Mutua</label>
-                                    {/* Usa form.mutua y tiene onChange */}
-                                    <input type="text" value={form.mutua || ""} onChange={set("mutua")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Código Razón Social</label>
-                                    <input type="text" value={form.razonSocial || ""} onChange={set("razonSocial")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Provincia</label>
-                                    <select
-                                        value={provinciaId || ""}
-                                        onChange={(e) => {
-                                            const id = parseInt(e.target.value);
-                                            setProvinciaId(id);
-                                            // Busca el nombre de la provincia para guardarlo en el form
-                                            const prov = provincias.find(p => p.provinciaId === id);
-                                            setForm(f => ({ ...f, provincia: prov?.provincia || "", poblacion: "" }));
-                                            setPoblaciones([]); // limpia el combo de población
-                                        }}
-                                    >
-                                        <option value="">-- Selecciona provincia --</option>
-                                        {provincias.map(p => (
-                                            <option key={p.provinciaId} value={p.provinciaId}>
-                                                {p.provincia}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="fm-field">
-                                    <label>Población</label>
-                                    <select
-                                        value={form.poblacionId || ""}
-                                        onChange={(e) => {
-                                            const id = parseInt(e.target.value);
-                                            const pob = poblaciones.find(p => p.poblacionId === id);
-                                            setForm(f => ({ 
-                                                ...f, 
-                                                poblacion: pob?.poblacion || "",
-                                                poblacionId: id  // Guardamos el id
-                                            }));
-                                        }}
-                                        disabled={!provinciaId} // deshabilitado hasta que haya provincia
-                                    >
-                                        <option value="">-- Selecciona población --</option>
-                                        {poblaciones.map(p => (
-                                            <option key={p.poblacionId} value={p.poblacionId}>
-                                                {p.poblacion}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="fm-field">
-                                    <label>Dirección</label>
-                                    <input type="text" value={form.direccion || ""} onChange={set("direccion")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Código Postal</label>
-                                    <input type="text" value={form.cp || ""} onChange={set("cp")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Teléfono</label>
-                                    <input type="text" value={form.telefono || ""} onChange={set("telefono")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Fax</label>
-                                    <input type="text" value={form.fax || ""} onChange={set("fax")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Dirección Electrónica</label>
-                                    <input type="text" value={form.direccionElectronica || ""} onChange={set("direccionElectronica")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Persona de Contacto</label>
-                                    <input type="text" value={form.personaContacto || ""} onChange={set("personaContacto")} />
-                                </div>
-                                <div className="fm-field">
-                                    <label>Número de Mutua</label>
-                                    <input type="text" value={form.numeroMutua || ""} onChange={set("numeroMutua")} />
-                                </div>
-
+                            <div className="fm-field">
+                                <label>Mutua</label>
+                                {/* Usa form.mutua y tiene onChange */}
+                                <input type="text" value={form.mutua || ""} onChange={set("mutua")} />
                             </div>
-                        </section>
+                            <div className="fm-field">
+                                <label>Código Razón Social</label>
+                                <input type="text" value={form.razonSocial || ""} onChange={set("razonSocial")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Provincia</label>
+                                <select
+                                    value={provinciaId || ""}
+                                    onChange={(e) => {
+                                        const id = parseInt(e.target.value);
+                                        setProvinciaId(id);
+                                        // Busca el nombre de la provincia para guardarlo en el form
+                                        const prov = provincias.find(p => p.provinciaId === id);
+                                        setForm(f => ({ ...f, provincia: prov?.provincia || "", poblacion: "" }));
+                                        setPoblaciones([]); // limpia el combo de población
+                                    }}
+                                >
+                                    <option value="">-- Selecciona provincia --</option>
+                                    {provincias.map(p => (
+                                        <option key={p.provinciaId} value={p.provinciaId}>
+                                            {p.provincia}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="fm-field">
+                                <label>Población</label>
+                                <select
+                                    value={form.poblacionId || ""}
+                                    onChange={(e) => {
+                                        const id = parseInt(e.target.value);
+                                        const pob = poblaciones.find(p => p.poblacionId === id);
+                                        setForm(f => ({ 
+                                            ...f, 
+                                            poblacion: pob?.poblacion || "",
+                                            poblacionId: id  // Guardamos el id
+                                        }));
+                                    }}
+                                    disabled={!provinciaId} // deshabilitado hasta que haya provincia
+                                >
+                                    <option value="">-- Selecciona población --</option>
+                                    {poblaciones.map(p => (
+                                        <option key={p.poblacionId} value={p.poblacionId}>
+                                            {p.poblacion}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="fm-field">
+                                <label>Dirección</label>
+                                <input type="text" value={form.direccion || ""} onChange={set("direccion")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Código Postal</label>
+                                <input type="text" value={form.cp || ""} onChange={set("cp")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Teléfono</label>
+                                <input type="text" value={form.telefono || ""} onChange={set("telefono")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Fax</label>
+                                <input type="text" value={form.fax || ""} onChange={set("fax")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Dirección Electrónica</label>
+                                <input type="text" value={form.direccionElectronica || ""} onChange={set("direccionElectronica")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Persona de Contacto</label>
+                                <input type="text" value={form.personaContacto || ""} onChange={set("personaContacto")} />
+                            </div>
+                            <div className="fm-field">
+                                <label>Número de Mutua</label>
+                                <input type="text" value={esNuevo ? "Se generará automáticamente" : form.numeroMutua} disabled />
+                            </div>
+
+                        </div>
                     )}
 
                     {/* PESTAÑAS CENTROS PROPIOS — ??? */}
                     {activeTab === "centrosPropios" && (
-                        <section className="fm-seccion">
-                            <div className="fm-seccion-header">
-                                <h2 className="fm-seccion-titulo">Centros Propios</h2>
-                            </div>
-                            <p>Centros Propios</p>
-                        </section>
+                        <p>Centros Propios</p>
                     )}
 
                     {/* PESTAÑAS CONCIERTOS — ??? */}
                     {activeTab === "conciertos" && (
-                        <section className="fm-seccion">
-                            <div className="fm-seccion-header">
-                                <h2 className="fm-seccion-titulo">Conciertos</h2>
-                            </div>
-                            <p>Conciertos</p>
-                        </section>
+                        <p>Conciertos</p>
                     )}
 
                     {/* PESTAÑAS ESPECIALIDADES /SERV. (PROPIOS) — ??? */}
                     {activeTab === "especialidadesPropios" && (
-                        <section className="fm-seccion">
-                            <div className="fm-seccion-header">
-                                <h2 className="fm-seccion-titulo">Especialidades / Serv. (Propios)</h2>
-                            </div>
-                            <p>Especialidades / Serv. (Propios)</p>
-                        </section>
+                        <p>Especialidades / Serv. (Propios)</p>
                     )}
 
                     {/* PESTAÑAS ESPECIALIDADES /SERV. (CONCIERTOS) — ??? */}
                     {activeTab === "especialidadesConciertos" && (
-                        <section className="fm-seccion">
-                            <div className="fm-seccion-header">
-                                <h2 className="fm-seccion-titulo">Especialidades / Serv. (Conciertos)</h2>
-                            </div>
-                            <p>Especialidades / Serv. (Conciertos)</p>
-                        </section>
+                        <p>Especialidades / Serv. (Conciertos)</p>
                     )}
 
                 </div>

@@ -4169,7 +4169,8 @@ public partial class MZAsistencialContext : DbContext
             entity.HasKey(e => e.MutuaId).HasFillFactor(100);
 
             entity.Property(e => e.MutuaId)
-                .ValueGeneratedNever()
+                //.ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("Mutua_id");
             entity.Property(e => e.Cp)
                 .HasMaxLength(5)
