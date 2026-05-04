@@ -65,17 +65,13 @@ const CentrosPropios = () => {
     const admin = esAdmin();
 
     useEffect(() => {
-        fetch(API_URL)
+        const user = getUsuarioSesion();
+        const perfilId = user?.perfilId ?? '';
+        fetch(`${API_URL}?perfilId=${perfilId}`)
             .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
-            .then(data => {
-                // ✅ Filtrar centros desactivados o con fecha de baja para usuarios no-admin
-                const filtrados = admin
-                    ? data
-                    : data.filter(c => !c.desactivado && !c.fechaBaja);
-                setCentros(filtrados);
-            })
+            .then(data => setCentros(data))
             .catch(err => console.error('Error cargando centros:', err));
-    }, [admin]);
+    }, []);
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -141,19 +137,16 @@ const CentrosPropios = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(ids),
             });
-            if (res.ok) {
-                setMsg({ ok: true, text: `${ids.length} registro(s) validado(s) correctamente.` });
-                fetch(API_URL)
-                    .then(r => r.json())
-                    .then(data => {
-                        const filtrados = admin
-                            ? data
-                            : data.filter(c => !c.desactivado && !c.fechaBaja);
-                        setCentros(filtrados);
-                    });
-            } else {
-                setMsg({ ok: false, text: 'Error al validar los registros.' });
-            }
+        if (res.ok) {
+            setMsg({ ok: true, text: `${ids.length} registro(s) validado(s) correctamente.` });
+            const user = getUsuarioSesion();
+            const perfilId = user?.perfilId ?? '';
+            fetch(`${API_URL}?perfilId=${perfilId}`)
+                .then(r => r.json())
+                .then(data => setCentros(data));
+        } else {
+            setMsg({ ok: false, text: 'Error al validar los registros.' });
+        }
         } catch {
             setMsg({ ok: false, text: 'Error de conexión al validar.' });
         } finally {

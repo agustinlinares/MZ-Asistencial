@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import './Centros.css';
-import FincasService from "../../../services/admin/FincasService";
+import { saveAs } from 'file-saver-es';
+import { exportDataGrid } from 'devextreme/excel_exporter';
 import FichaFinca from './FichaFinca';
 import DataGrid, {
     Column,
@@ -18,12 +19,28 @@ import DataGrid, {
     FilterPanel,
     ColumnFixing,
     Pager,
-    Toolbar,
-    Item,
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
 
+const onExporting = (e) => {
+    e.component.beginUpdate();
+    const workbook = new Workbook();
+    const worksheet = workbook.addWorksheet('Main sheet');
+    exportDataGrid({
+        component: e.component,
+        worksheet,
+        autoFilterEnabled: true,
+    }).then(() => {
+        workbook.xlsx.writeBuffer().then((buffer) => {
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Fincas.xlsx');
+        });
+    });
+    e.cancel = true;
+};
+
+// ✅ Sin token — usamos sessionStorage para autenticación
+const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
 const Fincas = () => {
     const { t } = useTranslation();
@@ -33,7 +50,6 @@ const Fincas = () => {
     const [centros, setCentros] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
-
 
     useEffect(() => {
         const loadData = async () => {
@@ -48,7 +64,25 @@ const Fincas = () => {
                 console.error('Error loading data:', error);
             }
         };
-        loadData();
+
+        // ✅ Endpoint corregido: /api/CentrosPropios en lugar de /api/centros/lookup
+        const fetchCentros = async () => {
+            try {
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                const perfilId = user?.perfilId ?? '';
+                const respuesta = await fetch(`/api/CentrosPropios?perfilId=${perfilId}`, { headers: authHeaders() });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    // ✅ Mapear al formato { id, nombre } que usa FichaFinca
+                    setCentros(data.map(c => ({ id: c.centroId, nombre: c.centro })));
+                }
+            } catch (error) {
+                console.error('Error al cargar centros:', error);
+            }
+        };
+
+        fetchFincas();
+        fetchCentros();
     }, []);
 
     // Cerrar menú al hacer click fuera
@@ -61,7 +95,6 @@ const Fincas = () => {
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
-
 
     const recargarFincas = async () => {
         try {
@@ -107,18 +140,17 @@ const Fincas = () => {
         FincasService.exportToPDF(dataGridRef.current.instance());
     };
 
-
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
                     {!selectedFinca && (
-                        <div className="header-page">
-                            <div className="title"> {t('LISTA FINCAS')}</div>
+                        <div className="header-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
+                            <div className="title">{t('LISTA FINCAS')}</div>
 
                             <div className="acciones-container" ref={menuRef}>
-                                <div 
+                                <div
                                     className="acciones-btn"
                                     onClick={() => setMenuAbierto(v => !v)}
                                 >
@@ -157,89 +189,72 @@ const Fincas = () => {
                                 onSave={handleSaveFinca}
                             />
                         ) : (
-                            <>
-                                <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 190px)', width: '100%' }}>
+                            <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 190px)', width: '100%' }}>
+                                <DataGrid
+                                    onRowClick={(e) => setSelectedFinca(e.data)}
+                                    ref={dataGridRef}
+                                    dataSource={fincas}
+                                    keyExpr="Finca_id"
+                                    showBorders={true}
+                                    columnAutoWidth={true}
+                                    allowColumnResizing={true}
+                                    onExporting={onExporting}
+                                    className="mz-table"
+                                    height="100%"
+                                    rowAlternationEnabled={true}
+                                    showRowLines={true}
+                                    showColumnLines={true}
+                                    wordWrapEnabled={false}
+                                    noDataText={t('Sin datos para mostrar')}
+                                >
+                                    <Scrolling mode="standard" showScrollbar="always" />
+                                    <Paging defaultPageSize={25} />
+                                    <Pager visible={true} allowedPageSizes={[10, 25, 50, 100]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    <SearchPanel visible width={240} placeholder={t('buscar')} />
+                                    <FilterRow visible={true} applyFilter="auto" />
+                                    <HeaderFilter visible searchMode='contains' />
+                                    <Selection mode="multiple" allowSelectAll />
+                                    <Grouping autoExpandAll={false} />
+                                    <ColumnChooser enabled mode="select" />
+                                    <Export enabled fileName="Fincas" allowExportSelectedData />
+                                    <Sorting mode="multiple" />
+                                    <FilterPanel visible />
+                                    <ColumnFixing enabled />
 
-                                    <DataGrid
-                                        onRowDblClick={(e) => setSelectedFinca(e.data)}
-                                        ref={dataGridRef}
-                                        dataSource={fincas}
-                                        keyExpr="Finca_id"
-                                        showBorders={true}
-                                        columnAutoWidth={true}
-                                        allowColumnResizing={true}
-                                        onExporting={(e) => FincasService.exportToExcel(e.component)}
-                                        className="mz-table"
-                                        height="100%"
-                                        rowAlternationEnabled={true}
-                                        showRowLines={true}
-                                        showColumnLines={true}
-                                        wordWrapEnabled={false}
-                                    >
-                                        <Scrolling mode="standard" showScrollbar="always" />
-                                        <Paging defaultPageSize={25} />
-                                        <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
-                                        <SearchPanel visible width={240} placeholder={t('buscar')} />
-                                        <FilterRow visible={true} applyFilter="auto" />
-                                        <HeaderFilter visible searchMode='contains' />
-                                        <Selection mode="multiple" allowSelectAll />
-                                        <Grouping autoExpandAll={false} />
-                                        <ColumnChooser enabled mode="select" />
-                                        <Export enabled fileName="Casos" allowExportSelectedData />
-                                        <Sorting mode="multiple" />
-                                        <FilterPanel visible />
-                                        <ColumnFixing enabled />
-
-                                        <Column dataField="Finca_id" caption="Finca ID" width={90} />
-                                        <Column dataField="Centro_id" caption="Centro ID" width={90} />
-                                        <Column dataField="Localizador" caption="Localizador" width={130} />
-                                        <Column dataField="Centro" caption="Centro" width={180} />
-                                        <Column dataField="Direccion" caption="Dirección" width={220} />
-                                        <Column dataField="Utilizacion" caption="Utilización" width={120} />
-                                        <Column dataField="Superficie" caption="Superficie" width={100} />
-                                        <Column dataField="TipoFinca" caption="Tipo" width={120} />
-                                        <Column dataField="Coste" caption="Coste" width={110} format="#,##0.00 €" />
-                                        <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
-                                        <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
-                                        <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
-                                        <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} displayFormat="dd/MM/yyyy" />
-                                        <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                                        <Column
-                                            caption={t('Acciones')}
-                                            width={100}
-                                            fixed={true}
-                                            fixedPosition="right"
-                                            alignment="center"
-                                            cellRender={(cell) => (
-                                                <div className="grid-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                                                    <div 
-                                                        className="action-icon edit"
-                                                        style={{ cursor: 'pointer', color: '#2f5da8', fontSize: '18px' }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedFinca(cell.data);
-                                                        }}
-                                                        title={t('Editar')}
-                                                    >
-                                                        <i className="ri-edit-line"></i>
-                                                    </div>
-                                                    <div 
-                                                        className="action-icon delete"
-                                                        style={{ cursor: 'pointer', color: '#c62828', fontSize: '18px' }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleEliminar(cell.data.Finca_id);
-                                                        }}
-                                                        title={t('Eliminar')}
-                                                    >
-                                                        <i className="ri-delete-bin-line"></i>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        />
-                                    </DataGrid>
-                                </div>
-                            </>
+                                    <Column dataField="Finca_id" caption="Finca ID" width={90} />
+                                    <Column dataField="Centro_id" caption="Centro ID" width={90} />
+                                    <Column dataField="Localizador" caption="Localizador" width={130} />
+                                    <Column dataField="Centro" caption="Centro" width={180} />
+                                    <Column dataField="Direccion" caption="Dirección" width={220} />
+                                    <Column dataField="Utilizacion" caption="Utilización" width={120} />
+                                    <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="TipoFinca" caption="Tipo" width={120} />
+                                    <Column dataField="Coste" caption="Coste" width={100} />
+                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
+                                    <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
+                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
+                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
+                                    <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                    <Column
+                                        caption="Acciones"
+                                        width={80}
+                                        fixed={true}
+                                        fixedPosition="right"
+                                        alignment="center"
+                                        cellRender={(cell) => (
+                                            <div
+                                                style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedFinca(cell.data);
+                                                }}
+                                            >
+                                                <i className="ri-edit-line"></i>
+                                            </div>
+                                        )}
+                                    />
+                                </DataGrid>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import './FichaFinca.css';
 
 import '../../../styles/FichaGlobal.css';
 import FincasService from "../../../services/admin/FincasService";
@@ -22,6 +23,8 @@ const TITULARIDADES = [
     'Terceros distintos de los anteriores',
 ];
 
+// ✅ Sin token — usamos sessionStorage para autenticación
+const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
 
 const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -62,7 +65,7 @@ const TabMapa = ({ form, onChange }) => {
 
     const handleBuscar = async () => {
         if (!form.dir_google) { setFlyKey(k => k + 1); return; }
-        
+
         setBuscando(true);
         try {
             const res = await fetch(
@@ -85,7 +88,6 @@ const TabMapa = ({ form, onChange }) => {
 
     const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
 
-    // URLs de Tiles de Google Maps (lyrs: m=callejero, s=satelite, y=hibrido)
     const GOOGLE_STREET = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
     const GOOGLE_SATELLITE = 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}';
     const GOOGLE_HYBRID = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
@@ -96,17 +98,17 @@ const TabMapa = ({ form, onChange }) => {
                 <div className="ficha-field span2">
                     <label>Buscador de Dirección (Google Maps)</label>
                     <div style={{ display: 'flex', gap: 8 }}>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             style={{ flex: 1 }}
-                            value={form.dir_google || ''} 
-                            onChange={e => onChange('dir_google', e.target.value)} 
+                            value={form.dir_google || ''}
+                            onChange={e => onChange('dir_google', e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleBuscar()}
                             placeholder="Ej: Calle Mayor 1, Madrid"
                         />
-                        <button 
-                            className="ficha-btn-primary" 
-                            onClick={handleBuscar} 
+                        <button
+                            className="finca-btn-primary"
+                            onClick={handleBuscar}
                             disabled={buscando}
                             style={{ width: 'auto', padding: '0 15px' }}
                         >
