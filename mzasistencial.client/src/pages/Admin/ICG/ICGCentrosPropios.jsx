@@ -630,7 +630,9 @@ const ICGCentrosPropios = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(API_CENTROS)
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        const perfilId = user?.perfilId ?? '';
+        fetch(`${API_CENTROS}?perfilId=${perfilId}`)
             .then(r => r.ok ? r.json() : [])
             .then(d => setCentros(d))
             .catch(() => setCentros([]))

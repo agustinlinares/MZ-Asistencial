@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -13,11 +13,11 @@ const ANOS = ["2020","2021","2022","2023","2024","2025"];
 
 const TABS = [
     { key: "general",           label: "General" },
-    { key: "datosUtilizacion",  label: "Datos Utilización" },
+    { key: "datosUtilizacion",  label: "Datos Utilizacion" },
     { key: "registroICG",       label: "Registro ICG" },
     { key: "fincasRegistrales", label: "Fincas Registrales" },
     { key: "especialidades",    label: "Especialidades / Serv. Disponibles" },
-    { key: "catalogo",          label: "Catálogo completo de servicios" },
+    { key: "catalogo",          label: "Catalogo completo de servicios" },
 ];
 
 const onExportingGrid = (e, filename) => {
@@ -44,11 +44,9 @@ const FichaCentroPropio = () => {
     const [tabActiva, setTabActiva] = useState("general");
     const [guardando, setGuardando] = useState(false);
     const [fincas, setFincas] = useState([]);
-
-    const clienteRef = useRef(cliente);
-    useEffect(() => {
-        if (cliente) clienteRef.current = cliente;
-    }, [cliente]);
+    const [especialidades, setEspecialidades] = useState([]);
+    const [catalogo, setCatalogo] = useState([]);
+    const [anioEsp, setAnioEsp] = useState(2024);
 
     const clienteRef = useRef(cliente);
     useEffect(() => {
@@ -130,8 +128,8 @@ const FichaCentroPropio = () => {
         });
     }, [cliente]);
 
-    // ✅ Leer datos del mapa desde sessionStorage al montar
-// ✅ Leer datos del mapa desde sessionStorage con delay para que el form esté inicializado
+    // âœ… Leer datos del mapa desde sessionStorage al montar
+// âœ… Leer datos del mapa desde sessionStorage con delay para que el form estÃ© inicializado
     useEffect(() => {
         const timer = setTimeout(() => {
             const mapaData = sessionStorage.getItem('mapaRetorno');
@@ -159,6 +157,20 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
+    // Cargar especialidades y catalogo del centro
+    useEffect(() => {
+        if (form.CentroId && anioEsp) {
+            fetch('/api/CentrosPropiosEspecialidades?centroId=' + form.CentroId + '&anio=' + anioEsp)
+                .then(r => r.ok ? r.json() : [])
+                .then(d => setEspecialidades(d))
+                .catch(() => setEspecialidades([]));
+            fetch('/api/CentrosPropiosEspecialidades/catalogo?centroId=' + form.CentroId + '&anio=' + anioEsp)
+                .then(r => r.ok ? r.json() : [])
+                .then(d => setCatalogo(d))
+                .catch(() => setCatalogo([]));
+        }
+    }, [form.CentroId, anioEsp]);
+
     // Cargar fincas registrales del centro
     useEffect(() => {
         if (form.CentroId) {
@@ -169,7 +181,7 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
-    // Localizador automático al seleccionar mutua en centro nuevo
+    // Localizador automÃ¡tico al seleccionar mutua en centro nuevo
     useEffect(() => {
         if (!form.CentroId && form.Mutua) {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
@@ -230,12 +242,13 @@ const FichaCentroPropio = () => {
                     fpufuncio:              form.PuestaFuncionamiento || null,
                     fcalisuf:               form.Calificacion || null,
                     mapaValidado:           form.MapaValidado ?? false,
+                    usuarioId:              JSON.parse(sessionStorage.getItem('user'))?.usuarioId ?? null,
                 })
             });
             if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
             else { alert('Error al guardar el centro'); }
         } catch (err) {
-            alert('Error de conexión: ' + err.message);
+            alert('Error de conexiÃ³n: ' + err.message);
         } finally {
             setGuardando(false);
         }
@@ -246,7 +259,7 @@ const FichaCentroPropio = () => {
     return (
         <div className="fcp-page">
 
-            {/* ── HEADER ── */}
+            {/* â”€â”€ HEADER â”€â”€ */}
             <div className="fcp-header">
                 <div className="fcp-header-left">
                     <button className="fcp-btn-volver" onClick={() => navigate(-1)}>
@@ -254,7 +267,7 @@ const FichaCentroPropio = () => {
                     </button>
                     <div className="fcp-header-info">
                         <span className="fcp-header-titulo">Ficha Centro Propio</span>
-                        <span className="fcp-header-subtitulo">{form.Localizador} — {form.Centro}</span>
+                        <span className="fcp-header-subtitulo">{form.Localizador} â€” {form.Centro}</span>
                     </div>
                 </div>
                 <div className="fcp-header-right">
@@ -267,7 +280,7 @@ const FichaCentroPropio = () => {
                 </div>
             </div>
 
-            {/* ── PESTAÑAS ── */}
+            {/* â”€â”€ PESTAÃ‘AS â”€â”€ */}
             <div className="fcp-tabs-bar">
                 {TABS.map(({ key, label }) => (
                     <button
@@ -280,7 +293,7 @@ const FichaCentroPropio = () => {
                 ))}
             </div>
 
-            {/* ── CONTENIDO ── */}
+            {/* â”€â”€ CONTENIDO â”€â”€ */}
             <div className="fcp-content">
 
                 {/* GENERAL */}
@@ -306,44 +319,44 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field">
                                 <label>Provincia</label>
                                 <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {PROVINCIAS.map(p => (
                                         <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>Población</label>
+                                <label>PoblaciÃ³n</label>
                                 <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {POBLACIONES.map(p => (
                                         <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>Código Postal</label>
+                                <label>CÃ³digo Postal</label>
                                 <input type="text" value={form.Cp || ""} onChange={set("Cp")} />
                             </div>
                             <div className="fcp-field">
-                                <label>Vía Pública</label>
+                                <label>VÃ­a PÃºblica</label>
                                 <select value={form.ViaPublica || ""} onChange={set("ViaPublica")}>
                                     {VIAS.map(v => <option key={v}>{v}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>Dirección</label>
+                                <label>DirecciÃ³n</label>
                                 <input type="text" value={form.Direccion || ""} onChange={set("Direccion")} />
                             </div>
                             <div className="fcp-field">
-                                <label>Número</label>
+                                <label>NÃºmero</label>
                                 <input type="text" value={form.Numero || ""} onChange={set("Numero")} />
                             </div>
                             <div className="fcp-field">
@@ -357,30 +370,30 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Servicios Especiales</label>
                                 <select value={form.ServiciosEspeciales || ""} onChange={set("ServiciosEspeciales")}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>Teléfono</label>
+                                <label>TelÃ©fono</label>
                                 <input type="text" value={form.Telefono || ""} onChange={set("Telefono")} />
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>Dirección Google</label>
+                                <label>DirecciÃ³n Google</label>
                                 <input type="text" value={form.DireccionGoogle || ""} onChange={set("DireccionGoogle")} />
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>Verificar Dirección Google</label>
+                                <label>Verificar DirecciÃ³n Google</label>
                                 <div className="fcp-input-icon">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
                                     <button className="fcp-icon-btn" title="Abrir mapa"
                                         onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
-                                        🌐
+                                        ðŸŒ
                                     </button>
                                 </div>
                             </div>
                             <div className="fcp-field">
-                                <label>Dirección Electrónica</label>
+                                <label>DirecciÃ³n ElectrÃ³nica</label>
                                 <input type="email" value={form.Email || ""} onChange={set("Email")} />
                             </div>
                             <div className="fcp-field">
@@ -392,7 +405,7 @@ const FichaCentroPropio = () => {
                                 <input type="text" value={form.OtrosDatos || ""} onChange={set("OtrosDatos")} />
                             </div>
                             <div className="fcp-field">
-                                <label>Autorización / Comunicación</label>
+                                <label>AutorizaciÃ³n / ComunicaciÃ³n</label>
                                 <input type="date" value={form.Autorizacion || ""} onChange={set("Autorizacion")} />
                             </div>
                             <div className="fcp-field">
@@ -400,7 +413,7 @@ const FichaCentroPropio = () => {
                                 <input type="date" value={form.PuestaFuncionamiento || ""} onChange={set("PuestaFuncionamiento")} />
                             </div>
                             <div className="fcp-field">
-                                <label>Calificación de Suficiencia</label>
+                                <label>CalificaciÃ³n de Suficiencia</label>
                                 <input type="date" value={form.Calificacion || ""} onChange={set("Calificacion")} />
                             </div>
                             <div className="fcp-field">
@@ -411,7 +424,7 @@ const FichaCentroPropio = () => {
                     </div>
                 )}
 
-                {/* DATOS UTILIZACIÓN */}
+                {/* DATOS UTILIZACIÃ“N */}
                 {tabActiva === "datosUtilizacion" && (
                     <div className="fcp-seccion">
                         <div className="fcp-bloque">
@@ -435,11 +448,11 @@ const FichaCentroPropio = () => {
                             <div className="fcp-checkbox-grid">
                                 <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> Asistencia sanitaria Hospitalaria</label>
                                 <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> Asistencia sanitaria ambulatoria</label>
-                                <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitación</label>
+                                <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitaciÃ³n</label>
                                 <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> Control administrativo de IT</label>
-                                <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> Prevención R.L seguridad social</label>
+                                <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> PrevenciÃ³n R.L seguridad social</label>
                                 <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> Otras Actividades</label>
-                                <label><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> Administración general de la Mutua</label>
+                                <label><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> AdministraciÃ³n general de la Mutua</label>
                             </div>
                         </div>
                         <div className="fcp-bloque">
@@ -484,10 +497,10 @@ const FichaCentroPropio = () => {
                             <HeaderFilter visible={true} />
                             <Sorting mode="multiple" />
                             <Export enabled={true} />
-                            <Column dataField="ano" caption="Año" width={80} />
+                            <Column dataField="ano" caption="AÃ±o" width={80} />
                             <Column dataField="mutua" caption="Mutua" width={220} />
                             <Column dataField="centro" caption="Centro" width={220} />
-                            <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="fechaActualizacion" caption="Fecha de ActualizaciÃ³n" width={180} dataType="date" format="dd/MM/yyyy" />
                             <Column dataField="usuario" caption="Usuario" width={150} />
                         </DataGrid>
                     </div>
@@ -509,11 +522,11 @@ const FichaCentroPropio = () => {
                             <Column dataField="Finca_id" caption="ID" width={70} />
                             <Column dataField="Localizador" caption="Localizador" width={110} />
                             <Column 
-                                caption="Dirección" 
+                                caption="DirecciÃ³n" 
                                 width={250} 
                                 cellRender={(cell) => (
                                     <span>
-                                        {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
+                                        {cell.data.Direccion} {cell.data.Numero ? `nÂº ${cell.data.Numero}` : ''}
                                         {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
                                     </span>
                                 )}
@@ -522,7 +535,7 @@ const FichaCentroPropio = () => {
                             <Column dataField="Titularidad" caption="Titularidad" width={180} />
                             <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
                             <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
-                            <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="F_Inscripcion" caption="F. InscripciÃ³n" width={140} dataType="date" format="dd/MM/yyyy" />
                         </DataGrid>
                     </div>
                 )}
@@ -535,21 +548,21 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
                             <div className="fcp-field">
                                 <label>Especialidad</label>
-                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                <select><option value="">â€” Seleccionar â€”</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
                             <div className="fcp-field">
-                                <label>Año</label>
-                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                <label>AÃ±o</label>
+                                <select><option value="">â€” Seleccionar â€”</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
-                        <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                        <DataGrid dataSource={especialidades} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
                             <Scrolling mode="standard" />
                             <Paging defaultPageSize={10} />
                             <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
@@ -558,8 +571,8 @@ const FichaCentroPropio = () => {
                             <Sorting mode="multiple" />
                             <Column dataField="especialidad" caption="Especialidad" width={160} />
                             <Column dataField="servicio" caption="Servicio" width={180} />
-                            <Column dataField="altaTec" caption="AltaTec" width={90} />
-                            <Column dataField="disp" caption="Disp." width={70} />
+                            <Column dataField="cantidad" caption="Cantidad" width={90} />
+                            <Column dataField="disponibilidad" caption="Disp." width={70} />
                             {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"].map(m =>
                                 <Column key={m} dataField={m} caption={m.charAt(0).toUpperCase()+m.slice(1)} width={55} dataType="number" />
                             )}
@@ -572,7 +585,7 @@ const FichaCentroPropio = () => {
                     </div>
                 )}
 
-                {/* CATÁLOGO */}
+                {/* CATÃLOGO */}
                 {tabActiva === "catalogo" && (
                     <div className="fcp-seccion">
                         <div className="fcp-filtros">
@@ -580,21 +593,21 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">— Seleccionar —</option>
+                                    <option value="">â€” Seleccionar â€”</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
                             <div className="fcp-field">
                                 <label>Especialidad</label>
-                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                <select><option value="">â€” Seleccionar â€”</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
                             <div className="fcp-field">
-                                <label>Año</label>
-                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                <label>AÃ±o</label>
+                                <select><option value="">â€” Seleccionar â€”</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
-                        <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                        <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
                             <Scrolling mode="standard" />
                             <Paging defaultPageSize={10} />
                             <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
@@ -603,7 +616,17 @@ const FichaCentroPropio = () => {
                             <Sorting mode="multiple" />
                             <Column dataField="especialidad" caption="Especialidad" width={220} />
                             <Column dataField="servicio" caption="Servicio" width={250} />
-                            <Column dataField="catalogoCompletoServ" caption="Catálogo Completo de Servicios" width={250} />
+                            <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
+                            <Column dataField="fechaAlta" caption="F. Alta" width={120} dataType="date" format="dd/MM/yyyy" />
+                            <Scrolling mode="standard" />
+                            <Paging defaultPageSize={10} />
+                            <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
+                            <FilterRow visible={true} />
+                            <HeaderFilter visible={true} />
+                            <Sorting mode="multiple" />
+                            <Column dataField="especialidad" caption="Especialidad" width={220} />
+                            <Column dataField="servicio" caption="Servicio" width={250} />
+                            
                         </DataGrid>
                         <div className="fcp-acciones-bottom">
                             <button className="fcp-btn-accion">Actualizar</button>

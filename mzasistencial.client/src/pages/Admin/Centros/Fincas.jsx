@@ -3,7 +3,6 @@ import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
-import AuthService from "../../../services/auth/AuthService";
 import FichaFinca from './FichaFinca';
 import DataGrid, {
     Column,
@@ -21,8 +20,6 @@ import DataGrid, {
     FilterPanel,
     ColumnFixing,
     Pager,
-    Toolbar,
-    Item,
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -39,14 +36,12 @@ const onExporting = (e) => {
         workbook.xlsx.writeBuffer().then((buffer) => {
             saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Fincas.xlsx');
         });
-    })
+    });
     e.cancel = true;
 };
 
-const authHeaders = () => {
-    const token = AuthService.getToken();
-    return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
-};
+// ✅ Sin token — usamos sessionStorage para autenticación
+const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
 const Fincas = () => {
     const { t } = useTranslation();
@@ -56,7 +51,6 @@ const Fincas = () => {
     const [centros, setCentros] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
-
 
     useEffect(() => {
         const fetchFincas = async () => {
@@ -70,17 +64,23 @@ const Fincas = () => {
                 console.error('Error al cargar fincas registrales:', error);
             }
         };
+
+        // ✅ Endpoint corregido: /api/CentrosPropios en lugar de /api/centros/lookup
         const fetchCentros = async () => {
             try {
-                const respuesta = await fetch('/api/centros/lookup', { headers: authHeaders() });
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                const perfilId = user?.perfilId ?? '';
+                const respuesta = await fetch(`/api/CentrosPropios?perfilId=${perfilId}`, { headers: authHeaders() });
                 if (respuesta.ok) {
                     const data = await respuesta.json();
-                    setCentros(data);
+                    // ✅ Mapear al formato { id, nombre } que usa FichaFinca
+                    setCentros(data.map(c => ({ id: c.centroId, nombre: c.centro })));
                 }
             } catch (error) {
                 console.error('Error al cargar centros:', error);
             }
         };
+
         fetchFincas();
         fetchCentros();
     }, []);
@@ -95,7 +95,6 @@ const Fincas = () => {
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
-
 
     const recargarFincas = async () => {
         try {
@@ -188,7 +187,6 @@ const Fincas = () => {
         });
     };
 
-
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
@@ -196,10 +194,10 @@ const Fincas = () => {
 
                     {!selectedFinca && (
                         <div className="header-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
-                            <div className="title"> {t('LISTA FINCAS')}</div>
+                            <div className="title">{t('LISTA FINCAS')}</div>
 
                             <div className="acciones-container" ref={menuRef}>
-                                <div 
+                                <div
                                     className="acciones-btn"
                                     onClick={() => setMenuAbierto(v => !v)}
                                 >
@@ -238,35 +236,34 @@ const Fincas = () => {
                                 onSave={handleSaveFinca}
                             />
                         ) : (
-                            <>
-                                <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 190px)', width: '100%' }}>
-
-                                    <DataGrid
-                                        onRowClick={(e) => setSelectedFinca(e.data)}
-                                        ref={dataGridRef}
-                                        dataSource={fincas}
-                                        keyExpr="Finca_id"
-                                        showBorders={true}
-                                        columnAutoWidth={true}
-                                        allowColumnResizing={true}
-                                        onExporting={onExporting}
-                                        className="mz-table"
-                                        height="100%"
-                                        rowAlternationEnabled={true}
+                            <div className="grid-wrapper-fincas" style={{ height: 'calc(100vh - 190px)', width: '100%' }}>
+                                <DataGrid
+                                    onRowClick={(e) => setSelectedFinca(e.data)}
+                                    ref={dataGridRef}
+                                    dataSource={fincas}
+                                    keyExpr="Finca_id"
+                                    showBorders={true}
+                                    columnAutoWidth={true}
+                                    allowColumnResizing={true}
+                                    onExporting={onExporting}
+                                    className="mz-table"
+                                    height="100%"
+                                    rowAlternationEnabled={true}
                                     showRowLines={true}
                                     showColumnLines={true}
                                     wordWrapEnabled={false}
+                                    noDataText={t('Sin datos para mostrar')}
                                 >
                                     <Scrolling mode="standard" showScrollbar="always" />
                                     <Paging defaultPageSize={25} />
-                                    <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    <Pager visible={true} allowedPageSizes={[10, 25, 50, 100]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
                                     <SearchPanel visible width={240} placeholder={t('buscar')} />
                                     <FilterRow visible={true} applyFilter="auto" />
                                     <HeaderFilter visible searchMode='contains' />
                                     <Selection mode="multiple" allowSelectAll />
                                     <Grouping autoExpandAll={false} />
                                     <ColumnChooser enabled mode="select" />
-                                    <Export enabled fileName="Casos" allowExportSelectedData />
+                                    <Export enabled fileName="Fincas" allowExportSelectedData />
                                     <Sorting mode="multiple" />
                                     <FilterPanel visible />
                                     <ColumnFixing enabled />
@@ -279,6 +276,12 @@ const Fincas = () => {
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
                                     <Column dataField="Superficie" caption="Superficie" width={100} />
                                     <Column dataField="TipoFinca" caption="Tipo" width={120} />
+                                    <Column dataField="Coste" caption="Coste" width={100} />
+                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
+                                    <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
+                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
+                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
+                                    <Column dataField="Titularidad" caption="Titularidad" width={180} />
                                     <Column
                                         caption="Acciones"
                                         width={80}
@@ -286,7 +289,7 @@ const Fincas = () => {
                                         fixedPosition="right"
                                         alignment="center"
                                         cellRender={(cell) => (
-                                            <div 
+                                            <div
                                                 style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -297,15 +300,8 @@ const Fincas = () => {
                                             </div>
                                         )}
                                     />
-                                    <Column dataField="Coste" caption="Coste" width={100} />
-                                    <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
-                                    <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
-                                    <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
-                                    <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
-                                    <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                                    </DataGrid>
-                                </div>
-                            </>
+                                </DataGrid>
+                            </div>
                         )}
                     </div>
                 </div>

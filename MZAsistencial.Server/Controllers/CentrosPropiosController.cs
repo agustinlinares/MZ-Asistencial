@@ -16,9 +16,9 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll()
+        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId)
         {
-            var result = await _service.GetAllAsync();
+            var result = await _service.GetAllAsync(perfilId);
             return Ok(result);
         }
 
@@ -35,6 +35,13 @@ namespace MZAsistencial.Server.Controllers
         {
             var result = await _service.GetSiguienteLocalizadorAsync(mutuaId);
             return Ok(result);
+        }
+
+        [HttpGet("existe-localizador/{localizador}")]
+        public async Task<ActionResult<bool>> ExisteLocalizador(string localizador)
+        {
+            var existe = await _service.ExisteLocalizadorAsync(localizador);
+            return Ok(existe);
         }
 
         [HttpPut("{id:int}")]
