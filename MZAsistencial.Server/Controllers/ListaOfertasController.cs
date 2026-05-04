@@ -18,7 +18,7 @@ public class ListaOfertasController : ControllerBase
     [HttpPost("lista")]
     public async Task<IActionResult> GetLista(
         [FromBody] FiltrosListaOfertasDTO filtros,
-        [FromQuery] int mutuaId = 1)  
+        [FromQuery] int mutuaId = 1)
     {
         var result = await _service.GetListaOfertasAsync(filtros, mutuaId);
         return Ok(result);
@@ -36,5 +36,29 @@ public class ListaOfertasController : ControllerBase
     {
         var result = await _service.GetAñosAsync();
         return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _service.GetByIdAsync(id);
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] OfertaEditDTO dto)
+    {
+        var result = await _service.UpdateAsync(id, dto);
+        if (!result) return NotFound();
+        return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _service.DeleteAsync(id);
+        if (!result) return NotFound();
+        return Ok();
     }
 }

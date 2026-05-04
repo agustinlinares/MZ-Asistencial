@@ -14,7 +14,7 @@ import RadioGroup from "devextreme-react/radio-group";
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
 
-const API = 'https://localhost:7132/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
 const VISTAS = ['Agrupada', 'Desagrupada'];
 
@@ -31,12 +31,15 @@ const GestionOferta = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const buscarRef = useRef(null);
+    const menuRef = useRef(null);
 
     const [tipo, setTipo] = useState('Todos');
     const [vista, setVista] = useState('Agrupada');
     const [añoSeleccionado, setAñoSeleccionado] = useState(null);
     const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
     const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const [ofertaEditando, setOfertaEditando] = useState(null);
 
     const [fechaSolicitudDesde, setFechaSolicitudDesde] = useState(null);
     const [fechaSolicitudHasta, setFechaSolicitudHasta] = useState(null);
@@ -94,6 +97,15 @@ const GestionOferta = () => {
     useEffect(() => { buscarRef.current = buscar; }, [buscar]);
 
     useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target))
+                setMenuAbierto(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    useEffect(() => {
         fetch(`${API}/ListaOfertas/años`)
             .then(res => res.json())
             .then(data => {
@@ -107,10 +119,7 @@ const GestionOferta = () => {
             .then(data => {
                 const todos = [{ estadoId: null, estado: 'Todas' }, ...data];
                 setEstados(todos);
-                const estadoPendiente = data.find(e =>
-                    e.estado?.toLowerCase().includes('pendiente asign')
-                );
-                setEstadoSeleccionado(estadoPendiente ? estadoPendiente.estadoId : null);
+                setEstadoSeleccionado(null);
             })
             .catch(err => console.error('Error al cargar estados:', err));
     }, []);
@@ -131,14 +140,51 @@ const GestionOferta = () => {
         setDemandaId('');
     };
 
+    const handleGuardarEdicion = () => {
+        fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(ofertaEditando),
+        })
+            .then(res => {
+                if (res.ok) {
+                    setOfertaEditando(null);
+                    buscarRef.current();
+                } else {
+                    alert('Error al guardar');
+                }
+            })
+            .catch(err => console.error('Error:', err));
+    };
+
     return (
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
 
+                {/* HEADER */}
                 <div className="ficha-modal-header">
                     <span className="ficha-modal-title">{t('LISTA OFERTAS')}</span>
+                    <div className="acciones-container" ref={menuRef}>
+                        <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                            {t('Acciones')}
+                            <i className="ri-more-2-fill"></i>
+                        </div>
+                        {menuAbierto && (
+                            <div className="acciones-menu">
+                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); }}>
+                                    <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
+                                    {t('Nueva Oferta')}
+                                </div>
+                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                    {t('Exportar a Excel')}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
+                {/* FILTROS PRINCIPALES */}
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                         <div className="ficha-field">
@@ -161,7 +207,7 @@ const GestionOferta = () => {
                             <RadioGroup items={VISTAS} value={vista} onValueChanged={e => setVista(e.value)} layout="horizontal" />
                         </div>
                         <button type="button" className="ficha-btn-primary" style={{ marginTop: 16 }} onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
-                            {filtrosExpandidos ? '− Filtros' : '+ Filtros'}
+                            {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
                         </button>
                     </div>
 
@@ -176,19 +222,19 @@ const GestionOferta = () => {
                                 <DateBox value={fechaSolicitudHasta} onValueChanged={e => setFechaSolicitudHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
-                                <label>Fecha Asignación Desde</label>
+                                <label>Fecha Asignacion Desde</label>
                                 <DateBox value={fechaAsignacionDesde} onValueChanged={e => setFechaAsignacionDesde(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
-                                <label>Fecha Asignación Hasta</label>
+                                <label>Fecha Asignacion Hasta</label>
                                 <DateBox value={fechaAsignacionHasta} onValueChanged={e => setFechaAsignacionHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
-                                <label>Fecha Confirmación Desde</label>
+                                <label>Fecha Confirmacion Desde</label>
                                 <DateBox value={fechaConfirmacionDesde} onValueChanged={e => setFechaConfirmacionDesde(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
-                                <label>Fecha Confirmación Hasta</label>
+                                <label>Fecha Confirmacion Hasta</label>
                                 <DateBox value={fechaConfirmacionHasta} onValueChanged={e => setFechaConfirmacionHasta(e.value)} displayFormat="dd/MM/yyyy" showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
@@ -196,7 +242,7 @@ const GestionOferta = () => {
                                 <TextBox value={necesidadesServicio} onValueChanged={e => setNecesidadesServicio(e.value)} showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
-                                <label>Contestación a las Necesidades</label>
+                                <label>Contestacion a las Necesidades</label>
                                 <TextBox value={contestacionNecesidades} onValueChanged={e => setContestacionNecesidades(e.value)} showClearButton width="100%" />
                             </div>
                             <div className="ficha-field">
@@ -211,13 +257,14 @@ const GestionOferta = () => {
                     )}
                 </div>
 
+                {/* TABLA */}
                 <div className="ficha-tab-content" style={{ padding: '16px' }}>
                     <DataGrid
                         ref={dataGridRef}
                         dataSource={datos}
                         keyExpr="ofertaId"
                         showBorders={true}
-                        columnAutoWidth={true}
+                        columnAutoWidth={false}
                         allowColumnResizing={true}
                         onExporting={onExporting}
                         className="mz-table"
@@ -233,7 +280,7 @@ const GestionOferta = () => {
                         <FilterRow visible={true} applyFilter="auto" />
                         <HeaderFilter visible searchMode="contains" />
                         <Selection mode="multiple" allowSelectAll />
-                        <GroupPanel visible={vista === 'Agrupada'} />
+                        <GroupPanel visible={vista === 'Agrupada'} emptyPanelText="Arrastra una columna aqui para agrupar" />
                         <Grouping autoExpandAll={false} />
                         <ColumnChooser enabled mode="select" />
                         <Export enabled fileName="ListaOfertas" allowExportSelectedData />
@@ -252,34 +299,134 @@ const GestionOferta = () => {
                         <Column dataField="especialidad" caption="Especialidad" width={160} />
                         <Column dataField="tipoMovimiento" caption="Tipo Movimiento" width={140} />
                         <Column dataField="servicio" caption="Servicio" width={150} />
+                        <Column dataField="estado" caption="Estado" width={140} />
                         <Column dataField="demandaId" caption="Num. Pet." width={90} />
                         <Column dataField="peticionesPendientesAsignar" caption="Pet. Pend. Asig." width={110} />
-                        <Column dataField="ene" caption="Ene" width={55} alignment="center" />
-                        <Column dataField="feb" caption="Feb" width={55} alignment="center" />
-                        <Column dataField="mar" caption="Mar" width={55} alignment="center" />
-                        <Column dataField="abr" caption="Abr" width={55} alignment="center" />
-                        <Column dataField="may" caption="May" width={55} alignment="center" />
-                        <Column dataField="jun" caption="Jun" width={55} alignment="center" />
-                        <Column dataField="jul" caption="Jul" width={55} alignment="center" />
-                        <Column dataField="ago" caption="Ago" width={55} alignment="center" />
-                        <Column dataField="sep" caption="Sep" width={55} alignment="center" />
-                        <Column dataField="oct" caption="Oct" width={55} alignment="center" />
-                        <Column dataField="nov" caption="Nov" width={55} alignment="center" />
-                        <Column dataField="dic" caption="Dic" width={55} alignment="center" />
-                        <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" />
+                        <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="abr" caption="Abr" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="may" caption="May" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="jun" caption="Jun" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="jul" caption="Jul" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="ago" caption="Ago" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="sep" caption="Sep" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="oct" caption="Oct" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="nov" caption="Nov" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="dic" caption="Dic" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                        <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
                         <Column
-                            caption="Acción"
-                            width={80}
+                            caption="Acciones"
+                            width={90}
                             fixed
                             fixedPosition="right"
-                            cellRender={() => (
-                                <button type="button" className="ficha-btn-secondary" style={{ padding: '2px 8px', fontSize: 11 }}>
-                                    ...
-                                </button>
+                            alignment="center"
+                            allowFiltering={false}
+                            allowHeaderFiltering={false}
+                            allowSorting={false}
+                            cellRender={(cell) => (
+                                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                                    <div
+                                        style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
+                                        title="Editar"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`)
+                                                .then(res => res.json())
+                                                .then(data => setOfertaEditando(data))
+                                                .catch(err => console.error('Error:', err));
+                                        }}
+                                    >
+                                        <i className="ri-edit-line"></i>
+                                    </div>
+                                    <div
+                                        style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
+                                        title="Eliminar"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm('Seguro que desea eliminar esta oferta?')) {
+                                                fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
+                                                    .then(res => {
+                                                        if (res.ok) {
+                                                            setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
+                                                        } else {
+                                                            alert('Error al eliminar la oferta');
+                                                        }
+                                                    })
+                                                    .catch(err => console.error('Error:', err));
+                                            }
+                                        }}
+                                    >
+                                        <i className="ri-delete-bin-line"></i>
+                                    </div>
+                                </div>
                             )}
                         />
                     </DataGrid>
                 </div>
+
+                {/* MODAL EDICION */}
+                {ofertaEditando && (
+                    <div style={{
+                        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                    }}>
+                        <div style={{
+                            background: '#fff', borderRadius: 8, width: 620,
+                            maxHeight: '90vh', overflow: 'auto',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+                        }}>
+                            <div className="ficha-modal-header">
+                                <span className="ficha-modal-title">Editar Oferta #{ofertaEditando.ofertaId}</span>
+                                <div className="ficha-header-btns">
+                                    <button className="ficha-btn-primary" onClick={handleGuardarEdicion}>Guardar</button>
+                                    <button className="ficha-btn-secondary" onClick={() => setOfertaEditando(null)}>Cancelar</button>
+                                </div>
+                            </div>
+                            <div style={{ padding: 20 }}>
+                                <div className="ficha-grid">
+                                    <div className="ficha-field">
+                                        <label>Estado</label>
+                                        <select
+                                            value={ofertaEditando.estadoId || ''}
+                                            onChange={e => setOfertaEditando(prev => ({ ...prev, estadoId: parseInt(e.target.value) }))}
+                                        >
+                                            {estados.filter(e => e.estadoId !== null).map(e => (
+                                                <option key={e.estadoId} value={e.estadoId}>{e.estado}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="ficha-field">
+                                        <label>Nota Contestacion</label>
+                                        <input
+                                            type="text"
+                                            value={ofertaEditando.notaContestacion || ''}
+                                            onChange={e => setOfertaEditando(prev => ({ ...prev, notaContestacion: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: 20 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: '#1a5fa8', textTransform: 'uppercase', marginBottom: 12 }}>
+                                        Plazas por mes
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
+                                        {['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'].map(mes => (
+                                            <div className="ficha-field" key={mes}>
+                                                <label>{mes.charAt(0).toUpperCase() + mes.slice(1)}</label>
+                                                <input
+                                                    type="number"
+                                                    value={ofertaEditando[mes] || 0}
+                                                    onChange={e => setOfertaEditando(prev => ({ ...prev, [mes]: parseInt(e.target.value) || 0 }))}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );
