@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+﻿﻿﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -129,7 +129,7 @@ const FichaCentroPropio = () => {
     }, [cliente]);
 
     // âœ… Leer datos del mapa desde sessionStorage al montar
-// âœ… Leer datos del mapa desde sessionStorage con delay para que el form estÃ© inicializado
+// âœ… Leer datos del mapa desde sessionStorage con delay para que el form esté inicializado
     useEffect(() => {
         const timer = setTimeout(() => {
             const mapaData = sessionStorage.getItem('mapaRetorno');
@@ -181,7 +181,7 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
-    // Localizador automÃ¡tico al seleccionar mutua en centro nuevo
+    // Localizador automático al seleccionar mutua en centro nuevo
     useEffect(() => {
         if (!form.CentroId && form.Mutua) {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
@@ -248,7 +248,7 @@ const FichaCentroPropio = () => {
             if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
             else { alert('Error al guardar el centro'); }
         } catch (err) {
-            alert('Error de conexiÃ³n: ' + err.message);
+            alert('Error de conexión: ' + err.message);
         } finally {
             setGuardando(false);
         }
@@ -267,7 +267,7 @@ const FichaCentroPropio = () => {
                     </button>
                     <div className="fcp-header-info">
                         <span className="fcp-header-titulo">Ficha Centro Propio</span>
-                        <span className="fcp-header-subtitulo">{form.Localizador} â€” {form.Centro}</span>
+                        <span className="fcp-header-subtitulo">{form.Localizador} — {form.Centro}</span>
                     </div>
                 </div>
                 <div className="fcp-header-right">
@@ -319,44 +319,44 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field">
                                 <label>Provincia</label>
                                 <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {PROVINCIAS.map(p => (
                                         <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>PoblaciÃ³n</label>
+                                <label>Población</label>
                                 <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {POBLACIONES.map(p => (
                                         <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>CÃ³digo Postal</label>
+                                <label>Código Postal</label>
                                 <input type="text" value={form.Cp || ""} onChange={set("Cp")} />
                             </div>
                             <div className="fcp-field">
-                                <label>VÃ­a PÃºblica</label>
+                                <label>Vía Pública</label>
                                 <select value={form.ViaPublica || ""} onChange={set("ViaPublica")}>
                                     {VIAS.map(v => <option key={v}>{v}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>DirecciÃ³n</label>
+                                <label>Dirección</label>
                                 <input type="text" value={form.Direccion || ""} onChange={set("Direccion")} />
                             </div>
                             <div className="fcp-field">
-                                <label>NÃºmero</label>
+                                <label>Número</label>
                                 <input type="text" value={form.Numero || ""} onChange={set("Numero")} />
                             </div>
                             <div className="fcp-field">
@@ -370,20 +370,20 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Servicios Especiales</label>
                                 <select value={form.ServiciosEspeciales || ""} onChange={set("ServiciosEspeciales")}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field">
-                                <label>TelÃ©fono</label>
+                                <label>Teléfono</label>
                                 <input type="text" value={form.Telefono || ""} onChange={set("Telefono")} />
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>DirecciÃ³n Google</label>
+                                <label>Dirección Google</label>
                                 <input type="text" value={form.DireccionGoogle || ""} onChange={set("DireccionGoogle")} />
                             </div>
                             <div className="fcp-field fcp-field--span2">
-                                <label>Verificar DirecciÃ³n Google</label>
+                                <label>Verificar Dirección Google</label>
                                 <div className="fcp-input-icon">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
                                     <button className="fcp-icon-btn" title="Abrir mapa"
@@ -393,7 +393,7 @@ const FichaCentroPropio = () => {
                                 </div>
                             </div>
                             <div className="fcp-field">
-                                <label>DirecciÃ³n ElectrÃ³nica</label>
+                                <label>Dirección Electrónica</label>
                                 <input type="email" value={form.Email || ""} onChange={set("Email")} />
                             </div>
                             <div className="fcp-field">
@@ -405,7 +405,7 @@ const FichaCentroPropio = () => {
                                 <input type="text" value={form.OtrosDatos || ""} onChange={set("OtrosDatos")} />
                             </div>
                             <div className="fcp-field">
-                                <label>AutorizaciÃ³n / ComunicaciÃ³n</label>
+                                <label>Autorización / Comunicación</label>
                                 <input type="date" value={form.Autorizacion || ""} onChange={set("Autorizacion")} />
                             </div>
                             <div className="fcp-field">
@@ -413,7 +413,7 @@ const FichaCentroPropio = () => {
                                 <input type="date" value={form.PuestaFuncionamiento || ""} onChange={set("PuestaFuncionamiento")} />
                             </div>
                             <div className="fcp-field">
-                                <label>CalificaciÃ³n de Suficiencia</label>
+                                <label>Calificación de Suficiencia</label>
                                 <input type="date" value={form.Calificacion || ""} onChange={set("Calificacion")} />
                             </div>
                             <div className="fcp-field">
@@ -448,11 +448,11 @@ const FichaCentroPropio = () => {
                             <div className="fcp-checkbox-grid">
                                 <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> Asistencia sanitaria Hospitalaria</label>
                                 <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> Asistencia sanitaria ambulatoria</label>
-                                <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitaciÃ³n</label>
+                                <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitación</label>
                                 <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> Control administrativo de IT</label>
-                                <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> PrevenciÃ³n R.L seguridad social</label>
+                                <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> Prevención R.L seguridad social</label>
                                 <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> Otras Actividades</label>
-                                <label><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> AdministraciÃ³n general de la Mutua</label>
+                                <label><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> Administración general de la Mutua</label>
                             </div>
                         </div>
                         <div className="fcp-bloque">
@@ -500,7 +500,7 @@ const FichaCentroPropio = () => {
                             <Column dataField="ano" caption="AÃ±o" width={80} />
                             <Column dataField="mutua" caption="Mutua" width={220} />
                             <Column dataField="centro" caption="Centro" width={220} />
-                            <Column dataField="fechaActualizacion" caption="Fecha de ActualizaciÃ³n" width={180} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
                             <Column dataField="usuario" caption="Usuario" width={150} />
                         </DataGrid>
                     </div>
@@ -522,7 +522,7 @@ const FichaCentroPropio = () => {
                             <Column dataField="Finca_id" caption="ID" width={70} />
                             <Column dataField="Localizador" caption="Localizador" width={110} />
                             <Column 
-                                caption="DirecciÃ³n" 
+                                caption="Dirección" 
                                 width={250} 
                                 cellRender={(cell) => (
                                     <span>
@@ -535,7 +535,7 @@ const FichaCentroPropio = () => {
                             <Column dataField="Titularidad" caption="Titularidad" width={180} />
                             <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
                             <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
-                            <Column dataField="F_Inscripcion" caption="F. InscripciÃ³n" width={140} dataType="date" format="dd/MM/yyyy" />
+                            <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
                         </DataGrid>
                     </div>
                 )}
@@ -548,18 +548,18 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
                             <div className="fcp-field">
                                 <label>Especialidad</label>
-                                <select><option value="">â€” Seleccionar â€”</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
                             <div className="fcp-field">
                                 <label>AÃ±o</label>
-                                <select><option value="">â€” Seleccionar â€”</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
                         <DataGrid dataSource={especialidades} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
@@ -593,18 +593,18 @@ const FichaCentroPropio = () => {
                             <div className="fcp-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">â€” Seleccionar â€”</option>
+                                    <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
                             <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
                             <div className="fcp-field">
                                 <label>Especialidad</label>
-                                <select><option value="">â€” Seleccionar â€”</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
                             <div className="fcp-field">
                                 <label>AÃ±o</label>
-                                <select><option value="">â€” Seleccionar â€”</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
                         <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
