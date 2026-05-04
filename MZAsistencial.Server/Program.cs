@@ -32,6 +32,7 @@ builder.Services.AddDbContext<MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── Servicios existentes ─────────────────────────────────────────────────────
+builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();
