@@ -4,7 +4,8 @@ import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrol
 import { Workbook } from "exceljs";
 import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
-import './FichaCentroPropio.css';
+
+import '../../../styles/FichaGlobal.css';
 
 const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
@@ -264,17 +265,19 @@ const FichaCentroPropio = () => {
                     <button className="fcp-btn-volver" onClick={() => navigate(-1)}>
                         <i className="ri-arrow-left-line" /> Volver
                     </button>
-                    <div className="fcp-header-info">
-                        <span className="fcp-header-titulo">Ficha Centro Propio</span>
-                        <span className="fcp-header-subtitulo">{form.Localizador} — {form.Centro}</span>
+                    <div className="ficha-modal-title" style={{ marginLeft: '15px' }}>
+                        {t('Ficha Centro Propio')}
+                        <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666', fontWeight: 'normal' }}>
+                            {form.Localizador} — {form.Centro}
+                        </span>
                     </div>
                 </div>
-                <div className="fcp-header-right">
-                    <button className="fcp-btn-guardar" onClick={handleGuardar} disabled={guardando}>
-                        <i className="ri-check-line" /> {guardando ? "Guardando..." : "Aceptar"}
+                <div className="ficha-header-btns">
+                    <button className="ficha-btn-primary" onClick={handleGuardar} disabled={guardando}>
+                        <i className="ri-check-line" /> {guardando ? t("Guardando...") : t("Aceptar")}
                     </button>
-                    <button className="fcp-btn-salir" onClick={() => navigate(-1)}>
-                        <i className="ri-close-line" /> Salir
+                    <button className="ficha-btn-secondary" onClick={() => navigate(-1)}>
+                        <i className="ri-close-line" /> {t('Salir')}
                     </button>
                 </div>
             </div>
@@ -284,10 +287,10 @@ const FichaCentroPropio = () => {
                 {TABS.map(({ key, label }) => (
                     <button
                         key={key}
-                        className={"fcp-tab" + (tabActiva === key ? " active" : "")}
+                        className={"ficha-tab" + (tabActiva === key ? " active" : "")}
                         onClick={() => setTabActiva(key)}
                     >
-                        {label}
+                        {t(label)}
                     </button>
                 ))}
             </div>
@@ -298,31 +301,31 @@ const FichaCentroPropio = () => {
                 {/* GENERAL */}
                 {tabActiva === "general" && (
                     <div className="fcp-seccion">
-                        <div className="fcp-grid">
-                            <div className="fcp-field">
+                        <div className="ficha-grid">
+                            <div className="ficha-field">
                                 <label>Localizador</label>
                                 <input type="text" value={form.Localizador || ""} onChange={set("Localizador")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Tipo de Centro</label>
                                 <input type="text" value={form.TipoCentro || ""} readOnly className="readonly" />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Centro ID</label>
                                 <input type="text" value={form.CentroId || ""} readOnly className="readonly" />
                             </div>
-                            <div className="fcp-field fcp-field--span2">
+                            <div className="ficha-field span2">
                                 <label>Centro</label>
                                 <input type="text" value={form.Centro || ""} onChange={set("Centro")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Provincia</label>
                                 <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
                                     <option value="">— Seleccionar —</option>
@@ -331,7 +334,7 @@ const FichaCentroPropio = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Población</label>
                                 <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
                                     <option value="">— Seleccionar —</option>
@@ -340,50 +343,50 @@ const FichaCentroPropio = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Código Postal</label>
                                 <input type="text" value={form.Cp || ""} onChange={set("Cp")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Vía Pública</label>
                                 <select value={form.ViaPublica || ""} onChange={set("ViaPublica")}>
                                     {VIAS.map(v => <option key={v}>{v}</option>)}
                                 </select>
                             </div>
-                            <div className="fcp-field fcp-field--span2">
+                            <div className="ficha-field span2">
                                 <label>Dirección</label>
                                 <input type="text" value={form.Direccion || ""} onChange={set("Direccion")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Número</label>
                                 <input type="text" value={form.Numero || ""} onChange={set("Numero")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Piso</label>
                                 <input type="text" value={form.Piso || ""} onChange={set("Piso")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Puerta</label>
                                 <input type="text" value={form.Puerta || ""} onChange={set("Puerta")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Servicios Especiales</label>
                                 <select value={form.ServiciosEspeciales || ""} onChange={set("ServiciosEspeciales")}>
                                     <option value="">— Seleccionar —</option>
                                     {SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}
                                 </select>
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Teléfono</label>
                                 <input type="text" value={form.Telefono || ""} onChange={set("Telefono")} />
                             </div>
-                            <div className="fcp-field fcp-field--span2">
+                            <div className="ficha-field span2">
                                 <label>Dirección Google</label>
                                 <input type="text" value={form.DireccionGoogle || ""} onChange={set("DireccionGoogle")} />
                             </div>
-                            <div className="fcp-field fcp-field--span2">
+                            <div className="ficha-field span2">
                                 <label>Verificar Dirección Google</label>
-                                <div className="fcp-input-icon">
+                                <div className="ficha-input-suffix">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
                                     <button className="fcp-icon-btn" title="Abrir mapa"
                                         onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
@@ -391,31 +394,31 @@ const FichaCentroPropio = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Dirección Electrónica</label>
                                 <input type="email" value={form.Email || ""} onChange={set("Email")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Persona de Contacto</label>
                                 <input type="text" value={form.PersonaContacto || ""} onChange={set("PersonaContacto")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Otros Datos</label>
                                 <input type="text" value={form.OtrosDatos || ""} onChange={set("OtrosDatos")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Autorización / Comunicación</label>
                                 <input type="date" value={form.Autorizacion || ""} onChange={set("Autorizacion")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Puesta en Funcionamiento</label>
                                 <input type="date" value={form.PuestaFuncionamiento || ""} onChange={set("PuestaFuncionamiento")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Calificación de Suficiencia</label>
                                 <input type="date" value={form.Calificacion || ""} onChange={set("Calificacion")} />
                             </div>
-                            <div className="fcp-field">
+                            <div className="ficha-field">
                                 <label>Centro Inicial</label>
                                 <input type="date" value={form.CentroInicial || ""} onChange={set("CentroInicial")} />
                             </div>
@@ -458,18 +461,18 @@ const FichaCentroPropio = () => {
                             <p className="fcp-bloque-titulo">Motivo de la Baja</p>
                             <textarea className="fcp-textarea" value={form.MotivoBaja || ""} onChange={e => setForm(f => ({ ...f, MotivoBaja: e.target.value }))} rows={4} />
                         </div>
-                        <div className="fcp-grid fcp-grid--3">
-                            <div className="fcp-field">
+                        <div className="ficha-grid ficha-grid--3">
+                            <div className="ficha-field">
                                 <label>Fecha de Baja</label>
                                 <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")}
                                     disabled={!form.CentroDesactivado}
                                     style={{ opacity: !form.CentroDesactivado ? 0.4 : 1, cursor: !form.CentroDesactivado ? "not-allowed" : "default" }} />
                             </div>
-                            <div className="fcp-field fcp-field--center">
+                            <div className="ficha-field ficha-field--center">
                                 <label>Traslado</label>
                                 <input type="checkbox" checked={form.Traslado || false} onChange={set("Traslado")} className="fcp-check-center" />
                             </div>
-                            <div className="fcp-field fcp-field--center">
+                            <div className="ficha-field ficha-field--center">
                                 <label>Centro Desactivado</label>
                                 <input type="checkbox" checked={form.CentroDesactivado || false} onChange={set("CentroDesactivado")} className="fcp-check-center" />
                             </div>
@@ -561,16 +564,16 @@ const FichaCentroPropio = () => {
                         )}
 
                         <div className="fcp-filtros">
-                            <div className="fcp-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
-                            <div className="fcp-field">
+                            <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
-                            <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
-                            <div className="fcp-field">
+                            <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field">
                                 <label>Especialidad</label>
                                 <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
@@ -639,16 +642,16 @@ const FichaCentroPropio = () => {
                 {tabActiva === "catalogo" && (
                     <div className="fcp-seccion">
                         <div className="fcp-filtros">
-                            <div className="fcp-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
-                            <div className="fcp-field">
+                            <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                     <option value="">— Seleccionar —</option>
                                     {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                 </select>
                             </div>
-                            <div className="fcp-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
-                            <div className="fcp-field">
+                            <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field">
                                 <label>Especialidad</label>
                                 <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>

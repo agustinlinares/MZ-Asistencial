@@ -27,8 +27,6 @@ public partial class Usuario
 
     public string? CorreoElectronico { get; set; }
 
-    public string? Contraseña { get; set; }
-
     public DateTime? FechaBaja { get; set; }
 
     public DateTime? FechaPassword { get; set; }

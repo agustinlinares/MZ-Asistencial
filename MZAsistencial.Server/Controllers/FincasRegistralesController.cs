@@ -19,11 +19,8 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<FincaRegistralDTO>>> Get([FromQuery] int? centroId)
         {
-            // ✅ ObtenerTodasLasFincas no acepta parámetros — filtrar en memoria si se pasa centroId
-            var todas = await _service.ObtenerTodasLasFincas();
-            if (centroId.HasValue)
-                todas = todas.Where(f => f.Centro_id == centroId.Value).ToList();
-            return Ok(todas);
+            var data = await _service.ObtenerTodasLasFincas(centroId);
+            return Ok(data);
         }
 
         [HttpPost]
@@ -47,12 +44,8 @@ namespace MZAsistencial.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            // ✅ EliminarFinca no existe en el Service — eliminamos directamente via contexto
-            var finca = await _service.ObtenerFincaPorId(id);
-            if (finca == null) return NotFound();
-            // Marcar fecha de baja en lugar de eliminar físicamente
-            finca.F_Baja = DateTime.Now;
-            await _service.ActualizarFinca(id, finca);
+            var ok = await _service.EliminarFinca(id);
+            if (!ok) return NotFound();
             return Ok();
         }
 

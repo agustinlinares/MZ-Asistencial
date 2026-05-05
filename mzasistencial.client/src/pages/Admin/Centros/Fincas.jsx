@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -53,15 +52,16 @@ const Fincas = () => {
     const menuRef = useRef(null);
 
     useEffect(() => {
-        const fetchFincas = async () => {
+        const loadData = async () => {
             try {
-                const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
-                if (respuesta.ok) {
-                    const data = await respuesta.json();
-                    setFincas(data);
-                }
+                const [fincasData, centrosData] = await Promise.all([
+                    FincasService.getAll(),
+                    FincasService.getCentrosLookup()
+                ]);
+                setFincas(fincasData);
+                setCentros(centrosData);
             } catch (error) {
-                console.error('Error al cargar fincas registrales:', error);
+                console.error('Error loading data:', error);
             }
         };
 
@@ -98,8 +98,7 @@ const Fincas = () => {
 
     const recargarFincas = async () => {
         try {
-            const respuesta = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
-            if (respuesta.ok) setFincas(await respuesta.json());
+            setFincas(await FincasService.getAll());
         } catch (error) {
             console.error('Error al recargar fincas:', error);
         }
@@ -107,40 +106,22 @@ const Fincas = () => {
 
     const handleSaveFinca = async (data) => {
         try {
-            const isEdit = !!data.finca_id;
-            const url = isEdit
-                ? `/api/FincasRegistrales/${data.finca_id}`
-                : '/api/FincasRegistrales';
-            const method = isEdit ? 'PUT' : 'POST';
-            const payload = {
-                Finca_id: parseInt(data.finca_id) || 0,
-                Centro_id: parseInt(data.centro_id) || 0,
-                Mutua: data.mutua || null,
-                Direccion: data.direccion || null,
-                Superficie: data.superficie !== '' && data.superficie != null ? parseFloat(data.superficie) : null,
-                Coste: data.coste !== '' && data.coste != null ? parseFloat(data.coste) : null,
-                F_Alquiler: data.f_adquisicion || null,
-                Referencia_Catastral: data.ref_catastral || null,
-                F_Inscripcion: data.f_inscripcion || null,
-                F_Baja: data.f_baja || null,
-                TipoFinca: data.tipo_finca_idx != null ? parseInt(data.tipo_finca_idx) : null,
-                Titularidad: data.titularidad || null,
-                OtrosDatos: data.otros_datos || null,
-                Utilizacion: data.utilizacion || null,
-                DireccionGoogle: data.dir_google || null,
-                Latitud: data.latitud || null,
-                Longitud: data.longitud || null,
-            };
-            const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(payload) });
-            if (res.ok) {
-                setSelectedFinca(null);
-                await recargarFincas();
-            } else {
-                alert(`Error al guardar: ${res.status} ${res.statusText}`);
-            }
+            await FincasService.save(data);
+            setSelectedFinca(null);
+            await recargarFincas();
         } catch (error) {
             console.error('Error al guardar finca:', error);
             alert(`Error: ${error.message}`);
+        }
+    };
+
+    const handleEliminar = async (id) => {
+        if (!window.confirm(t('¿Está seguro de que desea eliminar esta finca?'))) return;
+        try {
+            await FincasService.delete(id);
+            await recargarFincas();
+        } catch (error) {
+            console.error('Error al eliminar finca:', error);
         }
     };
 
@@ -151,40 +132,12 @@ const Fincas = () => {
 
     const handleExportarExcel = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance();
-        if (!grid) return;
-
-        const workbook = new Workbook();
-        const worksheet = workbook.addWorksheet('Fincas');
-
-        exportDataGrid({
-            component: grid,
-            worksheet,
-            autoFilterEnabled: true
-        }).then(() => {
-            workbook.xlsx.writeBuffer().then((buffer) => {
-                saveAs(new Blob([buffer]), 'Fincas.xlsx');
-            });
-        });
+        FincasService.exportToExcel(dataGridRef.current.instance());
     };
 
     const handleExportarPDF = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance();
-        if (!grid) return;
-
-        import('devextreme/pdf_exporter').then(({ exportDataGrid }) => {
-            import('jspdf').then(({ jsPDF }) => {
-                const doc = new jsPDF({ orientation: 'landscape' });
-                exportDataGrid({
-                    jsPDFDocument: doc,
-                    component: grid,
-                    indent: 5,
-                }).then(() => {
-                    doc.save('Fincas.pdf');
-                });
-            });
-        });
+        FincasService.exportToPDF(dataGridRef.current.instance());
     };
 
     return (
