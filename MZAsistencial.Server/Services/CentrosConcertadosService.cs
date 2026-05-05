@@ -10,6 +10,7 @@ namespace MZAsistencial.Server.Services
         // Métodos para guardar
         Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto);
         Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto);
+        Task<List<MutuaAsignadaDTO>> GetMutuasAsignadasAsync(int centroId);
     }
 
     public class CentrosConcertadosService : ICentrosConcertadosService
@@ -114,6 +115,20 @@ namespace MZAsistencial.Server.Services
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<MutuaAsignadaDTO>> GetMutuasAsignadasAsync(int centroId)
+        {
+            return await _context.Conciertos
+                .Where(c => c.CentroId == centroId)
+                .Join(_context.Mutuas,
+                    c => c.MutuaId,
+                    m => m.MutuaId,
+                    (c, m) => new MutuaAsignadaDTO
+                    {
+                        NombreMutua = m.Mutua1
+                    })
+                .ToListAsync();
         }
     }
 }

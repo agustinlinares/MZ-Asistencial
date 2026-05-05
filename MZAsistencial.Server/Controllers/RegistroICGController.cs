@@ -21,5 +21,12 @@ namespace MZAsistencial.Server.Controllers
             var result = await _service.GetByCentroIdAsync(centroId);
             return Ok(result);
         }
+
+        [HttpGet("Concertado/{centroId:int}")]
+        public async Task<ActionResult<List<RegistroICGDTO>>> GetConcertadoByCentroId(int centroId)
+        {
+            var result = await _service.GetConcertadosByCentroIdAsync(centroId);
+            return Ok(result);
+        }
     }
 }
