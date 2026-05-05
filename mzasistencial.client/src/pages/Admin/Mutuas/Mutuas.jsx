@@ -237,20 +237,15 @@ const Mutuas = () => {
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
-
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTADO DE MUTUAS')}
+                            {t('LISTA DE MUTUAS')}
                         </div>
 
                         <div className="acciones-container" ref={menuRef}>
-    
-                            <div 
-                                className="acciones-btn"
-                                onClick={() => setMenuAbierto(v => !v)}
-                            >
+                            <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                <i className="ri-settings-3-line"></i>
                                 {t('Acciones')}
-                                <i className="ri-more-2-fill"></i>
                             </div>
 
                             {menuAbierto && (
@@ -301,20 +296,15 @@ const Mutuas = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
-                            // Oculta los botones de exportar y selector de columnas???
-                            onToolbarPreparing={(e) => {
-                                e.toolbarOptions.items.forEach(item => {
-                                    //if (item.name === 'exportButton' || item.name === 'columnChooserButton') {
-                                    if (item.name === 'exportButton') {
-                                        item.cssClass = 'd-none';
-                                    }
-                                });
-                            }}
-                            
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                            
+                            <Toolbar>
+                                <Item location="after" name="searchPanel" />
+                                <Item location="after" name="columnChooserButton" />
+                            </Toolbar>
                             <SearchPanel visible width={240} placeholder={t('buscar')} />
                             <FilterRow visible={true} applyFilter="auto" />
                             <HeaderFilter visible searchMode='contains' />
@@ -375,42 +365,25 @@ const Mutuas = () => {
                             <Column
                                 dataField="acciones"
                                 caption={t('Acciones')}
-                                fixed={true}
-                                fixedPosition="right"
-                                width={100}
-                                alignment="center"
+                                                          alignment="center"
                                 cellRender={(cellData) => (
-                                    <div 
-                                        style={{ 
-                                            display: 'flex', 
-                                            gap: '10px', 
-                                            justifyContent: 'center', 
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        {/* EDITAR */}
-                                        <div 
-                                            style={{ color: '#2f5da8', cursor: 'pointer' }}
+                                    <div className="ficha-row-actions">
+                                        <i 
+                                            className="ri-edit-line edit-icon" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setSelectedMutua(cellData.data);
                                             }}
-                                            title="Editar"
-                                        >
-                                            <i className="ri-edit-line"></i>
-                                        </div>
-
-                                        {/* ELIMINAR */}
-                                        <div 
-                                            style={{ color: '#c62828', cursor: 'pointer' }}
+                                            title={t('Editar')}
+                                        />
+                                        <i 
+                                            className="ri-delete-bin-line delete-icon" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleEliminar(cellData.data.numeroId);
                                             }}
-                                            title="Eliminar"
-                                        >
-                                            <i className="ri-delete-bin-line"></i>
-                                        </div>
+                                            title={t('Eliminar')}
+                                        />
                                     </div>
                                 )}
                             />

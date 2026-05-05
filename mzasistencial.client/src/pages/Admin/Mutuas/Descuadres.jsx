@@ -70,8 +70,9 @@ const Descuadres = () => {
     }, []);
 
     return (
-        <div className="ficha-container-inline">
-            <div className="ficha-inline-content">
+        <React.Fragment>
+            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
+                <div className="file-box">
 
                 <div className="ficha-modal-header">
                     <span className="ficha-modal-title">{t('Lista de descuadres')}</span>
@@ -104,7 +105,7 @@ const Descuadres = () => {
                     </div>
                 </div>
 
-                <div className="ficha-tab-content" style={{ padding: '16px' }}>
+                <div className="table-container">
                     <DataGrid
                         ref={dataGridRef}
                         dataSource={datos}
@@ -117,12 +118,17 @@ const Descuadres = () => {
                         showRowLines={true}
                         showColumnLines={true}
                         wordWrapEnabled={false}
-                        noDataText="Sin datos para mostrar"
+                        noDataText={t('Sin datos para mostrar')}
                     >
+                        <Toolbar>
+                            <Item location="after" name="searchPanel" />
+                            <Item location="after" name="columnChooserButton" />
+                        </Toolbar>
+
                         <Scrolling mode="standard" showScrollbar="always" />
                         <Paging defaultPageSize={25} />
                         <Pager visible={true} allowedPageSizes={[10, 25, 50]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
-                        <SearchPanel visible width={240} placeholder={t('Buscar...')} />
+                        <SearchPanel visible width={240} placeholder={t('buscar')} />
                         <FilterRow visible={true} applyFilter="auto" />
                         <HeaderFilter visible searchMode="contains" />
                         <Selection mode="multiple" allowSelectAll />
@@ -166,8 +172,9 @@ const Descuadres = () => {
                         <Column dataField="concertNoConf" caption="Concert. no conf." width={130} />
                     </DataGrid>
                 </div>
+                </div>
             </div>
-        </div>
+        </React.Fragment>
     );
 };
 

@@ -624,6 +624,18 @@ const ICGCentrosPropios = () => {
     const [loading,            setLoading]            = useState(true);
     const [año,                setAño]                = useState(YEAR_NOW);
     const [centroSeleccionado, setCentroSeleccionado] = useState(null);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     // Cargar listado de centros (una sola vez)
     useEffect(() => {
@@ -674,25 +686,50 @@ const ICGCentrosPropios = () => {
 
     if (centroSeleccionado) {
         return (
-            <div style={st.page}>
-                <FichaICG06
-                    centro={centroSeleccionado}
-                    año={año}
-                    onBack={() => setCentroSeleccionado(null)}
-                />
+            <div className="ficha-container-inline">
+                <div className="ficha-inline-content">
+                    <FichaICG06
+                        centro={centroSeleccionado}
+                        año={año}
+                        onBack={() => setCentroSeleccionado(null)}
+                    />
+                </div>
             </div>
         );
     }
 
     return (
-        <div style={st.page}>
-            <div style={st.header}>
-                <div style={st.title}>LISTA CENTROS PROPIOS — ICG06</div>
-                <div style={st.yearWrap}>
-                    <span style={st.yearLabel}>Año:</span>
-                    <SelectBox items={YEARS} value={año} onValueChanged={e => setAño(e.value)} width={100} />
+        <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
+            <div className="file-box">
+                <div className="header-page">
+                    <div className="title">
+                        {t('LISTA CENTROS PROPIOS — ICG06')}
+                    </div>
+                    <div className="header-actions-side">
+                        <div className="year-selector-wrap">
+                            <span className="year-label">{t('Año')}:</span>
+                            <SelectBox items={YEARS} value={año} onValueChanged={e => setAño(e.value)} width={100} />
+                        </div>
+
+                        <div className="acciones-container" ref={menuRef}>
+                            <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                <i className="ri-settings-3-line"></i>
+                                {t('Acciones')}
+                            </div>
+
+                            {menuAbierto && (
+                                <div className="acciones-menu">
+                                    <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                        <i className="ri-file-excel-2-line"></i>
+                                        {t('Exportar Excel')}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
             <DataGrid
                 ref={dataGridRef}
                 dataSource={dataSource}
@@ -714,10 +751,8 @@ const ICGCentrosPropios = () => {
                 <Export enabled allowExportSelectedData />
                 <Paging defaultPageSize={20} />
                 <Toolbar>
-                    <Item name="groupPanel" />
-                    <Item name="searchPanel" />
-                    <Item name="columnChooserButton" />
-                    <Item name="exportButton" />
+                    <Item location="after" name="searchPanel" />
+                    <Item location="after" name="columnChooserButton" />
                 </Toolbar>
 
                 {/* ── Identificación ── */}
@@ -808,7 +843,9 @@ const ICGCentrosPropios = () => {
                         </button>
                     )}
                 />
-            </DataGrid>
+                    </DataGrid>
+                </div>
+            </div>
         </div>
     );
 };
