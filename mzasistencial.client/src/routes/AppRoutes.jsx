@@ -134,7 +134,7 @@ const AppRoutes = () => {
                             <Route path="Mantenimiento" element={<Mantenimiento />} />
                         </Route>
                     </Route>
-                    <Route path="Centros/FichaCentroPropio" element={<FichaCentroPropio />} />
+
                     <Route path="Centros/MapaPage" element={<MapaPage />} />
                 </Route>
             </Routes>

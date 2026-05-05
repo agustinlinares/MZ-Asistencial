@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import './Centros.css';
+import '../../../styles/FichaGlobal.css';
+import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import FichaFinca from './FichaFinca';
+import FincasService from "../../../services/admin/FincasService";
 import DataGrid, {
     Column,
     Paging,
@@ -19,6 +22,8 @@ import DataGrid, {
     FilterPanel,
     ColumnFixing,
     Pager,
+    Toolbar,
+    Item
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -52,16 +57,12 @@ const Fincas = () => {
     const menuRef = useRef(null);
 
     useEffect(() => {
-        const loadData = async () => {
+        const fetchFincas = async () => {
             try {
-                const [fincasData, centrosData] = await Promise.all([
-                    FincasService.getAll(),
-                    FincasService.getCentrosLookup()
-                ]);
+                const fincasData = await FincasService.getAll();
                 setFincas(fincasData);
-                setCentros(centrosData);
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error fetching fincas:', error);
             }
         };
 
@@ -146,7 +147,7 @@ const Fincas = () => {
                 <div className="file-box">
 
                     {!selectedFinca && (
-                        <div className="header-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
+                        <div className="header-page">
                             <div className="title">{t('LISTA FINCAS')}</div>
 
                             <div className="acciones-container" ref={menuRef}>
@@ -154,8 +155,8 @@ const Fincas = () => {
                                     className="acciones-btn"
                                     onClick={() => setMenuAbierto(v => !v)}
                                 >
+                                    <i className="ri-settings-3-line"></i>
                                     {t('Acciones')}
-                                    <i className="ri-more-2-fill"></i>
                                 </div>
 
                                 {menuAbierto && (
@@ -210,13 +211,21 @@ const Fincas = () => {
                                     <Scrolling mode="standard" showScrollbar="always" />
                                     <Paging defaultPageSize={25} />
                                     <Pager visible={true} allowedPageSizes={[10, 25, 50, 100]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    
+                                    <Toolbar>
+                                        <Item location="after" name="searchPanel" />
+                                        <Item location="after" name="columnChooserButton" />
+                                    </Toolbar>
+
                                     <SearchPanel visible width={240} placeholder={t('buscar')} />
+                                    <ColumnChooser enabled mode="select" />
+                                    <Export enabled fileName="Fincas" allowExportSelectedData />
+                                    
                                     <FilterRow visible={true} applyFilter="auto" />
                                     <HeaderFilter visible searchMode='contains' />
                                     <Selection mode="multiple" allowSelectAll />
                                     <Grouping autoExpandAll={false} />
-                                    <ColumnChooser enabled mode="select" />
-                                    <Export enabled fileName="Fincas" allowExportSelectedData />
+                                    
                                     <Sorting mode="multiple" />
                                     <FilterPanel visible />
                                     <ColumnFixing enabled />
@@ -242,14 +251,23 @@ const Fincas = () => {
                                         fixedPosition="right"
                                         alignment="center"
                                         cellRender={(cell) => (
-                                            <div
-                                                style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedFinca(cell.data);
-                                                }}
-                                            >
-                                                <i className="ri-edit-line"></i>
+                                            <div className="ficha-row-actions">
+                                                <i 
+                                                    className="ri-edit-line edit-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedFinca(cell.data);
+                                                    }}
+                                                    title={t('Editar')}
+                                                />
+                                                <i 
+                                                    className="ri-delete-bin-line delete-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEliminar(cell.data.Finca_id);
+                                                    }}
+                                                    title={t('Eliminar')}
+                                                />
                                             </div>
                                         )}
                                     />

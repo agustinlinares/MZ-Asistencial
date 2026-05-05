@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import './FichaMutua.css';
+import '../../../styles/FichaGlobal.css';
 
 // Recibimos dos props:
 // - mutua: los datos de la fila que clickó el usuario
@@ -169,49 +169,49 @@ const FichaMutua = ({ mutua, onClose }) => {
     };
 
     return (
-        <div className="fm-container-inline" role="region" aria-label={`Ficha Mutua ${datosMutua.numeroMutua}`}>
-            <div className="fm-inline-content" ref={modalRef} tabIndex={-1}>
+        <div className="ficha-container-inline" role="region" aria-label={`Ficha Mutua ${datosMutua.numeroMutua}`}>
+            <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
 
                 {/* HEADER */}
-                <div className="fm-modal-header">
-                    <span className="fm-modal-title">
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">
                         {/*✏️ Ficha Mutua | {datosMutua.numeroMutua || '—'}*/}
                          Ficha Mutua | {datosMutua.numeroMutua || '—'} | {datosMutua.mutua || '—'}
                     </span>
-                    <div className="fm-header-btns">
-                        <button className="fm-btn-primary" onClick={handleGuardar}>✓ Aceptar</button>
-                        <button className="fm-btn-secondary" onClick={onClose}>✗ Salir</button>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleGuardar}>✓ Aceptar</button>
+                        <button className="ficha-btn-secondary" onClick={onClose}>✗ Salir</button>
                     </div>
                 </div>
 
                 {/* PESTAÑAS HORIZONTALES*/}
-                <div className="fm-tabs">
+                <div className="ficha-tabs">
                     <button
-                        className={`fm-tab ${activeTab === "general" ? "active" : ""}`}
+                        className={`ficha-tab ${activeTab === "general" ? "active" : ""}`}
                         onClick={() => setActiveTab("general")}
                     >
                         General
                     </button>
                     <button
-                        className={`fm-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
+                        className={`ficha-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
                         onClick={() => setActiveTab("centrosPropios")}
                     >
                         Centros Propios
                     </button>
                     <button
-                        className={`fm-tab ${activeTab === "conciertos" ? "active" : ""}`}
+                        className={`ficha-tab ${activeTab === "conciertos" ? "active" : ""}`}
                         onClick={() => setActiveTab("conciertos")}
                     >
                         Conciertos
                     </button>
                     <button
-                        className={`fm-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
+                        className={`ficha-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
                         onClick={() => setActiveTab("especialidadesPropios")}
                     >
                         Especialidades / Serv. (Propios)
                     </button>
                     <button
-                        className={`fm-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
+                        className={`ficha-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
                         onClick={() => setActiveTab("especialidadesConciertos")}
                     >
                         Especialidades / Serv. (Conciertos)
@@ -219,22 +219,22 @@ const FichaMutua = ({ mutua, onClose }) => {
                 </div>
 
                 {/* CONTENIDO DE CADA PESTAÑA */}
-                <div className="fm-tab-content">
+                <div className="ficha-tab-content">
 
                     {/* PESTAÑA GENERAL — muestra los datos de la mutua */}
                     {activeTab === "general" && (
-                        <div className="fm-grid">
+                        <div className="ficha-grid">
 
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Mutua</label>
                                 {/* Usa form.mutua y tiene onChange */}
                                 <input type="text" value={form.mutua || ""} onChange={set("mutua")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Código Razón Social</label>
                                 <input type="text" value={form.razonSocial || ""} onChange={set("razonSocial")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Provincia</label>
                                 <select
                                     value={provinciaId || ""}
@@ -255,7 +255,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Población</label>
                                 <select
                                     value={form.poblacionId || ""}
@@ -278,31 +278,31 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Dirección</label>
                                 <input type="text" value={form.direccion || ""} onChange={set("direccion")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Código Postal</label>
                                 <input type="text" value={form.cp || ""} onChange={set("cp")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Teléfono</label>
                                 <input type="text" value={form.telefono || ""} onChange={set("telefono")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Fax</label>
                                 <input type="text" value={form.fax || ""} onChange={set("fax")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Dirección Electrónica</label>
                                 <input type="text" value={form.direccionElectronica || ""} onChange={set("direccionElectronica")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Persona de Contacto</label>
                                 <input type="text" value={form.personaContacto || ""} onChange={set("personaContacto")} />
                             </div>
-                            <div className="fm-field">
+                            <div className="ficha-field">
                                 <label>Número de Mutua</label>
                                 <input type="text" value={esNuevo ? "Se generará automáticamente" : form.numeroMutua} disabled />
                             </div>

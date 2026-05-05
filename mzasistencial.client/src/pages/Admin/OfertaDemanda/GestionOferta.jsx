@@ -158,31 +158,35 @@ const GestionOferta = () => {
     };
 
     return (
-        <div className="ficha-container-inline">
-            <div className="ficha-inline-content">
+        <React.Fragment>
+            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
+                <div className="file-box">
 
-                {/* HEADER */}
-                <div className="ficha-modal-header">
-                    <span className="ficha-modal-title">{t('LISTA OFERTAS')}</span>
-                    <div className="acciones-container" ref={menuRef}>
-                        <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
-                            {t('Acciones')}
-                            <i className="ri-more-2-fill"></i>
-                        </div>
-                        {menuAbierto && (
-                            <div className="acciones-menu">
-                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); }}>
-                                    <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
-                                    {t('Nueva Oferta')}
+                    <div className="header-page">
+                        <div className="title"> {t('LISTA OFERTAS')}</div>
+
+                        <div className="header-actions-side">
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
                                 </div>
-                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
-                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
-                                    {t('Exportar a Excel')}
-                                </div>
+
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item">
+                                            <i className="ri-add-line"></i>
+                                            {t('Nueva Oferta')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                            <i className="ri-file-excel-2-line"></i>
+                                            {t('Exportar Excel')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
-                </div>
 
                 {/* FILTROS PRINCIPALES */}
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
@@ -287,9 +291,8 @@ const GestionOferta = () => {
                         <Sorting mode="multiple" />
                         <ColumnFixing enabled />
                         <Toolbar>
-                            <Item name="groupPanel" />
-                            <Item name="columnChooserButton" />
-                            <Item name="exportButton" />
+                            <Item location="after" name="searchPanel" />
+                            <Item location="after" name="columnChooserButton" />
                         </Toolbar>
                         <Column dataField="año" caption="Año" width={70} fixed fixedPosition="left" />
                         <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} fixed fixedPosition="left" />
@@ -427,8 +430,9 @@ const GestionOferta = () => {
                     </div>
                 )}
 
+                </div>
             </div>
-        </div>
+        </React.Fragment>
     );
 };
 

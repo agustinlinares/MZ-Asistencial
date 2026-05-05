@@ -88,6 +88,18 @@ const PlantillasAcuerdos = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const navigate = useNavigate();
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     const [popupVisible, setPopupVisible] = useState(false);
     const [acuerdos, setAcuerdos] = useState([]);
@@ -253,19 +265,34 @@ const PlantillasAcuerdos = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="title">{t('PLANTILLAS DE ACUERDOS')}</div>
+                    <div className="header-page">
+                        <div className="title">{t('PLANTILLAS ACUERDOS')}</div>
 
-                    <div className="BotonesCombo">
-                        <button
-                            type="button"
-                            className="boton-action"
-                            onClick={() => setPopupVisible(true)}
-                        >
-                            <i className="ri-file-upload-line"></i> {t('Subir Plantilla')}
-                        </button>
-                        <button type="button" className="boton-action" onClick={handleProcesar}>
-                            <i className="ri-settings-4-line"></i> {t('Procesar Plantillas')}
-                        </button>
+                        <div className="header-actions-side">
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
+                                </div>
+
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); setPopupVisible(true); }}>
+                                            <i className="ri-add-line" style={{ color: '#1a5fa8' }}></i>
+                                            {t('Nueva Plantilla')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleProcesar(); }}>
+                                            <i className="ri-refresh-line" style={{ color: '#e65100' }}></i>
+                                            {t('Procesar')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); onExporting({ component: dataGridRef.current.instance() }); }}>
+                                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                            {t('Exportar Excel')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="table-container">
@@ -285,6 +312,10 @@ const PlantillasAcuerdos = () => {
                             onRowUpdating={onRowUpdating}
                             onRowRemoving={onRowRemoving}
                         >
+                            <Toolbar>
+                                <Item location="after" name="searchPanel" />
+                                <Item location="after" name="columnChooserButton" />
+                            </Toolbar>
                             <Editing mode="row" allowUpdating={true} allowDeleting={true} useIcons={true} />
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
