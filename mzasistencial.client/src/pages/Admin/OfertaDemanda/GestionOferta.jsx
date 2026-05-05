@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
-import { exportDataGrid } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
+import { jsPDF } from 'jspdf';
 import DataGrid, {
     Column, Paging, FilterRow, HeaderFilter, Selection,
     GroupPanel, Grouping, ColumnChooser, Export, Scrolling,
@@ -17,15 +19,6 @@ import '../../../styles/FichaGlobal.css';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
 const VISTAS = ['Agrupada', 'Desagrupada'];
-
-const onExporting = (e) => {
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet('Lista Ofertas');
-    exportDataGrid({ component: e.component, worksheet, autoFilterEnabled: true })
-        .then(() => workbook.xlsx.writeBuffer()
-            .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaOfertas.xlsx')));
-    e.cancel = true;
-};
 
 const GestionOferta = () => {
     const { t } = useTranslation();
@@ -55,6 +48,38 @@ const GestionOferta = () => {
     const [estados, setEstados] = useState([]);
     const [datos, setDatos] = useState([]);
     const [cargando, setCargando] = useState(false);
+
+    // --- FUNCIONES DE EXPORTACIÓN MANUAL ---
+
+    const exportToExcel = () => {
+        const context = dataGridRef.current.instance();
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Lista Ofertas');
+
+        exportDataGridToExcel({
+            component: context,
+            worksheet,
+            autoFilterEnabled: true
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaOfertas.xlsx');
+            });
+        });
+    };
+
+    const exportToPdf = () => {
+        const doc = new jsPDF();
+        const context = dataGridRef.current.instance();
+
+        exportDataGridToPdf({
+            jsPDFDocument: doc,
+            component: context
+        }).then(() => {
+            doc.save('ListaOfertas.pdf');
+        });
+    };
+
+    // --- LÓGICA DE BÚSQUEDA ---
 
     const ejecutarBusqueda = useCallback((filtros) => {
         fetch(`${API}/ListaOfertas/lista`, {
@@ -175,9 +200,21 @@ const GestionOferta = () => {
                                     <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
                                     {t('Nueva Oferta')}
                                 </div>
-                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                {/* Exportar Excel */}
+                                <div className="acciones-item" onClick={() => {
+                                    setMenuAbierto(false);
+                                    exportToExcel();
+                                }}>
                                     <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
                                     {t('Exportar a Excel')}
+                                </div>
+                                {/* Exportar PDF */}
+                                <div className="acciones-item" onClick={() => {
+                                    setMenuAbierto(false);
+                                    exportToPdf();
+                                }}>
+                                    <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                                    {t('Exportar a PDF')}
                                 </div>
                             </div>
                         )}
@@ -266,7 +303,6 @@ const GestionOferta = () => {
                         showBorders={true}
                         columnAutoWidth={false}
                         allowColumnResizing={true}
-                        onExporting={onExporting}
                         className="mz-table"
                         rowAlternationEnabled={true}
                         showRowLines={true}
@@ -283,14 +319,17 @@ const GestionOferta = () => {
                         <GroupPanel visible={vista === 'Agrupada'} emptyPanelText="Arrastra una columna aqui para agrupar" />
                         <Grouping autoExpandAll={false} />
                         <ColumnChooser enabled mode="select" />
-                        <Export enabled fileName="ListaOfertas" allowExportSelectedData />
+
+                        <Export enabled allowExportSelectedData />
+
                         <Sorting mode="multiple" />
                         <ColumnFixing enabled />
                         <Toolbar>
                             <Item name="groupPanel" />
                             <Item name="columnChooserButton" />
-                            <Item name="exportButton" />
+                            {/* BOTÓN DE EXPORTAR ELIMINADO DE AQUÍ */}
                         </Toolbar>
+
                         <Column dataField="año" caption="Año" width={70} fixed fixedPosition="left" />
                         <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} fixed fixedPosition="left" />
                         <Column dataField="centro" caption="Centro" width={180} />
@@ -302,6 +341,8 @@ const GestionOferta = () => {
                         <Column dataField="estado" caption="Estado" width={140} />
                         <Column dataField="demandaId" caption="Num. Pet." width={90} />
                         <Column dataField="peticionesPendientesAsignar" caption="Pet. Pend. Asig." width={110} />
+
+                        {/* Meses */}
                         <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                         <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                         <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
@@ -314,7 +355,9 @@ const GestionOferta = () => {
                         <Column dataField="oct" caption="Oct" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                         <Column dataField="nov" caption="Nov" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                         <Column dataField="dic" caption="Dic" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+
                         <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
+
                         <Column
                             caption="Acciones"
                             width={90}
