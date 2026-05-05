@@ -1,260 +1,185 @@
 #top-header-admin {
-    z-index: 1;
-    min-height: 80px;
-    max-height: 80px;
+    z-index: 1000;
+    min-height: 70px;
+    max-height: 70px;
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    /* border-radius: 8px; */
-    /* background-color: var(--bg-header-color); */
-    border-bottom: 1px solid #cecece;
-    box-shadow: 0 4px 5px -2px #00000040 !important;
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
 }
 
 .item-admin-header {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
 .item-admin-header.item-admin-header-actions {
     flex: 1;
     justify-content: flex-end;
-    padding: 0 20px;
-}
-.item-admin-header.item-admin-header-actions #item-left{
-    margin-right: auto;
-    order: 0;
-}
-.item-admin-header.item-admin-header-actions #item-left .item-option {
-    display: flex;
-    align-content: center;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 0;
-    position: relative;
-}
-.item-admin-header.item-admin-header-actions #item-left .item-option #btn-collapse-sidebar {
-    font-size: 30px;
-    color: black;
-    padding: 0;
-    text-decoration: none !important;
-    background: transparent;
-    border: none;
+    padding: 0 30px;
 }
 
-.item-admin-header.item-admin-header-actions .admin-action {
+#item-left {
+    margin-right: auto;
     display: flex;
-    height: 100%;
     align-items: center;
-    justify-content: flex-end;
 }
-.item-admin-header.item-admin-header-actions .admin-action p{
+
+#btn-collapse-sidebar {
+    font-size: 24px;
+    color: #4a5568;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-collapse-sidebar:hover {
+    background-color: #f7fafc;
+    color: #1a5fa8;
+}
+
+.admin-action {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-action p {
     margin: 0;
     display: flex;
     align-items: center;
 }
-.item-admin-header.item-admin-header-actions .admin-action p > span{
-    font-size: .8rem;
-    font-weight: 700;
-    padding: 0 5px;
+
+.admin-action p > span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d3748;
+    padding: 0 8px;
 }
 
-.item-admin-header.item-admin-header-actions .btn-ico {
+.btn-ico {
     border: none;
     background: transparent;
-    font-size: 1.2rem;
-    color: black;
-    padding: 0 10px;
+    font-size: 20px;
+    color: #4a5568;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-ico:hover {
+    background-color: #f7fafc;
+    color: #1a5fa8;
+}
+
+/* Idioma */
+.LanguageSwitcher {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 4px;
+    padding: 4px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    margin-left: 20px;
 }
 
-.item-admin-header.item-admin-header-actions .btn-ico:hover,
-.item-admin-header.item-admin-header-actions .btn-ico:focus,
-.item-admin-header.item-admin-header-actions .btn-ico:active {
+.LanguageSwitcher button {
     border: none;
-    outline: none;
-}
-
-.item-admin-header .LanguageSwitcher{
-    padding: 6px 12px;
-    background: var(--main-color);
-    border-radius: 6px;
-    margin-left: 30px;
-}
-.item-admin-header .LanguageSwitcher button{
-    border: none;
-    background-color: transparent;
-    color: #fff;
-    margin: 0 4px;
-    border-radius: 6px;
-    font-size: .8rem;
+    background: transparent;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
     padding: 4px 8px;
-}
-.item-admin-header .LanguageSwitcher button:active,
-.item-admin-header .LanguageSwitcher button:focus{
-    outline: none;
-}
-.item-admin-header .LanguageSwitcher button.active{
-    background-color: #1b3f18;
-}
-
-/* Contenedor opcional */
-.actions-dropdown {
-    display: flex;
-    align-items: center;
-}
-
-.btn-acciones-custom {
-    border: 1px solid #dcdcdc;
     border-radius: 6px;
-    padding: 4px 10px;
-    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
 }
 
-.btn-acciones-custom .dx-button {
-    width: 100%;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
+.LanguageSwitcher button.active {
+    background-color: #ffffff;
+    color: #1a5fa8;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Contenido */
-.btn-acciones-custom .dx-button-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 !important;
-}
-
-/* Texto */
-.btn-acciones-custom .dx-button-text {
-    font-size: 13px;
-}
-
-.btn-acciones-custom .dx-icon-spindown {
-    display: none !important;
-}
-
-.btn-acciones-custom .dx-dropdownbutton-toggle {
-    display: none !important;
-}
-
-.btn-acciones-custom .dx-button.dx-state-hover {
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-.btn-acciones-custom.dx-state-hover {
-    background-color: #f5f5f5 !important;
-}
-
-/* Contenedor de filtros */
+/* Filtros en Header */
 .header-filters {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-right: 8px;
+    gap: 12px;
+    margin-right: 20px;
 }
 
-/* Cada item */
-.header-filters .filter-item {
+.filter-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    border: 1px solid #dcdcdc;
-    color: #000000;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-}
-
-/* Iconos */
-.header-filters .filter-item i {
-    font-size: 14px;
-}
-
-/* Select */
-.header-filters .filter-select {
-    background: transparent;
-    border: none;
-    color: #000000;
-    font-size: 12px;
-    outline: none;
+    gap: 10px;
+    padding: 6px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5568;
 }
 
-/* Quitar fondo blanco nativo en select */
-.header-filters .filter-select option {
-    color: #000;
+.filter-item:hover {
+    background: #ffffff;
+    border-color: #1a5fa8;
+    color: #1a5fa8;
+    box-shadow: 0 4px 12px rgba(26, 95, 168, 0.08);
+    transform: translateY(-1px);
 }
 
-/*  Quitar flecha nativa del select */
-.header-filters .filter-select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: none;
+.filter-item i {
+    font-size: 16px;
+    color: #1a5fa8;
+    opacity: 0.8;
 }
 
-.header-filters .filter-select {
-    padding: 0px 10px;  
-    min-width: 50px;    
+/* Forzar minúsculas en dropdowns de DevExtreme */
+.dx-button-text {
+    text-transform: none !important;
 }
 
-.header-filters .filter-select option {
-    padding: 8px 12px;
-}
-
-
-/* -------------------------- */
-/* 🔴 CLAVE: quitar estructura de botón */
+/* Reset de DevExtreme para que se vea como nuestros items */
 .filter-dropdown-custom.dx-dropdownbutton {
     width: auto !important;
 }
 
-/* 🔴 El botón interno NO debe ocupar todo */
 .filter-dropdown-custom .dx-button {
-    width: auto !important;
-    min-width: 0 !important;
-    padding: 0 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
 }
 
-/* 🔴 Contenido inline REAL */
 .filter-dropdown-custom .dx-button-content {
     padding: 0 !important;
-    display: inline-flex !important;
+    display: flex !important;
     align-items: center;
-    gap: 4px;
 }
 
-/* 🔴 TEXTO visible */
 .filter-dropdown-custom .dx-button-text {
     display: inline !important;
-    font-size: 12px;
-    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+    color: inherit;
 }
 
-/* 🔴 ELIMINAR FLECHA COMPLETAMENTE */
-.filter-dropdown-custom .dx-dropdownbutton-toggle {
-    display: none !important;
-}
-
-/* 🔴 ELIMINAR ICONOS INTERNOS */
+.filter-dropdown-custom .dx-dropdownbutton-toggle,
 .filter-dropdown-custom .dx-icon {
     display: none !important;
-}
-
-/* Hover del contenedor completo (como en tu header) */
-.header-filters .filter-item:hover {
-    background-color: #f5f5f5;
-    cursor: pointer;
 }

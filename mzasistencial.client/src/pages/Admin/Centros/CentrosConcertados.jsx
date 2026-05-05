@@ -1,25 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import './Centros.css';
+import '../../../styles/FichaGlobal.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import AuthService from "../../../services/auth/AuthService";
 import FichaCentroConcertado from "./FichaCentroConcertado";
 import DataGrid, {
-    Column,
-    Paging,
-    SearchPanel,
-    FilterRow,
-    HeaderFilter,
-    Selection,
-    Grouping,
-    ColumnChooser,
-    Export,
-    Scrolling,
-    Sorting,
-    FilterPanel,
-    ColumnFixing,
-    Pager
+    Column, Paging, SearchPanel, FilterRow, HeaderFilter,
+    Selection, Grouping, ColumnChooser, Export,
+    Scrolling, Sorting, FilterPanel, ColumnFixing,
+    Pager, Toolbar, Item
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -54,7 +45,18 @@ const CentrosConcertados = () => {
     const [centros, setCentros] = useState([]);
     const [selectedCentro, setSelectedCentro] = useState(null);
     const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
+    const menuRef = useRef(null);
     const [gridInstance, setGridInstance] = useState(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAccionesAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     const cargarDatos = async () => {
         try {
@@ -112,84 +114,42 @@ const CentrosConcertados = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="title"> {t('LISTA CENTROS CONCERTADOS')}</div>
-
-                    {/* Botones superiores solo visibles si estamos en el listado */}
-                    {!selectedCentro && (
-                        <div 
-                            className="BotonesCombo" 
-                            style={{ 
-                                marginBottom: '10px', 
-                                display: 'flex',               // Activamos Flexbox
-                                justifyContent: 'flex-end',    // Empujamos todo a la derecha
-                                position: 'relative' 
-                            }}
-                        >
-                            <button 
-                                className="btn btn-primary btn-sm" 
-                                style={{ marginRight: '4px' }} // Separación sutil del borde derecho
-                                onClick={() => setMenuAccionesAbierto(!menuAccionesAbierto)}
-                            >
-                                ⚙️ Acciones {menuAccionesAbierto ? '▲' : '▼'}
-                            </button>
-
-                            {/* Desplegable flotante */}
-                            {menuAccionesAbierto && (
-                                <div style={{
-                                    position: 'absolute', 
-                                    right: '4px', 
-                                    top: '100%', 
-                                    backgroundColor: '#fff', 
-                                    border: '1px solid #ccc', 
-                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', 
-                                    zIndex: 1000, 
-                                    borderRadius: '4px', 
-                                    minWidth: '240px', 
-                                    textAlign: 'left',
-                                    marginTop: '5px'
-                                }}>
-                                    {/* Nuevo centro */}
-                                    <div 
-                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                        onClick={() => { 
-                                            setSelectedCentro({}); 
-                                            setMenuAccionesAbierto(false); 
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                    >
-                                        ➕ Nuevo Centro
-                                    </div>
-
-                                    {/* Exportar todo */}
-                                    <div 
-                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                        onClick={() => { 
-                                            exportarManualExcel(false); // false = exportar toda la tabla
-                                            setMenuAccionesAbierto(false); 
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                    >
-                                        📄 Exportar todo a Excel
-                                    </div>
-
-                                    {/* Exportar seleccionados */}
-                                    <div 
-                                        style={{ padding: '10px 15px', cursor: 'pointer' }}
-                                        onClick={() => { 
-                                            exportarManualExcel(true);  // true = exportar solo las filas con el check marcado
-                                            setMenuAccionesAbierto(false); 
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                    >
-                                        ☑️ Exportar filas seleccionadas
-                                    </div>
-                                </div>
-                            )}
+                    <div className="header-page">
+                        <div className="title">
+                            {t('LISTA CENTROS CONCERTADOS')}
                         </div>
-                    )}
+
+                        {!selectedCentro && (
+                            <div className="acciones-container" ref={menuRef}>
+                                <div 
+                                    className="acciones-btn"
+                                    onClick={() => setMenuAccionesAbierto(v => !v)}
+                                >
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
+                                </div>
+
+                                {menuAccionesAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item" onClick={() => { setSelectedCentro({}); setMenuAccionesAbierto(false); }}>
+                                            <i className="ri-add-line" style={{ color: '#1a5fa8' }}></i>
+                                            {t('Nuevo Centro')}
+                                        </div>
+
+                                        <div className="acciones-item" onClick={() => { exportarManualExcel(false); setMenuAccionesAbierto(false); }}>
+                                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                            {t('Exportar todo a Excel')}
+                                        </div>
+
+                                        <div className="acciones-item" onClick={() => { exportarManualExcel(true); setMenuAccionesAbierto(false); }}>
+                                            <i className="ri-checkbox-circle-line" style={{ color: '#e65100' }}></i>
+                                            {t('Exportar filas seleccionadas')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="table-container tabla-contenedor">
                         {selectedCentro ? (
@@ -199,7 +159,7 @@ const CentrosConcertados = () => {
                                 onSave={handleSaveCentro}
                             />
                         ) : (
-                            <div className="grid-wrapper-centros" style={{ height: 'calc(100vh - 230px)', width: '100%' }}>
+                            <div className="grid-wrapper-centros" style={{ height: 'calc(100vh - 180px)', width: '100%' }}>
                                 <DataGrid
                                     ref={dataGridRef}
                                     onInitialized={(e) => setGridInstance(e.component)}
@@ -216,17 +176,16 @@ const CentrosConcertados = () => {
                                     showColumnLines={true}
                                     wordWrapEnabled={false}
                                     onRowDblClick={(e) => setSelectedCentro(e.data)} // Abrimos ficha al doble clic
-                                    onToolbarPreparing={(e) => {
-                                        e.toolbarOptions.items.forEach(item => {
-                                            if (item.name === 'exportButton') {
-                                                item.cssClass = 'd-none'; 
-                                            }
-                                        });
-                                    }}
                                 >
                                     <Scrolling mode="standard" showScrollbar="always" />
                                     <Paging defaultPageSize={25} />
                                     <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    
+                                    <Toolbar>
+                                        <Item location="after" name="searchPanel" />
+                                        <Item location="after" name="columnChooserButton" />
+                                    </Toolbar>
+
                                     <SearchPanel visible width={240} placeholder={t('buscar')} />
                                     <FilterRow visible={true} applyFilter="auto" />
                                     <HeaderFilter visible searchMode='contains' />
@@ -249,7 +208,35 @@ const CentrosConcertados = () => {
                                     <Column dataField="provincia" caption="Provincia" width={130} />
                                     <Column dataField="fechaAlta" caption="Fecha Alta" dataType="date" width={110} />
                                     <Column dataField="mapa" caption="Mapa" width={80} />
-                                    <Column dataField="acciones" caption="Acciones" width={100} />
+                                    <Column
+                                        caption={t('Acciones')}
+                                        width={100}
+                                        fixed={true}
+                                        fixedPosition="right"
+                                        alignment="center"
+                                        cellRender={(cellData) => (
+                                            <div className="ficha-row-actions">
+                                                <i 
+                                                    className="ri-edit-line edit-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedCentro(cellData.data);
+                                                    }}
+                                                    title={t('Editar')}
+                                                />
+                                                <i 
+                                                    className="ri-delete-bin-line delete-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (window.confirm(t('¿Está seguro de que desea eliminar este centro?'))) {
+                                                            console.log('Eliminar centro:', cellData.data.centro_id);
+                                                        }
+                                                    }}
+                                                    title={t('Eliminar')}
+                                                />
+                                            </div>
+                                        )}
+                                    />
                                 </DataGrid>
                             </div>
                         )}

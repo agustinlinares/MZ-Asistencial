@@ -430,9 +430,29 @@ const onExporting = (e) => {
 const Proveedores = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
-
-    // const { isAuthenticated } = UseProtectedRoute();
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const handleExportarExcel = () => {
+        setMenuAbierto(false);
+        dataGridRef.current?.instance().exportToExcel(false);
+    };
+
+    const handleNuevo = () => {
+        setMenuAbierto(false);
+        console.log('Nuevo proveedor');
+    };
 
     // useEffect(() => {
     //     if (!isAuthenticated) {
@@ -448,28 +468,28 @@ const Proveedores = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('Lista de proveedores')}
+                            {t('LISTA DE PROVEEDORES')}
                         </div>
 
-                        <div className="acciones-container">
-                            <div className="acciones-btn">
-                                {t('Acciones')}
-                                <i className="ri-more-2-fill"></i>
-                            </div>
+                        <div className="header-actions-side">
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
+                                </div>
 
-                            <div className="acciones-menu">
-                                <div className="acciones-item">
-                                    <i className="ri-add-line"></i>
-                                    Nuevo
-                                </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-excel-2-line"></i>
-                                    Exportar Excel
-                                </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-pdf-line"></i>
-                                    Exportar PDF
-                                </div>
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item" onClick={handleNuevo}>
+                                            <i className="ri-add-line"></i>
+                                            {t('Nuevo')}
+                                        </div>
+                                        <div className="acciones-item" onClick={handleExportarExcel}>
+                                            <i className="ri-file-excel-2-line"></i>
+                                            {t('Exportar Excel')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -492,13 +512,21 @@ const Proveedores = () => {
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                            
+                            <Toolbar>
+                                <Item location="after" name="searchPanel" />
+                                <Item location="after" name="columnChooserButton" />
+                            </Toolbar>
+
                             <SearchPanel visible width={240} placeholder={t('buscar')} />
                             <FilterRow visible={true} applyFilter="auto" />
                             <HeaderFilter visible searchMode='contains' />
                             <Selection mode="multiple" allowSelectAll />
                             <Grouping autoExpandAll={false} />
+                            
                             <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
+                            <Export enabled fileName="Proveedores" allowExportSelectedData />
+                            
                             <Sorting mode="multiple" />
                             <FilterPanel visible />
                             <ColumnFixing enabled />
@@ -601,6 +629,36 @@ const Proveedores = () => {
                             />
 
                             <Column dataField="Observaciones" width={250} />
+
+                            <Column
+                                caption={t('Acciones')}
+                                width={100}
+                                fixed={true}
+                                fixedPosition="right"
+                                alignment="center"
+                                cellRender={(cellData) => (
+                                    <div className="ficha-row-actions">
+                                        <i 
+                                            className="ri-edit-line edit-icon" 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                console.log('Editar proveedor:', cellData.data.CodigoPersona);
+                                            }}
+                                            title={t('Editar')}
+                                        />
+                                        <i 
+                                            className="ri-delete-bin-line delete-icon" 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm(t('¿Está seguro de que desea eliminar este proveedor?'))) {
+                                                    console.log('Eliminar proveedor:', cellData.data.CodigoPersona);
+                                                }
+                                            }}
+                                            title={t('Eliminar')}
+                                        />
+                                    </div>
+                                )}
+                            />
                         </DataGrid>
                     </div>
                 </div>

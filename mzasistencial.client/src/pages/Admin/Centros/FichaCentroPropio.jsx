@@ -1,5 +1,6 @@
-﻿﻿import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
 import { saveAs } from "file-saver-es";
@@ -14,11 +15,11 @@ const ANOS = ["2020","2021","2022","2023","2024","2025"];
 
 const TABS = [
     { key: "general",           label: "General" },
-    { key: "datosUtilizacion",  label: "Datos Utilizacion" },
+    { key: "datosUtilizacion",  label: "Datos Utilización" },
     { key: "registroICG",       label: "Registro ICG" },
     { key: "fincasRegistrales", label: "Fincas Registrales" },
     { key: "especialidades",    label: "Especialidades / Serv. Disponibles" },
-    { key: "catalogo",          label: "Catalogo completo de servicios" },
+    { key: "catalogo",          label: "Catálogo completo de servicios" },
 ];
 
 const onExportingGrid = (e, filename) => {
@@ -32,10 +33,10 @@ const onExportingGrid = (e, filename) => {
     e.cancel = true;
 };
 
-const FichaCentroPropio = () => {
+const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const location = useLocation();
-    const cliente = location.state?.cliente;
+    const modalRef = useRef(null);
 
     const [MUTUOS, setMUTUOS] = useState([]);
     const [PROVINCIAS, setProvincias] = useState([]);
@@ -49,6 +50,13 @@ const FichaCentroPropio = () => {
     const [catalogo, setCatalogo] = useState([]);
     const [anioEsp, setAnioEsp] = useState(2024);
     const [bloqueado, setBloqueado] = useState(false);
+
+    useEffect(() => {
+        modalRef.current?.focus();
+        const handler = e => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
 
     const clienteRef = useRef(cliente);
     useEffect(() => {
@@ -81,7 +89,7 @@ const FichaCentroPropio = () => {
     }, [form.ProvinciaId]);
 
     useEffect(() => {
-        if (!cliente) { navigate(-1); return; }
+        if (!cliente) { onClose(); return; }
         setForm({
             Localizador: cliente.localizador || cliente.Localizador || "",
             TipoCentro: cliente.tipoCentro || cliente.TipoCentro || "",
@@ -124,7 +132,7 @@ const FichaCentroPropio = () => {
             NuevoCentro: cliente.NuevoCentro || "",
             MapaValidado: cliente.mapaValidado ?? cliente.MapaValidado ?? false,
         });
-    }, [cliente]);
+    }, [cliente, onClose]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -206,49 +214,44 @@ const FichaCentroPropio = () => {
     const handleGuardar = async () => {
         setGuardando(true);
         try {
-            const res = await fetch(`/api/CentrosPropios/${form.CentroId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    centroId:               form.CentroId,
-                    localizador:            form.Localizador,
-                    mutuaId:                parseInt(form.Mutua) || 0,
-                    centro:                 form.Centro,
-                    cp:                     form.Cp,
-                    poblacionId:            parseInt(form.PoblacionId) || 0,
-                    telefono:               form.Telefono,
-                    latitud:                form.Latitud,
-                    longitud:               form.Longitud,
-                    direccion:              form.Direccion,
-                    numero:                 form.Numero,
-                    piso:                   form.Piso,
-                    puerta:                 form.Puerta,
-                    direccionGoogle:        form.DireccionGoogle,
-                    email:                  form.Email,
-                    personaContacto:        form.PersonaContacto,
-                    otrosDatos:             form.OtrosDatos,
-                    desactivado:            form.CentroDesactivado,
-                    traslado:               form.Traslado,
-                    motivoBaja:             form.MotivoBaja,
-                    fechaBaja:              form.FechaBaja || null,
-                    asistenciaHospitalaria: form.ActividadHospitalaria,
-                    asistenciaAmbulatoria:  form.ActividadAmbulatoria,
-                    rehabilitacion:         form.ActividadRehabilitacion,
-                    incapacidadTransitoria: form.ActividadControlIT,
-                    prevencion:             form.ActividadPrevencion,
-                    otrasActividades:       form.ActividadOtras,
-                    administracion:         form.ActividadAdmon,
-                    fautocom:               form.Autorizacion || null,
-                    fpufuncio:              form.PuestaFuncionamiento || null,
-                    fcalisuf:               form.Calificacion || null,
-                    mapaValidado:           form.MapaValidado ?? false,
-                    usuarioId:              JSON.parse(sessionStorage.getItem('user'))?.usuarioId ?? null,
-                })
-            });
-            if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
-            else { alert('Error al guardar el centro'); }
+            const dataToSave = {
+                centroId:               form.CentroId,
+                localizador:            form.Localizador,
+                mutuaId:                parseInt(form.Mutua) || 0,
+                centro:                 form.Centro,
+                cp:                     form.Cp,
+                poblacionId:            parseInt(form.PoblacionId) || 0,
+                telefono:               form.Telefono,
+                latitud:                form.Latitud,
+                longitud:               form.Longitud,
+                direccion:              form.Direccion,
+                numero:                 form.Numero,
+                piso:                   form.Piso,
+                puerta:                 form.Puerta,
+                direccionGoogle:        form.DireccionGoogle,
+                email:                  form.Email,
+                personaContacto:        form.PersonaContacto,
+                otrosDatos:             form.OtrosDatos,
+                desactivado:            form.CentroDesactivado,
+                traslado:               form.Traslado,
+                motivoBaja:             form.MotivoBaja,
+                fechaBaja:              form.FechaBaja || null,
+                asistenciaHospitalaria: form.ActividadHospitalaria,
+                asistenciaAmbulatoria:  form.ActividadAmbulatoria,
+                rehabilitacion:         form.ActividadRehabilitacion,
+                incapacidadTransitoria: form.ActividadControlIT,
+                prevencion:             form.ActividadPrevencion,
+                otrasActividades:       form.ActividadOtras,
+                administracion:         form.ActividadAdmon,
+                fautocom:               form.Autorizacion || null,
+                fpufuncio:              form.PuestaFuncionamiento || null,
+                fcalisuf:               form.Calificacion || null,
+                mapaValidado:           form.MapaValidado ?? false,
+                usuarioId:              JSON.parse(sessionStorage.getItem('user'))?.usuarioId ?? null,
+            };
+            onSave(dataToSave);
         } catch (err) {
-            alert('Error de conexión: ' + err.message);
+            alert('Error: ' + err.message);
         } finally {
             setGuardando(false);
         }
@@ -257,50 +260,42 @@ const FichaCentroPropio = () => {
     if (!cliente) return null;
 
     return (
-        <div className="fcp-page">
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
 
-            {/* ── HEADER ── */}
-            <div className="fcp-header">
-                <div className="fcp-header-left">
-                    <button className="fcp-btn-volver" onClick={() => navigate(-1)}>
-                        <i className="ri-arrow-left-line" /> Volver
-                    </button>
-                    <div className="ficha-modal-title" style={{ marginLeft: '15px' }}>
-                        {t('Ficha Centro Propio')}
-                        <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666', fontWeight: 'normal' }}>
-                            {form.Localizador} — {form.Centro}
-                        </span>
+                {/* ── HEADER ── */}
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">
+                        <i className="ri-edit-box-line"></i> {t('Ficha Centro Propio')} | {form.Localizador || t('Nuevo')} | {form.Centro}
+                    </span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleGuardar} disabled={guardando}>
+                            <i className="ri-check-line" /> {guardando ? t("Guardando...") : t("Aceptar")}
+                        </button>
+                        <button className="ficha-btn-secondary" onClick={onClose}>
+                            <i className="ri-close-line" /> {t('Salir')}
+                        </button>
                     </div>
                 </div>
-                <div className="ficha-header-btns">
-                    <button className="ficha-btn-primary" onClick={handleGuardar} disabled={guardando}>
-                        <i className="ri-check-line" /> {guardando ? t("Guardando...") : t("Aceptar")}
-                    </button>
-                    <button className="ficha-btn-secondary" onClick={() => navigate(-1)}>
-                        <i className="ri-close-line" /> {t('Salir')}
-                    </button>
+
+                {/* ── PESTAÑAS ── */}
+                <div className="ficha-tabs">
+                    {TABS.map(({ key, label }) => (
+                        <button
+                            key={key}
+                            className={"ficha-tab" + (tabActiva === key ? " active" : "")}
+                            onClick={() => setTabActiva(key)}
+                        >
+                            {t(label)}
+                        </button>
+                    ))}
                 </div>
-            </div>
 
-            {/* ── PESTAÑAS ── */}
-            <div className="fcp-tabs-bar">
-                {TABS.map(({ key, label }) => (
-                    <button
-                        key={key}
-                        className={"ficha-tab" + (tabActiva === key ? " active" : "")}
-                        onClick={() => setTabActiva(key)}
-                    >
-                        {t(label)}
-                    </button>
-                ))}
-            </div>
+                {/* ── CONTENIDO ── */}
+                <div className="ficha-tab-content">
 
-            {/* ── CONTENIDO ── */}
-            <div className="fcp-content">
-
-                {/* GENERAL */}
-                {tabActiva === "general" && (
-                    <div className="fcp-seccion">
+                    {/* GENERAL */}
+                    {tabActiva === "general" && (
                         <div className="ficha-grid">
                             <div className="ficha-field">
                                 <label>Localizador</label>
@@ -388,9 +383,9 @@ const FichaCentroPropio = () => {
                                 <label>Verificar Dirección Google</label>
                                 <div className="ficha-input-suffix">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
-                                    <button className="fcp-icon-btn" title="Abrir mapa"
+                                    <button className="finca-btn-secondary" title="Abrir mapa" style={{ padding: '0 10px' }}
                                         onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
-                                        🌐
+                                        <i className="ri-map-pin-line"></i>
                                     </button>
                                 </div>
                             </div>
@@ -423,262 +418,277 @@ const FichaCentroPropio = () => {
                                 <input type="date" value={form.CentroInicial || ""} onChange={set("CentroInicial")} />
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* DATOS UTILIZACIÓN */}
-                {tabActiva === "datosUtilizacion" && (
-                    <div className="fcp-seccion">
-                        <div className="fcp-bloque">
-                            <p className="fcp-bloque-titulo">Tipo de Centro</p>
-                            <div className="fcp-radio-group">
-                                <label>
-                                    <input type="radio" name="tipoCentro" value="noSanitario"
-                                        checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />
-                                    Centro NO Sanitario
-                                </label>
-                                <label>
-                                    <input type="radio" name="tipoCentro" value="hospitalarios"
-                                        checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />
-                                    Hospitales y Ambulatorios
-                                </label>
+                    {/* DATOS UTILIZACIÓN */}
+                    {tabActiva === "datosUtilizacion" && (
+                        <div className="ficha-tab-inner">
+                            <div className="ficha-section">
+                                <p className="ficha-section-title">
+                                    <i className="ri-building-line"></i> {t('Tipo de Centro')}
+                                </p>
+                                <div className="ficha-radio-group">
+                                    <label>
+                                        <input type="radio" name="tipoCentro" value="noSanitario"
+                                            checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />
+                                        {t('Centro NO Sanitario')}
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="tipoCentro" value="hospitalarios"
+                                            checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />
+                                        {t('Hospitales y Ambulatorios')}
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <div className="fcp-bloque">
-                            <p className="fcp-bloque-titulo">Actividades del Centro</p>
-                            <p className="fcp-bloque-sub">Selecciona las actividades del centro:</p>
-                            <div className="fcp-checkbox-grid">
-                                <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> Asistencia sanitaria Hospitalaria</label>
-                                <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> Asistencia sanitaria ambulatoria</label>
-                                <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> Solamente rehabilitación</label>
-                                <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> Control administrativo de IT</label>
-                                <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> Prevención R.L seguridad social</label>
-                                <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> Otras Actividades</label>
-                                <label><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> Administración general de la Mutua</label>
-                            </div>
-                        </div>
-                        <div className="fcp-bloque">
-                            <p className="fcp-bloque-titulo">Motivo de la Baja</p>
-                            <textarea className="fcp-textarea" value={form.MotivoBaja || ""} onChange={e => setForm(f => ({ ...f, MotivoBaja: e.target.value }))} rows={4} />
-                        </div>
-                        <div className="ficha-grid ficha-grid--3">
-                            <div className="ficha-field">
-                                <label>Fecha de Baja</label>
-                                <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")}
-                                    disabled={!form.CentroDesactivado}
-                                    style={{ opacity: !form.CentroDesactivado ? 0.4 : 1, cursor: !form.CentroDesactivado ? "not-allowed" : "default" }} />
-                            </div>
-                            <div className="ficha-field ficha-field--center">
-                                <label>Traslado</label>
-                                <input type="checkbox" checked={form.Traslado || false} onChange={set("Traslado")} className="fcp-check-center" />
-                            </div>
-                            <div className="ficha-field ficha-field--center">
-                                <label>Centro Desactivado</label>
-                                <input type="checkbox" checked={form.CentroDesactivado || false} onChange={set("CentroDesactivado")} className="fcp-check-center" />
-                            </div>
-                        </div>
-                        <div className="fcp-bloque" style={{ marginTop: 20 }}>
-                            <p className="fcp-bloque-titulo">Nuevo Centro</p>
-                            <input type="text" value={form.NuevoCentro || ""} onChange={set("NuevoCentro")}
-                                className="fcp-input-full" disabled={!form.Traslado}
-                                style={{ opacity: !form.Traslado ? 0.4 : 1, cursor: !form.Traslado ? "not-allowed" : "default" }} />
-                        </div>
-                    </div>
-                )}
 
-                {/* REGISTRO ICG */}
-                {tabActiva === "registroICG" && (
-                    <div className="fcp-seccion">
-                        <DataGrid dataSource={registrosICG} showBorders={true} rowAlternationEnabled={true}
-                            noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")}
-                            className="mz-table" height={450}>
-                            <Scrolling mode="standard" />
-                            <Paging defaultPageSize={10} />
-                            <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                            <FilterRow visible={true} />
-                            <HeaderFilter visible={true} />
-                            <Sorting mode="multiple" />
-                            <Export enabled={true} />
-                            <Column dataField="ano" caption="Año" width={80} />
-                            <Column dataField="mutua" caption="Mutua" width={220} />
-                            <Column dataField="centro" caption="Centro" width={220} />
-                            <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
-                            <Column dataField="usuario" caption="Usuario" width={150} />
-                        </DataGrid>
-                    </div>
-                )}
+                            <div className="ficha-section">
+                                <p className="ficha-section-title">
+                                    <i className="ri-list-check-2"></i> {t('Actividades del Centro')}
+                                </p>
+                                <p className="ficha-section-sub">{t('Selecciona las actividades que se realizan en este centro:')}</p>
+                                <div className="ficha-checkbox-grid">
+                                    <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> {t('Asistencia sanitaria Hospitalaria')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> {t('Asistencia sanitaria ambulatoria')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> {t('Solamente rehabilitación')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> {t('Control administrativo de IT')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> {t('Prevención R.L seguridad social')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> {t('Otras Actividades')}</label>
+                                    <label className="span2"><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> {t('Administración general de la Mutua')}</label>
+                                </div>
+                            </div>
 
-                {/* FINCAS REGISTRALES */}
-                {tabActiva === "fincasRegistrales" && (
-                    <div className="fcp-seccion">
-                        <DataGrid dataSource={fincas} showBorders={true} rowAlternationEnabled={true}
-                            noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "FincasRegistrales")}
-                            className="mz-table" height={450}>
-                            <Scrolling mode="standard" />
-                            <Paging defaultPageSize={10} />
-                            <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                            <FilterRow visible={true} />
-                            <HeaderFilter visible={true} />
-                            <Sorting mode="multiple" />
-                            <Export enabled={true} />
-                            <Column dataField="Finca_id" caption="ID" width={70} />
-                            <Column dataField="Localizador" caption="Localizador" width={110} />
-                            <Column
-                                caption="Dirección"
-                                width={250}
-                                cellRender={(cell) => (
-                                    <span>
-                                        {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
-                                        {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
-                                    </span>
+                            <div className="ficha-section">
+                                <p className="ficha-section-title">
+                                    <i className="ri-close-circle-line"></i> {t('Estado y Baja')}
+                                </p>
+                                <div className="ficha-grid ficha-grid-3" style={{ marginBottom: 15 }}>
+                                    <div className="ficha-field">
+                                        <label>{t('Centro Desactivado')}</label>
+                                        <label style={{ marginTop: 8 }}><input type="checkbox" checked={form.CentroDesactivado || false} onChange={set("CentroDesactivado")} /> {t('Sí, desactivar')}</label>
+                                    </div>
+                                    <div className="ficha-field">
+                                        <label>{t('Fecha de Baja')}</label>
+                                        <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")}
+                                            disabled={!form.CentroDesactivado}
+                                            style={{ opacity: !form.CentroDesactivado ? 0.4 : 1 }} />
+                                    </div>
+                                    <div className="ficha-field">
+                                        <label>{t('Traslado')}</label>
+                                        <label style={{ marginTop: 8 }}><input type="checkbox" checked={form.Traslado || false} onChange={set("Traslado")} /> {t('Es un traslado')}</label>
+                                    </div>
+                                </div>
+
+                                <div className="ficha-field" style={{ marginBottom: 15 }}>
+                                    <label>{t('Motivo de la Baja')}</label>
+                                    <textarea 
+                                        className="ficha-textarea" 
+                                        value={form.MotivoBaja || ""} 
+                                        onChange={e => setForm(f => ({ ...f, MotivoBaja: e.target.value }))} 
+                                        rows={3} 
+                                        placeholder={t('Explique el motivo de la baja del centro...')}
+                                    />
+                                </div>
+
+                                {form.Traslado && (
+                                    <div className="ficha-field animate-fade-in">
+                                        <label>{t('Nuevo Centro (Destino del traslado)')}</label>
+                                        <input type="text" value={form.NuevoCentro || ""} onChange={set("NuevoCentro")}
+                                            placeholder={t('Indique el centro al que se ha trasladado la actividad...')}
+                                            className="ficha-input-full" />
+                                    </div>
                                 )}
-                            />
-                            <Column dataField="Superficie" caption="Superficie" width={100} />
-                            <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                            <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
-                            <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
-                            <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
-                        </DataGrid>
-                    </div>
-                )}
-
-                {/* ESPECIALIDADES */}
-                {tabActiva === "especialidades" && (
-                    <div className="fcp-seccion">
-
-                        {/* ── BANNER BLOQUEO ── */}
-                        {bloqueado && (
-                            <div style={{
-                                display: "flex", alignItems: "center", gap: "10px",
-                                background: "#fff3cd", border: "1px solid #ffc107",
-                                borderLeft: "5px solid #e6a800", borderRadius: "4px",
-                                padding: "10px 16px", marginBottom: "14px",
-                                color: "#856404", fontWeight: 500, fontSize: "14px",
-                            }}>
-                                <i className="ri-lock-line" style={{ fontSize: "18px", flexShrink: 0 }} />
-                                <span>
-                                    La edición de disponibilidad está <strong>bloqueada</strong>.
-                                    El período de bloqueo activo no permite realizar modificaciones.
-                                </span>
-                            </div>
-                        )}
-
-                        <div className="fcp-filtros">
-                            <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
-                            <div className="ficha-field">
-                                <label>Mutua</label>
-                                <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">— Seleccionar —</option>
-                                    {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
-                                </select>
-                            </div>
-                            <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
-                            <div className="ficha-field">
-                                <label>Especialidad</label>
-                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
-                            </div>
-                            <div className="fcp-field">
-                                <label>Año</label>
-                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
+                    )}
 
-                        {/* ── DATAGRID CON MESES PIVOTADOS ── */}
-                        <DataGrid
-                            dataSource={especialidades}
-                            showBorders={true}
-                            rowAlternationEnabled={true}
-                            noDataText="Sin datos para mostrar"
-                            className="mz-table"
-                            height={380}
-                            columnAutoWidth={false}
-                            allowColumnResizing={true}
-                        >
-                            <Scrolling mode="standard" showScrollbar="always" />
-                            <Paging defaultPageSize={10} />
-                            <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                            <FilterRow visible={true} />
-                            <HeaderFilter visible={true} />
-                            <Sorting mode="multiple" />
+                    {/* REGISTRO ICG */}
+                    {tabActiva === "registroICG" && (
+                        <div className="ficha-tab-inner">
+                            <DataGrid dataSource={registrosICG} showBorders={true} rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")}
+                                className="mz-table" height={450}>
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <Export enabled={true} />
+                                <Column dataField="ano" caption="Año" width={80} />
+                                <Column dataField="mutua" caption="Mutua" width={220} />
+                                <Column dataField="centro" caption="Centro" width={220} />
+                                <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuario" caption="Usuario" width={150} />
+                            </DataGrid>
+                        </div>
+                    )}
 
-                            {/* Columnas fijas izquierda */}
-                            <Column dataField="especialidad"   caption="Especialidad" width={150} fixed={true} fixedPosition="left" />
-                            <Column dataField="servicio"       caption="Servicio"     width={160} fixed={true} fixedPosition="left" />
-                            <Column dataField="cantidad"       caption="Cant."        width={60}  alignment="center" />
-                            <Column dataField="disponibilidad" caption="Disp."        width={55}  alignment="center" />
-
-                            {/* 12 meses */}
-                            {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"].map(m =>
+                    {/* FINCAS REGISTRALES */}
+                    {tabActiva === "fincasRegistrales" && (
+                        <div className="ficha-tab-inner">
+                            <DataGrid dataSource={fincas} showBorders={true} rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "FincasRegistrales")}
+                                className="mz-table" height={450}>
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <Export enabled={true} />
+                                <Column dataField="Finca_id" caption="ID" width={70} />
+                                <Column dataField="Localizador" caption="Localizador" width={110} />
                                 <Column
-                                    key={m}
-                                    dataField={m}
-                                    caption={m.charAt(0).toUpperCase() + m.slice(1)}
-                                    width={65}
-                                    dataType="number"
-                                    alignment="center"
+                                    caption="Dirección"
+                                    width={250}
+                                    cellRender={(cell) => (
+                                        <span>
+                                            {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
+                                            {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
+                                        </span>
+                                    )}
                                 />
+                                <Column dataField="Superficie" caption="Superficie" width={100} />
+                                <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
+                                <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
+                            </DataGrid>
+                        </div>
+                    )}
+
+                    {/* ESPECIALIDADES */}
+                    {tabActiva === "especialidades" && (
+                        <div className="ficha-tab-inner">
+
+                            {/* ── BANNER BLOQUEO ── */}
+                            {bloqueado && (
+                                <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
+                                    <i className="ri-lock-line" />
+                                    <span>
+                                        La edición de disponibilidad está <strong>bloqueada</strong>.
+                                        El período de bloqueo activo no permite realizar modificaciones.
+                                    </span>
+                                </div>
                             )}
 
-                            {/* Total fijo derecha */}
-                            <Column
-                                dataField="total"
-                                caption="Total"
-                                width={75}
-                                dataType="number"
-                                alignment="center"
-                                fixed={true}
-                                fixedPosition="right"
-                            />
-                        </DataGrid>
-
-                        <div className="fcp-acciones-bottom">
-                            <button className="fcp-btn-accion" disabled={bloqueado} style={{ opacity: bloqueado ? 0.5 : 1, cursor: bloqueado ? "not-allowed" : "pointer" }}>Actualizar</button>
-                            <button className="fcp-btn-accion fcp-btn-accion--cancelar">Cancelar</button>
-                        </div>
-                    </div>
-                )}
-
-                {/* CATÁLOGO */}
-                {tabActiva === "catalogo" && (
-                    <div className="fcp-seccion">
-                        <div className="fcp-filtros">
-                            <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
-                            <div className="ficha-field">
-                                <label>Mutua</label>
-                                <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                    <option value="">— Seleccionar —</option>
-                                    {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
-                                </select>
+                            <div className="ficha-grid ficha-grid--5" style={{ marginBottom: 15 }}>
+                                <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Mutua</label>
+                                    <select value={form.Mutua || ""} onChange={set("Mutua")}>
+                                        <option value="">— Seleccionar —</option>
+                                        {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
+                                    </select>
+                                </div>
+                                <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Especialidad</label>
+                                    <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                </div>
+                                <div className="ficha-field">
+                                    <label>Año</label>
+                                    <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                </div>
                             </div>
-                            <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
-                            <div className="ficha-field">
-                                <label>Especialidad</label>
-                                <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
-                            </div>
-                            <div className="fcp-field">
-                                <label>Año</label>
-                                <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
-                            </div>
-                        </div>
-                        <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
-                            <Scrolling mode="standard" />
-                            <Paging defaultPageSize={10} />
-                            <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                            <FilterRow visible={true} />
-                            <HeaderFilter visible={true} />
-                            <Sorting mode="multiple" />
-                            <Column dataField="especialidad"  caption="Especialidad"  width={220} />
-                            <Column dataField="servicio"      caption="Servicio"      width={250} />
-                            <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
-                            <Column dataField="fechaAlta"     caption="F. Alta"       width={120} dataType="date" format="dd/MM/yyyy" />
-                        </DataGrid>
-                        <div className="fcp-acciones-bottom">
-                            <button className="fcp-btn-accion">Actualizar</button>
-                            <button className="fcp-btn-accion fcp-btn-accion--cancelar">Cancelar</button>
-                        </div>
-                    </div>
-                )}
 
+                            {/* ── DATAGRID CON MESES PIVOTADOS ── */}
+                            <DataGrid
+                                dataSource={especialidades}
+                                showBorders={true}
+                                rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar"
+                                className="mz-table"
+                                height={380}
+                                columnAutoWidth={false}
+                                allowColumnResizing={true}
+                            >
+                                <Scrolling mode="standard" showScrollbar="always" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+
+                                {/* Columnas fijas izquierda */}
+                                <Column dataField="especialidad"   caption="Especialidad" width={150} fixed={true} fixedPosition="left" />
+                                <Column dataField="servicio"       caption="Servicio"     width={160} fixed={true} fixedPosition="left" />
+                                <Column dataField="cantidad"       caption="Cant."        width={60}  alignment="center" />
+                                <Column dataField="disponibilidad" caption="Disp."        width={55}  alignment="center" />
+
+                                {/* 12 meses */}
+                                {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"].map(m =>
+                                    <Column
+                                        key={m}
+                                        dataField={m}
+                                        caption={m.charAt(0).toUpperCase() + m.slice(1)}
+                                        width={65}
+                                        dataType="number"
+                                        alignment="center"
+                                    />
+                                )}
+
+                                {/* Total fijo derecha */}
+                                <Column
+                                    dataField="total"
+                                    caption="Total"
+                                    width={75}
+                                    dataType="number"
+                                    alignment="center"
+                                    fixed={true}
+                                    fixedPosition="right"
+                                />
+                            </DataGrid>
+
+                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start' }}>
+                                <button className="ficha-btn-primary" disabled={bloqueado} style={{ opacity: bloqueado ? 0.5 : 1 }}>Actualizar</button>
+                                <button className="ficha-btn-secondary">Cancelar</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* CATÁLOGO */}
+                    {tabActiva === "catalogo" && (
+                        <div className="ficha-tab-inner">
+                            <div className="ficha-grid ficha-grid--5" style={{ marginBottom: 15 }}>
+                                <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Mutua</label>
+                                    <select value={form.Mutua || ""} onChange={set("Mutua")}>
+                                        <option value="">— Seleccionar —</option>
+                                        {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
+                                    </select>
+                                </div>
+                                <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Especialidad</label>
+                                    <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                </div>
+                                <div className="ficha-field">
+                                    <label>Año</label>
+                                    <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                </div>
+                            </div>
+                            <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <Column dataField="especialidad"  caption="Especialidad"  width={220} />
+                                <Column dataField="servicio"      caption="Servicio"      width={250} />
+                                <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
+                                <Column dataField="fechaAlta"     caption="F. Alta"       width={120} dataType="date" format="dd/MM/yyyy" />
+                            </DataGrid>
+                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start' }}>
+                                <button className="ficha-btn-primary">Actualizar</button>
+                                <button className="ficha-btn-secondary">Cancelar</button>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
             </div>
         </div>
     );

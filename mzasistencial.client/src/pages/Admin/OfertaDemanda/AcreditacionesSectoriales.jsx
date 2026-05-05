@@ -430,6 +430,18 @@ const onExporting = (e) => {
 const AcreditacionesSectoriales = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
@@ -446,7 +458,35 @@ const AcreditacionesSectoriales = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="title"> {t('Control centros concertados duplicados')}</div>
+                    <div className="header-page">
+                        <div className="title"> {t('LISTA DE ACREDITACIONES SECTORIALES')}</div>
+
+                        <div className="header-actions-side">
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
+                                </div>
+
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item">
+                                            <i className="ri-add-line"></i>
+                                            {t('Nuevo')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                            <i className="ri-file-excel-2-line"></i>
+                                            {t('Exportar Excel')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => setMenuAbierto(false)}>
+                                            <i className="ri-file-pdf-line"></i>
+                                            {t('Exportar PDF')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="table-container">
                         <DataGrid
@@ -463,6 +503,11 @@ const AcreditacionesSectoriales = () => {
                             showColumnLines={true}
                             wordWrapEnabled={false}
                         >
+                            <Toolbar>
+                                <Item location="after" name="searchPanel" />
+                                <Item location="after" name="columnChooserButton" />
+                            </Toolbar>
+
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />

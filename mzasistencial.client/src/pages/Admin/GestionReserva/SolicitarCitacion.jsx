@@ -430,6 +430,18 @@ const onExporting = (e) => {
 const SolicitarCitacion = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const [menuAbierto, setMenuAbierto] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuAbierto(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
@@ -448,28 +460,32 @@ const SolicitarCitacion = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('Lista de SolicitarCitacion')}
+                            {t('LISTA DE CITACIONES SOLICITADAS')}
                         </div>
 
-                        <div className="acciones-container">
-                            <div className="acciones-btn">
-                                {t('Acciones')}
-                                <i className="ri-more-2-fill"></i>
-                            </div>
+                        <div className="header-actions-side">
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
+                                </div>
 
-                            <div className="acciones-menu">
-                                <div className="acciones-item">
-                                    <i className="ri-add-line"></i>
-                                    Nuevo
-                                </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-excel-2-line"></i>
-                                    Exportar Excel
-                                </div>
-                                <div className="acciones-item">
-                                    <i className="ri-file-pdf-line"></i>
-                                    Exportar PDF
-                                </div>
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item">
+                                            <i className="ri-add-line"></i>
+                                            {t('Nuevo')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
+                                            <i className="ri-file-excel-2-line"></i>
+                                            {t('Exportar Excel')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => setMenuAbierto(false)}>
+                                            <i className="ri-file-pdf-line"></i>
+                                            {t('Exportar PDF')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -489,6 +505,11 @@ const SolicitarCitacion = () => {
                             showColumnLines={true}
                             wordWrapEnabled={false}
                         >
+                            <Toolbar>
+                                <Item location="after" name="searchPanel" />
+                                <Item location="after" name="columnChooserButton" />
+                            </Toolbar>
+
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
