@@ -58,6 +58,8 @@ builder.Services.AddScoped<Icg06DatosGeneralesService>();
 builder.Services.AddScoped<Icg06DatosPlantillaService>();
 builder.Services.AddScoped<Icg06EspecialidadService>();
 builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
+builder.Services.AddScoped<ListadoPropiosIcgService>();
+builder.Services.AddScoped<ListadoPropiosIcgService>();
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();

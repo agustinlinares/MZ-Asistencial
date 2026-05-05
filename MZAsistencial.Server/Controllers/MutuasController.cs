@@ -87,24 +87,40 @@ public class MutuasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<MutuaDTO>> PostMutua(MutuaDTO dto)
     {
-        var mutua = new Mutua
+        try
         {
-            Mutua1 = dto.Mutua,
-            RazonSocial = dto.RazonSocial,
-            Direccion = dto.Direccion,
-            Cp = dto.CP,
-            Telefono = dto.Telefono,
-            Fax = dto.Fax,
-            DireccionElectronica = dto.DireccionElectronica,
-            PersonaContacto = dto.PersonaContacto,
-            NumeroMutua = dto.NumeroMutua,
-            PoblacionId = dto.PoblacionId // IMPORTANTE si se usa
-        };
+            var mutua = new Mutua
+            {
+                Mutua1 = dto.Mutua,
+                RazonSocial = dto.RazonSocial,
+                Direccion = dto.Direccion,
+                Cp = dto.CP,
+                Telefono = dto.Telefono,
+                Fax = dto.Fax,
+                DireccionElectronica = dto.DireccionElectronica,
+                PersonaContacto = dto.PersonaContacto,
+                PoblacionId = dto.PoblacionId // IMPORTANTE si se usa
+            };
 
-        _context.Mutuas.Add(mutua);
-        await _context.SaveChangesAsync();
+            // 1. Guardamos primero para obtener el ID
+            _context.Mutuas.Add(mutua);
+            await _context.SaveChangesAsync();
 
-        return Ok(mutua);
+            // 2. Generamos NumeroMutua automáticamente
+            mutua.NumeroMutua = $"M{mutua.MutuaId}";
+
+            // 3. Guardamos de nuevo
+            await _context.SaveChangesAsync();
+
+            return Ok(mutua);
+        }
+        catch (Exception ex)
+        {
+            // Muestra el error exacto en la terminal
+            Console.WriteLine($"ERROR POST Mutua: {ex.Message}");
+            Console.WriteLine($"Inner: {ex.InnerException?.Message}");
+            return StatusCode(500, ex.Message);
+        }
     }
 
     // PUT: api/mutuas/5
@@ -112,8 +128,6 @@ public class MutuasController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateMutua(int id, MutuaDTO dto)
     {
-    // 👇 Añade esto para ver qué llega
-    Console.WriteLine($"PUT recibido - id URL: {id}, dto.NumeroId: {dto?.NumeroId}, dto.Mutua: {dto?.Mutua}");
 
         var mutua = await _context.Mutuas.FindAsync(id);
         if (mutua == null) return NotFound();
@@ -129,7 +143,7 @@ public class MutuasController : ControllerBase
         mutua.Fax = dto.Fax;
         mutua.DireccionElectronica = dto.DireccionElectronica;
         mutua.PersonaContacto = dto.PersonaContacto;
-        mutua.NumeroMutua = dto.NumeroMutua;
+        //mutua.NumeroMutua = dto.NumeroMutua;
 
         await _context.SaveChangesAsync();
         return NoContent();

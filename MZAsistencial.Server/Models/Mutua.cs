@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MZAsistencial.Server.Models;
 
@@ -9,6 +10,7 @@ public partial class Mutua
 
     public string? NumeroMutua { get; set; }
 
+    [Column("Mutua")]
     public string? Mutua1 { get; set; }
 
     public string? RazonSocial { get; set; }

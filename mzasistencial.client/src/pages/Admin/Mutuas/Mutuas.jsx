@@ -16,6 +16,7 @@ import DataGrid, {
     GroupPanel,
     Grouping,
     ColumnChooser,
+    Position,  //Posicion para el ColumnChooser
     Export,
     Scrolling,
     Sorting,
@@ -28,6 +29,16 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+
+import { loadMessages, locale } from 'devextreme/localization';
+
+// Sobreescribimos solo el texto del ColumnChooser
+loadMessages({
+    'es': {
+        'dxDataGrid-columnChooserTitle': 'Columnas',
+    }
+});
+locale('es');
 
 
 const onExporting = (e) => {
@@ -85,6 +96,43 @@ const Mutuas = () => {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
+
+
+    // Bandera para saber si el chooser está abierto
+    // Usamos useRef en lugar de useState para evitar re-renders
+    const chooserAbiertoRef = useRef(false);
+
+    useEffect(() => {
+        const handleMouseDown = (e) => {
+            const grid = dataGridRef.current?.instance();
+            if (!grid) return;
+
+            const button = document.querySelector('.dx-datagrid-column-chooser-button');
+            const wrapper = document.querySelector('.dx-datagrid-column-chooser-mode-select');
+
+            // Click en el botón
+            if (button && button.contains(e.target)) {
+                if (chooserAbiertoRef.current) {
+                    grid.hideColumnChooser();
+                    // onHiding se encarga de poner la bandera a false
+                } else {
+                    setTimeout(() => {
+                        chooserAbiertoRef.current = true;
+                    }, 0);
+                }
+                return;
+            }
+
+            // Click fuera del wrapper -> cerramos
+            if (chooserAbiertoRef.current && wrapper && !wrapper.contains(e.target)) {
+                grid.hideColumnChooser();
+                // onHiding se encarga de poner la bandera a false
+            }
+        };
+
+        document.addEventListener('mousedown', handleMouseDown);
+        return () => document.removeEventListener('mousedown', handleMouseDown);
+    }, []);
     
 
     //Conectamos Backend con Frontend
@@ -114,7 +162,8 @@ const Mutuas = () => {
     //Exportar a excel
     const handleExportarExcel = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance();
+        //const grid = dataGridRef.current.instance();
+        const grid = dataGridRef.current?.instance();
         if (!grid) return;
 
         const workbook = new Workbook();
@@ -134,7 +183,8 @@ const Mutuas = () => {
     //Exportar a PDF
     const handleExportarPDF = () => {
         setMenuAbierto(false);
-        const grid = dataGridRef.current.instance();
+        //const grid = dataGridRef.current.instance();
+        const grid = dataGridRef.current?.instance();
         if (!grid) return;
 
         import('devextreme/pdf_exporter').then(({ exportDataGrid }) => {
@@ -152,7 +202,27 @@ const Mutuas = () => {
         });
     };
 
-    //Estrucutra de flijo
+
+    //Eliminar mutua
+    const handleEliminar = async (id) => {
+        if (!window.confirm('¿Está seguro de que desea eliminar esta mutua?')) return;
+
+        try {
+            const res = await fetch(`/api/mutuas/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                cargarMutuas(); //Recarga la tabla
+            } else {
+                alert('Error al eliminar');
+            }
+        } catch (error) {
+            console.error('Error al eliminar mutua:', error);
+        }
+    };
+
+    //Estrucutra de flujo
     // Si hay mutua seleccionada mostramos la ficha
     if (selectedMutua) {
         return (
@@ -170,7 +240,7 @@ const Mutuas = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('Lista de mutuas')}
+                            {t('LISTADO DE MUTUAS')}
                         </div>
 
                         <div className="acciones-container" ref={menuRef}>
@@ -186,17 +256,17 @@ const Mutuas = () => {
                             {menuAbierto && (
                                 <div className="acciones-menu">
                                     <div className="acciones-item" onClick={handleNuevo}>
-                                        <i className="ri-add-line"></i>
-                                        Nuevo
+                                        <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
+                                        Añadir Mutua
                                     </div>
 
                                     <div className="acciones-item" onClick={handleExportarExcel}>
-                                        <i className="ri-file-excel-2-line"></i>
+                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
                                         Exportar Excel
                                     </div>
 
                                     <div className="acciones-item" onClick={handleExportarPDF}>
-                                        <i className="ri-file-pdf-line"></i>
+                                        <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
                                         Exportar PDF
                                     </div>
                                 </div>
@@ -220,7 +290,7 @@ const Mutuas = () => {
                             dataSource={mutuas}
                             //dataSource={sampleData}
                             keyExpr="numeroId"
-                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila para cargar sus fichas
+                            onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila para cargar su ficha
                             //keyExpr="CodigoPersona"
                             showBorders={true}
                             columnAutoWidth={true}
@@ -231,6 +301,16 @@ const Mutuas = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            // Oculta los botones de exportar y selector de columnas???
+                            onToolbarPreparing={(e) => {
+                                e.toolbarOptions.items.forEach(item => {
+                                    //if (item.name === 'exportButton' || item.name === 'columnChooserButton') {
+                                    if (item.name === 'exportButton') {
+                                        item.cssClass = 'd-none';
+                                    }
+                                });
+                            }}
+                            
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
@@ -240,8 +320,22 @@ const Mutuas = () => {
                             <HeaderFilter visible searchMode='contains' />
                             <Selection mode="multiple" allowSelectAll />
                             <Grouping autoExpandAll={false} />
-                            <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
+                            
+                            <ColumnChooser enabled mode="select"
+                            //Ocultamos ???
+                                onHiding={() => { chooserAbiertoRef.current = false; }} // Sincroniza cuando DevExtreme cierra
+                            >
+                                <Position
+                                    my="right top"
+                                    at="right bottom"
+                                    of=".dx-datagrid-column-chooser-button"
+                                />
+                            </ColumnChooser>
+
+                            <Export enabled fileName="Casos" allowExportSelectedData 
+                            //Ocultamos
+                            />
+
                             <Sorting mode="multiple" />
                             <FilterPanel visible />
                             <ColumnFixing enabled />
@@ -280,20 +374,43 @@ const Mutuas = () => {
 
                             <Column
                                 dataField="acciones"
-                                caption="Acciones"
+                                caption={t('Acciones')}
                                 fixed={true}
                                 fixedPosition="right"
-                                width={130}
+                                width={100}
                                 alignment="center"
                                 cellRender={(cellData) => (
                                     <div 
-                                        style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Evita conflictos con el grid
-                                            setSelectedMutua(cellData.data); //Abre solo con un click
+                                        style={{ 
+                                            display: 'flex', 
+                                            gap: '10px', 
+                                            justifyContent: 'center', 
+                                            alignItems: 'center'
                                         }}
                                     >
-                                        <i className="ri-edit-line"></i>
+                                        {/* EDITAR */}
+                                        <div 
+                                            style={{ color: '#2f5da8', cursor: 'pointer' }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedMutua(cellData.data);
+                                            }}
+                                            title="Editar"
+                                        >
+                                            <i className="ri-edit-line"></i>
+                                        </div>
+
+                                        {/* ELIMINAR */}
+                                        <div 
+                                            style={{ color: '#c62828', cursor: 'pointer' }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEliminar(cellData.data.numeroId);
+                                            }}
+                                            title="Eliminar"
+                                        >
+                                            <i className="ri-delete-bin-line"></i>
+                                        </div>
                                     </div>
                                 )}
                             />

@@ -269,6 +269,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         comentarios: '', motivo_baja: '', latitud: cliente?.Latitud ?? '', longitud: cliente?.Longitud ?? ''
     });
 
+    const [datosMutuas, setDatosMutuas] = useState([]);
+
     const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
 
     // Carga inicial de datos maestros (Provincias y Proveedores)
@@ -277,7 +279,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             try {
                 const headers = authHeaders();
                 const resProv = await fetch('/api/AuxProvincias', { headers });
-                const resProvdd = await fetch('/api/AuxCentrosConcertados/Proveedores', { headers }); 
+                const resProvdd = await fetch('/api/AuxProveedores', { headers }); 
                 
                 if (resProv.ok && resProvdd.ok) {
                     const provincias = await resProv.json();
@@ -308,7 +310,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             setOpts(prev => ({ ...prev, delegaciones: [] }));
             return;
         }
-        fetch(`/api/AuxCentrosConcertados/Delegaciones/${form.proveedor}`, { headers: authHeaders() })
+        fetch(`/api/AuxDelegaciones/PorProveedor/${form.proveedor}`, { headers: authHeaders() })
             .then(r => r.ok ? r.json() : [])
             .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
     }, [form.proveedor]);
@@ -316,7 +318,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     // Cargar Mutuas Asignadas
     const cargarMutuasAsignadas = async (id) => {
         try {
-            const response = await fetch(`/api/CentrosConcertados/${id}/mutuas`, { 
+            // Usamos la URL con M mayúscula del equipo para evitar el 404
+            const response = await fetch(`/api/CentrosConcertados/${id}/Mutuas`, { 
                 headers: authHeaders() 
             });
             if (response.ok) {
@@ -348,11 +351,40 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     };
 
     useEffect(() => {
-        if (form.centro_id) {
+        // Solo cargamos si el ID es válido y no es un centro nuevo (0)
+        if (form.centro_id && form.centro_id !== 0) {
             cargarMutuasAsignadas(form.centro_id);
             cargarRegistrosICG(form.centro_id);
         }
     }, [form.centro_id]);
+
+    // Carga de las Mutuas Asignadas al abrir el modal
+    useEffect(() => {
+        // Si estamos creando un centro nuevo, no hacemos la petición
+        if (!form.centro_id || form.centro_id === 0) {
+            setDatosMutuas([]);
+            return;
+        }
+
+        const fetchMutuasAsignadas = async () => {
+            try {
+                const response = await fetch(`/api/CentrosConcertados/${form.centro_id}/Mutuas`, {
+                    headers: authHeaders()
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setDatosMutuas(data);
+                } else {
+                    console.error("Error en la respuesta del servidor al cargar mutuas");
+                }
+            } catch (error) {
+                console.error("Error de red cargando mutuas:", error);
+            }
+        };
+
+        fetchMutuasAsignadas();
+    }, [form.centro_id]); // Se ejecuta cuando el ID del centro cambia
 
     const [errors, setErrors] = useState({});
     const modalRef = useRef(null);
@@ -471,7 +503,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
                     {activeTab === 'mutuasAsignadas' && (
                         <TabDataGrid datos={mutuasAsignadas}>
-                            <Column dataField="nombreMutua" caption="Mutua" />
+                            <Column dataField="mutua" caption="Mutua" />
+                            
+                            <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
+                            <Column dataField="localizador" caption="Localizador" width={150} />
                         </TabDataGrid>
                     )}
 

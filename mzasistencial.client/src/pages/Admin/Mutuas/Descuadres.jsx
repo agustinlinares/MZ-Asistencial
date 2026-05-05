@@ -8,9 +8,9 @@ import DataGrid, {
     Sorting, FilterPanel, ColumnFixing, Pager, Toolbar, Item,
 } from "devextreme-react/data-grid";
 import { useTranslation } from "react-i18next";
-import '../Centros/FichaFinca.css';
+import '../../../styles/FichaGlobal.css';
 
-const API = 'https://localhost:7132/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 
 const onExporting = (e) => {
     const workbook = new Workbook();
@@ -24,7 +24,9 @@ const onExporting = (e) => {
 const Descuadres = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const menuRef = useRef(null);
     const [datos, setDatos] = useState([]);
+    const [menuAbierto, setMenuAbierto] = useState(false);
 
     useEffect(() => {
         fetch(`${API}/Descuadres`)
@@ -33,20 +35,41 @@ const Descuadres = () => {
             .catch(err => console.error('Error al cargar descuadres:', err));
     }, []);
 
-    return (
-        <div className="finca-container-inline">
-            <div className="finca-inline-content">
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target))
+                setMenuAbierto(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
 
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">{t('Lista de descuadres')}</span>
-                    <div className="finca-header-btns">
-                        <button className="finca-btn-primary" onClick={() => dataGridRef.current?.instance.exportToExcel(false)}>
-                            📥 Exportar Excel
-                        </button>
+    return (
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content">
+
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">{t('Lista de descuadres')}</span>
+                    <div className="acciones-container" ref={menuRef}>
+                        <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                            {t('Acciones')}
+                            <i className="ri-more-2-fill"></i>
+                        </div>
+                        {menuAbierto && (
+                            <div className="acciones-menu">
+                                <div className="acciones-item" onClick={() => {
+                                    setMenuAbierto(false);
+                                    dataGridRef.current?.instance().exportToExcel(false);
+                                }}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                    {t('Exportar a Excel')}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="finca-tab-content" style={{ padding: '16px' }}>
+                <div className="ficha-tab-content" style={{ padding: '16px' }}>
                     <DataGrid
                         ref={dataGridRef}
                         dataSource={datos}
@@ -76,24 +99,24 @@ const Descuadres = () => {
                         <FilterPanel visible />
                         <ColumnFixing enabled />
                         <Toolbar>
-                            <Item name="searchPanel" />
                             <Item name="columnChooserButton" />
                             <Item name="exportButton" />
+                            <Item name="searchPanel" />
                         </Toolbar>
-                        <Column dataField="mutuaId" caption="Nº" width={80} fixed fixedPosition="left" />
+                        <Column dataField="mutuaId" caption="Nr" width={80} fixed fixedPosition="left" />
                         <Column dataField="mutua" caption="Mutua" width={150} fixed fixedPosition="left" />
                         <Column dataField="gastoPersonal" caption="Gasto Personal" width={130} />
                         <Column dataField="gastoCorrientes" caption="Gasto Corrientes" width={130} />
                         <Column dataField="gastosFinancieros" caption="Gastos Financieros" width={130} />
-                        <Column dataField="amortizacion" caption="Amortización" width={130} />
+                        <Column dataField="amortizacion" caption="Amortizacion" width={130} />
                         <Column dataField="totalCostePropios" caption="TOTAL COSTE PROPIOS" width={150} />
                         <Column dataField="costeConciertos" caption="Coste conciertos" width={130} />
                         <Column dataField="aplicacion2581" caption="Aplicacion 258.1" width={130} />
                         <Column dataField="aplicacion2582" caption="Aplicacion 258.2" width={130} />
                         <Column dataField="restoArt25" caption="Resto art. 25" width={130} />
-                        <Column dataField="totalArticulo25" caption="TOTAL ARTÍCULO 25" width={150} />
-                        <Column dataField="inversionNueva" caption="Inversión nueva" width={130} />
-                        <Column dataField="reposicion" caption="Reposición" width={130} />
+                        <Column dataField="totalArticulo25" caption="TOTAL ARTICULO 25" width={150} />
+                        <Column dataField="inversionNueva" caption="Inversion nueva" width={130} />
+                        <Column dataField="reposicion" caption="Reposicion" width={130} />
                         <Column dataField="ingresosServicios" caption="Ingresos proced. prest. Servicios" width={220} />
                         <Column dataField="totalOtrosConceptos" caption="TOTAL OTROS CONCEPTOS" width={180} />
                         <Column dataField="totalGeneral" caption="TOTAL GENERAL" width={150} fixed fixedPosition="right" />

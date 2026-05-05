@@ -7,10 +7,9 @@ namespace MZAsistencial.Server.Services
     public interface ICentrosConcertadosService
     {
         Task<IEnumerable<CentrosConcertadoDTO>> GetCabecerasAsync();
-        // Métodos para guardar
         Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto);
         Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto);
-        Task<List<MutuaAsignadaDTO>> GetMutuasAsignadasAsync(int centroId);
+        Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId);
     }
 
     public class CentrosConcertadosService : ICentrosConcertadosService
@@ -117,18 +116,22 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<List<MutuaAsignadaDTO>> GetMutuasAsignadasAsync(int centroId)
+        public async Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId)
         {
-            return await _context.Conciertos
-                .Where(c => c.CentroId == centroId)
-                .Join(_context.Mutuas,
-                    c => c.MutuaId,
-                    m => m.MutuaId,
-                    (c, m) => new MutuaAsignadaDTO
-                    {
-                        NombreMutua = m.Mutua1
-                    })
-                .ToListAsync();
+            var mutuasDelCentro = await (
+                from c in _context.Conciertos
+                join m in _context.Mutuas on c.MutuaId equals m.MutuaId
+                where c.CentroId == centroId 
+                select new MutuaAsignadaDTO
+                {
+                    MutuaId = m.MutuaId,
+                    Mutua = m.Mutua1,
+                    CodigoCasa = c.CodigoCasa,
+                    Localizador = c.Localizador
+                }
+            ).Distinct().ToListAsync();
+
+            return mutuasDelCentro;
         }
     }
 }

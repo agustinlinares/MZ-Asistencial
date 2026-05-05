@@ -194,4 +194,75 @@ public class ListaOfertasService : IListaOfertasService
             .OrderByDescending(a => a)
             .ToListAsync();
     }
+    public async Task<OfertaEditDTO?> GetByIdAsync(int id)
+    {
+        var oferta = await _context.Ofertas.FindAsync(id);
+        if (oferta == null) return null;
+
+        return new OfertaEditDTO
+        {
+            OfertaId = oferta.OfertaId,
+            EspecialidadId = oferta.EspecialidadId,
+            ServicioId = oferta.ServicioId,
+            CentroId = oferta.CentroId,
+            Año = oferta.Año,
+            DemandaId = oferta.DemandaId,
+            Ene = oferta.Ene,
+            Feb = oferta.Feb,
+            Mar = oferta.Mar,
+            Abr = oferta.Abr,
+            May = oferta.May,
+            Jun = oferta.Jun,
+            Jul = oferta.Jul,
+            Ago = oferta.Ago,
+            Sep = oferta.Sep,
+            Oct = oferta.Oct,
+            Nov = oferta.Nov,
+            Dic = oferta.Dic,
+            EstadoId = oferta.EstadoId,
+            NotaContestacion = oferta.NotaContestacion,
+            ContestacionPlazos = oferta.ContestacionPlazos,
+        };
+    }
+
+    public async Task<bool> UpdateAsync(int id, OfertaEditDTO dto)
+    {
+        var oferta = await _context.Ofertas.FindAsync(id);
+        if (oferta == null) return false;
+
+        oferta.EspecialidadId = dto.EspecialidadId;
+        oferta.ServicioId = dto.ServicioId;
+        oferta.CentroId = dto.CentroId;
+        oferta.Año = dto.Año;
+        oferta.DemandaId = dto.DemandaId;
+        oferta.Ene = dto.Ene;
+        oferta.Feb = dto.Feb;
+        oferta.Mar = dto.Mar;
+        oferta.Abr = dto.Abr;
+        oferta.May = dto.May;
+        oferta.Jun = dto.Jun;
+        oferta.Jul = dto.Jul;
+        oferta.Ago = dto.Ago;
+        oferta.Sep = dto.Sep;
+        oferta.Oct = dto.Oct;
+        oferta.Nov = dto.Nov;
+        oferta.Dic = dto.Dic;
+        oferta.EstadoId = dto.EstadoId;
+        oferta.NotaContestacion = dto.NotaContestacion;
+        oferta.ContestacionPlazos = dto.ContestacionPlazos;
+        oferta.FechaModificacion = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var oferta = await _context.Ofertas.FindAsync(id);
+        if (oferta == null) return false;
+
+        _context.Ofertas.Remove(oferta);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
