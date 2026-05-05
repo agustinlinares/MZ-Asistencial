@@ -31,7 +31,6 @@ const cp = (prefijo, label) => [
 ];
 
 // ─── Campos de pestañas asistenciales ────────────────────────────────────────
-// Hos = Actuaciones sustentadas en conciertos (Hospitalario)
 const camposHos = [
     { key: "pitrmutHos",                          label: "PI trmut HOS" },
     { key: "esttrmutHos",                         label: "Estancias trmut HOS" },
@@ -89,7 +88,6 @@ const camposHos = [
     { key: "pruBiomotrmutArt12Hos",               label: "Pruebas biomecánicas otros trmut Art.12 HOS" },
 ];
 
-// Amb = Actuaciones sustentadas en conciertos (Ambulatorio)
 const camposAmb = [
     { key: "pacenArt82",                    label: "PA centro Art.82" },
     { key: "primConsArt82Prog",             label: "1ª Consulta Art.82 (Prog.)" },
@@ -141,7 +139,6 @@ const camposAmb = [
     { key: "pruBiomotrosArt12",             label: "Pruebas biomecánicas otros Art.12" },
 ];
 
-// ConvHos = Convenio Sectorial ITCC (Hospitalario)
 const camposConvHos = [
     { key: "pitrmutConvSecBilMultHos",                   label: "PI trmut Conv. Sec. Bil. Mult. HOS" },
     { key: "esttrmutConvSecBilMultHos",                  label: "Estancias trmut Conv. Sec. Bil. Mult. HOS" },
@@ -163,7 +160,6 @@ const camposConvHos = [
     { key: "prueBiomConvSecBilMultHos",                  label: "Pruebas biomecánicas Conv. HOS" },
 ];
 
-// ConvAmb = Convenio Sectorial ITCC (Ambulatorio)
 const camposConvAmb = [
     { key: "pacenConvSectBilMult",                  label: "PA centro Conv. Sect." },
     { key: "primConsConvSectBilMultProg",            label: "1ª Consulta Conv. Sect. (Prog.)" },
@@ -183,7 +179,6 @@ const camposConvAmb = [
     { key: "pruBiomConvSectBilMult",                 label: "Pruebas biomecánicas Conv. Sect." },
 ];
 
-// ItHos = Control IT CC (Hospitalario)
 const camposItHos = [
     { key: "pitrmutHos",             label: "PI trmut HOS" },
     { key: "esttrmutHos",            label: "Estancias trmut HOS" },
@@ -205,7 +200,6 @@ const camposItHos = [
     { key: "pruBiomHos",             label: "Pruebas biomecánicas HOS" },
 ];
 
-// ItAmb = Control IT CC (Ambulatorio)
 const camposItAmb = [
     { key: "paotmutArt12",                 label: "PA otros trmut Art.12" },
     { key: "primConsotmutArt12Prog",       label: "1ª Consulta otros trmut Art.12 (Prog.)" },
@@ -225,7 +219,6 @@ const camposItAmb = [
     { key: "pruBiomotmutArt12",            label: "Pruebas biomecánicas otros trmut Art.12" },
 ];
 
-// OtrasHos = Otras asistencias sanitarias (Hospitalario)
 const camposOtrasHos = [
     { key: "pitrmutArt82Hos",             label: "PI trmut Art.82 HOS" },
     { key: "esttrmutArt82Hos",            label: "Estancias trmut Art.82 HOS" },
@@ -247,7 +240,6 @@ const camposOtrasHos = [
     { key: "prueBiomArt82Hos",            label: "Pruebas biomecánicas Art.82 HOS" },
 ];
 
-// OtrasAmb = Otras asistencias sanitarias (Ambulatorio)
 const camposOtrasAmb = [
     { key: "pacenArt82",               label: "PA centro Art.82" },
     { key: "primConsArt82Prog",        label: "1ª Consulta Art.82 (Prog.)" },
@@ -267,10 +259,8 @@ const camposOtrasAmb = [
     { key: "pruBiomArt82",             label: "Pruebas biomecánicas Art.82" },
 ];
 
-// AsProHos = AS por contingencias profesionales (Hospitalario)
-const camposAsProHos = camposOtrasHos; // mismo esquema
+const camposAsProHos = camposOtrasHos;
 
-// AsPro = AS por contingencias profesionales (Ambulatorio)
 const camposAsPro = [
     { key: "actidesde",                    label: "Activo desde" },
     { key: "actihasta",                    label: "Activo hasta" },
@@ -489,6 +479,12 @@ const st = {
     msg: (ok)  => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828" }),
 };
 
+// ─── Helper formato numérico ──────────────────────────────────────────────────
+const fmtNum = (val) =>
+    val === null || val === undefined
+        ? <span style={{ color: "#bbb" }}>—</span>
+        : <span>{Number(val).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+
 // ─── TabContent ───────────────────────────────────────────────────────────────
 const TabContent = ({ centroId, año, tabKey, apiName }) => {
     const [datos,   setDatos]   = useState(null);
@@ -529,10 +525,10 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
     if (!datos)  return <div style={st.nodata}>No hay datos para este centro y año.</div>;
 
     const camposList = (CAMPOS[tabKey] || []).length > 0
-    ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || "number" }))
-    : Object.keys(datos)
-        .filter(k => !["idIcg","id","centroId","año"].includes(k))
-        .map(k => ({ key: k, label: k, type: typeof datos[k] === "number" ? "number" : "text" }));
+        ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || "number" }))
+        : Object.keys(datos)
+            .filter(k => !["idIcg","id","centroId","año"].includes(k))
+            .map(k => ({ key: k, label: k, type: typeof datos[k] === "number" ? "number" : "text" }));
 
     return (
         <div>
@@ -543,33 +539,33 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
                 {msg && <span style={st.msg(msg.ok)}>{msg.text}</span>}
             </div>
             <div style={st.fieldGrid}>
-                            {camposList.map(({ key, label, type = "number" }) => (
-                                <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
-                                    <span style={st.fieldLabel}>{label}</span>
-                                    {type === "text" ? (
-                                        <textarea
-                                            style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
-                                            value={datos[key] ?? ""}
-                                            onChange={e => handleChange(key, e.target.value)}
-                                            placeholder="Escriba aquí..."
-                                        />
-                                    ) : (
-                                        <input
-                                            style={{
-                                                ...st.fieldInput,
-                                                color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222",
-                                            }}
-                                            type="number"
-                                            value={datos[key] ?? ""}
-                                            onChange={e => handleChange(key, e.target.value)}
-                                            placeholder="0"
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                {camposList.map(({ key, label, type = "number" }) => (
+                    <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
+                        <span style={st.fieldLabel}>{label}</span>
+                        {type === "text" ? (
+                            <textarea
+                                style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
+                                value={datos[key] ?? ""}
+                                onChange={e => handleChange(key, e.target.value)}
+                                placeholder="Escriba aquí..."
+                            />
+                        ) : (
+                            <input
+                                style={{
+                                    ...st.fieldInput,
+                                    color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222",
+                                }}
+                                type="number"
+                                value={datos[key] ?? ""}
+                                onChange={e => handleChange(key, e.target.value)}
+                                placeholder="0"
+                            />
+                        )}
                     </div>
-                );
+                ))}
+            </div>
+        </div>
+    );
 };
 
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
@@ -590,17 +586,17 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                     <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
                 </div>
                 <div style={st.tabBar}>
-                <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: "#1565c0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                        <input type="checkbox" checked={esHospitalario} onChange={e => { setEsHospitalario(e.target.checked); setTabActiva("generales"); }} />
-                        Centro Hospitalario
-                    </label>
-                </div>
-                {tabsVisibles.map(t => (
-                    <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
-                        {t.label}
-                    </button>
-                ))}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: "#1565c0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                            <input type="checkbox" checked={esHospitalario} onChange={e => { setEsHospitalario(e.target.checked); setTabActiva("generales"); }} />
+                            Centro Hospitalario
+                        </label>
+                    </div>
+                    {tabsVisibles.map(t => (
+                        <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
+                            {t.label}
+                        </button>
+                    ))}
                 </div>
                 <div style={st.tabContent}>
                     {tab && (
@@ -624,27 +620,55 @@ const ICGCentrosPropios = () => {
     const dataGridRef = useRef(null);
 
     const [centros,            setCentros]            = useState([]);
+    const [icgData,            setIcgData]            = useState([]);
     const [loading,            setLoading]            = useState(true);
     const [año,                setAño]                = useState(YEAR_NOW);
     const [centroSeleccionado, setCentroSeleccionado] = useState(null);
 
+    // Cargar listado de centros (una sola vez)
     useEffect(() => {
-        setLoading(true);
-        const user = JSON.parse(sessionStorage.getItem('user'));
+        const user     = JSON.parse(sessionStorage.getItem('user'));
         const perfilId = user?.perfilId ?? '';
         fetch(`${API_CENTROS}?perfilId=${perfilId}`)
             .then(r => r.ok ? r.json() : [])
             .then(d => setCentros(d))
-            .catch(() => setCentros([]))
-            .finally(() => setLoading(false));
+            .catch(() => setCentros([]));
     }, []);
+
+    // Cargar datos ICG calculados cuando cambia el año
+    useEffect(() => {
+        setLoading(true);
+        fetch(`/api/ListadoPropiosIcg?a%C3%B1o=${año}`)
+            .then(r => r.ok ? r.json() : [])
+            .then(d => setIcgData(d))
+            .catch(() => setIcgData([]))
+            .finally(() => setLoading(false));
+    }, [año]);
+
+    // Cruzar centros con datos ICG del año seleccionado
+    const dataSource = centros.map(c => {
+        const icg = icgData.find(i => i.centroId === c.centroId) || {};
+        return {
+            ...c,
+            cap1GastosPersonal:       icg.cap1_GastosPersonal       ?? null,
+            cap2GastosCorrientes:     icg.cap2_GastosCorrientes     ?? null,
+            cap3GastosFinancieros:    icg.cap3_GastosFinancieros     ?? null,
+            cuenta68Amortizaciones:   icg.cuenta68_Amortizaciones   ?? null,
+            art32OtrosIngresos:       icg.art32_OtrosIngresos       ?? null,
+            art62InversionNueva:      icg.art62_InversionNueva      ?? null,
+            art63InversionReposicion: icg.art63_InversionReposicion ?? null,
+            totalGastos:              icg.totalGastos               ?? null,
+            totalInversion:           icg.totalInversion            ?? null,
+            tieneIcg:                 !!icg.idIcg,
+        };
+    });
 
     const onExporting = (e) => {
         const workbook = new Workbook();
         const sheet    = workbook.addWorksheet("CentrosPropios");
         exportDataGrid({ component: e.component, worksheet: sheet, autoFilterEnabled: true })
             .then(() => workbook.xlsx.writeBuffer())
-            .then(buf => saveAs(new Blob([buf], { type: "application/octet-stream" }), "CentrosPropios.xlsx"));
+            .then(buf => saveAs(new Blob([buf], { type: "application/octet-stream" }), `CentrosPropios_ICG_${año}.xlsx`));
         e.cancel = true;
     };
 
@@ -671,7 +695,7 @@ const ICGCentrosPropios = () => {
             </div>
             <DataGrid
                 ref={dataGridRef}
-                dataSource={centros}
+                dataSource={dataSource}
                 showBorders
                 rowAlternationEnabled
                 columnAutoWidth
@@ -695,29 +719,92 @@ const ICGCentrosPropios = () => {
                     <Item name="columnChooserButton" />
                     <Item name="exportButton" />
                 </Toolbar>
+
+                {/* ── Identificación ── */}
                 <Column dataField="localizador" caption="Localizador"  width={110} />
-                <Column dataField="no"           caption="Nº"           width={70}  />
-                <Column dataField="mutuaId"      caption="Mutua"        width={70}  />
-                <Column dataField="centroId"     caption="Centro ID"    width={90}  />
-                <Column dataField="centro"       caption="Centro"       minWidth={200} />
-                <Column dataField="cp"           caption="C.P."         width={80}  />
-                <Column dataField="provincia"    caption="Provincia"    width={130} />
-                <Column dataField="poblacionId"  caption="Población"    width={100} />
-                <Column dataField="telefono"     caption="Teléfono"     width={130} />
-                <Column dataField="desactivado"  caption="Desactivado"  width={110}
+                <Column dataField="mutuaId"     caption="Mutua"        width={70}  />
+                <Column dataField="centroId"    caption="Centro ID"    width={90}  />
+                <Column dataField="centro"      caption="Centro"       minWidth={200} />
+                <Column dataField="cp"          caption="C.P."         width={80}  />
+                <Column dataField="provincia"   caption="Provincia"    width={130} />
+                <Column dataField="telefono"    caption="Teléfono"     width={130} />
+                <Column dataField="desactivado" caption="Desactivado"  width={110}
                     cellRender={({ value }) => (
                         <span style={{ color: value ? "#c62828" : "#2e7d32", fontWeight: 600 }}>
                             {value ? "Sí" : "No"}
                         </span>
                     )}
                 />
+
+                {/* ── Vistas calculadas ICG ── */}
+                <Column dataField="cap1GastosPersonal"
+                    caption="Cap. 1 - Personal"
+                    width={140} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="cap2GastosCorrientes"
+                    caption="Cap. 2 - Corrientes"
+                    width={145} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="cap3GastosFinancieros"
+                    caption="Cap. 3 - Financieros"
+                    width={145} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="cuenta68Amortizaciones"
+                    caption="Cta. 68 - Amortiz."
+                    width={140} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="art32OtrosIngresos"
+                    caption="Art. 32 - Ingresos"
+                    width={140} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="art62InversionNueva"
+                    caption="Art. 62 - Inv. Nueva"
+                    width={145} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="art63InversionReposicion"
+                    caption="Art. 63 - Inv. Repos."
+                    width={150} dataType="number"
+                    cellRender={({ value }) => fmtNum(value)}
+                />
+                <Column dataField="totalGastos"
+                    caption="Total Gastos"
+                    width={130} dataType="number"
+                    cellRender={({ value }) => (
+                        <span style={{ fontWeight: 700, color: "#1565c0" }}>
+                            {value === null || value === undefined ? "—" :
+                                Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                    )}
+                />
+                <Column dataField="totalInversion"
+                    caption="Total Inversión"
+                    width={130} dataType="number"
+                    cellRender={({ value }) => (
+                        <span style={{ fontWeight: 700, color: "#2e7d32" }}>
+                            {value === null || value === undefined ? "—" :
+                                Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                    )}
+                />
+
+                {/* ── Acceso a ficha ICG ── */}
                 <Column caption="ICG06" width={110}
                     cellRender={({ data }) => (
                         <button
-                            style={{ border: "none", borderRadius: 3, padding: "3px 12px", background: "#1976d2", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                            style={{
+                                border: "none", borderRadius: 3, padding: "3px 12px",
+                                background: data.tieneIcg ? "#1976d2" : "#90a4ae",
+                                color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600
+                            }}
                             onClick={() => setCentroSeleccionado(data)}
                         >
-                            Ver ficha
+                            {data.tieneIcg ? "Ver ficha" : "Sin ICG"}
                         </button>
                     )}
                 />
