@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
 import './Acuerdos.css';
 
-const API = 'https://localhost:7132/api';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 
 const Acuerdos = () => {
     const { t } = useTranslation();
@@ -78,7 +78,7 @@ const Acuerdos = () => {
                             <select value={mutuaSeleccionada} onChange={e => setMutuaSeleccionada(e.target.value)}>
                                 <option value="">-- Selecciona una mutua --</option>
                                 {mutuas.map(m => (
-                                    <option key={m.nº} value={m.nº}>{m.mutua}</option>
+                                    <option key={m.numeroId} value={m.numeroId}>{m.mutua}</option>
                                 ))}
                             </select>
                         </div>

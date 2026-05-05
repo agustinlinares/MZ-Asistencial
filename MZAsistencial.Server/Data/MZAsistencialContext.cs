@@ -254,8 +254,6 @@ public partial class MZAsistencialContext : DbContext
     public virtual DbSet<VwPropiosValidado> VwPropiosValidados { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {}  //
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        //         => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=MZAsistencial;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -4589,7 +4587,11 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.Apellidos).HasMaxLength(150);
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
+<<<<<<< HEAD
             entity.Ignore(e => e.Contraseña);
+=======
+           
+>>>>>>> 116d180e58bfbccd2c51de71a19f7868391bf7b8
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);
             entity.Property(e => e.DgossrecibeCorreo).HasColumnName("DGOSSRecibeCorreo");
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);
@@ -4601,7 +4603,9 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.PassTmp)
                 .HasMaxLength(100)
                 .HasColumnName("Pass_TMP");
-            entity.Property(e => e.Password).IsUnicode(false);
+            entity.Property(e => e.Password)
+                .IsUnicode(false)
+                .HasColumnName("Password");
             entity.Property(e => e.PerfilId).HasColumnName("Perfil_id");
             entity.Property(e => e.PreguntaRecordatorio).HasMaxLength(150);
             entity.Property(e => e.RespuestaRecordatorio).HasMaxLength(150);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -14,11 +14,11 @@ const ANOS = ["2020","2021","2022","2023","2024","2025"];
 
 const TABS = [
     { key: "general",           label: "General" },
-    { key: "datosUtilizacion",  label: "Datos Utilización" },
+    { key: "datosUtilizacion",  label: "Datos Utilizacion" },
     { key: "registroICG",       label: "Registro ICG" },
     { key: "fincasRegistrales", label: "Fincas Registrales" },
     { key: "especialidades",    label: "Especialidades / Serv. Disponibles" },
-    { key: "catalogo",          label: "Catálogo completo de servicios" },
+    { key: "catalogo",          label: "Catalogo completo de servicios" },
 ];
 
 const onExportingGrid = (e, filename) => {
@@ -45,13 +45,16 @@ const FichaCentroPropio = () => {
     const [tabActiva, setTabActiva] = useState("general");
     const [guardando, setGuardando] = useState(false);
     const [fincas, setFincas] = useState([]);
+    const [especialidades, setEspecialidades] = useState([]);
+    const [catalogo, setCatalogo] = useState([]);
+    const [anioEsp, setAnioEsp] = useState(2024);
+    const [bloqueado, setBloqueado] = useState(false);
 
     const clienteRef = useRef(cliente);
     useEffect(() => {
         if (cliente) clienteRef.current = cliente;
     }, [cliente]);
 
-    // Cargar mutuas
     useEffect(() => {
         fetch("/api/mutuas")
             .then(r => r.ok ? r.json() : [])
@@ -59,7 +62,6 @@ const FichaCentroPropio = () => {
             .catch(() => setMUTUOS([]));
     }, []);
 
-    // Cargar provincias
     useEffect(() => {
         fetch("/api/auxprovincias")
             .then(r => r.ok ? r.json() : [])
@@ -67,7 +69,6 @@ const FichaCentroPropio = () => {
             .catch(() => setProvincias([]));
     }, []);
 
-    // Cargar poblaciones cuando cambie la provincia
     useEffect(() => {
         if (form.ProvinciaId) {
             fetch(`/api/auxpoblaciones/${form.ProvinciaId}`)
@@ -79,7 +80,6 @@ const FichaCentroPropio = () => {
         }
     }, [form.ProvinciaId]);
 
-    // Inicializar form desde cliente
     useEffect(() => {
         if (!cliente) { navigate(-1); return; }
         setForm({
@@ -126,8 +126,6 @@ const FichaCentroPropio = () => {
         });
     }, [cliente]);
 
-    // ✅ Leer datos del mapa desde sessionStorage al montar
-// ✅ Leer datos del mapa desde sessionStorage con delay para que el form esté inicializado
     useEffect(() => {
         const timer = setTimeout(() => {
             const mapaData = sessionStorage.getItem('mapaRetorno');
@@ -155,7 +153,26 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
-    // Cargar fincas registrales del centro
+    useEffect(() => {
+        fetch('/api/CentrosPropiosEspecialidades/bloqueo')
+            .then(r => r.ok ? r.json() : { bloqueado: false })
+            .then(d => setBloqueado(d.bloqueado))
+            .catch(() => setBloqueado(false));
+    }, []);
+
+    useEffect(() => {
+        if (form.CentroId && anioEsp) {
+            fetch('/api/CentrosPropiosEspecialidades?centroId=' + form.CentroId + '&anio=' + anioEsp)
+                .then(r => r.ok ? r.json() : [])
+                .then(d => setEspecialidades(d))
+                .catch(() => setEspecialidades([]));
+            fetch('/api/CentrosPropiosEspecialidades/catalogo?centroId=' + form.CentroId + '&anio=' + anioEsp)
+                .then(r => r.ok ? r.json() : [])
+                .then(d => setCatalogo(d))
+                .catch(() => setCatalogo([]));
+        }
+    }, [form.CentroId, anioEsp]);
+
     useEffect(() => {
         if (form.CentroId) {
             fetch(`/api/FincasRegistrales?centroId=${form.CentroId}`)
@@ -165,7 +182,6 @@ const FichaCentroPropio = () => {
         }
     }, [form.CentroId]);
 
-    // Localizador automático al seleccionar mutua en centro nuevo
     useEffect(() => {
         if (!form.CentroId && form.Mutua) {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
@@ -226,6 +242,7 @@ const FichaCentroPropio = () => {
                     fpufuncio:              form.PuestaFuncionamiento || null,
                     fcalisuf:               form.Calificacion || null,
                     mapaValidado:           form.MapaValidado ?? false,
+                    usuarioId:              JSON.parse(sessionStorage.getItem('user'))?.usuarioId ?? null,
                 })
             });
             if (res.ok) { alert('Centro guardado correctamente'); navigate(-1); }
@@ -243,10 +260,10 @@ const FichaCentroPropio = () => {
         <div className="fcp-page">
 
             {/* ── HEADER ── */}
-            <div className="ficha-modal-header">
-                <div className="ficha-header-btns">
-                    <button className="ficha-btn-secondary" onClick={() => navigate(-1)}>
-                        <i className="ri-arrow-left-line" /> {t('Volver')}
+            <div className="fcp-header">
+                <div className="fcp-header-left">
+                    <button className="fcp-btn-volver" onClick={() => navigate(-1)}>
+                        <i className="ri-arrow-left-line" /> Volver
                     </button>
                     <div className="ficha-modal-title" style={{ marginLeft: '15px' }}>
                         {t('Ficha Centro Propio')}
@@ -266,7 +283,7 @@ const FichaCentroPropio = () => {
             </div>
 
             {/* ── PESTAÑAS ── */}
-            <div className="ficha-tabs">
+            <div className="fcp-tabs-bar">
                 {TABS.map(({ key, label }) => (
                     <button
                         key={key}
@@ -279,7 +296,7 @@ const FichaCentroPropio = () => {
             </div>
 
             {/* ── CONTENIDO ── */}
-            <div className="ficha-tab-content">
+            <div className="fcp-content">
 
                 {/* GENERAL */}
                 {tabActiva === "general" && (
@@ -506,9 +523,9 @@ const FichaCentroPropio = () => {
                             <Export enabled={true} />
                             <Column dataField="Finca_id" caption="ID" width={70} />
                             <Column dataField="Localizador" caption="Localizador" width={110} />
-                            <Column 
-                                caption="Dirección" 
-                                width={250} 
+                            <Column
+                                caption="Dirección"
+                                width={250}
                                 cellRender={(cell) => (
                                     <span>
                                         {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
@@ -528,6 +545,24 @@ const FichaCentroPropio = () => {
                 {/* ESPECIALIDADES */}
                 {tabActiva === "especialidades" && (
                     <div className="fcp-seccion">
+
+                        {/* ── BANNER BLOQUEO ── */}
+                        {bloqueado && (
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: "10px",
+                                background: "#fff3cd", border: "1px solid #ffc107",
+                                borderLeft: "5px solid #e6a800", borderRadius: "4px",
+                                padding: "10px 16px", marginBottom: "14px",
+                                color: "#856404", fontWeight: 500, fontSize: "14px",
+                            }}>
+                                <i className="ri-lock-line" style={{ fontSize: "18px", flexShrink: 0 }} />
+                                <span>
+                                    La edición de disponibilidad está <strong>bloqueada</strong>.
+                                    El período de bloqueo activo no permite realizar modificaciones.
+                                </span>
+                            </div>
+                        )}
+
                         <div className="fcp-filtros">
                             <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
                             <div className="ficha-field">
@@ -542,29 +577,62 @@ const FichaCentroPropio = () => {
                                 <label>Especialidad</label>
                                 <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
-                            <div className="ficha-field">
+                            <div className="fcp-field">
                                 <label>Año</label>
                                 <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
-                        <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
-                            <Scrolling mode="standard" />
+
+                        {/* ── DATAGRID CON MESES PIVOTADOS ── */}
+                        <DataGrid
+                            dataSource={especialidades}
+                            showBorders={true}
+                            rowAlternationEnabled={true}
+                            noDataText="Sin datos para mostrar"
+                            className="mz-table"
+                            height={380}
+                            columnAutoWidth={false}
+                            allowColumnResizing={true}
+                        >
+                            <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={10} />
                             <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
                             <FilterRow visible={true} />
                             <HeaderFilter visible={true} />
                             <Sorting mode="multiple" />
-                            <Column dataField="especialidad" caption="Especialidad" width={160} />
-                            <Column dataField="servicio" caption="Servicio" width={180} />
-                            <Column dataField="altaTec" caption="AltaTec" width={90} />
-                            <Column dataField="disp" caption="Disp." width={70} />
+
+                            {/* Columnas fijas izquierda */}
+                            <Column dataField="especialidad"   caption="Especialidad" width={150} fixed={true} fixedPosition="left" />
+                            <Column dataField="servicio"       caption="Servicio"     width={160} fixed={true} fixedPosition="left" />
+                            <Column dataField="cantidad"       caption="Cant."        width={60}  alignment="center" />
+                            <Column dataField="disponibilidad" caption="Disp."        width={55}  alignment="center" />
+
+                            {/* 12 meses */}
                             {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"].map(m =>
-                                <Column key={m} dataField={m} caption={m.charAt(0).toUpperCase()+m.slice(1)} width={55} dataType="number" />
+                                <Column
+                                    key={m}
+                                    dataField={m}
+                                    caption={m.charAt(0).toUpperCase() + m.slice(1)}
+                                    width={65}
+                                    dataType="number"
+                                    alignment="center"
+                                />
                             )}
-                            <Column dataField="total" caption="Total" width={70} dataType="number" />
+
+                            {/* Total fijo derecha */}
+                            <Column
+                                dataField="total"
+                                caption="Total"
+                                width={75}
+                                dataType="number"
+                                alignment="center"
+                                fixed={true}
+                                fixedPosition="right"
+                            />
                         </DataGrid>
+
                         <div className="fcp-acciones-bottom">
-                            <button className="fcp-btn-accion">Actualizar</button>
+                            <button className="fcp-btn-accion" disabled={bloqueado} style={{ opacity: bloqueado ? 0.5 : 1, cursor: bloqueado ? "not-allowed" : "pointer" }}>Actualizar</button>
                             <button className="fcp-btn-accion fcp-btn-accion--cancelar">Cancelar</button>
                         </div>
                     </div>
@@ -587,21 +655,22 @@ const FichaCentroPropio = () => {
                                 <label>Especialidad</label>
                                 <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                             </div>
-                            <div className="ficha-field">
+                            <div className="fcp-field">
                                 <label>Año</label>
                                 <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
                             </div>
                         </div>
-                        <DataGrid dataSource={[]} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                        <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
                             <Scrolling mode="standard" />
                             <Paging defaultPageSize={10} />
                             <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
                             <FilterRow visible={true} />
                             <HeaderFilter visible={true} />
                             <Sorting mode="multiple" />
-                            <Column dataField="especialidad" caption="Especialidad" width={220} />
-                            <Column dataField="servicio" caption="Servicio" width={250} />
-                            <Column dataField="catalogoCompletoServ" caption="Catálogo Completo de Servicios" width={250} />
+                            <Column dataField="especialidad"  caption="Especialidad"  width={220} />
+                            <Column dataField="servicio"      caption="Servicio"      width={250} />
+                            <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
+                            <Column dataField="fechaAlta"     caption="F. Alta"       width={120} dataType="date" format="dd/MM/yyyy" />
                         </DataGrid>
                         <div className="fcp-acciones-bottom">
                             <button className="fcp-btn-accion">Actualizar</button>

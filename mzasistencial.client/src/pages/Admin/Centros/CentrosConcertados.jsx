@@ -161,20 +161,6 @@ const CentrosConcertados = () => {
                                         ➕ Nuevo Centro
                                     </div>
 
-                                    {/* Selector de columnas */}
-                                    <div 
-                                        style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
-                                        onClick={() => { 
-                                            const btnChooser = document.querySelector('.dx-datagrid-column-chooser-button');
-                                            if (btnChooser) btnChooser.click();
-                                            setMenuAccionesAbierto(false); 
-                                        }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                    >
-                                        🎛️ Selector de columnas
-                                    </div>
-
                                     {/* Exportar todo */}
                                     <div 
                                         style={{ padding: '10px 15px', cursor: 'pointer', borderBottom: '1px solid #eee' }}
@@ -231,11 +217,9 @@ const CentrosConcertados = () => {
                                     wordWrapEnabled={false}
                                     onRowDblClick={(e) => setSelectedCentro(e.data)} // Abrimos ficha al doble clic
                                     onToolbarPreparing={(e) => {
-                                        // Mantenemos los botones originales en el DOM para poder hacerles clic, 
-                                        // pero los ocultamos visualmente inyectándoles display: none
                                         e.toolbarOptions.items.forEach(item => {
-                                            if (item.name === 'exportButton' || item.name === 'columnChooserButton') {
-                                                item.cssClass = 'd-none'; // Clase de Bootstrap para ocultar
+                                            if (item.name === 'exportButton') {
+                                                item.cssClass = 'd-none'; 
                                             }
                                         });
                                     }}

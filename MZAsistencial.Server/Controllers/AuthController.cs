@@ -32,30 +32,24 @@ namespace MZAsistencial.Server.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            // 1. Validación de entrada básica
             if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.Contrasena))
                 return BadRequest(new { message = "Usuario y contraseña son obligatorios." });
 
-            try
-            {
-                var usuario = await _context.Usuarios
-                    .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == request.Contrasena);
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Contraseña == request.Contrasena);
 
-                if (usuario == null)
-                    return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
+            if (usuario == null)
+                return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
 
-                return Ok(new
-                {
-                    usuarioId = usuario.UsuarioId,
-                    usuario = usuario.Usuario1,
-                    perfilId = usuario.PerfilId,
-                    nombre = usuario.Nombre,
-                    apellidos = usuario.Apellidos,
-                });
-            }
-            catch (Exception ex)
+            return Ok(new
             {
-                return StatusCode(500, new { error = ex.Message, inner = ex.InnerException?.Message });
-            }
+                usuarioId = usuario.UsuarioId,
+                usuario = usuario.Usuario1,
+                perfilId = usuario.PerfilId,
+                nombre = usuario.Nombre,
+                apellidos = usuario.Apellidos,
+            });
         }
     }
 
