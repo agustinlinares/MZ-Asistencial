@@ -40,17 +40,17 @@ namespace MZAsistencial.Server.Services
         // ─── Entity → DTO ────────────────────────────────────────────────────
         private static Icg06AreaAsistencialDTO MapToDTO(Icg06 e) => new()
         {
-            IdIcg      = e.IdIcg,
-            Año        = e.Año,
-            CentroId   = e.CentroId,
+            IdIcg       = e.IdIcg,
+            Año         = e.Año,
+            CentroId    = e.CentroId,
             TipoHorario = e.TipoHorario,
-            HorarioA   = e.HorarioA,
-            HorarioDe  = e.HorarioDe,
+            HorarioA    = e.HorarioA,
+            HorarioDe   = e.HorarioDe,
             TraslNdirec = e.TraslNdirec,
-            Numdiano   = e.Numdiano,
-            Numdcierre = e.Numdcierre,
-            Numquirof  = e.Numquirof,
-            Numcamas   = e.Numcamas,
+            Numdiano    = e.Numdiano,
+            Numdcierre  = e.Numdcierre,
+            Numquirof   = e.Numquirof,
+            Numcamas    = e.Numcamas,
         };
 
         // ─── DTO → Entity ────────────────────────────────────────────────────

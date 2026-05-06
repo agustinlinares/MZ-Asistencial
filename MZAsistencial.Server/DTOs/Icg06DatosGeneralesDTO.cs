@@ -1,13 +1,11 @@
-namespace MZAsistencial.Server.DTOs
-{
-    public class Icg06DatosGeneralesDTO
-    {
-        public int IdIcg    { get; set; }
-        public int Año      { get; set; }
-        public int CentroId { get; set; }
+namespace MZAsistencial.Server.DTOs.ICG06;
 
-        public decimal? Nfincreg     { get; set; }  // Número de fincas registrales
-        public decimal? SuptotConst  { get; set; }  // Superficie total construida
-        public string?  OtrasObservac { get; set; } // Observaciones
-    }
+public class Icg06DatosGeneralesDto
+{
+    public int      IdIcg         { get; set; }   // Id_ICG de la tabla ICG06
+    public int      CentroId      { get; set; }   // Centro_id
+    public int      Año           { get; set; }
+    public int?     Nfincreg      { get; set; }
+    public decimal? SuptotConst   { get; set; }
+    public string?  OtrasObservac { get; set; }
 }

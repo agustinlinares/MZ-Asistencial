@@ -30,9 +30,7 @@ namespace MZAsistencial.Server.Services
             if (entity is null) return false;
 
             MapToEntity(dto, entity);
-
             entity.FechaModificacion = DateTime.Now;
-
             await _context.SaveChangesAsync();
             return true;
         }
@@ -44,73 +42,63 @@ namespace MZAsistencial.Server.Services
             Año      = e.Año,
             CentroId = e.CentroId,
 
-            // Facturación
-            Factejercsist        = e.Factejercsist,
-            Factejercresto       = e.Factejercresto,
-            FactejerotrmutuasCc  = e.FactejerotrmutuasCc,
-            FactejerotrmutuasCp  = e.FactejerotrmutuasCp,
-
-            // Otros costes — fila superior
-            Factpendcobro         = e.Factpendcobro,
-            InversionesReposicion = e.InversionesReposicion,
-            InversionesNuevas     = e.InversionesNuevas,
-
-            // Gastos corrientes bienes y servicios
-            GasbienescysAscp = e.GasbienescysAscp,
-            GasbienescysAscc = e.GasbienescysAscc,
-            GasbienescysCit  = e.GasbienescysCit,
-            GasbienescysPss  = e.GasbienescysPss,
-            GasbienescysAg   = e.GasbienescysAg,
-
-            // Gastos financieros
             GasfinAscp = e.GasfinAscp,
             GasfinAscc = e.GasfinAscc,
             GasfinCit  = e.GasfinCit,
             GasfinPss  = e.GasfinPss,
             GasfinAg   = e.GasfinAg,
 
-            // Amortizaciones
+            GasbienescysAscp = e.GasbienescysAscp,
+            GasbienescysAscc = e.GasbienescysAscc,
+            GasbienescysCit  = e.GasbienescysCit,
+            GasbienescysPss  = e.GasbienescysPss,
+            GasbienescysAg   = e.GasbienescysAg,
+
             AmortizAscp = e.AmortizAscp,
             AmortizAscc = e.AmortizAscc,
             AmortizCit  = e.AmortizCit,
             AmortizPss  = e.AmortizPss,
             AmortizAg   = e.AmortizAg,
+
+            InversionesNuevas     = e.InversionesNuevas,
+            InversionesReposicion = e.InversionesReposicion,
+
+            Factejercsist       = e.Factejercsist,
+            Factejercresto      = e.Factejercresto,
+            FactejerotrmutuasCp = e.FactejerotrmutuasCp,
+            FactejerotrmutuasCc = e.FactejerotrmutuasCc,
+            Factpendcobro       = e.Factpendcobro,
         };
 
         // ─── DTO → Entity ────────────────────────────────────────────────────
         private static void MapToEntity(Icg06DatosEconomicosDTO dto, Icg06 e)
         {
-            // Facturación
-            e.Factejercsist        = dto.Factejercsist;
-            e.Factejercresto       = dto.Factejercresto;
-            e.FactejerotrmutuasCc  = dto.FactejerotrmutuasCc;
-            e.FactejerotrmutuasCp  = dto.FactejerotrmutuasCp;
-
-            // Otros costes — fila superior
-            e.Factpendcobro         = dto.Factpendcobro;
-            e.InversionesReposicion = dto.InversionesReposicion;
-            e.InversionesNuevas     = dto.InversionesNuevas;
-
-            // Gastos corrientes bienes y servicios
-            e.GasbienescysAscp = dto.GasbienescysAscp;
-            e.GasbienescysAscc = dto.GasbienescysAscc;
-            e.GasbienescysCit  = dto.GasbienescysCit;
-            e.GasbienescysPss  = dto.GasbienescysPss;
-            e.GasbienescysAg   = dto.GasbienescysAg;
-
-            // Gastos financieros
             e.GasfinAscp = dto.GasfinAscp;
             e.GasfinAscc = dto.GasfinAscc;
             e.GasfinCit  = dto.GasfinCit;
             e.GasfinPss  = dto.GasfinPss;
             e.GasfinAg   = dto.GasfinAg;
 
-            // Amortizaciones
+            e.GasbienescysAscp = dto.GasbienescysAscp;
+            e.GasbienescysAscc = dto.GasbienescysAscc;
+            e.GasbienescysCit  = dto.GasbienescysCit;
+            e.GasbienescysPss  = dto.GasbienescysPss;
+            e.GasbienescysAg   = dto.GasbienescysAg;
+
             e.AmortizAscp = dto.AmortizAscp;
             e.AmortizAscc = dto.AmortizAscc;
             e.AmortizCit  = dto.AmortizCit;
             e.AmortizPss  = dto.AmortizPss;
             e.AmortizAg   = dto.AmortizAg;
+
+            e.InversionesNuevas     = dto.InversionesNuevas;
+            e.InversionesReposicion = dto.InversionesReposicion;
+
+            e.Factejercsist       = dto.Factejercsist;
+            e.Factejercresto      = dto.Factejercresto;
+            e.FactejerotrmutuasCp = dto.FactejerotrmutuasCp;
+            e.FactejerotrmutuasCc = dto.FactejerotrmutuasCc;
+            e.Factpendcobro       = dto.Factpendcobro;
         }
     }
 }

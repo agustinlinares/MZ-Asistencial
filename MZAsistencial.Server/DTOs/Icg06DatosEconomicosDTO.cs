@@ -2,40 +2,40 @@ namespace MZAsistencial.Server.DTOs
 {
     public class Icg06DatosEconomicosDTO
     {
-        public int IdIcg    { get; set; }
-        public int Año      { get; set; }
-        public int CentroId { get; set; }
+        public int  IdIcg    { get; set; }
+        public int? CentroId { get; set; }
+        public int? Año      { get; set; }
 
-        // ─── Facturación ─────────────────────────────────────────────────────
-        public decimal? Factejercsist        { get; set; }  // Facturación Entidades del sistema
-        public decimal? Factejercresto       { get; set; }  // Facturación Resto concepto 327
-        public decimal? FactejerotrmutuasCc  { get; set; }  // Facturación entre mutuas: CC
-        public decimal? FactejerotrmutuasCp  { get; set; }  // Facturación entre mutuas: CP
+        // ─── Gastos financiación ──────────────────────────────────────────────
+        public decimal? GasfinAscp { get; set; }   // Gastos financiación ASCP
+        public decimal? GasfinAscc { get; set; }   // Gastos financiación ASCC
+        public decimal? GasfinCit  { get; set; }   // Gastos financiación CIT
+        public decimal? GasfinPss  { get; set; }   // Gastos financiación PSS
+        public decimal? GasfinAg   { get; set; }   // Gastos financiación AG
 
-        // ─── Otros costes — fila superior ────────────────────────────────────
-        public decimal? Factpendcobro        { get; set; }  // Importe pendiente de cobro
-        public decimal? InversionesReposicion { get; set; } // Inversiones de reposición
-        public decimal? InversionesNuevas    { get; set; }  // Inversiones nuevas
+        // ─── Bienes corrientes y servicios ────────────────────────────────────
+        public decimal? GasbienescysAscp { get; set; }
+        public decimal? GasbienescysAscc { get; set; }
+        public decimal? GasbienescysCit  { get; set; }
+        public decimal? GasbienescysPss  { get; set; }
+        public decimal? GasbienescysAg   { get; set; }
 
-        // ─── Otros costes — tabla: Gastos corrientes bienes y servicios ──────
-        public decimal? GasbienescysAscp     { get; set; }  // Asist. San. C.Profes
-        public decimal? GasbienescysAscc     { get; set; }  // Asist. San. C.C. (art.82)
-        public decimal? GasbienescysCit      { get; set; }  // Control Adm. IT
-        public decimal? GasbienescysPss      { get; set; }  // Prevención AT y EP S.S.
-        public decimal? GasbienescysAg       { get; set; }  // Adm. General Mutua
+        // ─── Amortizaciones ───────────────────────────────────────────────────
+        public decimal? AmortizAscp { get; set; }
+        public decimal? AmortizAscc { get; set; }
+        public decimal? AmortizCit  { get; set; }
+        public decimal? AmortizPss  { get; set; }
+        public decimal? AmortizAg   { get; set; }
 
-        // ─── Otros costes — tabla: Gastos financieros ────────────────────────
-        public decimal? GasfinAscp           { get; set; }
-        public decimal? GasfinAscc           { get; set; }
-        public decimal? GasfinCit            { get; set; }
-        public decimal? GasfinPss            { get; set; }
-        public decimal? GasfinAg             { get; set; }
+        // ─── Inversiones ──────────────────────────────────────────────────────
+        public decimal? InversionesNuevas      { get; set; }   // Inversiones nuevas
+        public decimal? InversionesReposicion  { get; set; }   // Inversiones reposición
 
-        // ─── Otros costes — tabla: Amortizaciones ────────────────────────────
-        public decimal? AmortizAscp          { get; set; }
-        public decimal? AmortizAscc          { get; set; }
-        public decimal? AmortizCit           { get; set; }
-        public decimal? AmortizPss           { get; set; }
-        public decimal? AmortizAg            { get; set; }
+        // ─── Facturación ──────────────────────────────────────────────────────
+        public decimal? Factejercsist        { get; set; }   // Facturación ejercicio sistema
+        public decimal? Factejercresto       { get; set; }   // Facturación ejercicio resto
+        public decimal? FactejerotrmutuasCp  { get; set; }   // Facturación otras mutuas CP
+        public decimal? FactejerotrmutuasCc  { get; set; }   // Facturación otras mutuas CC
+        public decimal? Factpendcobro        { get; set; }   // Facturación pendiente cobro
     }
 }

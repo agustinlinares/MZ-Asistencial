@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
+using MZAsistencial.Server.Services.ICG06;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +61,7 @@ builder.Services.AddScoped<Icg06EspecialidadService>();
 builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
+builder.Services.AddScoped<RegistroICGService>();
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
