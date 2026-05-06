@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import './Centros.css';
+import '../../../styles/FichaGlobal.css';
+import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import FichaFinca from './FichaFinca';
+import FincasService from "../../../services/admin/FincasService";
 import DataGrid, {
     Column,
     Paging,
@@ -19,6 +22,10 @@ import DataGrid, {
     FilterPanel,
     ColumnFixing,
     Pager,
+    Toolbar,
+    Item,
+    Summary,
+    TotalItem
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -52,16 +59,12 @@ const Fincas = () => {
     const menuRef = useRef(null);
 
     useEffect(() => {
-        const loadData = async () => {
+        const fetchFincas = async () => {
             try {
-                const [fincasData, centrosData] = await Promise.all([
-                    FincasService.getAll(),
-                    FincasService.getCentrosLookup()
-                ]);
+                const fincasData = await FincasService.getAll();
                 setFincas(fincasData);
-                setCentros(centrosData);
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error fetching fincas:', error);
             }
         };
 
@@ -146,7 +149,7 @@ const Fincas = () => {
                 <div className="file-box">
 
                     {!selectedFinca && (
-                        <div className="header-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px' }}>
+                        <div className="header-page">
                             <div className="title">{t('LISTA FINCAS')}</div>
 
                             <div className="acciones-container" ref={menuRef}>
@@ -154,8 +157,8 @@ const Fincas = () => {
                                     className="acciones-btn"
                                     onClick={() => setMenuAbierto(v => !v)}
                                 >
+                                    <i className="ri-settings-3-line"></i>
                                     {t('Acciones')}
-                                    <i className="ri-more-2-fill"></i>
                                 </div>
 
                                 {menuAbierto && (
@@ -210,13 +213,21 @@ const Fincas = () => {
                                     <Scrolling mode="standard" showScrollbar="always" />
                                     <Paging defaultPageSize={25} />
                                     <Pager visible={true} allowedPageSizes={[10, 25, 50, 100]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                                    
+                                    <Toolbar>
+                                        <Item location="after" name="searchPanel" />
+                                        <Item location="after" name="columnChooserButton" />
+                                    </Toolbar>
+
                                     <SearchPanel visible width={240} placeholder={t('buscar')} />
+                                    <ColumnChooser enabled mode="select" />
+                                    <Export enabled fileName="Fincas" allowExportSelectedData />
+                                    
                                     <FilterRow visible={true} applyFilter="auto" />
                                     <HeaderFilter visible searchMode='contains' />
                                     <Selection mode="multiple" allowSelectAll />
                                     <Grouping autoExpandAll={false} />
-                                    <ColumnChooser enabled mode="select" />
-                                    <Export enabled fileName="Fincas" allowExportSelectedData />
+                                    
                                     <Sorting mode="multiple" />
                                     <FilterPanel visible />
                                     <ColumnFixing enabled />
@@ -227,14 +238,20 @@ const Fincas = () => {
                                     <Column dataField="Centro" caption="Centro" width={180} />
                                     <Column dataField="Direccion" caption="Dirección" width={220} />
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
-                                    <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
                                     <Column dataField="TipoFinca" caption="Tipo" width={120} />
-                                    <Column dataField="Coste" caption="Coste" width={100} />
+                                    <Column dataField="Coste" caption="Coste" width={100} format={{ type: 'currency', currency: 'EUR', precision: 2 }} />
                                     <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
                                     <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
                                     <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
                                     <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
                                     <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                    
+                                    <Summary>
+                                        <TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />
+                                        <TotalItem column="Coste" summaryType="sum" displayFormat="Total: {0}" valueFormat={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                    </Summary>
+
                                     <Column
                                         caption="Acciones"
                                         width={80}
@@ -242,14 +259,23 @@ const Fincas = () => {
                                         fixedPosition="right"
                                         alignment="center"
                                         cellRender={(cell) => (
-                                            <div
-                                                style={{ color: '#2f5da8', cursor: 'pointer', textAlign: 'center' }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedFinca(cell.data);
-                                                }}
-                                            >
-                                                <i className="ri-edit-line"></i>
+                                            <div className="ficha-row-actions">
+                                                <i 
+                                                    className="ri-edit-line edit-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedFinca(cell.data);
+                                                    }}
+                                                    title={t('Editar')}
+                                                />
+                                                <i 
+                                                    className="ri-delete-bin-line delete-icon" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEliminar(cell.data.Finca_id);
+                                                    }}
+                                                    title={t('Eliminar')}
+                                                />
                                             </div>
                                         )}
                                     />

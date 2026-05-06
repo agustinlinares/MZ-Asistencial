@@ -22,7 +22,7 @@ namespace MZAsistencial.Server.DTOs
         public string?   OtrosDatos           { get; set; }
         public string?   Provincia            { get; set; }
         public int?      ServiciosEspeciales  { get; set; }
-        public bool      Desactivado          { get; set; }
+        public bool?     Desactivado          { get; set; }
         public bool?     Traslado             { get; set; }
         public string?   MotivoBaja           { get; set; }
         public DateTime? FechaBaja            { get; set; }

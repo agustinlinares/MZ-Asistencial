@@ -1,585 +1,273 @@
-import React, { useEffect, useRef, useState } from "react";
-import UseProtectedRoute from '@hooks/UseProtectedRoute';
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Workbook } from 'exceljs';
-import './Centros.css';
 import { saveAs } from 'file-saver-es';
-import { exportDataGrid } from 'devextreme/excel_exporter';
-import { useNavigate } from "react-router-dom";
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
+import { jsPDF } from 'jspdf';
 import DataGrid, {
-    Column,
-    Paging,
-    SearchPanel,
-    FilterRow,
-    HeaderFilter,
-    Selection,
-    GroupPanel,
-    Grouping,
-    ColumnChooser,
-    Export,
-    Scrolling,
-    Sorting,
-    FilterPanel,
-    ColumnFixing,
-    Pager,
-    Toolbar,
-    Item,
-    Lookup
+    Column, Paging, FilterRow, HeaderFilter, Selection,
+    GroupPanel, Grouping, ColumnChooser, Export, Scrolling,
+    Sorting, ColumnFixing, Pager, Toolbar, Item,
 } from "devextreme-react/data-grid";
-
+import DateBox from "devextreme-react/date-box";
+import SelectBox from "devextreme-react/select-box";
+import TextBox from "devextreme-react/text-box";
+import RadioGroup from "devextreme-react/radio-group";
+import { Button } from "devextreme-react/button";
 import { useTranslation } from "react-i18next";
+import '../../../styles/FichaGlobal.css';
 
-// ─── LOOKUP DATA ─────────────────────────────────────────────────────────────
-const services = ["Vivienda", "Empleo", "Salud Mental", "Formación", "Jurídico", "Becas"];
-const genders = ["Hombre", "Mujer", "No binario", "Prefiere no indicar"];
-const nationalities = ["Española", "Marroquí", "Rumana", "Colombiana", "Venezolana", "Senegalesa", "Otra"];
-const functionalDiversity = ["Ninguna", "Física", "Intelectual", "Sensorial", "Psíquica", "Múltiple"];
-const studyLevels = ["Sin estudios", "Primaria", "ESO", "Bachillerato", "FP Básica", "FP Media", "FP Superior", "Universidad"];
-const courses = ["1º ESO", "2º ESO", "3º ESO", "4º ESO", "1º Bach", "2º Bach", "1º FP", "2º FP", "Universidad"];
-const titulations = ["Sin titulación", "Graduado ESO", "Bachiller", "FP", "Grado Universitario", "Máster"];
-const laborSituation = ["Desempleado", "Empleado", "Estudiante", "En prácticas", "Autónomo", "Inactivo"];
-const incomeOrigin = ["Sin ingresos", "Trabajo", "Prestación", "Pensión", "RGI/IMV", "Familia", "Otros"];
-const riskLevels = ["Alto", "Medio", "Bajo"];
-const statusList = ["Urgente", "En revisión", "Resuelto"];
-// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
-const sampleData = [
-    {
-        CodigoPersona: "P-0041", Servicio: "Vivienda", Nombre: "Laura", Apellido: "Martínez",
-        Apellido2: "Sánchez", FechaNacimiento: new Date("2002-04-12"), DNI: "12345678A",
-        Género: "Mujer", Nacionalidad: "Española", OrigenNacional: "Madrid",
-        DiversidadFuncional: "Ninguna", Telefono1: 612345678, Telefono2: null,
-        CorreoElectronico: "laura.m@email.com", NivelEstudios: "ESO",
-        Colegio: "IES Cervantes", Curso: "4º ESO", ConExpedienteEnEPI: true,
-        TitulacionAlcanzada: "Sin titulación", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Riesgo alto de abandono escolar.", Riesgo: "Alto", Estado: "Urgente",
-    },
-    {
-        CodigoPersona: "P-0038", Servicio: "Empleo", Nombre: "Carlos", Apellido: "Díaz",
-        Apellido2: "López", FechaNacimiento: new Date("2005-09-23"), DNI: "87654321B",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Marruecos",
-        DiversidadFuncional: "Ninguna", Telefono1: 698765432, Telefono2: 912345678,
-        CorreoElectronico: "carlos.d@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Lope de Vega", Curso: "2º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Desempleado",
-        ProcedenciaDeIngresos: "RGI/IMV", ConExpedienteEnCSM: false,
-        Observaciones: "", Riesgo: "Medio", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0035", Servicio: "Formación", Nombre: "Amira", Apellido: "Khalil",
-        Apellido2: "", FechaNacimiento: new Date("2000-11-05"), DNI: "11223344C",
-        Género: "Mujer", Nacionalidad: "Senegalesa", OrigenNacional: "Dakar",
-        DiversidadFuncional: "Ninguna", Telefono1: 654321987, Telefono2: null,
-        CorreoElectronico: "amira.k@email.com", NivelEstudios: "FP Media",
-        Colegio: "", Curso: "2º FP", ConExpedienteEnEPI: true,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "En prácticas",
-        ProcedenciaDeIngresos: "Trabajo", ConExpedienteEnCSM: false,
-        Observaciones: "Proceso de inserción laboral activo.", Riesgo: "Bajo", Estado: "Resuelto",
-    },
-    {
-        CodigoPersona: "P-0030", Servicio: "Salud Mental", Nombre: "Javier", Apellido: "Ruiz",
-        Apellido2: "García", FechaNacimiento: new Date("2003-07-18"), DNI: "99887766D",
-        Género: "Hombre", Nacionalidad: "Española", OrigenNacional: "Barcelona",
-        DiversidadFuncional: "Psíquica", Telefono1: 677889900, Telefono2: null,
-        CorreoElectronico: "", NivelEstudios: "ESO", Colegio: "IES Picasso",
-        Curso: "3º ESO", ConExpedienteEnEPI: true, TitulacionAlcanzada: "Sin titulación",
-        SituacionLaboral: "Desempleado", ProcedenciaDeIngresos: "Prestación",
-        ConExpedienteEnCSM: true, Observaciones: "Sin contacto 48h. Requiere visita urgente.",
-        Riesgo: "Alto", Estado: "Urgente",
-    },
-    {
-        CodigoPersona: "P-0028", Servicio: "Jurídico", Nombre: "Sofía", Apellido: "Torres",
-        Apellido2: "Vega", FechaNacimiento: new Date("2001-02-28"), DNI: "44556677E",
-        Género: "Mujer", Nacionalidad: "Colombiana", OrigenNacional: "Bogotá",
-        DiversidadFuncional: "Ninguna", Telefono1: 611223344, Telefono2: 933221100,
-        CorreoElectronico: "sofia.t@email.com", NivelEstudios: "Universidad",
-        Colegio: "UAM", Curso: "Universidad", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Grado Universitario", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Pendiente resolución expediente.", Riesgo: "Medio", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    },
-];
-
-const onExporting = (e) => {
-    e.component.beginUpdate();
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet('Main sheet');
-    exportDataGrid({
-        component: e.component,
-        worksheet,
-        autoFilterEnabled: true,
-    }).then(() => {
-        workbook.xlsx.writeBuffer().then((buffer) => {
-            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
-        });
-    })
-    e.cancel = true;
-};
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
+const TIPOS = ['Todos', 'Anuales', 'Individuales'];
+const VISTAS = ['Agrupada', 'Desagrupada'];
 
 const GestionDemanda = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const buscarRef = useRef(null);
+    const menuRef = useRef(null);
 
-    // const { isAuthenticated } = UseProtectedRoute();
-    const navigate = useNavigate();
+    const [tipo, setTipo] = useState('Todos');
+    const [vista, setVista] = useState('Agrupada');
+    const [añoSeleccionado, setAñoSeleccionado] = useState(null);
+    const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
+    const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
+    const [menuAbierto, setMenuAbierto] = useState(false);
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    const [fechaSolicitudDesde, setFechaSolicitudDesde] = useState(null);
+    const [fechaSolicitudHasta, setFechaSolicitudHasta] = useState(null);
+    const [fechaAsignacionDesde, setFechaAsignacionDesde] = useState(null);
+    const [fechaAsignacionHasta, setFechaAsignacionHasta] = useState(null);
+    const [fechaConfirmacionDesde, setFechaConfirmacionDesde] = useState(null);
+    const [fechaConfirmacionHasta, setFechaConfirmacionHasta] = useState(null);
+    const [necesidadesServicio, setNecesidadesServicio] = useState('');
+    const [contestacionNecesidades, setContestacionNecesidades] = useState('');
+    const [demandaId, setDemandaId] = useState('');
+
+    const [años, setAños] = useState([]);
+    const [estados, setEstados] = useState([]);
+    const [datos, setDatos] = useState([
+        {
+            demandaId: 1001,
+            año: 2026,
+            mutuaSolicitante: "Prevensalud",
+            mutuaOfertante: "Laboralia",
+            localidad: "Getafe",
+            centro: "CENTRO MEDICO GETAFE (TEST)",
+            especialidad: "Fisioterapia",
+            tipoMovimiento: "Individual",
+            servicio: "Rehabilitación",
+            fechaConfirmacion: new Date(),
+            peticionesAsignadas: 5,
+            peticionesPendientes: 2,
+            ene: 2, feb: 1, mar: 4, abr: 0, may: 0, jun: 0,
+            jul: 0, ago: 0, sep: 0, oct: 0, nov: 0, dic: 0,
+            total: 7
+        },
+        {
+            demandaId: 1002,
+            año: 2026,
+            mutuaSolicitante: "Laboralia",
+            mutuaOfertante: "Prevensalud",
+            localidad: "Madrid",
+            centro: "Centro Médico Retiro",
+            especialidad: "Medicina General",
+            tipoMovimiento: "Anual",
+            servicio: "Consulta",
+            fechaConfirmacion: new Date(),
+            peticionesAsignadas: 10,
+            peticionesPendientes: 0,
+            ene: 10, feb: 10, mar: 10, abr: 10, may: 10, jun: 10,
+            jul: 10, ago: 10, sep: 10, oct: 10, nov: 10, dic: 10,
+            total: 120
+        }
+    ]);
+    const [cargando, setCargando] = useState(false);
+
+    // --- EXPORTACIÓN ---
+    const exportToExcel = () => {
+        const context = dataGridRef.current.instance();
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Lista Demandas');
+        exportDataGridToExcel({ component: context, worksheet, autoFilterEnabled: true }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaDemanda.xlsx');
+            });
+        });
+    };
+
+    const exportToPdf = () => {
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const context = dataGridRef.current.instance();
+        exportDataGridToPdf({ jsPDFDocument: doc, component: context }).then(() => {
+            doc.save('ListaDemanda.pdf');
+        });
+    };
+
+    // --- BÚSQUEDA ---
+    const ejecutarBusqueda = useCallback((filtros) => {
+        fetch(`${API}/ListaDemanda/lista`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filtros),
+        })
+            .then(res => res.json())
+            .then(data => setDatos(data))
+            .catch(err => console.error('Error:', err))
+            .finally(() => setCargando(false));
+    }, []);
+
+    const buscar = useCallback(() => {
+        setCargando(true);
+        ejecutarBusqueda({
+            año: añoSeleccionado,
+            estadoId: estadoSeleccionado,
+            tipo: tipo === 'Todos' ? null : tipo,
+            vistaAgrupada: vista === 'Agrupada',
+            fechaSolicitudDesde, fechaSolicitudHasta,
+            fechaAsignacionDesde, fechaAsignacionHasta,
+            fechaConfirmacionDesde, fechaConfirmacionHasta,
+            necesidadesServicio, contestacionNecesidades,
+            demandaId: demandaId ? parseInt(demandaId) : null,
+        });
+    }, [añoSeleccionado, estadoSeleccionado, tipo, vista, fechaSolicitudDesde, fechaSolicitudHasta, fechaAsignacionDesde, fechaAsignacionHasta, fechaConfirmacionDesde, fechaConfirmacionHasta, necesidadesServicio, contestacionNecesidades, demandaId, ejecutarBusqueda]);
+
+    useEffect(() => { buscarRef.current = buscar; }, [buscar]);
+
+    useEffect(() => {
+        fetch(`${API}/ListaDemanda/años`).then(res => res.json()).then(data => {
+            setAños(data);
+            if (data.length > 0) setAñoSeleccionado(data[0]);
+        });
+        fetch(`${API}/ListaDemanda/estados`).then(res => res.json()).then(data => {
+            setEstados([{ estadoId: null, estado: 'Todas' }, ...data]);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (añoSeleccionado !== null) buscarRef.current();
+    }, [añoSeleccionado, estadoSeleccionado, tipo]);
+
+    const limpiarFiltros = () => {
+        setFechaSolicitudDesde(null); setFechaSolicitudHasta(null);
+        setFechaAsignacionDesde(null); setFechaAsignacionHasta(null);
+        setFechaConfirmacionDesde(null); setFechaConfirmacionHasta(null);
+        setNecesidadesServicio(''); setContestacionNecesidades(''); setDemandaId('');
+    };
 
     return (
-        <React.Fragment>
-            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
-                <div className="file-box">
-
-                    <div className="title"> {t('Lista de GestionDemanda')}</div>
-
-                    <div className="table-container">
-                        <DataGrid
-                            ref={dataGridRef}
-                            dataSource={sampleData}
-                            keyExpr="CodigoPersona"
-                            showBorders={true}
-                            columnAutoWidth={true}
-                            allowColumnResizing={true}
-                            onExporting={onExporting}
-                            className="mz-table"
-                            rowAlternationEnabled={true}
-                            showRowLines={true}
-                            showColumnLines={true}
-                            wordWrapEnabled={false}
-                        >
-                            <Scrolling mode="standard" showScrollbar="always" />
-                            <Paging defaultPageSize={25} />
-                            <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
-                            <SearchPanel visible width={240} placeholder={t('buscar')} />
-                            <FilterRow visible={true} applyFilter="auto" />
-                            <HeaderFilter visible searchMode='contains' />
-                            <Selection mode="multiple" allowSelectAll />
-                            <Grouping autoExpandAll={false} />
-                            <ColumnChooser enabled mode="select" />
-                            <Export enabled fileName="Casos" allowExportSelectedData />
-                            <Sorting mode="multiple" />
-                            <FilterPanel visible />
-                            <ColumnFixing enabled />
-
-
-
-                            {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
-
-                            <Column
-                                dataField="CodigoPersona"
-                                caption="Código Persona"
-                                fixed={true}
-                                fixedPosition="left"
-                                width={130}
-                            />
-
-                            <Column
-                                dataField="Nombre"
-                                fixed={true}
-                                fixedPosition="left"
-                                width={110}
-                            />
-
-                            <Column dataField="Apellido" width={120} />
-                            <Column dataField="Apellido2" caption="Apellido 2" width={120} />
-
-                            <Column dataField="Riesgo" width={100}>
-                                <Lookup dataSource={riskLevels} />
-                            </Column>
-
-                            <Column dataField="Estado" width={120}>
-                                <Lookup dataSource={statusList} />
-                            </Column>
-
-                            <Column dataField="Servicio" width={130}>
-                                <Lookup dataSource={services} />
-                            </Column>
-
-                            <Column
-                                dataField="FechaNacimiento"
-                                caption="Fecha Nacimiento"
-                                dataType="date"
-                                width={150}
-                            />
-
-                            <Column dataField="DNI" width={110} />
-
-                            <Column dataField="Género" width={120}>
-                                <Lookup dataSource={genders} />
-                            </Column>
-
-                            <Column dataField="Nacionalidad" width={130}>
-                                <Lookup dataSource={nationalities} />
-                            </Column>
-
-                            <Column dataField="OrigenNacional" caption="Origen nacional" width={140} />
-
-                            <Column dataField="DiversidadFuncional" caption="Div. Funcional" width={140}>
-                                <Lookup dataSource={functionalDiversity} />
-                            </Column>
-
-                            <Column dataField="Telefono1" caption="Teléfono 1" dataType="number" width={130} />
-                            <Column dataField="Telefono2" caption="Teléfono 2" dataType="number" width={130} />
-                            <Column dataField="CorreoElectronico" caption="Correo electrónico" width={210} />
-
-                            <Column dataField="NivelEstudios" caption="Nivel Estudios" width={140}>
-                                <Lookup dataSource={studyLevels} />
-                            </Column>
-
-                            <Column dataField="Colegio" caption="Centro" width={160} />
-
-                            <Column dataField="Curso" width={110}>
-                                <Lookup dataSource={courses} />
-                            </Column>
-
-                            <Column
-                                dataField="ConExpedienteEnEPI"
-                                caption="Con expediente en EPI"
-                                dataType="boolean"
-                                width={170}
-                            />
-
-                            <Column dataField="TitulacionAlcanzada" caption="Titulación alcanzada" width={170}>
-                                <Lookup dataSource={titulations} />
-                            </Column>
-
-                            <Column dataField="SituacionLaboral" caption="Situación laboral" width={150}>
-                                <Lookup dataSource={laborSituation} />
-                            </Column>
-
-                            <Column dataField="ProcedenciaDeIngresos" caption="Procedencia de ingresos" width={190}>
-                                <Lookup dataSource={incomeOrigin} />
-                            </Column>
-
-                            <Column
-                                dataField="ConExpedienteEnCSM"
-                                caption="Con expediente en CSM"
-                                dataType="boolean"
-                                width={175}
-                            />
-
-                            <Column dataField="Observaciones" width={250} />
-                        </DataGrid>
+        <div className="ficha-container-inline">
+            <div className="ficha-inline-content">
+                <div className="header-page">
+                    <div className="title">{t('GESTIÓN DEMANDA')}</div>
+                    <div className="acciones-container" ref={menuRef}>
+                        <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
+                            <i className="ri-settings-3-line"></i> {t('Acciones')}
+                        </div>
+                        {menuAbierto && (
+                            <div className="acciones-menu">
+                                <div className="acciones-item" onClick={exportToExcel}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i> {t('Exportar a Excel')}
+                                </div>
+                                <div className="acciones-item" onClick={exportToPdf}>
+                                    <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i> {t('Exportar a PDF')}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* FILTROS (Igual que Oferta) */}
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
+                    <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <div className="ficha-field"><label>Tipo</label>
+                            <RadioGroup items={TIPOS} value={tipo} onValueChanged={e => setTipo(e.value)} layout="horizontal" />
+                        </div>
+                        <div className="ficha-field"><label>Año</label>
+                            <SelectBox items={años} value={añoSeleccionado} onValueChanged={e => setAñoSeleccionado(e.value)} width={200} />
+                        </div>
+                        <div className="ficha-field"><label>Estado</label>
+                            <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} width={220} />
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 32, alignItems: 'center', marginTop: 16 }}>
+                        <div className="ficha-field"><label>Vista</label>
+                            <RadioGroup items={VISTAS} value={vista} onValueChanged={e => setVista(e.value)} layout="horizontal" />
+                        </div>
+                        <button className="ficha-btn-primary" onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
+                            {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
+                        </button>
+                    </div>
+
+                    {filtrosExpandidos && (
+                        <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px 24px', paddingTop: 16, borderTop: '1px solid #e0e0e0' }}>
+                            <div className="ficha-field"><label>Fecha solicitud desde</label><DateBox value={fechaSolicitudDesde} onValueChanged={e => setFechaSolicitudDesde(e.value)} displayFormat="dd/MM/yyyy" width="100%" /></div>
+                            <div className="ficha-field"><label>Fecha solicitud hasta</label><DateBox value={fechaSolicitudHasta} onValueChanged={e => setFechaSolicitudHasta(e.value)} displayFormat="dd/MM/yyyy" width="100%" /></div>
+                            {/* ... resto de campos de fecha ... */}
+                            <div className="ficha-field"><label>Demanda ID</label><TextBox value={demandaId} onValueChanged={e => setDemandaId(e.value)} width="100%" /></div>
+                            <div style={{ gridColumn: '3', display: 'flex', justifyContent: 'flex-end', gap: 8, alignItems: 'flex-end' }}>
+                                <button className="ficha-btn-secondary" onClick={limpiarFiltros}>Limpiar Filtros</button>
+                                <button className="ficha-btn-primary" onClick={buscar}>Buscar</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* TABLA (Columnas según image_db5036.png) */}
+                <div className="ficha-tab-content" style={{ padding: '16px' }}>
+                    <DataGrid
+                        ref={dataGridRef}
+                        dataSource={datos}
+                        keyExpr="demandaId"
+                        showBorders={true}
+                        allowColumnResizing={true}
+                        className="mz-table"
+                        rowAlternationEnabled={true}
+                        noDataText={cargando ? 'Cargando...' : 'Sin datos para mostrar'}
+                    >
+                        <Scrolling mode="standard" showScrollbar="always" />
+                        <Paging defaultPageSize={25} />
+                        <FilterRow visible={true} />
+                        <HeaderFilter visible={true} />
+                        <Selection mode="multiple" />
+                        <GroupPanel visible={vista === 'Agrupada'} emptyPanelText="Especialidad / Servicio" />
+                        <ColumnChooser enabled mode="select" />
+                        <ColumnFixing enabled />
+
+                        <Toolbar>
+                            <Item name="groupPanel" />
+                            <Item location="after"><Button icon="refresh" stylingMode="text" onClick={buscar} /></Item>
+                            <Item name="columnChooserButton" />
+                        </Toolbar>
+
+                        <Column dataField="año" caption="Año" width={60} fixed fixedPosition="left" />
+                        <Column dataField="mutuaSolicitante" caption="Mutua Solicitante" width={140} fixed fixedPosition="left" />
+                        <Column dataField="mutuaOfertante" caption="Mutua Ofertante" width={140} />
+                        <Column dataField="localidad" caption="Localidad" width={120} />
+                        <Column dataField="centro" caption="Centro" width={160} />
+                        <Column dataField="especialidad" caption="Especialidad" width={160} />
+                        <Column dataField="tipoMovimiento" caption="Tipo Movimien" width={130} />
+                        <Column dataField="servicio" caption="Servicio" width={140} />
+                        <Column dataField="fechaConfirmacion" caption="Fecha Confirmación" dataType="date" format="dd/MM/yyyy" width={140} />
+                        <Column dataField="peticionesAsignadas" caption="Pet. Asig" width={80} alignment="center" />
+                        <Column dataField="peticionesPendientes" caption="Pet. Pen" width={80} alignment="center" />
+
+                        {/* Meses */}
+                        {['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'].map(m => (
+                            <Column key={m} dataField={m} caption={m.charAt(0).toUpperCase() + m.slice(1)} width={45} alignment="center" />
+                        ))}
+
+                        <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" />
+                        <Column caption="Acciones" width={80} fixed fixedPosition="right" alignment="center" cellRender={() => (
+                            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', fontSize: 18, color: '#1a5fa8' }}>
+                                <i className="ri-edit-line" style={{ cursor: 'pointer' }}></i>
+                                <i className="ri-delete-bin-line" style={{ color: '#c62828', cursor: 'pointer' }}></i>
+                            </div>
+                        )} />
+                    </DataGrid>
+                </div>
             </div>
-        </React.Fragment>
+        </div>
     );
 };
 

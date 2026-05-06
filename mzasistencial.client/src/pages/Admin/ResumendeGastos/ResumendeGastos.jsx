@@ -2,23 +2,23 @@ import React, { useState } from "react";
 import './ResumendeGastos.css';
 import { useTranslation } from "react-i18next";
 
+import '../../../styles/FichaGlobal.css';
+
 const ResumendeGastos = () => {
     const { t } = useTranslation();
 
     const [filtro, setFiltro] = useState("mercanza");
 
-    //const dataTabla = [
-    //    { centro: "Centro A", gasto: 1200 },
-    //    { centro: "Centro B", gasto: 900 },
-    //    { centro: "Centro C", gasto: 700 }
-    //];
-
     return (
-        <React.Fragment>
-            <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
-                <div className="file-box row m-0 p-0" id="home-page">
+        <div className="resumen-gastos-container">
+            <div className="header-page">
+                <div className="title">{t('RESUMEN DE GASTOS')}</div>
+            </div>
 
+            <div className="content-page" id="home-page">
+                <div className="row m-0 p-0 w-100">
                     {/* COLUMNA 1 */}
+
                     <div className="col-xxxl-4 col-xxl-4 col-xl-4 col-md-4 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                         <div className="columnsLayout panel">
 
@@ -284,7 +284,7 @@ const ResumendeGastos = () => {
 
                 </div>
             </div>
-        </React.Fragment>
+        </div>
     );
 };
 

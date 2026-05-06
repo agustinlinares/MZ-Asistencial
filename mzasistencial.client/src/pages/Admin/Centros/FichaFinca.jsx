@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import notify from 'devextreme/ui/notify';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
 
@@ -22,6 +23,15 @@ const TITULARIDADES = [
     'Patrimonio de la Seguridad Social',
     'Terceros distintos de los anteriores',
 ];
+
+const UTILIZACION_MAP = {
+    'SÓTANO': 'Sótano técnico',
+    'PLANTA BAJA': 'Local asistencial',
+    'PISO': 'Piso / Oficinas',
+    'LOCAL': 'Local asistencial',
+    'GARAJE': 'Garaje / Aparcamiento',
+    'TRASTERO': 'Trastero / Almacén'
+};
 
 // ✅ Sin token — usamos sessionStorage para autenticación
 const authHeaders = () => ({ 'Content-Type': 'application/json' });
@@ -155,10 +165,12 @@ const TabMapa = ({ form, onChange }) => {
 
 /* ── PESTAÑA COSTES ────────────────────────────────────────────── */
 const TabCostes = ({ fincaId }) => {
+    const { t } = useTranslation();
     const [costes, setCostes] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [editando, setEditando] = useState(null);
     const [nuevaFila, setNuevaFila] = useState(null);
+    const [confirmarEliminar, setConfirmarEliminar] = useState(null);
 
     useEffect(() => {
         if (!fincaId) return;
@@ -185,18 +197,27 @@ const TabCostes = ({ fincaId }) => {
             }
             setEditando(null);
             setNuevaFila(null);
+            notify(t('Coste guardado correctamente'), 'success', 2000);
         } catch (error) {
-            alert(error.message);
+            notify(error.message, 'error', 3000);
         }
     };
 
     const handleEliminar = async (id) => {
-        if (!window.confirm('¿Eliminar este coste?')) return;
-        try {
-            await FincasService.deleteCoste(fincaId, id);
-            setCostes(prev => prev.filter(c => c.Id !== id));
-        } catch (error) {
-            alert(error.message);
+        if (confirmarEliminar === id) {
+            try {
+                await FincasService.deleteCoste(fincaId, id);
+                setCostes(prev => prev.filter(c => c.Id !== id));
+                notify(t('Coste eliminado'), 'info', 2000);
+            } catch (error) {
+                notify(error.message, 'error', 3000);
+            } finally {
+                setConfirmarEliminar(null);
+            }
+        } else {
+            setConfirmarEliminar(id);
+            notify(t('Haz clic de nuevo para confirmar la eliminación'), 'warning', 2500);
+            setTimeout(() => setConfirmarEliminar(null), 2600);
         }
     };
 
@@ -270,6 +291,16 @@ const TabCostes = ({ fincaId }) => {
                         </tr>
                     )}
                 </tbody>
+                <tfoot>
+                    <tr style={{ background: '#f0f4ff', fontWeight: 600 }}>
+                        <td colSpan={2} style={{ padding: '8px 12px', color: '#1a5fa8' }}>
+                            {t('Total acumulado')}: {costes.reduce((sum, c) => sum + (c.Coste || 0), 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                        </td>
+                        <td colSpan={2} style={{ padding: '8px 12px', color: '#555', fontSize: 12 }}>
+                            {costes.length} {t('registro(s)')}
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
             <div style={{ marginTop: 8 }}>
                 <button className="ficha-btn-primary" onClick={() => setNuevaFila({ Anio: new Date().getFullYear(), Coste: null, Localizador: '' })}>
@@ -281,116 +312,200 @@ const TabCostes = ({ fincaId }) => {
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
-const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => (
-    <div className="ficha-grid">
-        <div className="ficha-field">
-            <label>Finca ID</label>
-            <input type="text" value={form.finca_id || ''} readOnly />
-        </div>
-        <div className="ficha-field">
-            <label>Centro</label>
-            <select
-                className={errors.centro_id ? 'error' : ''}
-                value={form.centro_id || ''}
-                onChange={e => onChange('centro_id', e.target.value)}
-            >
-                <option value="">— Seleccionar —</option>
-                {(centros || []).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-            </select>
-        </div>
+const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
+    const { t } = useTranslation();
 
-        <div className="ficha-field">
-            <label>Mutua</label>
-            <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
-        </div>
-        <div className="ficha-field">
-            <label>Coste Alquiler</label>
-            <div className="ficha-input-suffix">
-                <input type="number" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} />
-                <span>€</span>
-            </div>
-        </div>
+    const openCatastro = () => {
+        if (form.ref_catastral) {
+            window.open(`https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCBusqueda.aspx?RefCat=${form.ref_catastral}`, '_blank');
+        } else {
+            notify(t('Debe introducir una referencia catastral primero'), 'warning', 2000);
+        }
+    };
 
-        <div className="ficha-field">
-            <label>Dirección</label>
-            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
-        </div>
-        <div className="ficha-field">
-            <label>Superficie Construida</label>
-            <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} />
-        </div>
-
-        <div className="ficha-field">
-            <label>Referencia Catastral</label>
-            <input type="text" value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} />
-        </div>
-        <div className="ficha-field">
-            <label>Utilización</label>
-            <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} />
-        </div>
-
-        <div className="ficha-field">
-            <label>Tipo de Finca</label>
-            <select
-                value={form.tipo_finca || ''}
-                onChange={e => {
-                    const idx = TIPOS_FINCA.indexOf(e.target.value);
-                    onChange('tipo_finca', e.target.value);
-                    onChange('tipo_finca_idx', idx >= 0 ? idx : null);
-                }}
-            >
-                <option value="">— Seleccionar —</option>
-                {TIPOS_FINCA.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-        </div>
-        <div className="ficha-field">
-            <label>Ubicación</label>
-            <button className="ficha-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left', justifyContent: 'flex-start', gap: '8px' }}>
-                <i className="ri-map-pin-line" style={{ color: '#1a5fa8' }}></i>
-                {form.latitud ? `${form.latitud}, ${form.longitud}` : 'Ver en mapa'}
-            </button>
-        </div>
-
-        <div className="ficha-field span2">
-            <label>Titularidad</label>
-            <div className="ficha-radio-group">
-                {TITULARIDADES.map(t => (
-                    <label key={t}>
-                        <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} />
-                        {t}
-                    </label>
-                ))}
-            </div>
-        </div>
-
-        <div className="ficha-field span2">
-            <div className="ficha-grid-3">
-                <div className="ficha-field">
-                    <label>Fecha de Adquisición</label>
-                    <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} />
-                </div>
-                <div className="ficha-field">
-                    <label>Fecha de Inscripción</label>
-                    <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} />
-                </div>
-                <div className="ficha-field">
-                    <label>Fecha de Baja</label>
-                    <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} />
+    return (
+        <div className="ficha-tab-inner">
+            {/* SECCIÓN 1: DATOS BÁSICOS */}
+            <div className="ficha-section">
+                <p className="ficha-section-title">
+                    <i className="ri-building-line"></i> {t('Datos Básicos de la Finca')}
+                </p>
+                <div className="ficha-grid">
+                    <div className="ficha-field">
+                        <label>{t('Finca ID')}</label>
+                        <input type="text" value={form.finca_id || ''} readOnly className="ficha-input-readonly" />
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Centro Vinculado')}</label>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <select
+                                className={errors.centro_id ? 'error' : ''}
+                                value={form.centro_id || ''}
+                                onChange={e => onChange('centro_id', e.target.value)}
+                                style={{ flex: 1 }}
+                            >
+                                <option value="">— {t('Seleccionar')} —</option>
+                                {(centros || []).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                            </select>
+                            {form.centro_id && (
+                                <button 
+                                    className="ficha-btn-secondary" 
+                                    title={t('Ver ficha del centro')}
+                                    type="button"
+                                    onClick={() => window.open(`/admin/Centros/CentrosPropios`, '_blank')}
+                                    style={{ padding: '5px 10px', width: 'auto' }}
+                                >
+                                    <i className="ri-external-link-line" style={{ color: '#1a5fa8' }}></i>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Mutua Propietaria')}</label>
+                        <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Utilización / Uso')}</label>
+                        <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} />
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div className="ficha-field span2">
-            <label>Otros Datos</label>
-            <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} />
+            {/* SECCIÓN 2: UBICACIÓN Y MEDIDAS */}
+            <div className="ficha-section">
+                <p className="ficha-section-title">
+                    <i className="ri-map-pin-2-line"></i> {t('Ubicación y Superficie')}
+                </p>
+                <div className="ficha-grid">
+                    <div className="ficha-field span2">
+                        <label>{t('Dirección Completa')}</label>
+                        <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Superficie Construida')}</label>
+                        <div className="ficha-input-suffix">
+                            <input type="number" value={form.superficie || ''} onChange={e => onChange('superficie', e.target.value)} />
+                            <span>m²</span>
+                        </div>
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Referencia Catastral')} {form.ref_catastral?.length > 0 && form.ref_catastral.length !== 20 && <span style={{ color: '#d32f2f', fontSize: '10px' }}>(Debe tener 20 caracteres)</span>}</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <input 
+                                type="text" 
+                                style={{ flex: 1, borderColor: form.ref_catastral?.length > 0 && form.ref_catastral.length !== 20 ? '#d32f2f' : '' }} 
+                                value={form.ref_catastral || ''} 
+                                onChange={e => onChange('ref_catastral', e.target.value.toUpperCase())} 
+                                maxLength={20}
+                            />
+                            <button 
+                                className="ficha-btn-secondary" 
+                                type="button" 
+                                onClick={openCatastro}
+                                title={t('Ver en Sede Electrónica del Catastro')}
+                                style={{ width: 'auto', padding: '0 10px' }}
+                            >
+                                <i className="ri-external-link-line" style={{ color: '#1a5fa8' }}></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Tipo de Finca')}</label>
+                        <select
+                            value={form.tipo_finca || ''}
+                            onChange={e => {
+                                const idx = TIPOS_FINCA.indexOf(e.target.value);
+                                onChange('tipo_finca', e.target.value);
+                                onChange('tipo_finca_idx', idx >= 0 ? idx : null);
+                            }}
+                        >
+                            <option value="">— {t('Seleccionar')} —</option>
+                            {TIPOS_FINCA.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Coordenadas (GPS)')}</label>
+                        <button className="ficha-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left', justifyContent: 'flex-start', gap: '8px' }}>
+                            <i className="ri-map-pin-line" style={{ color: '#1a5fa8' }}></i>
+                            {form.latitud ? `${form.latitud}, ${form.longitud}` : t('Ver en mapa')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* SECCIÓN 3: RÉGIMEN Y FECHAS */}
+            <div className="ficha-section">
+                <p className="ficha-section-title">
+                    <i className="ri-calendar-event-line"></i> {t('Régimen y Fechas Administrativas')}
+                </p>
+                <div className="ficha-grid">
+                    <div className="ficha-field span2">
+                        <label>{t('Titularidad')}</label>
+                        <div className="ficha-radio-group">
+                            {TITULARIDADES.map(t => (
+                                <label key={t}>
+                                    <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} />
+                                    {t}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="ficha-field">
+                        <label>{t('Coste Alquiler Mensual')}</label>
+                        <div className="ficha-input-suffix">
+                            <input type="number" value={form.coste || ''} onChange={e => onChange('coste', e.target.value)} />
+                            <span>€</span>
+                        </div>
+                    </div>
+                    <div className="ficha-field span2" style={{ marginTop: 10 }}>
+                        <div className="ficha-grid-3">
+                            <div className="ficha-field">
+                                <label>{t('Fecha Adquisición')}</label>
+                                <input type="date" value={form.f_adquisicion || ''} onChange={e => onChange('f_adquisicion', e.target.value)} />
+                            </div>
+                            <div className="ficha-field">
+                                <label>{t('Fecha Inscripción')}</label>
+                                <input type="date" value={form.f_inscripcion || ''} onChange={e => onChange('f_inscripcion', e.target.value)} />
+                            </div>
+                            <div className="ficha-field">
+                                <label>{t('Fecha Baja')}</label>
+                                <input type="date" value={form.f_baja || ''} onChange={e => onChange('f_baja', e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* SECCIÓN 4: OTROS DATOS */}
+            <div className="ficha-section">
+                <p className="ficha-section-title">
+                    <i className="ri-sticky-note-line"></i> {t('Observaciones Adicionales')}
+                </p>
+                <div className="ficha-field">
+                    <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} placeholder={t('Indique cualquier observación relevante sobre la finca...')} />
+                </div>
+                
+                {(finca?.FechaAlta || finca?.FechaModificacion) && (
+                    <div style={{ marginTop: 15, padding: '10px', background: '#f8fafc', borderRadius: '6px', fontSize: '11px', color: '#64748b', display: 'flex', gap: '20px' }}>
+                        {finca.FechaAlta && <span><i className="ri-time-line"></i> {t('Creado')}: {new Date(finca.FechaAlta).toLocaleString()}</span>}
+                        {finca.FechaModificacion && <span><i className="ri-history-line"></i> {t('Modificado')}: {new Date(finca.FechaModificacion).toLocaleString()}</span>}
+                    </div>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 /* ── COMPONENTE PRINCIPAL ──────────────────────────────────────── */
 const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('general');
+
+    // Control de permisos
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const isAdmin = user.perfilId === 1 || user.rol === 'Administrador';
+    const isReadOnly = !!finca?.CentroValidado && !isAdmin;
+
     const tipoFincaIdx = finca?.TipoFinca ?? finca?.tipo_finca_idx ?? null;
     const [form, setForm] = useState({
         finca_id:      finca?.Finca_id      ?? finca?.finca_id      ?? '',
@@ -423,15 +538,33 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     }, [onClose]);
 
     const handleChange = useCallback((field, value) => {
-        setForm(prev => ({ ...prev, [field]: value }));
+        setForm(prev => {
+            const next = { ...prev, [field]: value };
+            
+            // Inferencia automática de utilización
+            if (field === 'tipo_finca' && !prev.utilizacion) {
+                next.utilizacion = UTILIZACION_MAP[value] || prev.utilizacion;
+            }
+            
+            return next;
+        });
         setErrors(prev => ({ ...prev, [field]: false }));
     }, []);
 
     const handleSave = () => {
         const newErrors = {};
-        if (!form.centro_id) newErrors.centro_id = true;
-        if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+        if (!form.centro_id) {
+            newErrors.centro_id = true;
+            notify(t('El Centro Vinculado es obligatorio'), 'error', 3000);
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         onSave?.(form);
+        notify(t('Finca guardada correctamente'), 'success', 2000);
     };
 
     return (
@@ -442,9 +575,11 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
                         <i className="ri-edit-box-line"></i> {t('Ficha Finca')} | {form.finca_id || t('Nueva')}
                     </span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn-primary" onClick={handleSave}>
-                            <i className="ri-check-line"></i> {t('Aceptar')}
-                        </button>
+                        {!isReadOnly && (
+                            <button className="ficha-btn-primary" onClick={handleSave}>
+                                <i className="ri-check-line"></i> {t('Aceptar')}
+                            </button>
+                        )}
                         <button className="ficha-btn-secondary" onClick={onClose}>
                             <i className="ri-close-line"></i> {t('Salir')}
                         </button>
@@ -458,11 +593,19 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
                 </div>
 
                 <div className="ficha-tab-content">
-                    {activeTab === 'general' && (
-                        <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} />
+                    {isReadOnly && (
+                        <div className="ficha-alert ficha-alert-info" style={{ margin: '0 20px 15px' }}>
+                            <i className="ri-information-line"></i>
+                            {t('Esta finca pertenece a un centro validado. Solo los administradores pueden realizar cambios.')}
+                        </div>
                     )}
-                    {activeTab === 'costes' && <TabCostes className="ficha-secundaria-table" fincaId={form.finca_id} />}
-                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    <fieldset disabled={isReadOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
+                        {activeTab === 'general' && (
+                            <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} finca={finca} />
+                        )}
+                        {activeTab === 'costes' && <TabCostes className="ficha-secundaria-table" fincaId={form.finca_id} />}
+                        {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    </fieldset>
                 </div>
             </div>
         </div>

@@ -229,6 +229,8 @@ const TabDataGrid = ({ datos, children }) => (
 /* ── COMPONENTE PRINCIPAL ──────────────────────────────────────── */
 const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     const [activeTab, setActiveTab] = useState('general');
+    const [mutuasAsignadas, setMutuasAsignadas] = useState([]);
+    const [registrosICG, setRegistrosICG] = useState([]);
     
     // Función para convertir fechas de DD/MM/YYYY o ISO a YYYY-MM-DD
     const parseDateForInput = (dateStr) => {
@@ -312,6 +314,49 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             .then(r => r.ok ? r.json() : [])
             .then(data => setOpts(prev => ({ ...prev, delegaciones: data })));
     }, [form.proveedor]);
+
+    // Cargar Mutuas Asignadas
+    const cargarMutuasAsignadas = async (id) => {
+        try {
+            // Usamos la URL con M mayúscula del equipo para evitar el 404
+            const response = await fetch(`/api/CentrosConcertados/${id}/Mutuas`, { 
+                headers: authHeaders() 
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setMutuasAsignadas(data);
+            } else {
+                console.error("Error al cargar mutuas asignadas");
+            }
+        } catch (error) {
+            console.error("Error de red al cargar mutuas:", error);
+        }
+    };
+
+    // Cargar Registros ICG 
+    const cargarRegistrosICG = async (id) => {
+        try {
+            const response = await fetch(`/api/RegistroICG/Concertado/${id}`, { 
+                headers: authHeaders() 
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setRegistrosICG(data);
+            } else {
+                console.error("Error al cargar registros ICG");
+            }
+        } catch (error) {
+            console.error("Error de red al cargar ICG:", error);
+        }
+    };
+
+    useEffect(() => {
+        // Solo cargamos si el ID es válido y no es un centro nuevo (0)
+        if (form.centro_id && form.centro_id !== 0) {
+            cargarMutuasAsignadas(form.centro_id);
+            cargarRegistrosICG(form.centro_id);
+        }
+    }, [form.centro_id]);
 
     // Carga de las Mutuas Asignadas al abrir el modal
     useEffect(() => {
@@ -426,9 +471,9 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         <div className="ficha-container-inline">
             <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
                 <div className="ficha-modal-header">
-                    <div className="ficha-modal-title">
-                        Ficha Centro Concertado | {form.centro_id ? form.centro : 'Nuevo'}
-                    </div>
+                    <span className="ficha-modal-title">
+                        🏥 Ficha Centro Concertado | {form.centro || form.localizador || 'Nuevo'}
+                    </span>
                     <div className="ficha-header-btns">
                         <button className="ficha-btn-primary" onClick={handleSave}>✓ Aceptar</button>
                         <button className="ficha-btn-secondary" onClick={onClose}>✗ Salir</button>
@@ -447,18 +492,19 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
                     
                     {activeTab === 'registroICG' && (
-                        <TabDataGrid datos={[]}>
-                            <Column dataField="anyo" caption="Año" width={100} />
+                        <TabDataGrid datos={registrosICG}>
+                            <Column dataField="ano" caption="Año" width={100} />
                             <Column dataField="mutua" caption="Mutua" />
                             <Column dataField="centro" caption="Centro" />
-                            <Column dataField="fechaActualizacion" caption="Fecha Act." dataType="date" width={150} />
-                            <Column dataField="usuario" caption="Usuario" width={150} />
+                            <Column dataField="fechaModificacion" caption="Fecha Act." dataType="date" width={150} />
+                            <Column dataField="usuarioModificacionId" caption="ID Usuario" width={150} />
                         </TabDataGrid>
                     )}
 
                     {activeTab === 'mutuasAsignadas' && (
-                        <TabDataGrid datos={datosMutuas}>
+                        <TabDataGrid datos={mutuasAsignadas}>
                             <Column dataField="mutua" caption="Mutua" />
+                            
                             <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
                             <Column dataField="localizador" caption="Localizador" width={150} />
                         </TabDataGrid>

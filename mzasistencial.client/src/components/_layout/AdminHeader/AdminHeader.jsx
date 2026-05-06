@@ -181,7 +181,7 @@ function AdminHeader(props) {
                             <div className="filter-item">
                                 <i className="ri-calendar-line"></i>
                                 <DropDownButton
-                                    text="Calendario"
+                                    text={t('Calendario')}
                                     icon={null}
                                     items={[
                                         { id: '2025', text: '2025' },
@@ -202,7 +202,7 @@ function AdminHeader(props) {
                             <div className="filter-item">
                                 <i className="ri-filter-3-line"></i>
                                 <DropDownButton
-                                    text="Todas"
+                                    text={t('Todas')}
                                     icon={null}
                                     items={[
                                         { id: 'todas', text: 'Todas' },
