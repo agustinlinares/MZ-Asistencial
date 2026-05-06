@@ -4298,6 +4298,7 @@ entity.Property(e => e.TipoIcg)
             entity.Property(e => e.ServicioId).HasColumnName("Servicio_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioModificacionId).HasColumnName("UsuarioModificacion_id");
+            entity.Property(e => e.Año).HasColumnName("Año");
         });
 
         modelBuilder.Entity<Perfile>(entity =>

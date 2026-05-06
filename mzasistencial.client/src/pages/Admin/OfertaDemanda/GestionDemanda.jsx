@@ -44,6 +44,7 @@ const GestionDemanda = () => {
     const [contestacionNecesidades, setContestacionNecesidades] = useState('');
     const [demandaId, setDemandaId] = useState('');
 
+
     const [años, setAños] = useState([]);
     const [estados, setEstados] = useState([]);
     const [datos, setDatos] = useState([
@@ -155,6 +156,41 @@ const GestionDemanda = () => {
         setNecesidadesServicio(''); setContestacionNecesidades(''); setDemandaId('');
     };
 
+    // --- ACCIONES DE FILA ---
+
+    // Función para cargar los datos en el modal de edición
+    const handleEditar = (e, rowData) => {
+        e.stopPropagation(); // Evita que se disparen eventos de selección de la fila
+        console.log("Editando demanda:", rowData.demandaId);
+
+        // Aquí cargarías los datos en un estado para abrir un Modal
+        // setDemandaEditando(rowData); 
+        // setModalAbierto(true);
+    };
+
+    // Función para borrar un registro
+    const handleBorrar = (e, rowData) => {
+        e.stopPropagation();
+
+        if (window.confirm(`¿Estás seguro de que deseas eliminar la demanda ${rowData.demandaId}?`)) {
+            setCargando(true);
+
+            fetch(`${API}/ListaDemanda/${rowData.demandaId}`, {
+                method: 'DELETE',
+            })
+                .then(res => {
+                    if (res.ok) {
+                        // Actualizamos el estado local para que desaparezca la fila sin recargar
+                        setDatos(prevDatos => prevDatos.filter(d => d.demandaId !== rowData.demandaId));
+                        console.log("Registro eliminado correctamente");
+                    } else {
+                        alert("Error al intentar eliminar el registro");
+                    }
+                })
+                .catch(err => console.error('Error:', err))
+                .finally(() => setCargando(false));
+        }
+    };
     return (
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
@@ -213,7 +249,7 @@ const GestionDemanda = () => {
                     )}
                 </div>
 
-                {/* TABLA (Columnas según image_db5036.png) */}
+                {/* TABLA */}
                 <div className="ficha-tab-content" style={{ padding: '16px' }}>
                     <DataGrid
                         ref={dataGridRef}
@@ -258,12 +294,32 @@ const GestionDemanda = () => {
                         ))}
 
                         <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" />
-                        <Column caption="Acciones" width={80} fixed fixedPosition="right" alignment="center" cellRender={() => (
-                            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', fontSize: 18, color: '#1a5fa8' }}>
-                                <i className="ri-edit-line" style={{ cursor: 'pointer' }}></i>
-                                <i className="ri-delete-bin-line" style={{ color: '#c62828', cursor: 'pointer' }}></i>
-                            </div>
-                        )} />
+                        <Column
+                            caption="Acciones"
+                            width={90}
+                            fixed
+                            fixedPosition="right"
+                            alignment="center"
+                            cellRender={(cell) => (
+                                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', fontSize: 18 }}>
+                                    {/* Botón Editar (Lápiz) */}
+                                    <i
+                                        className="ri-edit-line"
+                                        style={{ cursor: 'pointer', color: '#1a5fa8' }}
+                                        title={t('Editar')}
+                                        onClick={(e) => handleEditar(e, cell.data)}
+                                    ></i>
+
+                                    {/* Botón Borrar (Papelera) */}
+                                    <i
+                                        className="ri-delete-bin-line"
+                                        style={{ cursor: 'pointer', color: '#c62828' }}
+                                        title={t('Borrar')}
+                                        onClick={(e) => handleBorrar(e, cell.data)}
+                                    ></i>
+                                </div>
+                            )}
+                        />
                     </DataGrid>
                 </div>
             </div>
