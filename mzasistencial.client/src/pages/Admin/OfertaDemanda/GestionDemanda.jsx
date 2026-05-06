@@ -158,11 +158,11 @@ const GestionDemanda = () => {
     return (
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
-                <div className="ficha-modal-header">
-                    <span className="ficha-modal-title">{t('GESTIÓN DEMANDA')}</span>
+                <div className="header-page">
+                    <div className="title">{t('GESTIÓN DEMANDA')}</div>
                     <div className="acciones-container" ref={menuRef}>
                         <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
-                            {t('Acciones')} <i className="ri-more-2-fill"></i>
+                            <i className="ri-settings-3-line"></i> {t('Acciones')}
                         </div>
                         {menuAbierto && (
                             <div className="acciones-menu">

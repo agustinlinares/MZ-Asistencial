@@ -186,12 +186,12 @@ const GestionOferta = () => {
                 <div className="file-box">
 
                     {/* HEADER */}
-                    <div className="ficha-modal-header">
-                        <span className="ficha-modal-title">{t('LISTA OFERTAS')}</span>
+                    <div className="header-page">
+                        <div className="title">{t('LISTA OFERTAS')}</div>
                         <div className="acciones-container" ref={menuRef}>
                             <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                                <i className="ri-settings-3-line"></i>
                                 {t('Acciones')}
-                                <i className="ri-more-2-fill"></i>
                             </div>
                             {menuAbierto && (
                                 <div className="acciones-menu">

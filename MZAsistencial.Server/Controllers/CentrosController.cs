@@ -19,7 +19,7 @@ public class CentrosController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var items = await _context.CentrosPropios
-            .Where(c => !c.Desactivado)
+            .Where(c => c.Desactivado != true)
             .OrderBy(c => c.Centro)
             .ToListAsync();
 
@@ -30,7 +30,7 @@ public class CentrosController : ControllerBase
     public async Task<IActionResult> Lookup()
     {
         var items = await _context.CentrosPropios
-            .Where(c => !c.Desactivado)
+            .Where(c => c.Desactivado != true)
             .OrderBy(c => c.Centro)
             .Select(c => new { id = c.CentroId, nombre = c.Centro, validado = c.Validado })
             .ToListAsync();
