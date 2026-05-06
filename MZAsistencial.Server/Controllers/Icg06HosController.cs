@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
-using Microsoft.AspNetCore.Mvc;
 
 namespace MZAsistencial.Server.Controllers
 {
@@ -9,30 +9,20 @@ namespace MZAsistencial.Server.Controllers
     public class Icg06HosController : ControllerBase
     {
         private readonly Icg06HosService _service;
+        public Icg06HosController(Icg06HosService service) => _service = service;
 
-        public Icg06HosController(Icg06HosService service)
-        {
-            _service = service;
-        }
-
-        // GET api/Icg06Hos?centroId=1&año=2024
         [HttpGet]
-        public async Task<ActionResult<Icg06HosDTO>> GetByCentroYAño(
-            [FromQuery] int centroId,
-            [FromQuery] int año)
+        public async Task<IActionResult> Get([FromQuery] int centroId, [FromQuery] int año)
         {
-            var result = await _service.GetByCentroYAñoAsync(centroId, año);
-            if (result is null) return NotFound();
-            return Ok(result);
+            var dto = await _service.GetByCentroYAñoAsync(centroId, año);
+            return dto is null ? NotFound() : Ok(dto);
         }
 
-        // PUT api/Icg06Hos/42
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Icg06HosDTO dto)
+        [HttpPut("{idIcg:int}")]
+        public async Task<IActionResult> Put(int idIcg, [FromBody] Icg06HosDTO dto)
         {
-            var result = await _service.UpdateAsync(id, dto);
-            if (!result) return NotFound();
-            return Ok();
+            var ok = await _service.UpdateAsync(idIcg, dto);
+            return ok ? NoContent() : NotFound();
         }
     }
 }

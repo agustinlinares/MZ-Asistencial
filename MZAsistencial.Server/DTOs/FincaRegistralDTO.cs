@@ -62,5 +62,14 @@ namespace MZAsistencial.Server.DTOs
 
         [JsonPropertyName("Longitud")]
         public string? Longitud { get; set; }
+
+        [JsonPropertyName("CentroValidado")]
+        public bool CentroValidado { get; set; }
+
+        [JsonPropertyName("FechaAlta")]
+        public DateTime? FechaAlta { get; set; }
+
+        [JsonPropertyName("FechaModificacion")]
+        public DateTime? FechaModificacion { get; set; }
     }
 }

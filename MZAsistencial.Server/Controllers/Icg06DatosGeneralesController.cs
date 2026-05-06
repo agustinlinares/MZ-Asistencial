@@ -1,38 +1,36 @@
-using MZAsistencial.Server.DTOs;
-using MZAsistencial.Server.Services;
 using Microsoft.AspNetCore.Mvc;
+using MZAsistencial.Server.DTOs.ICG06;
+using MZAsistencial.Server.Services.ICG06;
 
-namespace MZAsistencial.Server.Controllers
+namespace MZAsistencial.Server.Controllers.ICG06;
+
+[ApiController]
+[Route("api/[controller]")]
+public class Icg06DatosGeneralesController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class Icg06DatosGeneralesController : ControllerBase
+    private readonly Icg06DatosGeneralesService _service;
+
+    public Icg06DatosGeneralesController(Icg06DatosGeneralesService service)
+        => _service = service;
+
+    // GET /api/Icg06DatosGenerales?centroId=...&año=...
+    [HttpGet]
+    public async Task<IActionResult> Get([FromQuery] int centroId, [FromQuery] int año)
     {
-        private readonly Icg06DatosGeneralesService _service;
+        var dto = await _service.ObtenerAsync(centroId, año);
+        return dto is null ? NotFound() : Ok(dto);
+    }
 
-        public Icg06DatosGeneralesController(Icg06DatosGeneralesService service)
+    // PUT /api/Icg06DatosGenerales/{idIcg}
+    [HttpPut("{idIcg:int}")]
+    public async Task<IActionResult> Put(int idIcg, [FromBody] Icg06DatosGeneralesDto dto)
+    {
+        try
         {
-            _service = service;
+            await _service.ActualizarAsync(idIcg, dto);
+            return NoContent();
         }
-
-        // GET api/Icg06DatosGenerales?centroId=1&año=2024
-        [HttpGet]
-        public async Task<ActionResult<Icg06DatosGeneralesDTO>> GetByCentroYAño(
-            [FromQuery] int centroId,
-            [FromQuery] int año)
-        {
-            var result = await _service.GetByCentroYAñoAsync(centroId, año);
-            if (result is null) return NotFound();
-            return Ok(result);
-        }
-
-        // PUT api/Icg06DatosGenerales/42
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Icg06DatosGeneralesDTO dto)
-        {
-            var result = await _service.UpdateAsync(id, dto);
-            if (!result) return NotFound();
-            return Ok();
-        }
+        catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+        catch (ArgumentException ex)    { return BadRequest(ex.Message); }
     }
 }

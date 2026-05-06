@@ -177,7 +177,7 @@ const CentrosPropios = () => {
                 {!selectedCentro && (
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA CENTROS PROPIOS')}
+                            {t('Lista de Centros Propios')}
                         </div>
                         <div className="header-actions-side">
                             {msg && (

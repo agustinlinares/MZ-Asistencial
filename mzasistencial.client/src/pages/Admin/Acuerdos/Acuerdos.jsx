@@ -67,8 +67,8 @@ const Acuerdos = () => {
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
 
-                <div className="ficha-modal-header">
-                    <span className="ficha-modal-title">{t('Acuerdos')}</span>
+                <div className="header-page">
+                    <div className="title">{t('Acuerdos')}</div>
                 </div>
 
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>

@@ -468,7 +468,7 @@ const Proveedores = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA DE PROVEEDORES')}
+                            {t('Lista de Proveedores')}
                         </div>
 
                         <div className="header-actions-side">

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
-import { exportDataGrid } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
+import { jsPDF } from 'jspdf';
 import DataGrid, {
     Column, Paging, SearchPanel, FilterRow, HeaderFilter,
     Selection, Grouping, ColumnChooser, Export, Scrolling,
@@ -12,21 +14,44 @@ import '../../../styles/FichaGlobal.css';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 
-const onExporting = (e) => {
-    const workbook = new Workbook();
-    const worksheet = workbook.addWorksheet('Descuadres');
-    exportDataGrid({ component: e.component, worksheet, autoFilterEnabled: true })
-        .then(() => workbook.xlsx.writeBuffer()
-            .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Descuadres.xlsx')));
-    e.cancel = true;
-};
-
 const Descuadres = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [datos, setDatos] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
+
+    // --- LÓGICA DE EXPORTACIÓN MANUAl ---
+
+    const exportToExcel = () => {
+        const context = dataGridRef.current.instance();
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Descuadres');
+
+        exportDataGridToExcel({
+            component: context,
+            worksheet,
+            autoFilterEnabled: true
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Descuadres.xlsx');
+            });
+        });
+    };
+
+    const exportToPdf = () => {
+        const doc = new jsPDF();
+        const context = dataGridRef.current.instance();
+
+        exportDataGridToPdf({
+            jsPDFDocument: doc,
+            component: context
+        }).then(() => {
+            doc.save('Descuadres.pdf');
+        });
+    };
+
+    // --- EFECTOS ---
 
     useEffect(() => {
         fetch(`${API}/Descuadres`)
@@ -50,25 +75,33 @@ const Descuadres = () => {
                 <div className="file-box">
 
                 <div className="header-page">
-                    <div className="title">{t('DESCUADRES')}</div>
-                    <div className="header-actions-side">
-                        <div className="acciones-container" ref={menuRef}>
-                            <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
-                                <i className="ri-settings-3-line"></i>
-                                {t('Acciones')}
-                            </div>
-                            {menuAbierto && (
-                                <div className="acciones-menu">
-                                    <div className="acciones-item" onClick={() => {
-                                        setMenuAbierto(false);
-                                        dataGridRef.current?.instance().exportToExcel(false);
-                                    }}>
-                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
-                                        {t('Exportar Excel')}
-                                    </div>
-                                </div>
-                            )}
+                    <div className="title">{t('Lista de descuadres')}</div>
+                    <div className="acciones-container" ref={menuRef}>
+                        <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                            <i className="ri-settings-3-line"></i>
+                            {t('Acciones')}
                         </div>
+                        {menuAbierto && (
+                            <div className="acciones-menu">
+                                {/* Opción Excel */}
+                                <div className="acciones-item" onClick={() => {
+                                    setMenuAbierto(false);
+                                    exportToExcel();
+                                }}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                    {t('Exportar a Excel')}
+                                </div>
+
+                                {/* Opción PDF */}
+                                <div className="acciones-item" onClick={() => {
+                                    setMenuAbierto(false);
+                                    exportToPdf();
+                                }}>
+                                    <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                                    {t('Exportar a PDF')}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -80,7 +113,6 @@ const Descuadres = () => {
                         showBorders={true}
                         columnAutoWidth={true}
                         allowColumnResizing={true}
-                        onExporting={onExporting}
                         className="mz-table"
                         rowAlternationEnabled={true}
                         showRowLines={true}
@@ -102,10 +134,21 @@ const Descuadres = () => {
                         <Selection mode="multiple" allowSelectAll />
                         <Grouping autoExpandAll={false} />
                         <ColumnChooser enabled mode="select" />
-                        <Export enabled fileName="Descuadres" allowExportSelectedData />
+
+                        {/* Mantenemos Export habilitado para la lógica interna, pero sin el botón de arriba */}
+                        <Export enabled allowExportSelectedData />
+
                         <Sorting mode="multiple" />
                         <FilterPanel visible />
                         <ColumnFixing enabled />
+
+                        <Toolbar>
+                            <Item name="columnChooserButton" />
+                            {/* HEMOS ELIMINADO EL exportButton DE AQUÍ */}
+                            <Item name="searchPanel" />
+                        </Toolbar>
+
+                        {/* Columnas */}
                         <Column dataField="mutuaId" caption="Nr" width={80} fixed fixedPosition="left" />
                         <Column dataField="mutua" caption="Mutua" width={150} fixed fixedPosition="left" />
                         <Column dataField="gastoPersonal" caption="Gasto Personal" width={130} />

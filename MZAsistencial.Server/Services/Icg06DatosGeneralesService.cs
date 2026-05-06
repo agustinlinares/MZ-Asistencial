@@ -1,59 +1,63 @@
-using MZAsistencial.Server.Data;
-using MZAsistencial.Server.DTOs;
-using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Data;
+using MZAsistencial.Server.DTOs.ICG06;
 
-namespace MZAsistencial.Server.Services
+namespace MZAsistencial.Server.Services.ICG06;
+
+public class Icg06DatosGeneralesService
 {
-    public class Icg06DatosGeneralesService
+    private readonly MZAsistencialContext _db;
+
+    public Icg06DatosGeneralesService(MZAsistencialContext db)
+        => _db = db;
+
+    // GET /api/Icg06DatosGenerales?centroId=...&año=...
+    public async Task<Icg06DatosGeneralesDto?> ObtenerAsync(int centroId, int año)
     {
-        private readonly MZAsistencialContext _context;
+        var registro = await _db.Icg06s
+            .FirstOrDefaultAsync(x => x.CentroId == centroId && x.Año == año);
 
-        public Icg06DatosGeneralesService(MZAsistencialContext context)
+        if (registro is null) return null;
+
+        return new Icg06DatosGeneralesDto
         {
-            _context = context;
-        }
-
-        public async Task<Icg06DatosGeneralesDTO?> GetByCentroYAñoAsync(int centroId, int año)
-        {
-            var entity = await _context.Icg06s
-                .FirstOrDefaultAsync(x => x.CentroId == centroId && x.Año == año);
-
-            if (entity is null) return null;
-
-            return MapToDTO(entity);
-        }
-
-        public async Task<bool> UpdateAsync(int idIcg, Icg06DatosGeneralesDTO dto)
-        {
-            var entity = await _context.Icg06s.FindAsync(idIcg);
-            if (entity is null) return false;
-
-            MapToEntity(dto, entity);
-
-            entity.FechaModificacion = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        // ─── Entity → DTO ────────────────────────────────────────────────────
-        private static Icg06DatosGeneralesDTO MapToDTO(Icg06 e) => new()
-        {
-            IdIcg        = e.IdIcg,
-            Año          = e.Año,
-            CentroId     = e.CentroId,
-            Nfincreg     = e.Nfincreg,
-            SuptotConst  = e.SuptotConst,
-            OtrasObservac = e.OtrasObservac,
+            IdIcg         = registro.IdIcg,
+            CentroId      = centroId,
+            Año           = año,
+            Nfincreg      = registro.Nfincreg      != null ? (int?)Convert.ToInt32(registro.Nfincreg)          : null,
+            SuptotConst   = registro.SuptotConst   != null ? (decimal?)Convert.ToDecimal(registro.SuptotConst) : null,
+            OtrasObservac = registro.OtrasObservac,
         };
+    }
 
-        // ─── DTO → Entity ────────────────────────────────────────────────────
-        private static void MapToEntity(Icg06DatosGeneralesDTO dto, Icg06 e)
-        {
-            e.Nfincreg     = dto.Nfincreg;
-            e.SuptotConst  = dto.SuptotConst;
-            e.OtrasObservac = dto.OtrasObservac;
-        }
+    // PUT /api/Icg06DatosGenerales/{idIcg}
+    public async Task ActualizarAsync(int idIcg, Icg06DatosGeneralesDto dto)
+    {
+        ValidarDto(dto);
+
+        var registro = await _db.Icg06s
+            .FirstOrDefaultAsync(x => x.IdIcg == idIcg)
+            ?? throw new KeyNotFoundException($"ICG06 con Id {idIcg} no encontrado.");
+
+        registro.Nfincreg          = dto.Nfincreg    != null ? Convert.ToDecimal(dto.Nfincreg) : null;
+        registro.SuptotConst       = dto.SuptotConst;
+        registro.OtrasObservac     = dto.OtrasObservac?.Trim();
+        registro.FechaModificacion = DateTime.Now;
+
+        await _db.SaveChangesAsync();
+    }
+
+    // ─── validaciones ────────────────────────────────────────────────────────
+
+    private static void ValidarDto(Icg06DatosGeneralesDto dto)
+    {
+        if (dto.Nfincreg.HasValue && dto.Nfincreg.Value < 0)
+            throw new ArgumentException("El número de fincas no puede ser negativo.");
+
+        if (dto.SuptotConst.HasValue && dto.SuptotConst.Value < 0)
+            throw new ArgumentException("La superficie no puede ser negativa.");
+
+        if (dto.OtrasObservac?.Length > 2000)
+            throw new ArgumentException("Las observaciones no pueden superar 2.000 caracteres.");
     }
 }
