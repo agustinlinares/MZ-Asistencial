@@ -74,12 +74,12 @@ const Descuadres = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                <div className="ficha-modal-header">
-                    <span className="ficha-modal-title">{t('Lista de descuadres')}</span>
+                <div className="header-page">
+                    <div className="title">{t('Lista de descuadres')}</div>
                     <div className="acciones-container" ref={menuRef}>
                         <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                            <i className="ri-settings-3-line"></i>
                             {t('Acciones')}
-                            <i className="ri-more-2-fill"></i>
                         </div>
                         {menuAbierto && (
                             <div className="acciones-menu">
