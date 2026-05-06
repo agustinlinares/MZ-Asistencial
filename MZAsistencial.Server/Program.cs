@@ -34,6 +34,7 @@ builder.Services.AddDbContext<MZAsistencialContext>(options =>
 
 // ── Servicios existentes ─────────────────────────────────────────────────────
 builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
+builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSectorialesService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();

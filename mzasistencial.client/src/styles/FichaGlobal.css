@@ -504,6 +504,29 @@
     to { opacity: 1; transform: scale(1); }
 }
 
+.acciones-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #718096;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+}
+
+.acciones-menu-header i {
+    font-size: 16px;
+    cursor: pointer;
+    color: #a0aec0;
+    transition: color 0.15s;
+}
+
+.acciones-menu-header i:hover {
+    color: #4a5568;
+}
+
 .acciones-item {
     display: flex;
     align-items: center;
@@ -552,4 +575,54 @@
 
 .dx-toolbar-items-container {
     height: 45px !important;
+}
+
+/* ── PRINT ─────────────────────────────────────────────────────── */
+@media print {
+    /* Ocultar todo excepto la tabla */
+    #cover-admin-nav,
+    #top-header-admin,
+    .header-page,
+    .dx-datagrid-header-panel,
+    .dx-pager,
+    .dx-datagrid-filter-panel {
+        display: none !important;
+    }
+
+    body, html {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .file-box {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .table-container {
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .dx-datagrid {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        width: 100% !important;
+    }
+
+    .dx-datagrid-rowsview {
+        overflow: visible !important;
+    }
+
+    /* Forzar que las columnas se adapten al ancho de la página */
+    .dx-datagrid-headers,
+    .dx-datagrid-rowsview {
+        width: 100% !important;
+    }
 }

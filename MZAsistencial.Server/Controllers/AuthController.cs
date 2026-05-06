@@ -37,7 +37,7 @@ namespace MZAsistencial.Server.Controllers
                 return BadRequest(new { message = "Usuario y contraseña son obligatorios." });
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Contraseña == request.Contrasena);
+                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == request.Contrasena);
 
             if (usuario == null)
                 return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
