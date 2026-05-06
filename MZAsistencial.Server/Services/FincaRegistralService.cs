@@ -230,7 +230,7 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId)
+        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId, int? anio)
         {
             var query = _context.FincasRegistrales.AsQueryable();
             if (centroId.HasValue)
@@ -239,11 +239,16 @@ namespace MZAsistencial.Server.Services
             var rawList = await (from f in query
                            join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
                            from c in cg.DefaultIfEmpty()
+                           join cost in _context.FincasRegistralesCostesPorAños.Where(x => anio == null || x.Anio == anio) on f.FincaId equals cost.FincaId into costg
+                           from cost in costg.DefaultIfEmpty()
                            orderby f.FincaId
                            select new 
                            { 
                                f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
-                               f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
+                               f.Utilizacion, f.Superficie, 
+                               CosteOriginal = f.Coste,
+                               CosteAnual = cost != null ? cost.Coste : (double?)null,
+                               f.Fadqoarr, f.ReferenciaCatastral,
                                f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
                                f.FechaAlta, f.FechaModificacion,
                                CentroNombre = c != null ? c.Centro : null,
@@ -262,7 +267,7 @@ namespace MZAsistencial.Server.Services
                             + (x.Puerta != null ? ", " + x.Puerta : "")),
                 Utilizacion = FixEncoding(x.Utilizacion),
                 Superficie = x.Superficie == null ? (decimal?)null : (decimal?)x.Superficie,
-                Coste = x.Coste == null ? (decimal?)null : (decimal?)x.Coste,
+                Coste = (decimal?)(anio.HasValue ? x.CosteAnual : x.CosteOriginal),
                 F_Alquiler = x.Fadqoarr,
                 Referencia_Catastral = x.ReferenciaCatastral,
                 F_Inscripcion = x.Finscreg,
@@ -281,12 +286,12 @@ namespace MZAsistencial.Server.Services
         {
             return tipoFinca switch
             {
-                0 => "Sótano técnico",
+                0 => "Sotano tecnico",
                 1 => "Local asistencial",
                 2 => "Piso / Oficinas",
                 3 => "Local asistencial",
                 4 => "Garaje / Aparcamiento",
-                5 => "Trastero / Almacén",
+                5 => "Trastero / Almacen",
                 _ => null
             };
         }

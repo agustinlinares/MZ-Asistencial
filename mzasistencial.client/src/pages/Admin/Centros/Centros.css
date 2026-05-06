@@ -11,7 +11,7 @@
 .filtros-title {
     padding: 10px 15px;
     font-size: 14px;
-    color: #2f5da8;
+    color: var(--brand-dark);
     border-bottom: 1px solid #dcdcdc;
 }
 
@@ -42,7 +42,7 @@
 /* Select estilo línea (como tu imagen) */
 .filtro-item select {
     border: none;
-    border-bottom: 2px solid #3f51b5;
+    border-bottom: 2px solid var(--brand-primary);
     padding: 5px 0;
     background: transparent;
     outline: none;
@@ -61,7 +61,7 @@
     min-width: 180px;
     height: 40px;
     margin-right: 10px;
-    background-color: #2F5DA8;
+    background-color: var(--brand-primary);
     color: white;
     border: none;
     border-radius: 4px;

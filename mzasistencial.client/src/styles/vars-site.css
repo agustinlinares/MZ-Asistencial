@@ -3,13 +3,19 @@
     /* Fonts */
     --font-family: 'Outfit', system-ui, -apple-system, sans-serif;
     
-    /* Colors - Brand */
-    --bg-menu-color: #19397e;
-    --main-color: #1a5fa8;
-    --second-color: #FFA027;
+    /* Colors - Brand Unified */
+    --brand-primary: #1a5fa8;  /* Azul corporativo (Botones, Acciones) */
+    --brand-dark: #19397e;     /* Azul oscuro (Sidebar, Títulos, Selección) */
+    --brand-light: #e8f0fe;    /* Azul muy claro (Headers, Alternativos) */
+    --brand-hover: #14508e;    /* Azul para estados hover */
+    
+    /* Alias para compatibilidad */
+    --main-color: var(--brand-primary);
+    --bg-menu-color: var(--brand-dark);
+    --second-color: #FFA027;   /* Naranja corporativo */
     
     /* Colors - UI */
-    --bg-body-color: #f1f5f9; /* Fondo gris muy claro para que las tarjetas resalten */
+    --bg-body-color: #f1f5f9;
     --bg-card: #ffffff;
     --border-color: #e2e8f0;
     --text-main: #1e293b;
@@ -28,12 +34,12 @@
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --info: #3b82f6;
+    --info: var(--brand-primary);
 
-    /* Legacy compatibility (to be phased out) */
-    --e-global-color-primary: var(--main-color);
+    /* Legacy compatibility */
+    --e-global-color-primary: var(--brand-primary);
     --e-global-color-secondary: var(--second-color);
-    --e-global-color-accent: var(--main-color);
-    --e-global-color-accent-hover: #14508e;
+    --e-global-color-accent: var(--brand-primary);
+    --e-global-color-accent-hover: var(--brand-hover);
 }
 

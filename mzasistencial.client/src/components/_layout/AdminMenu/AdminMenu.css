@@ -224,12 +224,5 @@
 
 
 
-.dx-datagrid-filter-panel .dx-icon-filter,
-.dx-datagrid-filter-panel .dx-datagrid-filter-panel-text,
-.dx-pager .dx-page-sizes .dx-selection,
-.dx-pager .dx-pages .dx-selection {
-    background-color: var(--bg-menu-color) !important;
-    color: #fff !important;
 
-}
 

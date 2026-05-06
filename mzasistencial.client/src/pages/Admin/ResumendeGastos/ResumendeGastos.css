@@ -34,7 +34,7 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+    box-shadow: 0 8px 32px rgba(25, 57, 126, 0.07);
     padding: 0;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -42,7 +42,7 @@
 
 .panel:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.12);
+    box-shadow: 0 12px 40px rgba(25, 57, 126, 0.12);
 }
 
 .icon-header {
@@ -50,7 +50,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: linear-gradient(135deg, #1a5fa8 0%, #124a85 100%);
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
     color: white;
 }
 

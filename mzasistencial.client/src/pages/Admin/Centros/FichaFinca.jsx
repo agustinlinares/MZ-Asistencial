@@ -25,12 +25,12 @@ const TITULARIDADES = [
 ];
 
 const UTILIZACION_MAP = {
-    'SÓTANO': 'Sótano técnico',
+    'SÓTANO': 'Sotano tecnico',
     'PLANTA BAJA': 'Local asistencial',
     'PISO': 'Piso / Oficinas',
     'LOCAL': 'Local asistencial',
     'GARAJE': 'Garaje / Aparcamiento',
-    'TRASTERO': 'Trastero / Almacén'
+    'TRASTERO': 'Trastero / Almacen'
 };
 
 // ✅ Sin token — usamos sessionStorage para autenticación
@@ -501,9 +501,14 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('general');
 
-    // Control de permisos
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-    const isAdmin = user.perfilId === 1 || user.rol === 'Administrador';
+    // Control de permisos centralizado
+    const userData = JSON.parse(localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user') || '{}');
+    const isAdmin = userData.perfilId === 1 || 
+                    userData.perfilID === 1 || 
+                    userData.rol === 'Administrador' || 
+                    userData.Rol === 'Administrador' ||
+                    userData.perfil === 'Administrador';
+    
     const isReadOnly = !!finca?.CentroValidado && !isAdmin;
 
     const tipoFincaIdx = finca?.TipoFinca ?? finca?.tipo_finca_idx ?? null;

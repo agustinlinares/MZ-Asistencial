@@ -25,7 +25,7 @@
 }
 
 .mapa-view-tab.active {
-    background: #2f5da8;
+    background: var(--brand-primary);
     color: white;
-    border-color: #2f5da8;
+    border-color: var(--brand-primary);
 }

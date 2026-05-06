@@ -12,8 +12,9 @@ const authHeaders = () => {
 };
 
 const FincasService = {
-    async getAll() {
-        const res = await fetch('/api/FincasRegistrales', { headers: authHeaders() });
+    async getAll(anio = null) {
+        const url = anio ? `/api/FincasRegistrales?anio=${anio}` : '/api/FincasRegistrales';
+        const res = await fetch(url, { headers: authHeaders() });
         if (!res.ok) throw new Error('Error al cargar fincas');
         return await res.json();
     },
