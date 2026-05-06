@@ -159,7 +159,7 @@ const GestionDemanda = () => {
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
                 <div className="header-page">
-                    <div className="title">{t('GESTIÓN DEMANDA')}</div>
+                    <div className="title">{t('Gestión de Demanda')}</div>
                     <div className="acciones-container" ref={menuRef}>
                         <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
                             <i className="ri-settings-3-line"></i> {t('Acciones')}

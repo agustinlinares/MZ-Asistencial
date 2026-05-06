@@ -703,7 +703,7 @@ const ICGCentrosPropios = () => {
             <div className="file-box">
                 <div className="header-page">
                     <div className="title">
-                        {t('LISTA CENTROS PROPIOS — ICG06')}
+                        {t('Lista Centros Propios — ICG06')}
                     </div>
                     <div className="header-actions-side">
                         <div className="year-selector-wrap">

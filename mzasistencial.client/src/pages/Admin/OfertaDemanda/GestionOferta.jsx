@@ -187,7 +187,7 @@ const GestionOferta = () => {
 
                     {/* HEADER */}
                     <div className="header-page">
-                        <div className="title">{t('LISTA OFERTAS')}</div>
+                        <div className="title">{t('Lista de Ofertas')}</div>
                         <div className="acciones-container" ref={menuRef}>
                             <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
                                 <i className="ri-settings-3-line"></i>

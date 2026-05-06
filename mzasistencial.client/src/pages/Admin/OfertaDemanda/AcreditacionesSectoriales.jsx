@@ -459,7 +459,7 @@ const AcreditacionesSectoriales = () => {
                 <div className="file-box">
 
                     <div className="header-page">
-                        <div className="title"> {t('LISTA DE ACREDITACIONES SECTORIALES')}</div>
+                        <div className="title"> {t('Lista de Acreditaciones Sectoriales')}</div>
 
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>

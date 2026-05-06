@@ -417,12 +417,16 @@
     margin-bottom: 15px;
 }
 
+
+
 .header-page .title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a202c;
-    letter-spacing: -0.5px;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--bg-menu-color);
+    letter-spacing: -0.01em;
 }
+
+
 
 .header-actions-side {
     display: flex;

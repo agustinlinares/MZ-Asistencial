@@ -12,7 +12,7 @@ const ResumendeGastos = () => {
     return (
         <div className="resumen-gastos-container">
             <div className="header-page">
-                <div className="title">{t('RESUMEN DE GASTOS')}</div>
+                <div className="title">{t('Resumen de Gastos')}</div>
             </div>
 
             <div className="content-page" id="home-page">

@@ -150,7 +150,9 @@ const Fincas = () => {
 
                     {!selectedFinca && (
                         <div className="header-page">
-                            <div className="title">{t('LISTA FINCAS')}</div>
+
+                            <div className="title">{t('Lista Fincas')}</div>
+
 
                             <div className="acciones-container" ref={menuRef}>
                                 <div

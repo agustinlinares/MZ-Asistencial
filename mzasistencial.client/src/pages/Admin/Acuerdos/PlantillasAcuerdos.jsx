@@ -259,7 +259,7 @@ const PlantillasAcuerdos = () => {
                 <div className="file-box">
 
                     <div className="header-page">
-                        <div className="title">{t('PLANTILLAS ACUERDOS')}</div>
+                        <div className="title">{t('Plantillas de Acuerdos')}</div>
 
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>

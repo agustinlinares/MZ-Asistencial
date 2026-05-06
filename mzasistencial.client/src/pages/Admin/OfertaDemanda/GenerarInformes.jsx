@@ -74,7 +74,7 @@ const GenerarInformes = () => {
         <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
             <div className="file-box">
                 <div className="header-page">
-                    <div className="title">{t('GENERACIÓN DE INFORMES REGULATORIOS')}</div>
+                    <div className="title">{t('Generación de Informes Regulatorios')}</div>
                 </div>
                 <div className="ficha-tab-content" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <div className="ficha-section">
