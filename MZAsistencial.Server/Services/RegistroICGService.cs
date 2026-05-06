@@ -30,36 +30,39 @@ namespace MZAsistencial.Server.Services
                         FechaModificacion    = icg.FechaModificacion,
                         UsuarioModificacionId = icg.UsuarioModificacionId,
                     })
-                .ToListAsync();
+                .ToListAsync(); 
         }
 
         public async Task<List<RegistroICGDTO>> GetConcertadosByCentroIdAsync(int centroId)
         {
-            return await _context.Icg06s
-                .Where(x => x.CentroId == centroId)
-                // Cruce con la tabla Concertados para sacar el nombre del centro
-                .Join(_context.CentrosConcertados,
-                    icg => icg.CentroId,
-                    cc => cc.CentroId,
-                    (icg, cc) => new { icg, cc })
-                // Pasa por la tabla puente 'Conciertos' para buscar a qué mutuas está asociado
+            return await _context.Icg07s
+                // Unión de ICG07 con la tabla Conciertos usando el nuevo campo
                 .Join(_context.Conciertos,
-                    temp1 => temp1.cc.CentroId,
-                    c => c.CentroId,
-                    (temp1, c) => new { temp1.icg, temp1.cc, c.MutuaId })
-                // Cruza con 'Mutuas' para obtener el nombre real en texto
+                    icg => icg.ConciertoId, // Mapeo de [Concierto_id]
+                    c => c.ConciertoId,
+                    (icg, c) => new { icg, c })
+                    
+                .Where(temp1 => temp1.c.CentroId == centroId)
+                
+                // Nombre del Centro Concertado
+                .Join(_context.CentrosConcertados,
+                    temp1 => temp1.c.CentroId,
+                    cc => cc.CentroId,
+                    (temp1, cc) => new { temp1.icg, temp1.c, cc })
+                    
+                // Nombre de la Mutua
                 .Join(_context.Mutuas, 
-                    temp2 => temp2.MutuaId,
+                    temp2 => temp2.c.MutuaId,
                     m => m.MutuaId,
                     (temp2, m) => new RegistroICGDTO
                     {
-                        IdICG                 = temp2.icg.IdIcg,
-                        Ano                   = temp2.icg.Año,
-                        CentroId              = temp2.icg.CentroId,
+                        IdICG                 = temp2.icg.IdIcg,  // Mapeo de [Id_ICG]
+                        Ano                   = temp2.icg.Año,    // Mapeo de [Año]
+                        CentroId              = temp2.c.CentroId, // Sacado de la relación
                         Mutua                 = m.Mutua1, 
                         Centro                = temp2.cc.Centro,
-                        FechaModificacion     = temp2.icg.FechaModificacion,
-                        UsuarioModificacionId = temp2.icg.UsuarioModificacionId,
+                        FechaModificacion     = temp2.icg.FechaModificacion, // Mapeo de [FechaModificacion]
+                        UsuarioModificacionId = temp2.icg.UsuarioModificacionId // Mapeo de [UsuarioModificacion_id]
                     })
                 .ToListAsync();
         }
