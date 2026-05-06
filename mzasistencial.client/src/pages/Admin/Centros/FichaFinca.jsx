@@ -24,6 +24,15 @@ const TITULARIDADES = [
     'Terceros distintos de los anteriores',
 ];
 
+const UTILIZACION_MAP = {
+    'SÓTANO': 'Sótano técnico',
+    'PLANTA BAJA': 'Local asistencial',
+    'PISO': 'Piso / Oficinas',
+    'LOCAL': 'Local asistencial',
+    'GARAJE': 'Garaje / Aparcamiento',
+    'TRASTERO': 'Trastero / Almacén'
+};
+
 // ✅ Sin token — usamos sessionStorage para autenticación
 const authHeaders = () => ({ 'Content-Type': 'application/json' });
 
@@ -303,7 +312,7 @@ const TabCostes = ({ fincaId }) => {
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
-const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => {
+const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
     const { t } = useTranslation();
 
     const openCatastro = () => {
@@ -328,14 +337,28 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => {
                     </div>
                     <div className="ficha-field">
                         <label>{t('Centro Vinculado')}</label>
-                        <select
-                            className={errors.centro_id ? 'error' : ''}
-                            value={form.centro_id || ''}
-                            onChange={e => onChange('centro_id', e.target.value)}
-                        >
-                            <option value="">— {t('Seleccionar')} —</option>
-                            {(centros || []).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                        </select>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <select
+                                className={errors.centro_id ? 'error' : ''}
+                                value={form.centro_id || ''}
+                                onChange={e => onChange('centro_id', e.target.value)}
+                                style={{ flex: 1 }}
+                            >
+                                <option value="">— {t('Seleccionar')} —</option>
+                                {(centros || []).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                            </select>
+                            {form.centro_id && (
+                                <button 
+                                    className="ficha-btn-secondary" 
+                                    title={t('Ver ficha del centro')}
+                                    type="button"
+                                    onClick={() => window.open(`/admin/Centros/CentrosPropios`, '_blank')}
+                                    style={{ padding: '5px 10px', width: 'auto' }}
+                                >
+                                    <i className="ri-external-link-line" style={{ color: '#1a5fa8' }}></i>
+                                </button>
+                            )}
+                        </div>
                     </div>
                     <div className="ficha-field">
                         <label>{t('Mutua Propietaria')}</label>
@@ -366,9 +389,15 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => {
                         </div>
                     </div>
                     <div className="ficha-field">
-                        <label>{t('Referencia Catastral')}</label>
+                        <label>{t('Referencia Catastral')} {form.ref_catastral?.length > 0 && form.ref_catastral.length !== 20 && <span style={{ color: '#d32f2f', fontSize: '10px' }}>(Debe tener 20 caracteres)</span>}</label>
                         <div style={{ display: 'flex', gap: 8 }}>
-                            <input type="text" style={{ flex: 1 }} value={form.ref_catastral || ''} onChange={e => onChange('ref_catastral', e.target.value)} />
+                            <input 
+                                type="text" 
+                                style={{ flex: 1, borderColor: form.ref_catastral?.length > 0 && form.ref_catastral.length !== 20 ? '#d32f2f' : '' }} 
+                                value={form.ref_catastral || ''} 
+                                onChange={e => onChange('ref_catastral', e.target.value.toUpperCase())} 
+                                maxLength={20}
+                            />
                             <button 
                                 className="ficha-btn-secondary" 
                                 type="button" 
@@ -455,6 +484,13 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => {
                 <div className="ficha-field">
                     <textarea rows={4} value={form.otros_datos || ''} onChange={e => onChange('otros_datos', e.target.value)} placeholder={t('Indique cualquier observación relevante sobre la finca...')} />
                 </div>
+                
+                {(finca?.FechaAlta || finca?.FechaModificacion) && (
+                    <div style={{ marginTop: 15, padding: '10px', background: '#f8fafc', borderRadius: '6px', fontSize: '11px', color: '#64748b', display: 'flex', gap: '20px' }}>
+                        {finca.FechaAlta && <span><i className="ri-time-line"></i> {t('Creado')}: {new Date(finca.FechaAlta).toLocaleString()}</span>}
+                        {finca.FechaModificacion && <span><i className="ri-history-line"></i> {t('Modificado')}: {new Date(finca.FechaModificacion).toLocaleString()}</span>}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -464,6 +500,12 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap }) => {
 const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('general');
+
+    // Control de permisos
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    const isAdmin = user.perfilId === 1 || user.rol === 'Administrador';
+    const isReadOnly = !!finca?.CentroValidado && !isAdmin;
+
     const tipoFincaIdx = finca?.TipoFinca ?? finca?.tipo_finca_idx ?? null;
     const [form, setForm] = useState({
         finca_id:      finca?.Finca_id      ?? finca?.finca_id      ?? '',
@@ -496,7 +538,16 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
     }, [onClose]);
 
     const handleChange = useCallback((field, value) => {
-        setForm(prev => ({ ...prev, [field]: value }));
+        setForm(prev => {
+            const next = { ...prev, [field]: value };
+            
+            // Inferencia automática de utilización
+            if (field === 'tipo_finca' && !prev.utilizacion) {
+                next.utilizacion = UTILIZACION_MAP[value] || prev.utilizacion;
+            }
+            
+            return next;
+        });
         setErrors(prev => ({ ...prev, [field]: false }));
     }, []);
 
@@ -524,9 +575,11 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
                         <i className="ri-edit-box-line"></i> {t('Ficha Finca')} | {form.finca_id || t('Nueva')}
                     </span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn-primary" onClick={handleSave}>
-                            <i className="ri-check-line"></i> {t('Aceptar')}
-                        </button>
+                        {!isReadOnly && (
+                            <button className="ficha-btn-primary" onClick={handleSave}>
+                                <i className="ri-check-line"></i> {t('Aceptar')}
+                            </button>
+                        )}
                         <button className="ficha-btn-secondary" onClick={onClose}>
                             <i className="ri-close-line"></i> {t('Salir')}
                         </button>
@@ -540,11 +593,19 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
                 </div>
 
                 <div className="ficha-tab-content">
-                    {activeTab === 'general' && (
-                        <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} />
+                    {isReadOnly && (
+                        <div className="ficha-alert ficha-alert-info" style={{ margin: '0 20px 15px' }}>
+                            <i className="ri-information-line"></i>
+                            {t('Esta finca pertenece a un centro validado. Solo los administradores pueden realizar cambios.')}
+                        </div>
                     )}
-                    {activeTab === 'costes' && <TabCostes className="ficha-secundaria-table" fincaId={form.finca_id} />}
-                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    <fieldset disabled={isReadOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
+                        {activeTab === 'general' && (
+                            <TabGeneral form={form} onChange={handleChange} errors={errors} centros={centros} onGoToMap={() => setActiveTab('mapa')} finca={finca} />
+                        )}
+                        {activeTab === 'costes' && <TabCostes className="ficha-secundaria-table" fincaId={form.finca_id} />}
+                        {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    </fieldset>
                 </div>
             </div>
         </div>

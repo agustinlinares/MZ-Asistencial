@@ -116,7 +116,7 @@ const CentrosConcertados = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA CENTROS CONCERTADOS')}
+                            {t('Lista de Centros Concertados')}
                         </div>
 
                         {!selectedCentro && (

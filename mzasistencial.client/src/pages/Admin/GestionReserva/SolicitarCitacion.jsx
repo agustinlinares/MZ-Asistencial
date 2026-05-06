@@ -460,7 +460,7 @@ const SolicitarCitacion = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA DE CITACIONES SOLICITADAS')}
+                            {t('Lista de Citaciones Solicitadas')}
                         </div>
 
                         <div className="header-actions-side">

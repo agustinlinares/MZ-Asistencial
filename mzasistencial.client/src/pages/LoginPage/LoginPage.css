@@ -33,9 +33,12 @@
         justify-content: center;
     }
 
+
+
     #login-header #logo-cliente>img {
-        height: 80%;
+        height: 60px;
         width: auto;
+        object-fit: contain;
     }
 
     #login-header .item-admin-header {
@@ -96,17 +99,21 @@
 
     .login-leyend {
         width: 100%;
-        padding: 5px;
+        padding: 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
 
     .login-leyend>img {
-        width: 80%;
-        height: auto;
+        height: 80px;
+        width: auto;
+        max-width: 90%;
         margin-bottom: 20px;
+        object-fit: contain;
     }
+
+
 
 
     /* /~ Formulariuo Login ~/ */

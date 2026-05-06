@@ -239,7 +239,7 @@ const Mutuas = () => {
                 <div className="file-box">
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA DE MUTUAS')}
+                            {t('Lista de Mutuas')}
                         </div>
 
                         <div className="acciones-container" ref={menuRef}>

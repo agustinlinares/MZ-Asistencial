@@ -88,7 +88,7 @@ const ICGConciertos = () => {
                 <div className="file-box">
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA REGISTROS ICG CONCIERTOS')}
+                            {t('Lista Registros ICG Conciertos')}
                         </div>
 
                         <div className="header-actions-side">

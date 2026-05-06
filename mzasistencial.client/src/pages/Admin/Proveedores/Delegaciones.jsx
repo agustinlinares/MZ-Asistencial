@@ -468,7 +468,7 @@ const Delegaciones = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA DE DELEGACIONES')}
+                            {t('Lista de Delegaciones')}
                         </div>
 
                         <div className="header-actions-side">

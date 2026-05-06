@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
+using MZAsistencial.Server.Services.ICG06;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,8 @@ builder.Services.AddDbContext<MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── Servicios existentes ─────────────────────────────────────────────────────
+builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
+builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSectorialesService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();
@@ -60,6 +63,7 @@ builder.Services.AddScoped<Icg06EspecialidadService>();
 builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
+builder.Services.AddScoped<RegistroICGService>();
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();

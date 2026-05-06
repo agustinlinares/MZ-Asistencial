@@ -459,7 +459,7 @@ const Analisis = () => {
                 <div className="file-box">
 
                     <div className="header-page">
-                        <div className="title"> {t('ANÁLISIS')}</div>
+                        <div className="title"> {t('Análisis')}</div>
 
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>

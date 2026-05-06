@@ -2,15 +2,11 @@ namespace MZAsistencial.Server.DTOs
 {
     public class Icg06DatosPlantillaDTO
     {
-        public int IdIcg    { get; set; }
-        public int Año      { get; set; }
-        public int CentroId { get; set; }
+        public int  IdIcg    { get; set; }
+        public int? CentroId { get; set; }
+        public int? Año      { get; set; }
 
-        // ════════════════════════════════════════════════════════════════════
-        // GRUPO MÉDICOS — Plantilla Regular
-        // ════════════════════════════════════════════════════════════════════
-
-        // Médicos (Art6 Med)
+        // ─── Médicos Art.6 ───────────────────────────────────────────────────
         public decimal? PersSanitMedArt6NumPers          { get; set; }
         public decimal? PersSanitMedArt6GastPers         { get; set; }
         public decimal? PersSanitMedArt6HorasCp          { get; set; }
@@ -18,12 +14,11 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitMedArt6HorasIt          { get; set; }
         public decimal? PersSanitMedArt6HorasAtep        { get; set; }
         public decimal? PersSanitMedArt6HorasAgm         { get; set; }
-        // Sustitución
         public decimal? PersSanitMedArt6NumPersSustInt   { get; set; }
         public decimal? PersSanitMedArt6GastPersSustInt  { get; set; }
         public decimal? PersSanitMedArt6HorasPersSustInt { get; set; }
 
-        // Médicos Especialistas (Art6 MedEsp)
+        // ─── Médicos Especialistas Art.6 ─────────────────────────────────────
         public decimal? PersSanitMedEspArt6NumPers          { get; set; }
         public decimal? PersSanitMedEspArt6GastPers         { get; set; }
         public decimal? PersSanitMedEspArt6HorasCp          { get; set; }
@@ -35,7 +30,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitMedEspArt6GastPersSustInt  { get; set; }
         public decimal? PersSanitMedEspArt6HorasPersSustInt { get; set; }
 
-        // Médicos de Gestión (Art6 MedGes)
+        // ─── Médicos Gestión Art.6 ────────────────────────────────────────────
         public decimal? PersSanitMedGesArt6NumPers          { get; set; }
         public decimal? PersSanitMedGesArt6GastPers         { get; set; }
         public decimal? PersSanitMedGesArt6HorasCp          { get; set; }
@@ -47,11 +42,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitMedGesArt6GastPersSustInt  { get; set; }
         public decimal? PersSanitMedGesArt6HorasPersSustInt { get; set; }
 
-        // ════════════════════════════════════════════════════════════════════
-        // GRUPO RESTO PERSONAL SANITARIO — Plantilla Regular
-        // ════════════════════════════════════════════════════════════════════
-
-        // DUE (Art7 Due)
+        // ─── DUE Art.7 ───────────────────────────────────────────────────────
         public decimal? PersSanitArt7DuenumPers          { get; set; }
         public decimal? PersSanitArt7DuegastPers         { get; set; }
         public decimal? PersSanitArt7DuehorasCp          { get; set; }
@@ -63,7 +54,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7DuegastPersSustInt  { get; set; }
         public decimal? PersSanitArt7DuehorasPersSustInt { get; set; }
 
-        // Fisioterapeutas (Art7 Fis)
+        // ─── Fisioterapeutas Art.7 ────────────────────────────────────────────
         public decimal? PersSanitArt7FisNumPers          { get; set; }
         public decimal? PersSanitArt7FisGastPers         { get; set; }
         public decimal? PersSanitArt7FisHorasCp          { get; set; }
@@ -75,7 +66,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7FisGastPersSustInt  { get; set; }
         public decimal? PersSanitArt7FisHorasPersSustInt { get; set; }
 
-        // Psicólogos (Art7 Psico)
+        // ─── Psicólogos Art.7 ────────────────────────────────────────────────
         public decimal? PersSanitArt7PsicoNumPers          { get; set; }
         public decimal? PersSanitArt7PsicoGastPers         { get; set; }
         public decimal? PersSanitArt7PsicoHorasCp          { get; set; }
@@ -87,7 +78,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7PsicoGastPersSustInt  { get; set; }
         public decimal? PersSanitArt7PsicoHorasPersSustInt { get; set; }
 
-        // Trabajadores Sociales (Art7 TrSoc)
+        // ─── Trabajadores Sociales Art.7 ─────────────────────────────────────
         public decimal? PersSanitArt7TrSocNumPers          { get; set; }
         public decimal? PersSanitArt7TrSocGastPers         { get; set; }
         public decimal? PersSanitArt7TrSocHorasCp          { get; set; }
@@ -99,7 +90,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7TrSocGastPersSustInt  { get; set; }
         public decimal? PersSanitArt7TrSocHorasPersSustInt { get; set; }
 
-        // Terapeutas Ocupacionales (Art7 TerOcu)
+        // ─── Terapeutas Ocupacionales Art.7 ──────────────────────────────────
         public decimal? PersSanitArt7TerOcuNumPers          { get; set; }
         public decimal? PersSanitArt7TerOcuGastPers         { get; set; }
         public decimal? PersSanitArt7TerOcuHorasCp          { get; set; }
@@ -111,7 +102,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7TerOcuGastPersSustInt  { get; set; }
         public decimal? PersSanitArt7TerOcuHorasPersSustInt { get; set; }
 
-        // Técnicos RX (Art7 TecRx)
+        // ─── Técnicos RX Art.7 ───────────────────────────────────────────────
         public decimal? PersSanitArt7TecRxnumPers          { get; set; }
         public decimal? PersSanitArt7TecRxgastPers         { get; set; }
         public decimal? PersSanitArt7TecRxhorasCp          { get; set; }
@@ -123,7 +114,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7TecRxgastPersSustInt  { get; set; }
         public decimal? PersSanitArt7TecRxhorasPersSustInt { get; set; }
 
-        // Resto Personal Sanitario Art.7 (Art7 Rest)
+        // ─── Resto Personal Sanitario Art.7 ──────────────────────────────────
         public decimal? PersSanitArt7RestNumPers          { get; set; }
         public decimal? PersSanitArt7RestGastPers         { get; set; }
         public decimal? PersSanitArt7RestHorasCp          { get; set; }
@@ -135,11 +126,11 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitArt7RestGastPersSustInt  { get; set; }
         public decimal? PersSanitArt7RestHorasPersSustInt { get; set; }
 
-        // Personal Sanitario Grado Superior (GradSup)
+        // ─── Grado Superior ──────────────────────────────────────────────────
         public decimal? PersSanitGradSupNumPers          { get; set; }
         public decimal? PersSanitGradSupGastPers         { get; set; }
-        public decimal? PersSanitGradSupHorasCp         { get; set; }
-        public decimal? PersSanitGradSupHorasCc         { get; set; }
+        public decimal? PersSanitGradSupHorasCp          { get; set; }
+        public decimal? PersSanitGradSupHorasCc          { get; set; }
         public decimal? PersSanitGradSupHorasIt          { get; set; }
         public decimal? PersSanitGradSupHorasAtep        { get; set; }
         public decimal? PersSanitGradSupHorasAgm         { get; set; }
@@ -147,7 +138,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitGradSupGastPersSustInt  { get; set; }
         public decimal? PersSanitGradSupHorasPersSustInt { get; set; }
 
-        // Auxiliares de enfermería (GradMed AuxEnf)
+        // ─── Auxiliares Enfermería ────────────────────────────────────────────
         public decimal? PersSanitGradMedAuxEnfNumPers          { get; set; }
         public decimal? PersSanitGradMedAuxEnfGastPers         { get; set; }
         public decimal? PersSanitGradMedAuxEnfHorasCp          { get; set; }
@@ -159,7 +150,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitGradMedAuxEnfGastPersSustInt  { get; set; }
         public decimal? PersSanitGradMedAuxEnfHorasPersSustInt { get; set; }
 
-        // Auxiliares Farmacia y otros grados medios (GradMed Rest)
+        // ─── Auxiliares Farmacia y Grado Medio ───────────────────────────────
         public decimal? PersSanitGradMedRestNumPers          { get; set; }
         public decimal? PersSanitGradMedRestGastPers         { get; set; }
         public decimal? PersSanitGradMedRestHorasCp          { get; set; }
@@ -171,7 +162,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersSanitGradMedRestGastPersSustInt  { get; set; }
         public decimal? PersSanitGradMedRestHorasPersSustInt { get; set; }
 
-        // Resto de personal sanitario (RestPersSanit)
+        // ─── Resto Personal Sanitario ─────────────────────────────────────────
         public decimal? RestPersSanitNumPers          { get; set; }
         public decimal? RestPersSanitGastPers         { get; set; }
         public decimal? RestPersSanitHorasCp          { get; set; }
@@ -183,11 +174,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? RestPersSanitGastPersSustInt  { get; set; }
         public decimal? RestPersSanitHorasPersSustInt { get; set; }
 
-        // ════════════════════════════════════════════════════════════════════
-        // GRUPO PERSONAL NO SANITARIO
-        // ════════════════════════════════════════════════════════════════════
-
-        // Director Centro (PersDirCen)
+        // ─── Director de Centro ───────────────────────────────────────────────
         public decimal? PersDirCenNumPers          { get; set; }
         public decimal? PersDirCenGastPers         { get; set; }
         public decimal? PersDirCenHorasCp          { get; set; }
@@ -199,7 +186,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersDirCenGastPersSustInt  { get; set; }
         public decimal? PersDirCenHorasPersSustInt { get; set; }
 
-        // Administración (PersAdmin)
+        // ─── Administración ───────────────────────────────────────────────────
         public decimal? PersAdminNumPers          { get; set; }
         public decimal? PersAdminGastPers         { get; set; }
         public decimal? PersAdminHorasCp          { get; set; }
@@ -211,7 +198,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersAdminGastPersSustInt  { get; set; }
         public decimal? PersAdminHorasPersSustInt { get; set; }
 
-        // Técnicos de Prevención (PersTecPre)
+        // ─── Técnicos de Prevención ───────────────────────────────────────────
         public decimal? PersTecPreNumPers          { get; set; }
         public decimal? PersTecPreGastPers         { get; set; }
         public decimal? PersTecPreHorasCp          { get; set; }
@@ -223,7 +210,7 @@ namespace MZAsistencial.Server.DTOs
         public decimal? PersTecPreGastPersSustInt  { get; set; }
         public decimal? PersTecPreHorasPersSustInt { get; set; }
 
-        // No administración (PersNoAdmin)
+        // ─── No Administración ────────────────────────────────────────────────
         public decimal? PersNoAdminNumPers          { get; set; }
         public decimal? PersNoAdminGastPers         { get; set; }
         public decimal? PersNoAdminHorasCp          { get; set; }

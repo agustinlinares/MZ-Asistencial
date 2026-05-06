@@ -459,7 +459,7 @@ const AcreditacionesIndividuales = () => {
                 <div className="file-box">
 
                     <div className="header-page">
-                        <div className="title"> {t('LISTA DE ACREDITACIONES INDIVIDUALES')}</div>
+                        <div className="title"> {t('Lista de Acreditaciones Individuales')}</div>
 
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>

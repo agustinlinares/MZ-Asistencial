@@ -2,6 +2,7 @@ import { useReducer, useRef, useEffect } from "react";
 import { Button, TextBox, LoadIndicator } from "devextreme-react";
 import { CheckBox } from 'devextreme-react/check-box';
 import { useNavigate } from "react-router-dom";
+import AuthService from '@services/auth/AuthService';
 
 import './LoginPage.css';
 
@@ -61,8 +62,7 @@ const LoginPage = () => {
             }
 
             const data = await res.json();
-            // Guardar datos del usuario en sessionStorage
-            sessionStorage.setItem('user', JSON.stringify(data));
+            AuthService.setUserData(data);
             dispatch({ type: 'LOGIN_SUCCESS' });
             navigate("/Admin/ResumendeGastos");
         } catch (error) {
@@ -94,7 +94,7 @@ const LoginPage = () => {
                     <div className="login-leyend">
                         <img className="logo-app" src="/assets/img/logos/mercanza_logo.png" alt="Mercanza" />
                     </div>
-                    <form className="login-form">
+                    <form className="login-form" onSubmit={(e) => e.preventDefault()}>
                         <TextBox
                             value={username}
                             onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'username', value: e.value })}
