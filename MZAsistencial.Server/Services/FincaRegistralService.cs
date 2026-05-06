@@ -42,7 +42,9 @@ namespace MZAsistencial.Server.Services
                                    f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
                                    f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
                                    f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
-                                   CentroNombre = c != null ? c.Centro : null 
+                                   f.FechaAlta, f.FechaModificacion,
+                                   CentroNombre = c != null ? c.Centro : null,
+                                   CentroValidado = c != null && c.Validado == true
                                })
                                .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
@@ -67,6 +69,9 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
+                CentroValidado = x.CentroValidado,
+                FechaAlta = x.FechaAlta,
+                FechaModificacion = x.FechaModificacion
             }).ToList();
 
             return (data, total);
@@ -82,7 +87,9 @@ namespace MZAsistencial.Server.Services
                     x.fi.FincaId, x.fi.CentroId, x.fi.Localizador, x.fi.NombreVia, x.fi.Numero, x.fi.Piso, x.fi.Puerta,
                     x.fi.Utilizacion, x.fi.Superficie, x.fi.Coste, x.fi.Fadqoarr, x.fi.ReferenciaCatastral,
                     x.fi.Finscreg, x.fi.FechaBaja, x.fi.TipoFinca, x.fi.Titinmueble, x.fi.OtrosDatos, x.fi.DireccionElectronica,
-                    CentroNombre = c != null ? c.Centro : null 
+                    x.fi.FechaAlta, x.fi.FechaModificacion,
+                    CentroNombre = c != null ? c.Centro : null,
+                    CentroValidado = c != null && c.Validado == true
                 })
                 .FirstOrDefaultAsync();
 
@@ -109,6 +116,9 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
+                CentroValidado = x.CentroValidado,
+                FechaAlta = x.FechaAlta,
+                FechaModificacion = x.FechaModificacion
             };
         }
 
@@ -126,7 +136,7 @@ namespace MZAsistencial.Server.Services
             finca.Finscreg = dto.F_Inscripcion;
             finca.FechaBaja = dto.F_Baja;
             finca.ReferenciaCatastral = dto.Referencia_Catastral;
-            finca.Utilizacion = dto.Utilizacion;
+            finca.Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion;
             finca.TipoFinca = dto.TipoFinca;
             finca.Titinmueble = dto.Titularidad;
             finca.OtrosDatos = dto.OtrosDatos;
@@ -151,7 +161,7 @@ namespace MZAsistencial.Server.Services
                 ReferenciaCatastral = dto.Referencia_Catastral,
                 Finscreg = dto.F_Inscripcion,
                 FechaBaja = dto.F_Baja,
-                Utilizacion = dto.Utilizacion,
+                Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion,
                 TipoFinca = dto.TipoFinca,
                 Titinmueble = dto.Titularidad,
                 OtrosDatos = dto.OtrosDatos,
@@ -235,7 +245,9 @@ namespace MZAsistencial.Server.Services
                                f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
                                f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
                                f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
-                               CentroNombre = c != null ? c.Centro : null 
+                               f.FechaAlta, f.FechaModificacion,
+                               CentroNombre = c != null ? c.Centro : null,
+                               CentroValidado = c != null && c.Validado == true
                            }).ToListAsync();
 
             return rawList.Select(x => new FincaRegistralDTO
@@ -259,7 +271,24 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
+                CentroValidado = x.CentroValidado,
+                FechaAlta = x.FechaAlta,
+                FechaModificacion = x.FechaModificacion
             }).ToList();
+        }
+
+        private string? InferUtilizacion(int? tipoFinca)
+        {
+            return tipoFinca switch
+            {
+                0 => "Sótano técnico",
+                1 => "Local asistencial",
+                2 => "Piso / Oficinas",
+                3 => "Local asistencial",
+                4 => "Garaje / Aparcamiento",
+                5 => "Trastero / Almacén",
+                _ => null
+            };
         }
     }
 }

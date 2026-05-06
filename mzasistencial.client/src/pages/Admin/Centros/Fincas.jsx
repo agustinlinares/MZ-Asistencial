@@ -23,7 +23,9 @@ import DataGrid, {
     ColumnFixing,
     Pager,
     Toolbar,
-    Item
+    Item,
+    Summary,
+    TotalItem
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -236,14 +238,20 @@ const Fincas = () => {
                                     <Column dataField="Centro" caption="Centro" width={180} />
                                     <Column dataField="Direccion" caption="Dirección" width={220} />
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
-                                    <Column dataField="Superficie" caption="Superficie" width={100} />
+                                    <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
                                     <Column dataField="TipoFinca" caption="Tipo" width={120} />
-                                    <Column dataField="Coste" caption="Coste" width={100} />
+                                    <Column dataField="Coste" caption="Coste" width={100} format={{ type: 'currency', currency: 'EUR', precision: 2 }} />
                                     <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
                                     <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
                                     <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
                                     <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
                                     <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                    
+                                    <Summary>
+                                        <TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />
+                                        <TotalItem column="Coste" summaryType="sum" displayFormat="Total: {0}" valueFormat={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                    </Summary>
+
                                     <Column
                                         caption="Acciones"
                                         width={80}
