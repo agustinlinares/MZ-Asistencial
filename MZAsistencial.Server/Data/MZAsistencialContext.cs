@@ -5071,6 +5071,15 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
         });
 
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            var property = entity.FindProperty("Año");
+            if (property != null)
+            {
+                property.SetColumnName("Anio");
+            }
+        }
+
         OnModelCreatingPartial(modelBuilder);
     }
 
