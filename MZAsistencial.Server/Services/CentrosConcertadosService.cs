@@ -47,11 +47,15 @@ namespace MZAsistencial.Server.Services
                             DelegacionId = c.DelegacionId,
 
                             // Resto de datos de la ficha
-                            Telefono = c.Telefono != null ? c.Telefono.Trim() : null,
+                            Telefono = c.Telefono,
                             FechaAlta = c.FechaAlta,
                             FechaBaja = c.FechaBaja,
                             Latitud = c.Latitud,
                             Longitud = c.Longitud,
+                            Numero = c.Numero,
+                            NumRegistroSanitario = c.NumRegistroSanitario,
+                            Comentarios = c.Comentarios,
+                            MotivoBaja = c.MotivoBaja,
                             
                             Mapa = c.MapaValidado.ToString()
                         };
@@ -76,7 +80,11 @@ namespace MZAsistencial.Server.Services
                 FechaAlta = dto.FechaAlta ?? DateTime.Now, // Si no viene fecha, ponemos la de hoy
                 FechaBaja = dto.FechaBaja,
                 Latitud = dto.Latitud,
-                Longitud = dto.Longitud
+                Longitud = dto.Longitud,
+                Numero = dto.Numero,
+                NumRegistroSanitario = dto.NumRegistroSanitario,
+                Comentarios = dto.Comentarios,
+                MotivoBaja = dto.MotivoBaja
             };
 
             _context.CentrosConcertados.Add(nuevoCentro);
@@ -106,14 +114,27 @@ namespace MZAsistencial.Server.Services
             centroExistente.DelegacionId = dto.DelegacionId;
             
             // Resto de la ficha
-            centroExistente.Telefono = dto.Telefono;
             centroExistente.FechaAlta = dto.FechaAlta;
             centroExistente.FechaBaja = dto.FechaBaja;
             centroExistente.Latitud = dto.Latitud;
             centroExistente.Longitud = dto.Longitud;
+            centroExistente.Telefono = dto.Telefono?.Trim();
+            centroExistente.Numero = dto.Numero?.Trim();
+            centroExistente.NumRegistroSanitario = dto.NumRegistroSanitario;
+            centroExistente.Comentarios = dto.Comentarios;
+            centroExistente.MotivoBaja = dto.MotivoBaja;
 
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var mensajeReal = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                
+                throw new Exception($"Fallo SQL: {mensajeReal}"); 
+            }
         }
 
         public async Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId)

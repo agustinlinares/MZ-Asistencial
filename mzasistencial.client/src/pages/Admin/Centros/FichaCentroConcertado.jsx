@@ -120,6 +120,7 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
                 {opts.delegaciones.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
             </select>
         </div>
+
         <div className="ficha-field">
             <label>Centro</label>
             <input className={errors.centro ? 'error' : ''} type="text" value={form.centro || ''} onChange={e => onChange('centro', e.target.value)} />
@@ -158,29 +159,47 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
             <label>CIF / NIF</label>
             <input type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
         </div>
+        
         <div className="ficha-field">
             <label>Código Postal</label>
-            <select value={form.cp || ''} onChange={e => onChange('cp', e.target.value)}>
-                <option value="">{form.cp || '— Seleccionar —'}</option>
-            </select>
+            <input 
+                type="text" 
+                value={form.cp || ''} 
+                onChange={e => onChange('cp', e.target.value)} 
+            />
         </div>
 
         <div className="ficha-field">
             <label>Dirección</label>
             <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
         </div>
-        <div className="ficha-field">
-            <label>Número</label>
-            <input type="text" value={form.numero || ''} onChange={e => onChange('numero', e.target.value)} />
-        </div>
 
         <div className="ficha-field">
             <label>Teléfono</label>
-            <input type="text" value={form.telefono || ''} onChange={e => onChange('telefono', e.target.value)} />
+            {/* Usamos trim() para limpiar los espacios en blanco que vienen de la base de datos */}
+            <input 
+                type="text" 
+                value={form.telefono ? form.telefono.trim() : ''} 
+                onChange={e => onChange('telefono', e.target.value)} 
+            />
         </div>
+
+        <div className="ficha-field">
+            <label>Número</label>
+            <input 
+                type="text" 
+                value={form.numero || ''} 
+                onChange={e => onChange('numero', e.target.value)} 
+            />
+        </div>
+
         <div className="ficha-field">
             <label>Nº de Registro Sanitario</label>
-            <input type="text" value={form.registro_sanitario || ''} onChange={e => onChange('registro_sanitario', e.target.value)} />
+            <input 
+                type="number" 
+                value={form.numRegistroSanitario || ''} 
+                onChange={e => onChange('numRegistroSanitario', e.target.value ? parseInt(e.target.value) : null)} 
+            />
         </div>
 
         <div className="ficha-field">
@@ -200,14 +219,22 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
             <input type="date" value={form.fecha_baja || ''} onChange={e => onChange('fecha_baja', e.target.value)} />
         </div>
 
-        <div className="ficha-field span2">
+        <div className="ficha-field">
             <label>Comentarios</label>
-            <textarea rows={3} value={form.comentarios || ''} onChange={e => onChange('comentarios', e.target.value)} />
+            <textarea 
+                style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
+                value={form.comentarios || ''} 
+                onChange={e => onChange('comentarios', e.target.value)} 
+            />
         </div>
 
-        <div className="ficha-field span2">
+        <div className="ficha-field">
             <label>Motivo de la baja</label>
-            <textarea rows={3} value={form.motivo_baja || ''} onChange={e => onChange('motivo_baja', e.target.value)} />
+            <textarea 
+                style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
+                value={form.motivoBaja || ''} 
+                onChange={e => onChange('motivoBaja', e.target.value)} 
+            />
         </div>
     </div>
 );
@@ -265,8 +292,14 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         fecha_alta: parseDateForInput(cliente?.FechaAlta ?? cliente?.fechaAlta),
         fecha_baja: parseDateForInput(cliente?.FechaBaja ?? cliente?.fechaBaja),
         
-        numero: '', telefono: '', registro_sanitario: '', dir_google: '', 
-        comentarios: '', motivo_baja: '', latitud: cliente?.Latitud ?? '', longitud: cliente?.Longitud ?? ''
+        numero: cliente?.Numero ?? cliente?.numero ?? '', 
+        telefono: cliente?.Telefono ?? cliente?.telefono ?? '', 
+        numRegistroSanitario: cliente?.NumRegistroSanitario ?? cliente?.numRegistroSanitario ?? '', 
+        dir_google: '', 
+        comentarios: cliente?.Comentarios ?? cliente?.comentarios ?? '',
+        motivoBaja: cliente?.MotivoBaja ?? cliente?.motivoBaja ?? '', 
+        latitud: cliente?.Latitud ?? '', 
+        longitud: cliente?.Longitud ?? ''
     });
 
     const [datosMutuas, setDatosMutuas] = useState([]);
@@ -405,6 +438,18 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         const newErrors = {};
         if (!form.centro) newErrors.centro = true;
         
+        // Validación de CP
+        if (form.cp && form.cp.length > 5) {
+            alert("El Código Postal no puede tener más de 5 caracteres");
+            newErrors.cp = true;
+        }
+
+        // Validación de Teléfono (Ej: máximo 15)
+        if (form.telefono && form.telefono.length > 15) {
+            alert("El teléfono es demasiado largo");
+            newErrors.telefono = true;
+        }
+
         if (Object.keys(newErrors).length > 0) { 
             setErrors(newErrors); 
             return; 
@@ -429,9 +474,13 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             delegacionId: form.delegacion ? parseInt(form.delegacion) : null,
             
             telefono: form.telefono,
+            numero: form.numero,
+            numRegistroSanitario: form.numRegistroSanitario,
             fechaAlta: form.fecha_alta || null,
             fechaBaja: form.fecha_baja || null,
             latitud: form.latitud,
+            comentarios: form.comentarios,
+            motivoBaja: form.motivoBaja,
             longitud: form.longitud
         };
 

@@ -5078,6 +5078,9 @@ public partial class MZAsistencialContext : DbContext
             {
                 property.SetColumnName("Anio");
             }
+            modelBuilder.Entity<MZAsistencial.Server.Models.Icg07>()
+                .Property(e => e.Año)
+                .HasColumnName("Año");
         }
 
         OnModelCreatingPartial(modelBuilder);
