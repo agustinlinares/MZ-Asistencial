@@ -17,9 +17,9 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<FincaRegistralDTO>>> Get([FromQuery] int? centroId)
+        public async Task<ActionResult<List<FincaRegistralDTO>>> Get([FromQuery] int? centroId, [FromQuery] int? anio)
         {
-            var data = await _service.ObtenerTodasLasFincas(centroId);
+            var data = await _service.ObtenerTodasLasFincas(centroId, anio);
             return Ok(data);
         }
 

@@ -411,18 +411,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 25px;
+    padding: 20px 25px 15px 25px;
     background: #fff;
     border-bottom: 1px solid #edf2f7;
-    margin-bottom: 15px;
 }
 
+
+
 .header-page .title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a202c;
-    letter-spacing: -0.5px;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--bg-menu-color);
+    letter-spacing: -0.01em;
 }
+
+
 
 .header-actions-side {
     display: flex;
@@ -464,21 +467,27 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 20px;
-    background: #1a5fa8;
-    color: #fff;
-    border-radius: 2px;
+    padding: 8px 16px;
+    background: #ffffff;
+    color: #475569;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(26, 95, 168, 0.2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .acciones-btn:hover {
-    background: #14508e;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(26, 95, 168, 0.3);
+    background: #f8fafc;
+    border-color: #cbd5e0;
+    color: #1a5fa8;
+}
+
+.acciones-btn i {
+    font-size: 18px;
+    color: #1a5fa8;
 }
 
 .acciones-menu {
@@ -498,6 +507,29 @@
 @keyframes fadeInScale {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
+}
+
+.acciones-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #718096;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f7fafc;
+}
+
+.acciones-menu-header i {
+    font-size: 16px;
+    cursor: pointer;
+    color: #a0aec0;
+    transition: color 0.15s;
+}
+
+.acciones-menu-header i:hover {
+    color: #4a5568;
 }
 
 .acciones-item {
@@ -521,6 +553,148 @@
 }
 
 /* ── DATA GRID GLOBAL OVERRIDES ────────────────────────────────── */
+.dx-datagrid {
+    background-color: transparent !important;
+    font-family: var(--font-family) !important;
+}
+
+.dx-datagrid-headers {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dx-datagrid-headers .dx-header-row td {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 10px !important;
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dx-datagrid-rowsview .dx-row {
+    font-size: 14px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* Soporte para clase .mz-table legacy */
+.mz-table .dx-data-row td {
+    font-size: 14px !important;
+    padding: 8px 6px !important;
+}
+
+.mz-table .dx-header-row td {
+    font-size: 13.5px !important;
+    background-color: #f8fafc !important;
+}
+
+.dx-datagrid-rowsview .dx-row-alt {
+    background-color: #f8fafc !important;
+}
+
+.dx-datagrid-rowsview .dx-row:hover {
+    background-color: #f1f5f9 !important;
+    transition: background-color 0.2s ease;
+}
+
+/* ── SEARCH PANEL ── */
+.dx-datagrid-search-panel {
+    margin: 0 !important;
+}
+
+.dx-datagrid-search-panel .dx-texteditor-input {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+}
+
+.dx-datagrid-search-panel .dx-placeholder {
+    font-size: 13px !important;
+}
+
+/* ── TOOLBAR ADJUSTMENTS ── */
+.dx-datagrid-header-panel {
+    padding: 12px 0 !important;
+    border-bottom: none !important;
+}
+
+.dx-toolbar-items-container {
+    height: 48px !important;
+}
+
+.dx-toolbar-item-content .dx-button {
+    border-radius: 6px !important;
+    transition: all 0.2s ease;
+}
+
+.table-container {
+    flex: 1;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 0 25px 25px 25px; /* Margen interno horizontal y inferior */
+}
+
+.mz-table {
+    width: 100% !important;
+    height: 100% !important;
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+.dx-datagrid {
+    background-color: transparent !important;
+    font-family: var(--font-family) !important;
+}
+
+/* ── FILTER PANEL (Create Filter) ── */
+.dx-datagrid-filter-panel {
+    padding: 10px 15px !important;
+    background-color: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+.dx-datagrid-filter-panel .dx-icon-filter {
+    color: #1a5fa8 !important;
+    font-size: 18px !important;
+}
+
+.dx-datagrid-filter-panel .dx-datagrid-filter-panel-text {
+    color: #1a5fa8 !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-size: 13px !important;
+}
+
+.dx-datagrid-filter-panel .dx-datagrid-filter-panel-clear-filter {
+    color: #e53e3e !important;
+    font-weight: 600 !important;
+}
+
+/* ── PAGER & SELECTION UNIFICATION ── */
+.dx-pager .dx-pages .dx-selection,
+.dx-pager .dx-page-sizes .dx-selection,
+.dx-datagrid-rowsview .dx-selection > td {
+    background-color: var(--bg-menu-color) !important;
+    color: #fff !important;
+}
+
+.dx-datagrid-rowsview .dx-selection.dx-row:hover > td {
+    background-color: #122d64 !important; /* Un poco más oscuro que el menu color para el hover de seleccionados */
+}
+
+.dx-checkbox-checked .dx-checkbox-icon {
+    background-color: var(--main-color) !important;
+    color: #fff !important;
+}
+
 .ficha-row-actions {
     display: flex;
     justify-content: center;
@@ -540,12 +714,53 @@
 .ficha-row-actions .edit-icon { color: #1a5fa8; }
 .ficha-row-actions .delete-icon { color: #e53e3e; }
 
-/* ── TOOLBAR ADJUSTMENTS ── */
-.dx-datagrid-header-panel {
-    padding: 8px 0 !important;
-    border-bottom: none !important;
+/* ── PRINT ─────────────────────────────────────────────────────── */
+@media print {
+    /* Ocultar todo excepto la tabla */
+    #cover-admin-nav,
+    #top-header-admin,
+    .header-page,
+    .dx-datagrid-header-panel,
+    .dx-pager,
+    .dx-datagrid-filter-panel {
+        display: none !important;
+    }
+
+    body, html {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .file-box {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .table-container {
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .dx-datagrid {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        width: 100% !important;
+    }
+
+    .dx-datagrid-rowsview {
+        overflow: visible !important;
+    }
+
+    /* Forzar que las columnas se adapten al ancho de la página */
+    .dx-datagrid-headers,
+    .dx-datagrid-rowsview {
+        width: 100% !important;
+    }
 }
 
-.dx-toolbar-items-container {
-    height: 45px !important;
-}

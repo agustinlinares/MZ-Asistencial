@@ -49,9 +49,9 @@ const GestionOferta = () => {
     const [datos, setDatos] = useState([]);
     const [cargando, setCargando] = useState(false);
 
-    // --- FUNCIONES DE EXPORTACIÓN MANUAL ---
+    // --- FUNCIONES DE EXPORTACIÓN  ---
     const exportToExcel = () => {
-        const context = dataGridRef.current.instance;
+        const context = dataGridRef.current.instance();
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet('Lista Ofertas');
 
@@ -167,7 +167,22 @@ const GestionOferta = () => {
         fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(ofertaEditando),
+            body: JSON.stringify({
+                estadoId: ofertaEditando.estadoId,
+                notaContestacion: ofertaEditando.notaContestacion,
+                ene: ofertaEditando.ene,
+                feb: ofertaEditando.feb,
+                mar: ofertaEditando.mar,
+                abr: ofertaEditando.abr,
+                may: ofertaEditando.may,
+                jun: ofertaEditando.jun,
+                jul: ofertaEditando.jul,
+                ago: ofertaEditando.ago,
+                sep: ofertaEditando.sep,
+                oct: ofertaEditando.oct,
+                nov: ofertaEditando.nov,
+                dic: ofertaEditando.dic
+            }),
         })
             .then(res => {
                 if (res.ok) {
@@ -187,7 +202,7 @@ const GestionOferta = () => {
 
                     {/* HEADER */}
                     <div className="header-page">
-                        <div className="title">{t('LISTA OFERTAS')}</div>
+                        <div className="title">{t('Lista de Ofertas')}</div>
                         <div className="acciones-container" ref={menuRef}>
                             <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
                                 <i className="ri-settings-3-line"></i>
@@ -195,11 +210,7 @@ const GestionOferta = () => {
                             </div>
                             {menuAbierto && (
                                 <div className="acciones-menu">
-                                    <div className="acciones-item" onClick={() => { setMenuAbierto(false); }}>
-                                        <i className="ri-add-line" style={{ color: '#1976d2' }}></i>
-                                        {t('Nueva Oferta')}
-                                    </div>
-                                    <div className="acciones-item" onClick={() => {
+                                  <div className="acciones-item" onClick={() => {
                                         setMenuAbierto(false);
                                         exportToExcel();
                                     }}>

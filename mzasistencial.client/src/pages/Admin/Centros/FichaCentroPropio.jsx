@@ -183,12 +183,13 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
 
     useEffect(() => {
         if (form.CentroId) {
-            fetch(`/api/FincasRegistrales?centroId=${form.CentroId}`)
+            const anioFinca = anioEsp || new Date().getFullYear();
+            fetch(`/api/FincasRegistrales?centroId=${form.CentroId}&anio=${anioFinca}`)
                 .then(res => res.json())
                 .then(data => setFincas(data))
                 .catch(() => setFincas([]));
         }
-    }, [form.CentroId]);
+    }, [form.CentroId, anioEsp]);
 
     useEffect(() => {
         if (!form.CentroId && form.Mutua) {
@@ -548,11 +549,27 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                         </span>
                                     )}
                                 />
-                                <Column dataField="Superficie" caption="Superficie" width={100} />
+                                <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
                                 <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                                <Column dataField="Coste" caption="Coste" width={100} dataType="number" format="#,##0.00" />
+                                <Column 
+                                    dataField="Coste" 
+                                    caption="Coste" 
+                                    width={100} 
+                                    dataType="number" 
+                                    format={{ type: 'currency', currency: 'EUR', precision: 2 }}
+                                    cellRender={(cell) => (
+                                        <span style={{ color: !cell.value ? '#d32f2f' : 'inherit', fontWeight: !cell.value ? 'bold' : 'normal' }}>
+                                            {cell.text} {!cell.value && '⚠️'}
+                                        </span>
+                                    )}
+                                />
                                 <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
                                 <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
+                                
+                                <DataGrid.Summary>
+                                    <DataGrid.TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />
+                                    <DataGrid.TotalItem column="Coste" summaryType="sum" displayFormat="Total: {0}" valueFormat={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                </DataGrid.Summary>
                             </DataGrid>
                         </div>
                     )}

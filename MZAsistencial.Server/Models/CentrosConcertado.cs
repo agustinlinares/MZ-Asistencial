@@ -92,6 +92,8 @@ public partial class CentrosConcertado
     public DateTime? Fautocom { get; set; }
 
     public DateTime? Fpufuncio { get; set; }
+    
+    public string? Comentarios { get; set; }
 
     public DateTime? Fcalisuf { get; set; }
 

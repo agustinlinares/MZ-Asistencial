@@ -37,6 +37,12 @@ import Button from "devextreme-react/button";
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
+const MESES_ES = {
+    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+    5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+    9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+};
+
 const acuerdosTipos = [
     { id: 1, nombre: "Acuerdo 1 (Acuerdos mutua)" },
     { id: 2, nombre: "Acuerdo 2 (Acuerdo provincia)" },
@@ -103,6 +109,7 @@ const PlantillasAcuerdos = () => {
     const añosList = Array.from({ length: currentYear - 2008 + 1 }, (_, i) => 2008 + i).reverse();
 
     const sessionUsuario = AuthService.getUser();
+    const sessionUsuarioId = AuthService.getUserId();
 
     const emptyForm = {
         mutua: null,
@@ -234,7 +241,7 @@ const PlantillasAcuerdos = () => {
         data.append("Año", formData.año);
         data.append("TipoAcuerdoId", formData.tipoAcuerdoId);
         data.append("Mes", new Date().getMonth() + 1);
-        data.append("Usuario", sessionUsuario);
+        data.append("Usuario", sessionUsuarioId);
 
         fetch('https://localhost:7132/api/PlantillasAcuerdo', {
             method: 'POST',
@@ -259,7 +266,7 @@ const PlantillasAcuerdos = () => {
                 <div className="file-box">
 
                     <div className="header-page">
-                        <div className="title">{t('PLANTILLAS ACUERDOS')}</div>
+                        <div className="title">{t('Plantillas de Acuerdos')}</div>
 
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>
@@ -329,9 +336,18 @@ const PlantillasAcuerdos = () => {
                             <Column dataField="tipoAcuerdo" caption="Tipo de acuerdo" />
                             <Column dataField="mutua" caption="Mutua" />
                             <Column dataField="año" caption="Año" />
-                            <Column dataField="mes" caption="Mes" />
+                            <Column
+                                dataField="mes"
+                                caption="Mes"
+                                calculateDisplayValue={(row) => MESES_ES[row.mes] ?? row.mes}
+                            />
                             <Column dataField="usuario" caption="Usuario" />
-                            <Column dataField="fechaAlta" caption="Fecha Alta" />
+                            <Column
+                                dataField="fechaAlta"
+                                caption="Fecha Alta"
+                                dataType="datetime"
+                                format="dd/MM/yyyy HH:mm:ss"
+                            />
                         </DataGrid>
                     </div>
                 </div>

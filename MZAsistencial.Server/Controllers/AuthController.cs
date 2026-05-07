@@ -15,6 +15,20 @@ namespace MZAsistencial.Server.Controllers
             _context = context;
         }
 
+        [HttpGet("ping")]
+        public async Task<IActionResult> Ping()
+        {
+            try
+            {
+                var count = await _context.Usuarios.CountAsync();
+                return Ok(new { ok = true, usuarios = count });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { ok = false, error = ex.Message, inner = ex.InnerException?.Message });
+            }
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -22,18 +36,12 @@ namespace MZAsistencial.Server.Controllers
             if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.Contrasena))
                 return BadRequest(new { message = "Usuario y contraseña son obligatorios." });
 
-            // 2. LA CORRECCIÓN CLAVE:
-            // Cambiamos 'u.Contraseña' (campo viejo con espacios) por 'u.Password' (campo nuevo)
-            // Usamos '.Trim()' en la base de datos por seguridad extra contra espacios invisibles
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario
-                                       && u.Password == request.Contrasena);
+                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == request.Contrasena);
 
-            // 3. Verificación de resultado
             if (usuario == null)
                 return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
 
-            // 4. Respuesta exitosa
             return Ok(new
             {
                 usuarioId = usuario.UsuarioId,

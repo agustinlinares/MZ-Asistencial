@@ -1,61 +1,66 @@
+/* ── Acuerdos secciones ──────────────────────────────────────────────────── */
+
 .acuerdos-seccion {
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 15px;
     overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .acuerdos-seccion-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: #e8f0fe;
+    padding: 12px 18px;
+    background: #f8fafc;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    color: #1a3060;
+    color: var(--brand-dark);
     user-select: none;
     transition: background 0.2s;
+    border-bottom: 1px solid #edf2f7;
 }
 
-    .acuerdos-seccion-header:hover {
-        background: #d4e3f7;
-    }
+.acuerdos-seccion-header:hover {
+    background: #f1f5f9;
+}
 
 .acuerdos-seccion-content {
-    padding: 16px;
+    padding: 20px;
     background: #fff;
 }
 
 .acuerdos-tabla {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 14px;
 }
 
-    .acuerdos-tabla th {
-        background: #e8f0fe;
-        color: #1a3060;
-        padding: 8px 12px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid #b8ccd8;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
+.acuerdos-tabla th {
+    background: #f8fafc;
+    color: #475569;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
 
-    .acuerdos-tabla td {
-        padding: 8px 12px;
-        border-bottom: 1px solid #e8eef4;
-        color: #333;
-    }
+.acuerdos-tabla td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
 
-    .acuerdos-tabla tr:hover td {
-        background: #f5f8ff;
-    }
+.acuerdos-tabla tr:hover td {
+    background: #f8fafc;
+}
 
-    .acuerdos-tabla tr:last-child td {
-        border-bottom: none;
-    }
+.acuerdos-tabla tr:last-child td {
+    border-bottom: none;
+}

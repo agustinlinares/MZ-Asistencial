@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import './Centros.css';
+import { SelectBox } from "devextreme-react/select-box";
+import { CheckBox } from "devextreme-react/check-box";
 import '../../../styles/FichaGlobal.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -56,12 +58,15 @@ const Fincas = () => {
     const [selectedFinca, setSelectedFinca] = useState(null);
     const [centros, setCentros] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const [anio, setAnio] = useState("2025");
+    const [soloConCoste, setSoloConCoste] = useState(false);
+    const YEARS = ["2022", "2023", "2024", "2025", "2026"];
     const menuRef = useRef(null);
 
     useEffect(() => {
         const fetchFincas = async () => {
             try {
-                const fincasData = await FincasService.getAll();
+                const fincasData = await FincasService.getAll(anio);
                 setFincas(fincasData);
             } catch (error) {
                 console.error('Error fetching fincas:', error);
@@ -71,8 +76,8 @@ const Fincas = () => {
         // ✅ Endpoint corregido: /api/CentrosPropios en lugar de /api/centros/lookup
         const fetchCentros = async () => {
             try {
-                const user = JSON.parse(sessionStorage.getItem('user'));
-                const perfilId = user?.perfilId ?? '';
+                const userData = JSON.parse(localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user') || '{}');
+                const perfilId = userData?.perfilId ?? userData?.perfilID ?? '';
                 const respuesta = await fetch(`/api/CentrosPropios?perfilId=${perfilId}`, { headers: authHeaders() });
                 if (respuesta.ok) {
                     const data = await respuesta.json();
@@ -86,7 +91,7 @@ const Fincas = () => {
 
         fetchFincas();
         fetchCentros();
-    }, []);
+    }, [anio]);
 
     // Cerrar menú al hacer click fuera
     useEffect(() => {
@@ -101,7 +106,7 @@ const Fincas = () => {
 
     const recargarFincas = async () => {
         try {
-            setFincas(await FincasService.getAll());
+            setFincas(await FincasService.getAll(anio));
         } catch (error) {
             console.error('Error al recargar fincas:', error);
         }
@@ -150,7 +155,31 @@ const Fincas = () => {
 
                     {!selectedFinca && (
                         <div className="header-page">
-                            <div className="title">{t('LISTA FINCAS')}</div>
+
+                            <div className="title">{t('Patrimonio y Fincas Registrales')}</div>
+
+                            <div className="header-actions-side" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                <div className="filter-controls">
+                                    <div className="year-selector-container">
+                                        <i className="ri-calendar-line year-icon"></i>
+                                        <SelectBox
+                                            items={YEARS}
+                                            value={anio}
+                                            onValueChanged={(e) => setAnio(e.value)}
+                                            width={90}
+                                            stylingMode="filled"
+                                            className="premium-year-select"
+                                        />
+                                    </div>
+
+                                    <div className="cost-toggle-container">
+                                        <CheckBox
+                                            text={t('Solo con coste')}
+                                            value={soloConCoste}
+                                            onValueChanged={(e) => setSoloConCoste(e.value)}
+                                        />
+                                    </div>
+                                </div>
 
                             <div className="acciones-container" ref={menuRef}>
                                 <div
@@ -181,7 +210,8 @@ const Fincas = () => {
                                 )}
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
                     <div className="table-container tabla-contenedor">
                         {selectedFinca ? (
@@ -196,7 +226,7 @@ const Fincas = () => {
                                 <DataGrid
                                     onRowClick={(e) => setSelectedFinca(e.data)}
                                     ref={dataGridRef}
-                                    dataSource={fincas}
+                                    dataSource={soloConCoste ? fincas.filter(f => (f.Coste || 0) > 0) : fincas}
                                     keyExpr="Finca_id"
                                     showBorders={true}
                                     columnAutoWidth={true}
@@ -240,12 +270,25 @@ const Fincas = () => {
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
                                     <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
                                     <Column dataField="TipoFinca" caption="Tipo" width={120} />
-                                    <Column dataField="Coste" caption="Coste" width={100} format={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                    <Column 
+                                        dataField="Coste" 
+                                        caption="Coste" 
+                                        width={100} 
+                                        format={{ type: 'currency', currency: 'EUR', precision: 2 }}
+                                        cellRender={(cell) => (
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: !cell.value ? '#d32f2f' : 'inherit' }}>
+                                                <span>{cell.text}</span>
+                                                {!cell.value && <i className="ri-error-warning-line" title={t('Sin coste declarado para este ejercicio')} style={{ fontSize: '16px' }}></i>}
+                                            </div>
+                                        )}
+                                    />
                                     <Column dataField="F_Alquiler" caption="F. Alquiler" dataType="date" width={110} />
                                     <Column dataField="Referencia_Catastral" caption="Ref. Catastral" width={160} />
                                     <Column dataField="F_Inscripcion" caption="F. Inscripción" dataType="date" width={110} />
                                     <Column dataField="F_Baja" caption="F. Baja" dataType="date" width={110} />
                                     <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                    <Column dataField="FechaAlta" caption="Creado" dataType="date" visible={false} width={150} format="dd/MM/yyyy HH:mm" />
+                                    <Column dataField="FechaModificacion" caption="Modificado" dataType="date" visible={false} width={150} format="dd/MM/yyyy HH:mm" />
                                     
                                     <Summary>
                                         <TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />

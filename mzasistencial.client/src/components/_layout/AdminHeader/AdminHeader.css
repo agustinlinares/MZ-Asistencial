@@ -1,14 +1,18 @@
+
 #top-header-admin {
-    z-index: 1000;
-    min-height: 70px;
-    max-height: 70px;
+    z-index: 100;
+    min-height: 60px;
+    max-height: 60px;
     width: 100%;
     display: flex;
     align-items: center;
-    background-color: #ffffff;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    background-color: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm) !important;
+    padding: 0 15px;
+    border: 1px solid rgba(0,0,0,0.03);
 }
+
 
 .item-admin-header {
     height: 100%;

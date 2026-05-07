@@ -460,7 +460,7 @@ const ConcederCitacion = () => {
 
                     <div className="header-page">
                         <div className="title">
-                            {t('LISTA DE CITACIONES CONCEDIDAS')}
+                            {t('Lista de Citaciones Concedidas')}
                         </div>
 
                         <div className="header-actions-side">

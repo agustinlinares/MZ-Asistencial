@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MZAsistencial.Server.Models;
 
@@ -7,6 +8,7 @@ public partial class Icg07
 {
     public int IdIcg { get; set; }
 
+    [Column("Año")]
     public int Año { get; set; }
 
     public int ConciertoId { get; set; }
