@@ -262,7 +262,7 @@ const TabCostes = ({ fincaId }) => {
                         ) : (
                             <tr key={c.Id}>
                                 <td>{c.Anio}</td>
-                                <td>{c.Coste != null ? c.Coste.toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '—'}</td>
+                                <td>{c.Coste != null ? c.Coste.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + ' €' : '—'}</td>
                                 <td>{c.Localizador ?? '—'}</td>
                                 <td>
                                     <button className="ficha-btn-secondary" style={{ marginRight: 4, padding: '4px 10px' }} onClick={() => setEditando({ ...c })}>
@@ -292,11 +292,14 @@ const TabCostes = ({ fincaId }) => {
                     )}
                 </tbody>
                 <tfoot>
-                    <tr style={{ background: '#f0f4ff', fontWeight: 600 }}>
-                        <td colSpan={2} style={{ padding: '8px 12px', color: '#1a5fa8' }}>
-                            {t('Total acumulado')}: {costes.reduce((sum, c) => sum + (c.Coste || 0), 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                    <tr style={{ background: '#f0f4ff', fontWeight: 700, fontSize: '14px' }}>
+                        <td style={{ padding: '10px 12px', color: '#1a5fa8', textTransform: 'uppercase' }}>
+                            {t('Total')}
                         </td>
-                        <td colSpan={2} style={{ padding: '8px 12px', color: '#555', fontSize: 12 }}>
+                        <td style={{ padding: '10px 12px', color: '#1a2a4a' }}>
+                            {costes.reduce((sum, c) => sum + (c.Coste || 0), 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td colSpan={2} style={{ padding: '10px 12px', color: '#64748b', fontSize: 12, fontWeight: 400, textAlign: 'right' }}>
                             {costes.length} {t('registro(s)')}
                         </td>
                     </tr>
@@ -362,11 +365,21 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
                     </div>
                     <div className="ficha-field">
                         <label>{t('Mutua Propietaria')}</label>
-                        <input type="text" value={form.mutua || ''} onChange={e => onChange('mutua', e.target.value)} />
+                        <input 
+                            type="text" 
+                            className={errors.mutua ? 'error' : ''}
+                            value={form.mutua || ''} 
+                            onChange={e => onChange('mutua', e.target.value)} 
+                        />
                     </div>
                     <div className="ficha-field">
                         <label>{t('Utilización / Uso')}</label>
-                        <input type="text" value={form.utilizacion || ''} onChange={e => onChange('utilizacion', e.target.value)} />
+                        <input 
+                            type="text" 
+                            className={errors.utilizacion ? 'error' : ''}
+                            value={form.utilizacion || ''} 
+                            onChange={e => onChange('utilizacion', e.target.value)} 
+                        />
                     </div>
                 </div>
             </div>
@@ -379,7 +392,12 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
                 <div className="ficha-grid">
                     <div className="ficha-field span2">
                         <label>{t('Dirección Completa')}</label>
-                        <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
+                        <input 
+                            type="text" 
+                            className={errors.direccion ? 'error' : ''}
+                            value={form.direccion || ''} 
+                            onChange={e => onChange('direccion', e.target.value)} 
+                        />
                     </div>
                     <div className="ficha-field">
                         <label>{t('Superficie Construida')}</label>
@@ -393,6 +411,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
                         <div style={{ display: 'flex', gap: 8 }}>
                             <input 
                                 type="text" 
+                                className={errors.ref_catastral ? 'error' : ''}
                                 style={{ flex: 1, borderColor: form.ref_catastral?.length > 0 && form.ref_catastral.length !== 20 ? '#d32f2f' : '' }} 
                                 value={form.ref_catastral || ''} 
                                 onChange={e => onChange('ref_catastral', e.target.value.toUpperCase())} 
@@ -412,6 +431,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
                     <div className="ficha-field">
                         <label>{t('Tipo de Finca')}</label>
                         <select
+                            className={errors.tipo_finca ? 'error' : ''}
                             value={form.tipo_finca || ''}
                             onChange={e => {
                                 const idx = TIPOS_FINCA.indexOf(e.target.value);
@@ -441,7 +461,7 @@ const TabGeneral = ({ form, onChange, errors, centros, onGoToMap, finca }) => {
                 <div className="ficha-grid">
                     <div className="ficha-field span2">
                         <label>{t('Titularidad')}</label>
-                        <div className="ficha-radio-group">
+                        <div className={`ficha-radio-group ${errors.titularidad ? 'error' : ''}`} style={errors.titularidad ? { border: '1.5px solid #d32f2f' } : {}}>
                             {TITULARIDADES.map(t => (
                                 <label key={t}>
                                     <input type="radio" name="titularidad_finca" value={t} checked={form.titularidad === t} onChange={() => onChange('titularidad', t)} />
@@ -558,13 +578,24 @@ const FichaFinca = ({ finca, centros, onClose, onSave }) => {
 
     const handleSave = () => {
         const newErrors = {};
-        if (!form.centro_id) {
-            newErrors.centro_id = true;
-            notify(t('El Centro Vinculado es obligatorio'), 'error', 3000);
+        if (!form.centro_id) newErrors.centro_id = true;
+        if (!form.mutua) newErrors.mutua = true;
+        if (!form.utilizacion) newErrors.utilizacion = true;
+        if (!form.direccion) newErrors.direccion = true;
+        if (!form.tipo_finca) newErrors.tipo_finca = true;
+        if (!form.titularidad) newErrors.titularidad = true;
+        
+        // Validación estricta de Referencia Catastral
+        if (!form.ref_catastral) {
+            newErrors.ref_catastral = true;
+        } else if (form.ref_catastral.length !== 20) {
+            newErrors.ref_catastral = true;
+            notify(t('La Referencia Catastral debe tener exactamente 20 caracteres'), 'error', 4000);
         }
         
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            notify(t('Por favor, rellene todos los campos obligatorios correctamente'), 'error', 3000);
             return;
         }
 
