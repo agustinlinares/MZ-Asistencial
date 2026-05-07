@@ -4148,7 +4148,8 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.EstadoInformeId).HasColumnName("EstadoInforme_id");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-entity.Property(e => e.TipoIcg)
+            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)
                 .HasColumnName("TipoICG");
         });

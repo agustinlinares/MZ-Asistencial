@@ -250,17 +250,17 @@ const AcreditacionesSectoriales = () => {
                                             {t('Informe Acr. Individuales')}
                                         </div>
 
-                                        <div className="acciones-item" onClick={() => setMenuAbierto(false)}>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(); }}>
                                             <i className="ri-file-pdf-line"></i>
                                             {t('Informe Acr. Individuales')}
                                         </div>
 
-                                        <div className="acciones-item" onClick={() => setMenuAbierto(false)}>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(); }}>
                                             <i className="ri-file-excel-2-line"></i>
                                             {t('Informe Acr. Anuales')}
                                         </div>
 
-                                        <div className="acciones-item" onClick={() => setMenuAbierto(false)}>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(); }}>
                                             <i className="ri-file-pdf-line"></i>
                                             {t('Informe Acr. Anuales')}
                                         </div>
