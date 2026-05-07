@@ -247,22 +247,22 @@ const AcreditacionesSectoriales = () => {
                                                 .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'acreditaciones_sectoriales.xlsx'));
                                         }}>
                                             <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Individuales')}
+                                            {t('Informe Acr. Individuales (Excel)')}
                                         </div>
 
                                         <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(); }}>
                                             <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Individuales')}
+                                            {t('Informe Acr. Individuales (PDF)')}
                                         </div>
 
                                         <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(); }}>
                                             <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Anuales')}
+                                            {t('Informe Acr. Anuales (Excel)')}
                                         </div>
 
                                         <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(); }}>
                                             <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Anuales')}
+                                            {t('Informe Acr. Anuales (PDF)')}
                                         </div>
                                     </div>
                                 )}
