@@ -2211,6 +2211,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<Demanda>(entity =>
         {
+
             entity.Property(e => e.DemandaId).HasColumnName("Demanda_id");
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.EspecialidadId).HasColumnName("Especialidad_id");
@@ -5071,17 +5072,17 @@ entity.Property(e => e.TipoIcg)
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
         });
 
-        foreach (var entity in modelBuilder.Model.GetEntityTypes())
-        {
-            var property = entity.FindProperty("Año");
-            if (property != null)
-            {
-                property.SetColumnName("Anio");
-            }
-            modelBuilder.Entity<MZAsistencial.Server.Models.Icg07>()
-                .Property(e => e.Año)
-                .HasColumnName("Año");
-        }
+        modelBuilder.Entity<MZAsistencial.Server.Models.Oferta>()
+    .Property(e => e.Año)
+    .HasColumnName("Año");
+
+        modelBuilder.Entity<MZAsistencial.Server.Models.Demanda>()
+            .Property(e => e.Año)
+            .HasColumnName("Año");
+
+        modelBuilder.Entity<MZAsistencial.Server.Models.Icg07>()
+            .Property(e => e.Año)
+            .HasColumnName("Año");
 
         OnModelCreatingPartial(modelBuilder);
     }
