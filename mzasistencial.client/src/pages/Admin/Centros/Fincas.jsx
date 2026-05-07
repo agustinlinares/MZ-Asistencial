@@ -269,12 +269,20 @@ const Fincas = () => {
                                     <Column dataField="Direccion" caption="Dirección" width={220} />
                                     <Column dataField="Utilizacion" caption="Utilización" width={120} />
                                     <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
-                                    <Column dataField="TipoFinca" caption="Tipo" width={120} />
+                                    <Column 
+                                        dataField="TipoFinca" 
+                                        caption="Tipo" 
+                                        width={120} 
+                                        cellRender={(cell) => {
+                                            const TIPOS_FINCA = ['SÓTANO', 'PLANTA BAJA', 'PISO', 'LOCAL', 'GARAJE', 'TRASTERO'];
+                                            return cell.value != null ? (TIPOS_FINCA[cell.value] || cell.value) : '—';
+                                        }}
+                                    />
                                     <Column 
                                         dataField="Coste" 
                                         caption="Coste" 
-                                        width={100} 
-                                        format={{ type: 'currency', currency: 'EUR', precision: 2 }}
+                                        width={110} 
+                                        format="#,##0.00 €"
                                         cellRender={(cell) => (
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: !cell.value ? '#d32f2f' : 'inherit' }}>
                                                 <span>{cell.text}</span>
@@ -291,8 +299,9 @@ const Fincas = () => {
                                     <Column dataField="FechaModificacion" caption="Modificado" dataType="date" visible={false} width={150} format="dd/MM/yyyy HH:mm" />
                                     
                                     <Summary>
-                                        <TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />
-                                        <TotalItem column="Coste" summaryType="sum" displayFormat="Total: {0}" valueFormat={{ type: 'currency', currency: 'EUR', precision: 2 }} />
+                                        <TotalItem column="Finca_id" displayFormat="TOTAL" />
+                                        <TotalItem column="Superficie" summaryType="sum" displayFormat="{0}" valueFormat="#,##0.00" />
+                                        <TotalItem column="Coste" summaryType="sum" displayFormat="{0}" valueFormat="#,##0.00" />
                                     </Summary>
 
                                     <Column
