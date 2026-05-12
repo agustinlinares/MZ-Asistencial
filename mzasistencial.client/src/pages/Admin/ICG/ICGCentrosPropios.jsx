@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -8,13 +8,15 @@ import { useTranslation } from "react-i18next";
 import DataGrid, {
     Column, Paging, SearchPanel, FilterRow, HeaderFilter,
     Selection, GroupPanel, Grouping, ColumnChooser, Export, Toolbar, Item,
+    Editing, RequiredRule,
 } from "devextreme-react/data-grid";
 import { Button } from "devextreme-react/button";
 import SelectBox from "devextreme-react/select-box";
 
-const API_CENTROS = "/api/CentrosPropios";
-const YEAR_NOW    = new Date().getFullYear();
-const YEARS       = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
+const API_CENTROS      = "/api/CentrosPropios";
+const API_ESPECIALIDAD = "/api/Icg06Especialidad";
+const YEAR_NOW         = new Date().getFullYear();
+const YEARS            = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
 
 // ─── Helper: campos de plantilla por grupo de personal ───────────────────────
 const cp = (prefijo, label) => [
@@ -477,6 +479,8 @@ const st = {
     saveBar:    { display: "flex", gap: 10, marginTop: 16, alignItems: "center" },
     saveBtn:    { border: "none", borderRadius: 4, padding: "6px 22px", fontSize: 13, cursor: "pointer", fontWeight: 600, background: "#2e7d32", color: "#fff" },
     msg: (ok)  => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828" }),
+    espInfo:    { fontSize: 12, color: "#666", marginBottom: 10 },
+    espMsg: (ok) => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828", marginLeft: 12 }),
 };
 
 // ─── Helper formato numérico ──────────────────────────────────────────────────
@@ -485,7 +489,127 @@ const fmtNum = (val) =>
         ? <span style={{ color: "#bbb" }}>—</span>
         : <span>{Number(val).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
 
-// ─── TabContent ───────────────────────────────────────────────────────────────
+// ─── TabEspecialidades ────────────────────────────────────────────────────────
+const TabEspecialidades = ({ centroId, año }) => {
+    const [rows,    setRows]    = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error,   setError]   = useState(null);
+    const [msg,     setMsg]     = useState(null);
+
+    const mostrarMsg = (ok, text) => {
+        setMsg({ ok, text });
+        setTimeout(() => setMsg(null), 3500);
+    };
+
+    const cargar = useCallback(() => {
+        setLoading(true);
+        setError(null);
+        fetch(`${API_ESPECIALIDAD}?centroId=${centroId}&a%C3%B1o=${año}`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d  => setRows(d))
+            .catch(() => setError("No se pudieron cargar las especialidades."))
+            .finally(() => setLoading(false));
+    }, [centroId, año]);
+
+    useEffect(() => { cargar(); }, [cargar]);
+
+    const onRowInserting = async (e) => {
+        e.cancel = true;
+        try {
+            const res = await fetch(API_ESPECIALIDAD, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({
+                    centroId,
+                    año,
+                    especialidad: e.data.especialidad ?? null,
+                    servicio:     e.data.servicio     ?? null,
+                    cantidad:     e.data.cantidad     ?? null,
+                }),
+            });
+            if (!res.ok) throw new Error();
+            mostrarMsg(true, "Especialidad añadida.");
+            cargar();
+        } catch {
+            mostrarMsg(false, "Error al añadir la especialidad.");
+        }
+    };
+
+    const onRowUpdating = async (e) => {
+        e.cancel = true;
+        const actualizado = { ...e.oldData, ...e.newData, centroId, año };
+        try {
+            const res = await fetch(`${API_ESPECIALIDAD}/${actualizado.id}`, {
+                method:  "PUT",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify(actualizado),
+            });
+            if (!res.ok) throw new Error();
+            mostrarMsg(true, "Especialidad actualizada.");
+            cargar();
+        } catch {
+            mostrarMsg(false, "Error al actualizar la especialidad.");
+        }
+    };
+
+    const onRowRemoving = async (e) => {
+        e.cancel = true;
+        try {
+            const res = await fetch(`${API_ESPECIALIDAD}/${e.data.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error();
+            mostrarMsg(true, "Especialidad eliminada.");
+            cargar();
+        } catch {
+            mostrarMsg(false, "Error al eliminar la especialidad.");
+        }
+    };
+
+    if (loading) return <div style={st.loading}>Cargando especialidades…</div>;
+    if (error)   return <div style={st.nodata}>{error}</div>;
+
+    return (
+        <div>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+                <span style={st.espInfo}>
+                    {rows.length} especialidad{rows.length !== 1 ? "es" : ""} registrada{rows.length !== 1 ? "s" : ""}
+                </span>
+                {msg && <span style={st.espMsg(msg.ok)}>{msg.text}</span>}
+            </div>
+            <DataGrid
+                dataSource={rows}
+                keyExpr="id"
+                showBorders
+                rowAlternationEnabled
+                columnAutoWidth
+                onRowInserting={onRowInserting}
+                onRowUpdating={onRowUpdating}
+                onRowRemoving={onRowRemoving}
+                noDataText="Sin especialidades registradas para este centro y año."
+            >
+                <FilterRow visible />
+                <Paging defaultPageSize={20} />
+                <Editing
+                    mode="row"
+                    allowAdding
+                    allowUpdating
+                    allowDeleting
+                    confirmDelete
+                    useIcons
+                />
+                <Toolbar>
+                    <Item name="addRowButton" showText="always" />
+                </Toolbar>
+                <Column dataField="especialidad" caption="Especialidad" minWidth={200}>
+                    <RequiredRule message="La especialidad es obligatoria." />
+                </Column>
+                <Column dataField="servicio" caption="Servicio" minWidth={200} />
+                <Column dataField="cantidad" caption="Cantidad" dataType="number" width={120} alignment="right" />
+            </DataGrid>
+        </div>
+    );
+};
+
+// ─── TabContent (genérico para el resto de pestañas) ─────────────────────────
 const TabContent = ({ centroId, año, tabKey, apiName }) => {
     const [datos,   setDatos]   = useState(null);
     const [loading, setLoading] = useState(true);
@@ -599,14 +723,23 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                     ))}
                 </div>
                 <div style={st.tabContent}>
-                    {tab && (
-                        <TabContent
-                            key={`${centro.centroId}-${año}-${tabActiva}`}
+                    {/* ── Pestaña especialidades: grid editable ── */}
+                    {tabActiva === "especialidades" ? (
+                        <TabEspecialidades
+                            key={`esp-${centro.centroId}-${año}`}
                             centroId={centro.centroId}
                             año={año}
-                            tabKey={tabActiva}
-                            apiName={tab.api}
                         />
+                    ) : (
+                        tab && (
+                            <TabContent
+                                key={`${centro.centroId}-${año}-${tabActiva}`}
+                                centroId={centro.centroId}
+                                año={año}
+                                tabKey={tabActiva}
+                                apiName={tab.api}
+                            />
+                        )
                     )}
                 </div>
             </div>
@@ -637,7 +770,6 @@ const ICGCentrosPropios = () => {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
-    // Cargar listado de centros (una sola vez)
     useEffect(() => {
         const user     = JSON.parse(sessionStorage.getItem('user'));
         const perfilId = user?.perfilId ?? '';
@@ -647,7 +779,6 @@ const ICGCentrosPropios = () => {
             .catch(() => setCentros([]));
     }, []);
 
-    // Cargar datos ICG calculados cuando cambia el año
     useEffect(() => {
         setLoading(true);
         fetch(`/api/ListadoPropiosIcg?a%C3%B1o=${año}`)
@@ -657,7 +788,6 @@ const ICGCentrosPropios = () => {
             .finally(() => setLoading(false));
     }, [año]);
 
-    // Cruzar centros con datos ICG del año seleccionado
     const dataSource = centros.map(c => {
         const icg = icgData.find(i => i.centroId === c.centroId) || {};
         return {
@@ -710,13 +840,11 @@ const ICGCentrosPropios = () => {
                             <span className="year-label">{t('Año')}:</span>
                             <SelectBox items={YEARS} value={año} onValueChanged={e => setAño(e.value)} width={100} />
                         </div>
-
                         <div className="acciones-container" ref={menuRef}>
                             <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
                                 <i className="ri-settings-3-line"></i>
                                 {t('Acciones')}
                             </div>
-
                             {menuAbierto && (
                                 <div className="acciones-menu">
                                     <div className="acciones-item" onClick={() => { setMenuAbierto(false); dataGridRef.current?.instance().exportToExcel(false); }}>
@@ -728,121 +856,80 @@ const ICGCentrosPropios = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
-            <DataGrid
-                ref={dataGridRef}
-                dataSource={dataSource}
-                showBorders
-                rowAlternationEnabled
-                columnAutoWidth
-                allowColumnResizing
-                allowColumnReordering
-                onExporting={onExporting}
-                noDataText={loading ? "Cargando…" : "No hay centros disponibles"}
-            >
-                <SearchPanel visible placeholder="Buscar…" />
-                <FilterRow visible />
-                <HeaderFilter visible />
-                <GroupPanel visible />
-                <Grouping autoExpandAll={false} />
-                <ColumnChooser enabled />
-                <Selection mode="single" />
-                <Export enabled allowExportSelectedData />
-                <Paging defaultPageSize={20} />
-                <Toolbar>
-                    <Item location="after" name="searchPanel" />
-                    <Item location="after" name="columnChooserButton" />
-                </Toolbar>
-
-                {/* ── Identificación ── */}
-                <Column dataField="localizador" caption="Localizador"  width={110} />
-                <Column dataField="mutuaId"     caption="Mutua"        width={70}  />
-                <Column dataField="centroId"    caption="Centro ID"    width={90}  />
-                <Column dataField="centro"      caption="Centro"       minWidth={200} />
-                <Column dataField="cp"          caption="C.P."         width={80}  />
-                <Column dataField="provincia"   caption="Provincia"    width={130} />
-                <Column dataField="telefono"    caption="Teléfono"     width={130} />
-                <Column dataField="desactivado" caption="Desactivado"  width={110}
-                    cellRender={({ value }) => (
-                        <span style={{ color: value ? "#c62828" : "#2e7d32", fontWeight: 600 }}>
-                            {value ? "Sí" : "No"}
-                        </span>
-                    )}
-                />
-
-                {/* ── Vistas calculadas ICG ── */}
-                <Column dataField="cap1GastosPersonal"
-                    caption="Cap. 1 - Personal"
-                    width={140} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="cap2GastosCorrientes"
-                    caption="Cap. 2 - Corrientes"
-                    width={145} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="cap3GastosFinancieros"
-                    caption="Cap. 3 - Financieros"
-                    width={145} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="cuenta68Amortizaciones"
-                    caption="Cta. 68 - Amortiz."
-                    width={140} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="art32OtrosIngresos"
-                    caption="Art. 32 - Ingresos"
-                    width={140} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="art62InversionNueva"
-                    caption="Art. 62 - Inv. Nueva"
-                    width={145} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="art63InversionReposicion"
-                    caption="Art. 63 - Inv. Repos."
-                    width={150} dataType="number"
-                    cellRender={({ value }) => fmtNum(value)}
-                />
-                <Column dataField="totalGastos"
-                    caption="Total Gastos"
-                    width={130} dataType="number"
-                    cellRender={({ value }) => (
-                        <span style={{ fontWeight: 700, color: "#1565c0" }}>
-                            {value === null || value === undefined ? "—" :
-                                Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                    )}
-                />
-                <Column dataField="totalInversion"
-                    caption="Total Inversión"
-                    width={130} dataType="number"
-                    cellRender={({ value }) => (
-                        <span style={{ fontWeight: 700, color: "#2e7d32" }}>
-                            {value === null || value === undefined ? "—" :
-                                Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                    )}
-                />
-
-                {/* ── Acceso a ficha ICG ── */}
-                <Column caption="ICG06" width={110}
-                    cellRender={({ data }) => (
-                        <button
-                            style={{
-                                border: "none", borderRadius: 3, padding: "3px 12px",
-                                background: data.tieneIcg ? "#1976d2" : "#90a4ae",
-                                color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600
-                            }}
-                            onClick={() => setCentroSeleccionado(data)}
-                        >
-                            {data.tieneIcg ? "Ver ficha" : "Sin ICG"}
-                        </button>
-                    )}
-                />
+                    <DataGrid
+                        ref={dataGridRef}
+                        dataSource={dataSource}
+                        showBorders
+                        rowAlternationEnabled
+                        columnAutoWidth
+                        allowColumnResizing
+                        allowColumnReordering
+                        onExporting={onExporting}
+                        noDataText={loading ? "Cargando…" : "No hay centros disponibles"}
+                    >
+                        <SearchPanel visible placeholder="Buscar…" />
+                        <FilterRow visible />
+                        <HeaderFilter visible />
+                        <GroupPanel visible />
+                        <Grouping autoExpandAll={false} />
+                        <ColumnChooser enabled />
+                        <Selection mode="single" />
+                        <Export enabled allowExportSelectedData />
+                        <Paging defaultPageSize={20} />
+                        <Toolbar>
+                            <Item location="after" name="searchPanel" />
+                            <Item location="after" name="columnChooserButton" />
+                        </Toolbar>
+                        <Column dataField="localizador" caption="Localizador"  width={110} />
+                        <Column dataField="mutuaId"     caption="Mutua"        width={70}  />
+                        <Column dataField="centroId"    caption="Centro ID"    width={90}  />
+                        <Column dataField="centro"      caption="Centro"       minWidth={200} />
+                        <Column dataField="cp"          caption="C.P."         width={80}  />
+                        <Column dataField="provincia"   caption="Provincia"    width={130} />
+                        <Column dataField="telefono"    caption="Teléfono"     width={130} />
+                        <Column dataField="desactivado" caption="Desactivado"  width={110}
+                            cellRender={({ value }) => (
+                                <span style={{ color: value ? "#c62828" : "#2e7d32", fontWeight: 600 }}>
+                                    {value ? "Sí" : "No"}
+                                </span>
+                            )}
+                        />
+                        <Column dataField="cap1GastosPersonal"       caption="Cap. 1 - Personal"     width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap2GastosCorrientes"     caption="Cap. 2 - Corrientes"   width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap3GastosFinancieros"    caption="Cap. 3 - Financieros"  width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cuenta68Amortizaciones"   caption="Cta. 68 - Amortiz."   width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art32OtrosIngresos"       caption="Art. 32 - Ingresos"   width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art62InversionNueva"      caption="Art. 62 - Inv. Nueva" width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art63InversionReposicion" caption="Art. 63 - Inv. Repos." width={150} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="totalGastos" caption="Total Gastos" width={130} dataType="number"
+                            cellRender={({ value }) => (
+                                <span style={{ fontWeight: 700, color: "#1565c0" }}>
+                                    {value === null || value === undefined ? "—" : Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            )}
+                        />
+                        <Column dataField="totalInversion" caption="Total Inversión" width={130} dataType="number"
+                            cellRender={({ value }) => (
+                                <span style={{ fontWeight: 700, color: "#2e7d32" }}>
+                                    {value === null || value === undefined ? "—" : Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            )}
+                        />
+                        <Column caption="ICG06" width={110}
+                            cellRender={({ data }) => (
+                                <button
+                                    style={{
+                                        border: "none", borderRadius: 3, padding: "3px 12px",
+                                        background: data.tieneIcg ? "#1976d2" : "#90a4ae",
+                                        color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600
+                                    }}
+                                    onClick={() => setCentroSeleccionado(data)}
+                                >
+                                    {data.tieneIcg ? "Ver ficha" : "Sin ICG"}
+                                </button>
+                            )}
+                        />
                     </DataGrid>
                 </div>
             </div>

@@ -5074,7 +5074,6 @@ entity.Property(e => e.TipoIcg)
 
         OnModelCreatingPartial(modelBuilder);
     }
-
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
 
