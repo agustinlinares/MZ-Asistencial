@@ -64,6 +64,7 @@ builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<RegistroICGService>();
+builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -79,7 +80,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
-app.UseAuthorization();
+// app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("/index.html");
 

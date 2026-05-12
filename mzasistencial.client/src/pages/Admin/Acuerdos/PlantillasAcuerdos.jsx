@@ -125,7 +125,7 @@ const PlantillasAcuerdos = () => {
     // ── Fetch ────────────────────────────────────────────────────────────────
 
     const fetchAcuerdos = () => {
-        fetch('https://localhost:7132/api/PlantillasAcuerdo')
+        fetch('/api/PlantillasAcuerdo')
             .then(r => r.json())
             .then(data => setAcuerdos(data))
             .catch(err => console.error('Error al cargar acuerdos:', err));
@@ -133,7 +133,7 @@ const PlantillasAcuerdos = () => {
     //Aquí vamos a traer todas las plantilla de la base de datos y las vamos a cargar todas las plantillas en el data grid
 
     const fetchMutuas = () => {
-        fetch('https://localhost:7132/api/PlantillasAcuerdo/mutuas')
+        fetch('/api/PlantillasAcuerdo/mutuas')
             .then(r => r.json())
             .then(data => setMutuasList(data.map(m => m.mutua)))
             .catch(err => console.error('Error al cargar mutuas:', err));
@@ -149,7 +149,7 @@ const PlantillasAcuerdos = () => {
 
     const onRowUpdating = (e) => {
         const updatedData = { ...e.oldData, ...e.newData };
-        fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
+        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedData),
@@ -157,7 +157,7 @@ const PlantillasAcuerdos = () => {
     };
 
     const onRowRemoving = (e) => {
-        fetch(`https://localhost:7132/api/PlantillasAcuerdo/${e.key}`, {
+        fetch(`/api/PlantillasAcuerdo/${e.key}`, {
             method: 'DELETE',
         }).catch(err => console.error('Error al eliminar:', err));
     };
@@ -195,7 +195,7 @@ const PlantillasAcuerdos = () => {
     };
 
     const handleProcesar = () => {
-        fetch('https://localhost:7132/api/PlantillasAcuerdo/procesar', {
+        fetch('/api/PlantillasAcuerdo/procesar', {
             method: 'POST'
         })
         .then(response => {
@@ -243,7 +243,7 @@ const PlantillasAcuerdos = () => {
         data.append("Mes", new Date().getMonth() + 1);
         data.append("Usuario", sessionUsuarioId);
 
-        fetch('https://localhost:7132/api/PlantillasAcuerdo', {
+        fetch('/api/PlantillasAcuerdo', {
             method: 'POST',
             body: data,
         })

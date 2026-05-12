@@ -2211,6 +2211,7 @@ public partial class MZAsistencialContext : DbContext
 
         modelBuilder.Entity<Demanda>(entity =>
         {
+
             entity.Property(e => e.DemandaId).HasColumnName("Demanda_id");
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
             entity.Property(e => e.EspecialidadId).HasColumnName("Especialidad_id");
@@ -4147,7 +4148,8 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.EstadoInformeId).HasColumnName("EstadoInforme_id");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-entity.Property(e => e.TipoIcg)
+            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)
                 .HasColumnName("TipoICG");
         });
@@ -5071,20 +5073,8 @@ entity.Property(e => e.TipoIcg)
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
         });
 
-        foreach (var entity in modelBuilder.Model.GetEntityTypes())
-        {
-            var property = entity.FindProperty("Año");
-            if (property != null)
-            {
-                property.SetColumnName("Anio");
-            }
-            modelBuilder.Entity<MZAsistencial.Server.Models.Icg07>()
-                .Property(e => e.Año)
-                .HasColumnName("Año");
-        }
-
         OnModelCreatingPartial(modelBuilder);
     }
-
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+

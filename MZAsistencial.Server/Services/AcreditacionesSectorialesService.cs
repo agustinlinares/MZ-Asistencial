@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Services
 {
@@ -58,6 +59,49 @@ namespace MZAsistencial.Server.Services
 
             var filePath = Path.Combine(basePath, registro.Fichero);
             return (filePath, registro.NombreFichero ?? registro.Fichero);
+        }
+
+        public async Task<(int? ficheroId, string message)> CreateTestRecordAsync()
+        {
+            var basePath = _configuration["AcreditacionesPaths:Base"]
+                ?? Path.Combine("C:\\MZFiles\\Acreditaciones");
+
+            Directory.CreateDirectory(basePath);
+
+            const string testFileName = "test_acreditacion_descarga.pdf";
+            var testFilePath = Path.Combine(basePath, testFileName);
+
+            await File.WriteAllTextAsync(testFilePath,
+                "Fichero de prueba para verificar la descarga de acreditaciones sectoriales.");
+
+            var existing = await _context.FicherosAcreditacionesInformes
+                .FirstOrDefaultAsync(f => f.Fichero == testFileName);
+
+            if (existing != null)
+                return (existing.FicheroId, "Registro de prueba ya existente.");
+
+            var mutua = await _context.Mutuas.FirstOrDefaultAsync();
+            if (mutua == null)
+                return (null, "No hay mutuas disponibles en la base de datos.");
+
+            var registro = new FicherosAcreditacionesInforme
+            {
+                Fichero       = testFileName,
+                NombreFichero = "Acreditación de Prueba.pdf",
+                Servicio      = "Servicio Test",
+                Especialidad  = "Especialidad Test",
+                Poblacion     = "Madrid",
+                Provincia     = "Madrid",
+                MutuaId       = mutua.MutuaId,
+                FechaAlta     = DateOnly.FromDateTime(DateTime.Today),
+                Visible       = 1,
+                ActivoId      = 0,
+            };
+
+            _context.FicherosAcreditacionesInformes.Add(registro);
+            await _context.SaveChangesAsync();
+
+            return (registro.FicheroId, "Registro de prueba creado correctamente.");
         }
     }
 }
