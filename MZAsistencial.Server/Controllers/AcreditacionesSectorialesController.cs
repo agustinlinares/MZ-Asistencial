@@ -21,6 +21,15 @@ namespace MZAsistencial.Server.Controllers
             return Ok(data);
         }
 
+        [HttpPost("seed-test")]
+        public async Task<IActionResult> SeedTest()
+        {
+            var (ficheroId, message) = await _service.CreateTestRecordAsync();
+            if (ficheroId == null)
+                return BadRequest(new { message });
+            return Ok(new { ficheroId, message });
+        }
+
         [HttpGet("{id}/download")]
         public async Task<IActionResult> Download(int id)
         {
