@@ -65,6 +65,7 @@ builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
+builder.Services.AddScoped<Icg06CrearService>();
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
