@@ -24,8 +24,12 @@ namespace MZAsistencial.Server.Services
         public async Task<IEnumerable<CentrosConcertadoDTO>> GetCabecerasAsync()
         {
             var query = from c in _context.CentrosConcertados
-                        join p in _context.AuxPoblaciones on c.PoblacionId equals p.PoblacionId
-                        join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId
+                        // Left Join con Poblaciones
+                        join p in _context.AuxPoblaciones on c.PoblacionId equals p.PoblacionId into pGroup
+                        from p in pGroup.DefaultIfEmpty()
+                        // Left Join con Provincias (a través de la población o del centro)
+                        join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId into prGroup
+                        from pr in prGroup.DefaultIfEmpty()
 
                         select new CentrosConcertadoDTO
                         {
@@ -37,8 +41,8 @@ namespace MZAsistencial.Server.Services
                             CP = c.Cp,
 
                             // Espacios limpios con Trim()
-                            Poblacion = p.Poblacion != null ? p.Poblacion.Trim() : null, 
-                            Provincia = pr.Provincia != null ? pr.Provincia.Trim() : null, 
+                            Poblacion = (p != null && p.Poblacion != null) ? p.Poblacion.Trim() : "Sin población",
+                            Provincia = pr != null ? pr.Provincia.Trim() : "Sin provincia",
 
                             // IDs necesarios para React
                             ProvinciaId = pr.ProvinciaId, 

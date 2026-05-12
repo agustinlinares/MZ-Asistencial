@@ -42,38 +42,105 @@ const FlyTo = ({ lat, lng }) => {
 const TabMapa = ({ form, onChange }) => {
     const [vistaTab, setVistaTab] = useState('mapa');
     const [flyKey, setFlyKey] = useState(0);
+    const [buscando, setBuscando] = useState(false);
 
     const parsedLat = parseFloat(form.latitud);
     const parsedLng = parseFloat(form.longitud);
     const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
-    const handleMapClick = (la, lo) => {
-        onChange('latitud', String(la.toFixed(6)));
-        onChange('longitud', String(lo.toFixed(6)));
+    // 1. De Texto a Coordenadas (Buscador)
+    const handleBuscarDireccion = async () => {
+        if (!form.direccion?.trim()) return;
+        
+        setBuscando(true);
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.direccion)}`);
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat).toFixed(6);
+                const lon = parseFloat(data[0].lon).toFixed(6);
+                
+                onChange('latitud', lat);
+                onChange('longitud', lon);
+                
+                // Formateamos la dirección para que no sea una parrafada gigante
+                const direccionLimpia = data[0].display_name.split(',').slice(0, 3).join(',').trim();
+                onChange('direccion', direccionLimpia); 
+
+                setFlyKey(k => k + 1); 
+            } else {
+                alert("No se ha encontrado esa dirección en el mapa. Prueba a detallar la calle y la ciudad.");
+            }
+        } catch (error) {
+            console.error("Error buscando dirección:", error);
+        } finally {
+            setBuscando(false);
+        }
     };
 
-    const handleBuscar = () => setFlyKey(k => k + 1);
+    // 2. De Coordenadas a Texto (Geocodificación Inversa al hacer clic)
+    const obtenerDireccionPorCoordenadas = async (lat, lon) => {
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+            const data = await response.json();
+            
+            if (data && data.display_name) {
+                // Cogemos las 3 primeras partes de la dirección (suele ser: Calle, Barrio, Ciudad)
+                const direccionLimpia = data.display_name.split(',').slice(0, 3).join(',').trim();
+                onChange('direccion', direccionLimpia);
+            } else {
+                onChange('direccion', `Coordenadas: ${lat}, ${lon}`);
+            }
+        } catch (error) {
+            console.error("Error al obtener la calle por coordenadas:", error);
+        }
+    };
+
+    // Al hacer clic en el mapa, guardamos lat/lon y pedimos la calle
+    const handleMapClick = async (la, lo) => {
+        const latStr = la.toFixed(6);
+        const lonStr = lo.toFixed(6);
+        
+        onChange('latitud', latStr);
+        onChange('longitud', lonStr);
+        
+        // Llamamos a la API para traducir el clic a texto
+        await obtenerDireccionPorCoordenadas(la, lo);
+    };
+
     const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
 
     return (
         <div className="ficha-tab-mapa">
             <div className="ficha-grid" style={{ marginBottom: 15 }}>
                 <div className="ficha-field span2">
-                    <label>Dirección Google / Localización</label>
-                    <input 
-                        type="text" 
-                        value={form.dir_google || ''} 
-                        onChange={e => onChange('dir_google', e.target.value)} 
-                        placeholder="Ej: Calle Mayor 1, Madrid"
-                    />
+                    <label>Buscador de Dirección</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <input 
+                            type="text" 
+                            value={form.direccion || ''} 
+                            onChange={e => onChange('direccion', e.target.value)} 
+                            placeholder="Escribe aquí y dale a buscar, o haz clic directamente en el mapa..."
+                            onKeyDown={e => e.key === 'Enter' && handleBuscarDireccion()}
+                        />
+                        <button 
+                            className="ficha-btn-secondary" 
+                            onClick={handleBuscarDireccion} 
+                            disabled={buscando}
+                        >
+                            {buscando ? '⏳...' : '🔍 Buscar y Situar'}
+                        </button>
+                    </div>
                 </div>
+                
                 <div className="ficha-field">
                     <label>Latitud</label>
-                    <input type="text" value={form.latitud || ''} onChange={e => onChange('latitud', e.target.value)} onBlur={handleBuscar} />
+                    <input type="text" value={form.latitud || ''} readOnly className="readonly" />
                 </div>
                 <div className="ficha-field">
                     <label>Longitud</label>
-                    <input type="text" value={form.longitud || ''} onChange={e => onChange('longitud', e.target.value)} onBlur={handleBuscar} />
+                    <input type="text" value={form.longitud || ''} readOnly className="readonly" />
                 </div>
             </div>
 
@@ -83,7 +150,7 @@ const TabMapa = ({ form, onChange }) => {
             </div>
 
             <div className="mapa-container" style={{ height: 400 }}>
-                <MapContainer center={defaultCenter} zoom={tieneCoords ? 15 : 6} style={{ height: '100%', width: '100%' }}>
+                <MapContainer center={defaultCenter} zoom={tieneCoords ? 16 : 6} style={{ height: '100%', width: '100%' }}>
                     <TileLayer key={vistaTab} url={vistaTab === 'satelite' ? TILE_SAT : TILE_OSM} attribution={vistaTab === 'satelite' ? ATTR_SAT : ATTR_OSM} />
                     <MapClickHandler onMapClick={handleMapClick} />
                     {tieneCoords && (
@@ -94,7 +161,9 @@ const TabMapa = ({ form, onChange }) => {
                     )}
                 </MapContainer>
             </div>
-            <p className="mapa-hint" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>📍 Haz clic en el mapa para situar el centro o introduce las coordenadas manualmente.</p>
+            <p className="mapa-hint" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+                📍 Escribe la dirección y dale a Buscar, o haz clic en el mapa para situar la marca y obtener la calle automáticamente.
+            </p>
         </div>
     );
 };
@@ -103,10 +172,20 @@ const TabMapa = ({ form, onChange }) => {
 const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
     <div className="ficha-grid">
         <div className="ficha-field">
+            <label>Localizador (CCN)</label>
+            <input 
+                className={errors.localizador ? 'error' : ''} 
+                type="text" 
+                value={form.localizador || ''} 
+                onChange={e => onChange('localizador', e.target.value)} 
+            />
+        </div>
+
+        <div className="ficha-field">
             <label>Proveedor</label>
             <select value={form.proveedor || ''} onChange={e => {
                 onChange('proveedor', e.target.value);
-                onChange('delegacion', ''); // Limpiamos la delegación al cambiar proveedor
+                onChange('delegacion', '');
             }}>
                 <option value="">— Seleccionar —</option>
                 {opts.proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
@@ -128,55 +207,51 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
 
         <div className="ficha-field">
             <label>Provincia</label>
-            <select value={form.provincia || ''} onChange={e => {
+            <select className={errors.provincia ? 'error' : ''} value={form.provincia || ''} onChange={e => {
                 onChange('provincia', e.target.value);
                 onChange('poblacion', ''); 
             }}>
                 <option value="">— Seleccionar —</option>
                 {opts.provincias.map(p => (
-                    // Usamos provinciaId y provincia en lugar de Id y Nombre
-                    <option key={p.provinciaId} value={p.provinciaId}>
-                        {p.provincia}
-                    </option>
+                    <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
                 ))}
             </select>
         </div>
 
         <div className="ficha-field">
             <label>Población</label>
-            <select value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
+            <select className={errors.poblacion ? 'error' : ''} value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
                 <option value="">— Seleccionar —</option>
                 {opts.poblaciones.map(p => (
-                    // Verifica si el JSON de poblaciones también usa poblacionId/poblacion
-                    <option key={p.poblacionId} value={p.poblacionId}>
-                        {p.poblacion}
-                    </option>
+                    <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
                 ))}
             </select>
         </div>
 
         <div className="ficha-field">
             <label>CIF / NIF</label>
-            <input type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
+            <input className={errors.cif ? 'error' : ''} type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
         </div>
         
         <div className="ficha-field">
             <label>Código Postal</label>
-            <input 
-                type="text" 
-                value={form.cp || ''} 
-                onChange={e => onChange('cp', e.target.value)} 
-            />
+            <input className={errors.cp ? 'error' : ''} type="text" value={form.cp || ''} onChange={e => onChange('cp', e.target.value)} />
         </div>
 
         <div className="ficha-field">
             <label>Dirección</label>
-            <input type="text" value={form.direccion || ''} onChange={e => onChange('direccion', e.target.value)} />
+            <input 
+                className={errors.direccion ? 'error' : 'readonly'} 
+                type="text" 
+                value={form.direccion || ''} 
+                readOnly 
+                placeholder="⚠️ Ve a la pestaña Mapa para situar la dirección"
+                onClick={() => alert("La dirección se asigna automáticamente. Ve a la pestaña 'Mapa / Ubicación', busca la calle o haz clic en el mapa.")}
+            />
         </div>
 
         <div className="ficha-field">
             <label>Teléfono</label>
-            {/* Usamos trim() para limpiar los espacios en blanco que vienen de la base de datos */}
             <input 
                 type="text" 
                 value={form.telefono ? form.telefono.trim() : ''} 
@@ -203,10 +278,18 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
         </div>
 
         <div className="ficha-field">
-            <label>Ubicación</label>
-            <button className="ficha-btn-secondary" type="button" onClick={onGoToMap} style={{ width: '100%', textAlign: 'left' }}>
-                🌐 {form.latitud && form.longitud ? `${form.latitud}, ${form.longitud}` : 'Ver / Editar en mapa'}
-            </button>
+            <label>Ubicación (Mapa)</label>
+            <input 
+                className="readonly" 
+                type="text" 
+                value={form.latitud && form.longitud ? `🌐 ${form.latitud}, ${form.longitud}` : '📍 Falta situar en el mapa (Haz clic aquí)'} 
+                readOnly 
+                onClick={onGoToMap} 
+                style={{ 
+                    cursor: 'pointer', 
+                    borderBottom: errors.mapa ? '1px solid #dc3545' : '' 
+                }}
+            />
         </div>
 
         <div className="ficha-field">
@@ -289,13 +372,14 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         provincia: cliente?.ProvinciaId ?? cliente?.provinciaId ?? '',
         poblacion: cliente?.PoblacionId ?? cliente?.poblacionId ?? '',
         
-        fecha_alta: parseDateForInput(cliente?.FechaAlta ?? cliente?.fechaAlta),
+        fecha_alta: cliente?.FechaAlta 
+            ? parseDateForInput(cliente.FechaAlta) 
+            : new Date().toISOString().split('T')[0], // La fecha de hoy
         fecha_baja: parseDateForInput(cliente?.FechaBaja ?? cliente?.fechaBaja),
         
         numero: cliente?.Numero ?? cliente?.numero ?? '', 
         telefono: cliente?.Telefono ?? cliente?.telefono ?? '', 
         numRegistroSanitario: cliente?.NumRegistroSanitario ?? cliente?.numRegistroSanitario ?? '', 
-        dir_google: '', 
         comentarios: cliente?.Comentarios ?? cliente?.comentarios ?? '',
         motivoBaja: cliente?.MotivoBaja ?? cliente?.motivoBaja ?? '', 
         latitud: cliente?.Latitud ?? '', 
@@ -436,22 +520,45 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
     const handleSave = async () => {
         const newErrors = {};
-        if (!form.centro) newErrors.centro = true;
+    
+        // Campos de texto y selectores obligatorios
+        if (!form.centro?.trim()) newErrors.centro = true;
+        if (!form.provincia) newErrors.provincia = true;
+        if (!form.poblacion) newErrors.poblacion = true;
+        if (!form.direccion?.trim()) newErrors.direccion = true;
+        if (!form.cif?.trim()) newErrors.cif = true;
+        if (!form.cp?.trim()) newErrors.cp = true;
         
-        // Validación de CP
+        // Fecha de Alta
+        if (!form.fecha_alta) newErrors.fecha_alta = true;
+
+        // Localización (Mapa)
+        if (!form.latitud || !form.longitud) {
+            newErrors.mapa = true; // Usaremos este error para avisar de que falta el mapa
+        }
+
+        // Validaciones de longitud (que no pete la BD)
         if (form.cp && form.cp.length > 5) {
             alert("El Código Postal no puede tener más de 5 caracteres");
             newErrors.cp = true;
         }
-
-        // Validación de Teléfono (Ej: máximo 15)
         if (form.telefono && form.telefono.length > 15) {
             alert("El teléfono es demasiado largo");
             newErrors.telefono = true;
         }
 
+        // Comprobación final
         if (Object.keys(newErrors).length > 0) { 
             setErrors(newErrors); 
+            
+            // Comprobamos si el único error de toda la ficha es el mapa
+            const soloFaltaMapa = Object.keys(newErrors).length === 1 && newErrors.mapa;
+
+            if (soloFaltaMapa) {
+                alert("Falta la localización. Por favor, ve a la pestaña 'Mapa / Ubicación' y sitúa el centro.");
+            } else {
+                alert("Faltan campos obligatorios por rellenar. Por favor, revisa los campos marcados en rojo.");
+            }
             return; 
         }
 
@@ -475,7 +582,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             
             telefono: form.telefono,
             numero: form.numero,
-            numRegistroSanitario: form.numRegistroSanitario,
+            nnumRegistroSanitario: form.numRegistroSanitario ? parseInt(form.numRegistroSanitario, 10) : null,
             fechaAlta: form.fecha_alta || null,
             fechaBaja: form.fecha_baja || null,
             latitud: form.latitud,
