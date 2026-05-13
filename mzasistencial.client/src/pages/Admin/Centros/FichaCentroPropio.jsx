@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -8,10 +8,11 @@ import { exportDataGrid } from "devextreme/excel_exporter";
 
 import '../../../styles/FichaGlobal.css';
 
-const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
+const VIAS         = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
 const ESPECIALIDADES_LIST = ["Medicina General","Traumatologia","Rehabilitacion","Fisioterapia","Psicologia","Enfermeria","Radiologia","Cirugia","Cardiologia","Neurologia","Dermatologia","Oftalmologia","Urgencias","Pediatria"];
-const ANOS = ["2020","2021","2022","2023","2024","2025"];
+const ANOS         = ["2020","2021","2022","2023","2024","2025","2026"];
+const MESES        = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
 const TABS = [
     { key: "general",           label: "General" },
@@ -33,23 +34,39 @@ const onExportingGrid = (e, filename) => {
     e.cancel = true;
 };
 
+// ─── Helpers de estilos de tabla manual ──────────────────────────────────────
+const thS = (align, width) => ({
+    padding: '8px 6px', textAlign: align, width, minWidth: width,
+    fontWeight: 700, fontSize: 11, borderRight: '1px solid rgba(255,255,255,0.2)',
+});
+const tdS = (align) => ({
+    padding: '6px', textAlign: align, borderBottom: '1px solid #eee',
+    borderRight: '1px solid #f0f0f0',
+});
+
+// ─── Componente principal ─────────────────────────────────────────────────────
 const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
-    const { t } = useTranslation();
+    const { t }    = useTranslation();
     const navigate = useNavigate();
     const modalRef = useRef(null);
 
-    const [MUTUOS, setMUTUOS] = useState([]);
-    const [PROVINCIAS, setProvincias] = useState([]);
+    const [MUTUOS,      setMUTUOS]      = useState([]);
+    const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
-    const [form, setForm] = useState({});
+    const [form,        setForm]        = useState({});
     const [registrosICG, setRegistrosICG] = useState([]);
-    const [tabActiva, setTabActiva] = useState("general");
-    const [guardando, setGuardando] = useState(false);
-    const [fincas, setFincas] = useState([]);
+    const [tabActiva,   setTabActiva]   = useState("general");
+    const [guardando,   setGuardando]   = useState(false);
+    const [fincas,      setFincas]      = useState([]);
     const [especialidades, setEspecialidades] = useState([]);
-    const [catalogo, setCatalogo] = useState([]);
-    const [anioEsp, setAnioEsp] = useState(2024);
-    const [bloqueado, setBloqueado] = useState(false);
+    const [catalogo,    setCatalogo]    = useState([]);
+    const [anioEsp,     setAnioEsp]     = useState(2024);
+    const [bloqueado,   setBloqueado]   = useState(false);
+
+    // ── Estados para edición de disponibilidad ────────────────────────────────
+    const [editandoEsp,   setEditandoEsp]   = useState({}); // { [id]: { ene,feb,...,dic } }
+    const [guardandoEsp,  setGuardandoEsp]  = useState(false);
+    const [msgEsp,        setMsgEsp]        = useState(null);
 
     useEffect(() => {
         modalRef.current?.focus();
@@ -59,30 +76,19 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     }, [onClose]);
 
     const clienteRef = useRef(cliente);
-    useEffect(() => {
-        if (cliente) clienteRef.current = cliente;
-    }, [cliente]);
+    useEffect(() => { if (cliente) clienteRef.current = cliente; }, [cliente]);
 
     useEffect(() => {
-        fetch("/api/mutuas")
-            .then(r => r.ok ? r.json() : [])
-            .then(data => setMUTUOS(data))
-            .catch(() => setMUTUOS([]));
+        fetch("/api/mutuas").then(r => r.ok ? r.json() : []).then(setMUTUOS).catch(() => setMUTUOS([]));
     }, []);
 
     useEffect(() => {
-        fetch("/api/auxprovincias")
-            .then(r => r.ok ? r.json() : [])
-            .then(data => setProvincias(data))
-            .catch(() => setProvincias([]));
+        fetch("/api/auxprovincias").then(r => r.ok ? r.json() : []).then(setProvincias).catch(() => setProvincias([]));
     }, []);
 
     useEffect(() => {
         if (form.ProvinciaId) {
-            fetch(`/api/auxpoblaciones/${form.ProvinciaId}`)
-                .then(r => r.ok ? r.json() : [])
-                .then(data => setPoblaciones(data))
-                .catch(() => setPoblaciones([]));
+            fetch(`/api/auxpoblaciones/${form.ProvinciaId}`).then(r => r.ok ? r.json() : []).then(setPoblaciones).catch(() => setPoblaciones([]));
         } else {
             setPoblaciones([]);
         }
@@ -91,46 +97,46 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     useEffect(() => {
         if (!cliente) { onClose(); return; }
         setForm({
-            Localizador: cliente.localizador || cliente.Localizador || "",
-            TipoCentro: cliente.tipoCentro || cliente.TipoCentro || "",
-            CentroId: cliente.centroId || cliente.CentroId || "",
-            Centro: cliente.centro || cliente.Centro || "",
-            Mutua: cliente.mutuaId || cliente.Mutua || "",
-            ProvinciaId: cliente.provinciaId || cliente.ProvinciaId || "",
-            PoblacionId: cliente.poblacionId || cliente.PoblacionId || "",
-            Cp: cliente.cp || cliente.Cp || "",
-            ViaPublica: cliente.ViaPublica || "AVENIDA",
-            Direccion: cliente.Direccion || "",
-            Numero: cliente.Numero || "",
-            Piso: cliente.Piso || "",
-            Puerta: cliente.Puerta || "",
-            ServiciosEspeciales: cliente.ServiciosEspeciales || "",
-            Telefono: cliente.telefono || cliente.Telefono || "",
-            DireccionGoogle: cliente.DireccionGoogle || "",
+            Localizador:            cliente.localizador            || cliente.Localizador            || "",
+            TipoCentro:             cliente.tipoCentro             || cliente.TipoCentro             || "",
+            CentroId:               cliente.centroId               || cliente.CentroId               || "",
+            Centro:                 cliente.centro                 || cliente.Centro                 || "",
+            Mutua:                  cliente.mutuaId                || cliente.Mutua                  || "",
+            ProvinciaId:            cliente.provinciaId            || cliente.ProvinciaId            || "",
+            PoblacionId:            cliente.poblacionId            || cliente.PoblacionId            || "",
+            Cp:                     cliente.cp                     || cliente.Cp                     || "",
+            ViaPublica:             cliente.ViaPublica             || "AVENIDA",
+            Direccion:              cliente.Direccion              || "",
+            Numero:                 cliente.Numero                 || "",
+            Piso:                   cliente.Piso                   || "",
+            Puerta:                 cliente.Puerta                 || "",
+            ServiciosEspeciales:    cliente.ServiciosEspeciales    || "",
+            Telefono:               cliente.telefono               || cliente.Telefono               || "",
+            DireccionGoogle:        cliente.DireccionGoogle        || "",
             VerificarDireccionGoogle: cliente.VerificarDireccionGoogle || "",
-            Latitud: cliente.latitud || cliente.Latitud || "",
-            Longitud: cliente.longitud || cliente.Longitud || "",
-            Email: cliente.Email || "",
-            PersonaContacto: cliente.PersonaContacto || "",
-            OtrosDatos: cliente.OtrosDatos || "",
-            Autorizacion: cliente.Autorizacion || "",
-            PuestaFuncionamiento: cliente.PuestaFuncionamiento || "",
-            Calificacion: cliente.Calificacion || "",
-            CentroInicial: cliente.CentroInicial || "",
-            TipoCentroRadio: cliente.TipoCentroRadio || "hospitalarios",
-            ActividadHospitalaria: cliente.asistenciaHospitalaria ?? cliente.ActividadHospitalaria ?? false,
-            ActividadAmbulatoria: cliente.asistenciaAmbulatoria ?? cliente.ActividadAmbulatoria ?? false,
-            ActividadRehabilitacion: cliente.rehabilitacion ?? cliente.ActividadRehabilitacion ?? false,
-            ActividadControlIT: cliente.incapacidadTransitoria ?? cliente.ActividadControlIT ?? false,
-            ActividadPrevencion: cliente.prevencion ?? cliente.ActividadPrevencion ?? false,
-            ActividadOtras: cliente.otrasActividades ?? cliente.ActividadOtras ?? false,
-            ActividadAdmon: cliente.administracion ?? cliente.ActividadAdmon ?? false,
-            MotivoBaja: cliente.MotivoBaja || "",
-            FechaBaja: cliente.FechaBaja || "",
-            Traslado: cliente.Traslado ?? false,
-            CentroDesactivado: cliente.desactivado ?? cliente.CentroDesactivado ?? false,
-            NuevoCentro: cliente.NuevoCentro || "",
-            MapaValidado: cliente.mapaValidado ?? cliente.MapaValidado ?? false,
+            Latitud:                cliente.latitud                || cliente.Latitud                || "",
+            Longitud:               cliente.longitud               || cliente.Longitud               || "",
+            Email:                  cliente.Email                  || "",
+            PersonaContacto:        cliente.PersonaContacto        || "",
+            OtrosDatos:             cliente.OtrosDatos             || "",
+            Autorizacion:           cliente.Autorizacion           || "",
+            PuestaFuncionamiento:   cliente.PuestaFuncionamiento   || "",
+            Calificacion:           cliente.Calificacion           || "",
+            CentroInicial:          cliente.CentroInicial          || "",
+            TipoCentroRadio:        cliente.TipoCentroRadio        || "hospitalarios",
+            ActividadHospitalaria:  cliente.asistenciaHospitalaria ?? cliente.ActividadHospitalaria  ?? false,
+            ActividadAmbulatoria:   cliente.asistenciaAmbulatoria  ?? cliente.ActividadAmbulatoria   ?? false,
+            ActividadRehabilitacion:cliente.rehabilitacion         ?? cliente.ActividadRehabilitacion ?? false,
+            ActividadControlIT:     cliente.incapacidadTransitoria ?? cliente.ActividadControlIT     ?? false,
+            ActividadPrevencion:    cliente.prevencion             ?? cliente.ActividadPrevencion     ?? false,
+            ActividadOtras:         cliente.otrasActividades       ?? cliente.ActividadOtras         ?? false,
+            ActividadAdmon:         cliente.administracion         ?? cliente.ActividadAdmon         ?? false,
+            MotivoBaja:             cliente.MotivoBaja             || "",
+            FechaBaja:              cliente.FechaBaja              || "",
+            Traslado:               cliente.Traslado               ?? false,
+            CentroDesactivado:      cliente.desactivado            ?? cliente.CentroDesactivado      ?? false,
+            NuevoCentro:            cliente.NuevoCentro            || "",
+            MapaValidado:           cliente.mapaValidado           ?? cliente.MapaValidado           ?? false,
         });
     }, [cliente, onClose]);
 
@@ -142,10 +148,10 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 sessionStorage.removeItem('mapaRetorno');
                 setForm(f => ({
                     ...f,
-                    Latitud: latitud || f.Latitud,
-                    Longitud: longitud || f.Longitud,
+                    Latitud:        latitud   || f.Latitud,
+                    Longitud:       longitud  || f.Longitud,
                     DireccionGoogle: direccion || f.DireccionGoogle,
-                    MapaValidado: mapaValidado === true ? true : f.MapaValidado,
+                    MapaValidado:   mapaValidado === true ? true : f.MapaValidado,
                 }));
             }
         }, 300);
@@ -155,9 +161,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     useEffect(() => {
         if (form.CentroId) {
             fetch(`/api/RegistroICG/${form.CentroId}`)
-                .then(res => res.json())
-                .then(data => setRegistrosICG(data))
-                .catch(() => setRegistrosICG([]));
+                .then(res => res.json()).then(setRegistrosICG).catch(() => setRegistrosICG([]));
         }
     }, [form.CentroId]);
 
@@ -168,26 +172,20 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             .catch(() => setBloqueado(false));
     }, []);
 
-    useEffect(() => {
-        if (form.CentroId && anioEsp) {
-            fetch('/api/CentrosPropiosEspecialidades?centroId=' + form.CentroId + '&anio=' + anioEsp)
-                .then(r => r.ok ? r.json() : [])
-                .then(d => setEspecialidades(d))
-                .catch(() => setEspecialidades([]));
-            fetch('/api/CentrosPropiosEspecialidades/catalogo?centroId=' + form.CentroId + '&anio=' + anioEsp)
-                .then(r => r.ok ? r.json() : [])
-                .then(d => setCatalogo(d))
-                .catch(() => setCatalogo([]));
-        }
-    }, [form.CentroId, anioEsp]);
+    const cargarEspecialidades = () => {
+        if (!form.CentroId || !anioEsp) return;
+        fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
+            .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
+            .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
+    };
+
+    useEffect(() => { cargarEspecialidades(); }, [form.CentroId, anioEsp]); // eslint-disable-line
 
     useEffect(() => {
         if (form.CentroId) {
-            const anioFinca = anioEsp || new Date().getFullYear();
-            fetch(`/api/FincasRegistrales?centroId=${form.CentroId}&anio=${anioFinca}`)
-                .then(res => res.json())
-                .then(data => setFincas(data))
-                .catch(() => setFincas([]));
+            fetch(`/api/FincasRegistrales?centroId=${form.CentroId}&anio=${anioEsp || new Date().getFullYear()}`)
+                .then(res => res.json()).then(setFincas).catch(() => setFincas([]));
         }
     }, [form.CentroId, anioEsp]);
 
@@ -195,9 +193,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId && form.Mutua) {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
                 .then(r => r.ok ? r.text() : null)
-                .then(localizador => {
-                    if (localizador) setForm(f => ({ ...f, Localizador: localizador.replace(/"/g, '') }));
-                })
+                .then(loc => { if (loc) setForm(f => ({ ...f, Localizador: loc.replace(/"/g, '') })); })
                 .catch(() => {});
         }
     }, [form.Mutua, form.CentroId]);
@@ -208,8 +204,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     };
 
     const handleProvinciaChange = (e) => {
-        const provinciaId = e.target.value;
-        setForm(f => ({ ...f, ProvinciaId: provinciaId, PoblacionId: "" }));
+        setForm(f => ({ ...f, ProvinciaId: e.target.value, PoblacionId: "" }));
     };
 
     const handleGuardar = async () => {
@@ -248,13 +243,40 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 fpufuncio:              form.PuestaFuncionamiento || null,
                 fcalisuf:               form.Calificacion || null,
                 mapaValidado:           form.MapaValidado ?? false,
-                usuarioId:              JSON.parse(sessionStorage.getItem('user'))?.usuarioId ?? null,
+                usuarioId:              JSON.parse(localStorage.getItem('UsuarioActual') || '{}')?.usuarioId ?? null,
             };
             onSave(dataToSave);
         } catch (err) {
             alert('Error: ' + err.message);
         } finally {
             setGuardando(false);
+        }
+    };
+
+    // ── Guardar disponibilidad mensual ────────────────────────────────────────
+    const handleActualizarDisponibilidad = async () => {
+        const ids = Object.keys(editandoEsp);
+        if (ids.length === 0) return;
+        setGuardandoEsp(true);
+        setMsgEsp(null);
+        try {
+            const user = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+            for (const id of ids) {
+                const meses = editandoEsp[id];
+                const res = await fetch(`/api/CentrosPropiosEspecialidades/${id}/disponibilidad`, {
+                    method:  'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ ...meses, usuarioId: user?.usuarioId ?? null }),
+                });
+                if (!res.ok) throw new Error(`Error al guardar fila ${id}`);
+            }
+            setMsgEsp({ ok: true, text: 'Disponibilidad actualizada correctamente.' });
+            cargarEspecialidades();
+        } catch (err) {
+            setMsgEsp({ ok: false, text: err.message || 'Error al guardar.' });
+        } finally {
+            setGuardandoEsp(false);
+            setTimeout(() => setMsgEsp(null), 4000);
         }
     };
 
@@ -282,11 +304,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 {/* ── PESTAÑAS ── */}
                 <div className="ficha-tabs">
                     {TABS.map(({ key, label }) => (
-                        <button
-                            key={key}
-                            className={"ficha-tab" + (tabActiva === key ? " active" : "")}
-                            onClick={() => setTabActiva(key)}
-                        >
+                        <button key={key} className={"ficha-tab" + (tabActiva === key ? " active" : "")} onClick={() => setTabActiva(key)}>
                             {t(label)}
                         </button>
                     ))}
@@ -298,22 +316,10 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {/* GENERAL */}
                     {tabActiva === "general" && (
                         <div className="ficha-grid">
-                            <div className="ficha-field">
-                                <label>Localizador</label>
-                                <input type="text" value={form.Localizador || ""} onChange={set("Localizador")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Tipo de Centro</label>
-                                <input type="text" value={form.TipoCentro || ""} readOnly className="readonly" />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Centro ID</label>
-                                <input type="text" value={form.CentroId || ""} readOnly className="readonly" />
-                            </div>
-                            <div className="ficha-field span2">
-                                <label>Centro</label>
-                                <input type="text" value={form.Centro || ""} onChange={set("Centro")} />
-                            </div>
+                            <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} onChange={set("Localizador")} /></div>
+                            <div className="ficha-field"><label>Tipo de Centro</label><input type="text" value={form.TipoCentro || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field"><label>Centro ID</label><input type="text" value={form.CentroId || ""} readOnly className="readonly" /></div>
+                            <div className="ficha-field span2"><label>Centro</label><input type="text" value={form.Centro || ""} onChange={set("Centro")} /></div>
                             <div className="ficha-field">
                                 <label>Mutua</label>
                                 <select value={form.Mutua || ""} onChange={set("Mutua")}>
@@ -325,46 +331,27 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <label>Provincia</label>
                                 <select value={form.ProvinciaId || ""} onChange={handleProvinciaChange}>
                                     <option value="">— Seleccionar —</option>
-                                    {PROVINCIAS.map(p => (
-                                        <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
-                                    ))}
+                                    {PROVINCIAS.map(p => <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>)}
                                 </select>
                             </div>
                             <div className="ficha-field">
                                 <label>Población</label>
                                 <select value={form.PoblacionId || ""} onChange={set("PoblacionId")} disabled={!form.ProvinciaId}>
                                     <option value="">— Seleccionar —</option>
-                                    {POBLACIONES.map(p => (
-                                        <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
-                                    ))}
+                                    {POBLACIONES.map(p => <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>)}
                                 </select>
                             </div>
-                            <div className="ficha-field">
-                                <label>Código Postal</label>
-                                <input type="text" value={form.Cp || ""} onChange={set("Cp")} />
-                            </div>
+                            <div className="ficha-field"><label>Código Postal</label><input type="text" value={form.Cp || ""} onChange={set("Cp")} /></div>
                             <div className="ficha-field">
                                 <label>Vía Pública</label>
                                 <select value={form.ViaPublica || ""} onChange={set("ViaPublica")}>
                                     {VIAS.map(v => <option key={v}>{v}</option>)}
                                 </select>
                             </div>
-                            <div className="ficha-field span2">
-                                <label>Dirección</label>
-                                <input type="text" value={form.Direccion || ""} onChange={set("Direccion")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Número</label>
-                                <input type="text" value={form.Numero || ""} onChange={set("Numero")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Piso</label>
-                                <input type="text" value={form.Piso || ""} onChange={set("Piso")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Puerta</label>
-                                <input type="text" value={form.Puerta || ""} onChange={set("Puerta")} />
-                            </div>
+                            <div className="ficha-field span2"><label>Dirección</label><input type="text" value={form.Direccion || ""} onChange={set("Direccion")} /></div>
+                            <div className="ficha-field"><label>Número</label><input type="text" value={form.Numero || ""} onChange={set("Numero")} /></div>
+                            <div className="ficha-field"><label>Piso</label><input type="text" value={form.Piso || ""} onChange={set("Piso")} /></div>
+                            <div className="ficha-field"><label>Puerta</label><input type="text" value={form.Puerta || ""} onChange={set("Puerta")} /></div>
                             <div className="ficha-field">
                                 <label>Servicios Especiales</label>
                                 <select value={form.ServiciosEspeciales || ""} onChange={set("ServiciosEspeciales")}>
@@ -372,14 +359,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     {SERVICIOS_ESP.map(s => <option key={s}>{s}</option>)}
                                 </select>
                             </div>
-                            <div className="ficha-field">
-                                <label>Teléfono</label>
-                                <input type="text" value={form.Telefono || ""} onChange={set("Telefono")} />
-                            </div>
-                            <div className="ficha-field span2">
-                                <label>Dirección Google</label>
-                                <input type="text" value={form.DireccionGoogle || ""} onChange={set("DireccionGoogle")} />
-                            </div>
+                            <div className="ficha-field"><label>Teléfono</label><input type="text" value={form.Telefono || ""} onChange={set("Telefono")} /></div>
+                            <div className="ficha-field span2"><label>Dirección Google</label><input type="text" value={form.DireccionGoogle || ""} onChange={set("DireccionGoogle")} /></div>
                             <div className="ficha-field span2">
                                 <label>Verificar Dirección Google</label>
                                 <div className="ficha-input-suffix">
@@ -390,34 +371,13 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="ficha-field">
-                                <label>Dirección Electrónica</label>
-                                <input type="email" value={form.Email || ""} onChange={set("Email")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Persona de Contacto</label>
-                                <input type="text" value={form.PersonaContacto || ""} onChange={set("PersonaContacto")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Otros Datos</label>
-                                <input type="text" value={form.OtrosDatos || ""} onChange={set("OtrosDatos")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Autorización / Comunicación</label>
-                                <input type="date" value={form.Autorizacion || ""} onChange={set("Autorizacion")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Puesta en Funcionamiento</label>
-                                <input type="date" value={form.PuestaFuncionamiento || ""} onChange={set("PuestaFuncionamiento")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Calificación de Suficiencia</label>
-                                <input type="date" value={form.Calificacion || ""} onChange={set("Calificacion")} />
-                            </div>
-                            <div className="ficha-field">
-                                <label>Centro Inicial</label>
-                                <input type="date" value={form.CentroInicial || ""} onChange={set("CentroInicial")} />
-                            </div>
+                            <div className="ficha-field"><label>Dirección Electrónica</label><input type="email" value={form.Email || ""} onChange={set("Email")} /></div>
+                            <div className="ficha-field"><label>Persona de Contacto</label><input type="text" value={form.PersonaContacto || ""} onChange={set("PersonaContacto")} /></div>
+                            <div className="ficha-field"><label>Otros Datos</label><input type="text" value={form.OtrosDatos || ""} onChange={set("OtrosDatos")} /></div>
+                            <div className="ficha-field"><label>Autorización / Comunicación</label><input type="date" value={form.Autorizacion || ""} onChange={set("Autorizacion")} /></div>
+                            <div className="ficha-field"><label>Puesta en Funcionamiento</label><input type="date" value={form.PuestaFuncionamiento || ""} onChange={set("PuestaFuncionamiento")} /></div>
+                            <div className="ficha-field"><label>Calificación de Suficiencia</label><input type="date" value={form.Calificacion || ""} onChange={set("Calificacion")} /></div>
+                            <div className="ficha-field"><label>Centro Inicial</label><input type="date" value={form.CentroInicial || ""} onChange={set("CentroInicial")} /></div>
                         </div>
                     )}
 
@@ -425,27 +385,14 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {tabActiva === "datosUtilizacion" && (
                         <div className="ficha-tab-inner">
                             <div className="ficha-section">
-                                <p className="ficha-section-title">
-                                    <i className="ri-building-line"></i> {t('Tipo de Centro')}
-                                </p>
+                                <p className="ficha-section-title"><i className="ri-building-line"></i> {t('Tipo de Centro')}</p>
                                 <div className="ficha-radio-group">
-                                    <label>
-                                        <input type="radio" name="tipoCentro" value="noSanitario"
-                                            checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />
-                                        {t('Centro NO Sanitario')}
-                                    </label>
-                                    <label>
-                                        <input type="radio" name="tipoCentro" value="hospitalarios"
-                                            checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />
-                                        {t('Hospitales y Ambulatorios')}
-                                    </label>
+                                    <label><input type="radio" name="tipoCentro" value="noSanitario" checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />{t('Centro NO Sanitario')}</label>
+                                    <label><input type="radio" name="tipoCentro" value="hospitalarios" checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />{t('Hospitales y Ambulatorios')}</label>
                                 </div>
                             </div>
-
                             <div className="ficha-section">
-                                <p className="ficha-section-title">
-                                    <i className="ri-list-check-2"></i> {t('Actividades del Centro')}
-                                </p>
+                                <p className="ficha-section-title"><i className="ri-list-check-2"></i> {t('Actividades del Centro')}</p>
                                 <p className="ficha-section-sub">{t('Selecciona las actividades que se realizan en este centro:')}</p>
                                 <div className="ficha-checkbox-grid">
                                     <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> {t('Asistencia sanitaria Hospitalaria')}</label>
@@ -457,11 +404,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     <label className="span2"><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> {t('Administración general de la Mutua')}</label>
                                 </div>
                             </div>
-
                             <div className="ficha-section">
-                                <p className="ficha-section-title">
-                                    <i className="ri-close-circle-line"></i> {t('Estado y Baja')}
-                                </p>
+                                <p className="ficha-section-title"><i className="ri-close-circle-line"></i> {t('Estado y Baja')}</p>
                                 <div className="ficha-grid ficha-grid-3" style={{ marginBottom: 15 }}>
                                     <div className="ficha-field">
                                         <label>{t('Centro Desactivado')}</label>
@@ -469,33 +413,21 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </div>
                                     <div className="ficha-field">
                                         <label>{t('Fecha de Baja')}</label>
-                                        <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")}
-                                            disabled={!form.CentroDesactivado}
-                                            style={{ opacity: !form.CentroDesactivado ? 0.4 : 1 }} />
+                                        <input type="date" value={form.FechaBaja || ""} onChange={set("FechaBaja")} disabled={!form.CentroDesactivado} style={{ opacity: !form.CentroDesactivado ? 0.4 : 1 }} />
                                     </div>
                                     <div className="ficha-field">
                                         <label>{t('Traslado')}</label>
                                         <label style={{ marginTop: 8 }}><input type="checkbox" checked={form.Traslado || false} onChange={set("Traslado")} /> {t('Es un traslado')}</label>
                                     </div>
                                 </div>
-
                                 <div className="ficha-field" style={{ marginBottom: 15 }}>
                                     <label>{t('Motivo de la Baja')}</label>
-                                    <textarea 
-                                        className="ficha-textarea" 
-                                        value={form.MotivoBaja || ""} 
-                                        onChange={e => setForm(f => ({ ...f, MotivoBaja: e.target.value }))} 
-                                        rows={3} 
-                                        placeholder={t('Explique el motivo de la baja del centro...')}
-                                    />
+                                    <textarea className="ficha-textarea" value={form.MotivoBaja || ""} onChange={e => setForm(f => ({ ...f, MotivoBaja: e.target.value }))} rows={3} placeholder={t('Explique el motivo de la baja del centro...')} />
                                 </div>
-
                                 {form.Traslado && (
                                     <div className="ficha-field animate-fade-in">
                                         <label>{t('Nuevo Centro (Destino del traslado)')}</label>
-                                        <input type="text" value={form.NuevoCentro || ""} onChange={set("NuevoCentro")}
-                                            placeholder={t('Indique el centro al que se ha trasladado la actividad...')}
-                                            className="ficha-input-full" />
+                                        <input type="text" value={form.NuevoCentro || ""} onChange={set("NuevoCentro")} placeholder={t('Indique el centro al que se ha trasladado la actividad...')} className="ficha-input-full" />
                                     </div>
                                 )}
                             </div>
@@ -505,21 +437,15 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {/* REGISTRO ICG */}
                     {tabActiva === "registroICG" && (
                         <div className="ficha-tab-inner">
-                            <DataGrid dataSource={registrosICG} showBorders={true} rowAlternationEnabled={true}
-                                noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")}
-                                className="mz-table" height={450}>
-                                <Scrolling mode="standard" />
-                                <Paging defaultPageSize={10} />
-                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                                <FilterRow visible={true} />
-                                <HeaderFilter visible={true} />
-                                <Sorting mode="multiple" />
-                                <Export enabled={true} />
-                                <Column dataField="ano" caption="Año" width={80} />
-                                <Column dataField="mutua" caption="Mutua" width={220} />
-                                <Column dataField="centro" caption="Centro" width={220} />
-                                <Column dataField="fechaActualizacion" caption="Fecha de Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="usuario" caption="Usuario" width={150} />
+                            <DataGrid dataSource={registrosICG} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")} className="mz-table" height={450}>
+                                <Scrolling mode="standard" /><Paging defaultPageSize={10} />
+                                <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
+                                <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" /><Export enabled />
+                                <Column dataField="ano"               caption="Año"                  width={80} />
+                                <Column dataField="mutua"             caption="Mutua"                width={220} />
+                                <Column dataField="centro"            caption="Centro"               width={220} />
+                                <Column dataField="fechaActualizacion" caption="Fecha Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuario"           caption="Usuario"              width={150} />
                             </DataGrid>
                         </div>
                     )}
@@ -527,139 +453,143 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {/* FINCAS REGISTRALES */}
                     {tabActiva === "fincasRegistrales" && (
                         <div className="ficha-tab-inner">
-                            <DataGrid dataSource={fincas} showBorders={true} rowAlternationEnabled={true}
-                                noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "FincasRegistrales")}
-                                className="mz-table" height={450}>
-                                <Scrolling mode="standard" />
-                                <Paging defaultPageSize={10} />
-                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                                <FilterRow visible={true} />
-                                <HeaderFilter visible={true} />
-                                <Sorting mode="multiple" />
-                                <Export enabled={true} />
-                                <Column dataField="Finca_id" caption="ID" width={70} />
+                            <DataGrid dataSource={fincas} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "FincasRegistrales")} className="mz-table" height={450}>
+                                <Scrolling mode="standard" /><Paging defaultPageSize={10} />
+                                <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
+                                <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" /><Export enabled />
+                                <Column dataField="Finca_id"   caption="ID"          width={70} />
                                 <Column dataField="Localizador" caption="Localizador" width={110} />
-                                <Column
-                                    caption="Dirección"
-                                    width={250}
-                                    cellRender={(cell) => (
-                                        <span>
-                                            {cell.data.Direccion} {cell.data.Numero ? `nº ${cell.data.Numero}` : ''}
-                                            {cell.data.Piso ? `, ${cell.data.Piso}` : ''} {cell.data.Puerta ? `- ${cell.data.Puerta}` : ''}
-                                        </span>
-                                    )}
-                                />
-                                <Column dataField="Superficie" caption="Superficie" width={100} format="#,##0.00 m²" />
+                                <Column caption="Dirección" width={250} cellRender={(cell) => (
+                                    <span>{cell.data.Direccion}{cell.data.Numero ? ` nº ${cell.data.Numero}` : ''}{cell.data.Piso ? `, ${cell.data.Piso}` : ''}{cell.data.Puerta ? ` - ${cell.data.Puerta}` : ''}</span>
+                                )} />
+                                <Column dataField="Superficie"  caption="Superficie"  width={100} format="#,##0.00 m²" />
                                 <Column dataField="Titularidad" caption="Titularidad" width={180} />
-                                <Column 
-                                    dataField="Coste" 
-                                    caption="Coste" 
-                                    width={100} 
-                                    dataType="number" 
-                                    format={{ type: 'currency', currency: 'EUR', precision: 2 }}
+                                <Column dataField="Coste" caption="Coste" width={100} dataType="number" format={{ type: 'currency', currency: 'EUR', precision: 2 }}
                                     cellRender={(cell) => (
                                         <span style={{ color: !cell.value ? '#d32f2f' : 'inherit', fontWeight: !cell.value ? 'bold' : 'normal' }}>
                                             {cell.text} {!cell.value && '⚠️'}
                                         </span>
                                     )}
                                 />
-                                <Column dataField="F_Alquiler" caption="F. Alquiler" width={130} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="F_Alquiler"   caption="F. Alquiler"   width={130} dataType="date" format="dd/MM/yyyy" />
                                 <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
-                                
-                                <DataGrid.Summary>
-                                    <DataGrid.TotalItem column="Superficie" summaryType="sum" displayFormat="Total: {0} m²" valueFormat="#,##0.00" />
-                                    <DataGrid.TotalItem column="Coste" summaryType="sum" displayFormat="Total: {0}" valueFormat={{ type: 'currency', currency: 'EUR', precision: 2 }} />
-                                </DataGrid.Summary>
                             </DataGrid>
                         </div>
                     )}
 
-                    {/* ESPECIALIDADES */}
+                    {/* ESPECIALIDADES ── tabla editable con inputs por mes ── */}
                     {tabActiva === "especialidades" && (
                         <div className="ficha-tab-inner">
-
-                            {/* ── BANNER BLOQUEO ── */}
                             {bloqueado && (
                                 <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
                                     <i className="ri-lock-line" />
-                                    <span>
-                                        La edición de disponibilidad está <strong>bloqueada</strong>.
-                                        El período de bloqueo activo no permite realizar modificaciones.
-                                    </span>
+                                    <span>La edición de disponibilidad está <strong>bloqueada</strong>. El período de bloqueo activo no permite realizar modificaciones.</span>
                                 </div>
                             )}
 
-                            <div className="ficha-grid ficha-grid--5" style={{ marginBottom: 15 }}>
-                                <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
-                                <div className="ficha-field">
-                                    <label>Mutua</label>
-                                    <select value={form.Mutua || ""} onChange={set("Mutua")}>
-                                        <option value="">— Seleccionar —</option>
-                                        {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
+                            {/* Filtros */}
+                            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 15 }}>
+                                <div className="ficha-field" style={{ minWidth: 220 }}>
+                                    <label>Centro</label>
+                                    <input type="text" value={form.Centro || ""} readOnly className="readonly" />
+                                </div>
+                                <div className="ficha-field" style={{ minWidth: 90 }}>
+                                    <label>Año</label>
+                                    <select value={anioEsp} onChange={e => { setAnioEsp(Number(e.target.value)); setEditandoEsp({}); }}>
+                                        {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
-                                <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
-                                <div className="ficha-field">
-                                    <label>Especialidad</label>
-                                    <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
-                                </div>
-                                <div className="ficha-field">
-                                    <label>Año</label>
-                                    <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
-                                </div>
+                                {msgEsp && (
+                                    <span style={{ fontSize: 12.5, color: msgEsp.ok ? '#2e7d32' : '#c62828', paddingBottom: 4 }}>
+                                        {msgEsp.text}
+                                    </span>
+                                )}
                             </div>
 
-                            {/* ── DATAGRID CON MESES PIVOTADOS ── */}
-                            <DataGrid
-                                dataSource={especialidades}
-                                showBorders={true}
-                                rowAlternationEnabled={true}
-                                noDataText="Sin datos para mostrar"
-                                className="mz-table"
-                                height={380}
-                                columnAutoWidth={false}
-                                allowColumnResizing={true}
-                            >
-                                <Scrolling mode="standard" showScrollbar="always" />
-                                <Paging defaultPageSize={10} />
-                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                                <FilterRow visible={true} />
-                                <HeaderFilter visible={true} />
-                                <Sorting mode="multiple" />
+                            {/* Tabla editable */}
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
+                                    <thead>
+                                        <tr style={{ background: '#1976d2', color: '#fff' }}>
+                                            <th style={thS('left', 160)}>Especialidad</th>
+                                            <th style={thS('left', 180)}>Servicio</th>
+                                            <th style={thS('center', 55)}>Cant.</th>
+                                            <th style={thS('center', 50)}>Disp.</th>
+                                            {['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'].map(m =>
+                                                <th key={m} style={thS('center', 58)}>{m}</th>
+                                            )}
+                                            <th style={thS('center', 70)}>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {especialidades.length === 0 ? (
+                                            <tr><td colSpan={18} style={{ textAlign: 'center', padding: 20, color: '#999' }}>Sin especialidades para este centro y año</td></tr>
+                                        ) : especialidades.map((row, i) => {
+                                            const id   = row.centroPropioEspecialidadId;
+                                            const edit = editandoEsp[id] || {
+                                                ene: row.ene, feb: row.feb, mar: row.mar, abr: row.abr,
+                                                may: row.may, jun: row.jun, jul: row.jul, ago: row.ago,
+                                                sep: row.sep, oct: row.oct, nov: row.nov, dic: row.dic,
+                                            };
+                                            const total     = MESES.reduce((s, m) => s + (Number(edit[m]) || 0), 0);
+                                            const hayEdicion = !!editandoEsp[id];
 
-                                {/* Columnas fijas izquierda */}
-                                <Column dataField="especialidad"   caption="Especialidad" width={150} fixed={true} fixedPosition="left" />
-                                <Column dataField="servicio"       caption="Servicio"     width={160} fixed={true} fixedPosition="left" />
-                                <Column dataField="cantidad"       caption="Cant."        width={60}  alignment="center" />
-                                <Column dataField="disponibilidad" caption="Disp."        width={55}  alignment="center" />
+                                            const setMes = (mes, val) => setEditandoEsp(prev => ({
+                                                ...prev,
+                                                [id]: { ...edit, [mes]: Number(val) || 0 }
+                                            }));
 
-                                {/* 12 meses */}
-                                {["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"].map(m =>
-                                    <Column
-                                        key={m}
-                                        dataField={m}
-                                        caption={m.charAt(0).toUpperCase() + m.slice(1)}
-                                        width={65}
-                                        dataType="number"
-                                        alignment="center"
-                                    />
-                                )}
+                                            return (
+                                                <tr key={id} style={{
+                                                    background: i % 2 === 0 ? '#fff' : '#f9f9f9',
+                                                    outline: hayEdicion ? '2px solid #1976d2' : 'none',
+                                                    outlineOffset: -1,
+                                                }}>
+                                                    <td style={tdS('left')}>{row.especialidad}</td>
+                                                    <td style={tdS('left')}>{row.servicio}</td>
+                                                    <td style={tdS('center')}>{row.cantidad}</td>
+                                                    <td style={tdS('center')}>{row.disponibilidad}</td>
+                                                    {MESES.map(mes => (
+                                                        <td key={mes} style={{ ...tdS('center'), padding: '2px 3px' }}>
+                                                            <input
+                                                                type="number" min={0}
+                                                                disabled={bloqueado}
+                                                                value={edit[mes] ?? 0}
+                                                                onChange={e => setMes(mes, e.target.value)}
+                                                                style={{
+                                                                    width: 48, textAlign: 'center',
+                                                                    border: '1px solid #ccc', borderRadius: 3,
+                                                                    padding: '2px 4px', fontSize: 11,
+                                                                    background: bloqueado ? '#f5f5f5' : '#fff',
+                                                                }}
+                                                            />
+                                                        </td>
+                                                    ))}
+                                                    <td style={{ ...tdS('center'), fontWeight: 700, color: '#1976d2' }}>{total}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                {/* Total fijo derecha */}
-                                <Column
-                                    dataField="total"
-                                    caption="Total"
-                                    width={75}
-                                    dataType="number"
-                                    alignment="center"
-                                    fixed={true}
-                                    fixedPosition="right"
-                                />
-                            </DataGrid>
-
-                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start' }}>
-                                <button className="ficha-btn-primary" disabled={bloqueado} style={{ opacity: bloqueado ? 0.5 : 1 }}>Actualizar</button>
-                                <button className="ficha-btn-secondary">Cancelar</button>
+                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
+                                <button
+                                    className="ficha-btn-primary"
+                                    disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
+                                    style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
+                                    onClick={handleActualizarDisponibilidad}
+                                >
+                                    {guardandoEsp ? 'Guardando…' : 'Actualizar'}
+                                </button>
+                                <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>
+                                    Cancelar
+                                </button>
+                                <span style={{ fontSize: 11, color: '#888', paddingTop: 6 }}>
+                                    {Object.keys(editandoEsp).length > 0
+                                        ? `${Object.keys(editandoEsp).length} fila(s) modificada(s) — pulsa Actualizar para guardar`
+                                        : 'Edita los valores de los meses directamente en la tabla'}
+                                </span>
                             </div>
                         </div>
                     )}
@@ -683,25 +613,20 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field">
                                     <label>Año</label>
-                                    <select><option value="">— Seleccionar —</option>{ANOS.map(a => <option key={a}>{a}</option>)}</select>
+                                    <select value={anioEsp} onChange={e => setAnioEsp(Number(e.target.value))}>
+                                        {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
+                                    </select>
                                 </div>
                             </div>
-                            <DataGrid dataSource={catalogo} showBorders={true} rowAlternationEnabled={true} noDataText="Sin datos para mostrar" className="mz-table" height={380}>
-                                <Scrolling mode="standard" />
-                                <Paging defaultPageSize={10} />
-                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector={true} />
-                                <FilterRow visible={true} />
-                                <HeaderFilter visible={true} />
-                                <Sorting mode="multiple" />
-                                <Column dataField="especialidad"  caption="Especialidad"  width={220} />
-                                <Column dataField="servicio"      caption="Servicio"      width={250} />
+                            <DataGrid dataSource={catalogo} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                                <Scrolling mode="standard" /><Paging defaultPageSize={10} />
+                                <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
+                                <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" />
+                                <Column dataField="especialidad"   caption="Especialidad"   width={220} />
+                                <Column dataField="servicio"       caption="Servicio"       width={250} />
                                 <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
-                                <Column dataField="fechaAlta"     caption="F. Alta"       width={120} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="fechaAlta"      caption="F. Alta"        width={120} dataType="date" format="dd/MM/yyyy" />
                             </DataGrid>
-                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start' }}>
-                                <button className="ficha-btn-primary">Actualizar</button>
-                                <button className="ficha-btn-secondary">Cancelar</button>
-                            </div>
                         </div>
                     )}
 
