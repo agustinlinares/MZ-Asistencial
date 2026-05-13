@@ -268,12 +268,12 @@ const ICGPlantillasICG = () => {
                         <div className="title">
                             {t('PLANTILLAS ICG')}
                         </div>
-                        <div className="header-actions-side">
-                            <button className="ficha-btn-primary" onClick={() => setPopupVisible(true)}>
-                                <i className="ri-file-upload-line"></i> {t('Subir Plantilla')}
+                        <div className="header-actions-side" style={{ display: 'flex', gap: '15px' }}>
+                            <button className="acciones-btn" onClick={() => setPopupVisible(true)}>
+                                <i className="ri-file-upload-line" style={{ color: '#1a5fa8' }}></i> {t('Subir Plantilla')}
                             </button>
-                            <button className="ficha-btn-primary" onClick={handleProcesarPlantillas}>
-                                <i className="ri-settings-4-line"></i> {t('Procesar Plantillas')}
+                            <button className="acciones-btn" onClick={handleProcesarPlantillas}>
+                                <i className="ri-settings-4-line" style={{ color: '#1a5fa8' }}></i> {t('Procesar Plantillas')}
                             </button>
                         </div>
                     </div>

@@ -173,7 +173,8 @@ const GestionDemanda = () => {
                     <span className="ficha-modal-title">{t('GESTION DEMANDA')}</span>
                     <div className="acciones-container" ref={menuRef}>
                         <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
-                            {t('Acciones')} <i className="ri-more-2-fill"></i>
+                            <i className="ri-settings-3-line"></i>
+                            {t('Acciones')}
                         </div>
                         {menuAbierto && (
                             <div className="acciones-menu">

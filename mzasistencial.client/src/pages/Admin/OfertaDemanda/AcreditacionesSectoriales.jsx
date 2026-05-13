@@ -220,7 +220,7 @@ const AcreditacionesSectoriales = () => {
                         <div className="header-actions-side">
                             <div className="acciones-container" ref={menuRef}>
                                 <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
-                                    <i className="ri-more-2-fill"></i>
+                                    <i className="ri-settings-3-line"></i>
                                     {t('Acciones')}
                                 </div>
 
