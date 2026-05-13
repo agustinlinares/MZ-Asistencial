@@ -341,6 +341,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     const [activeTab, setActiveTab] = useState('general');
     const [mutuasAsignadas, setMutuasAsignadas] = useState([]);
     const [registrosICG, setRegistrosICG] = useState([]);
+    const [especialidades, setEspecialidades] = useState([]);
     
     // Función para convertir fechas de DD/MM/YYYY o ISO a YYYY-MM-DD
     const parseDateForInput = (dateStr) => {
@@ -467,11 +468,28 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         }
     };
 
+    const cargarEspecialidades = async (id) => {
+        try {
+            const response = await fetch(`/api/CentrosConcertados/${id}/Especialidades`, { 
+                headers: authHeaders() 
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setEspecialidades(data);
+            } else {
+                console.error("Error al cargar especialidades");
+            }
+        } catch (error) {
+            console.error("Error de red al cargar especialidades:", error);
+        }
+    };
+
     useEffect(() => {
         // Solo cargamos si el ID es válido y no es un centro nuevo (0)
         if (form.centro_id && form.centro_id !== 0) {
             cargarMutuasAsignadas(form.centro_id);
             cargarRegistrosICG(form.centro_id);
+            cargarEspecialidades(form.centro_id);
         }
     }, [form.centro_id]);
 
@@ -667,7 +685,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     )}
 
                     {activeTab === 'especialidades' && (
-                        <TabDataGrid datos={[]}>
+                        <TabDataGrid datos={especialidades}>
                             <Column dataField="anyo" caption="Año" width={100} />
                             <Column dataField="servicio" caption="Servicio" />
                             <Column dataField="especialidad" caption="Especialidad" />

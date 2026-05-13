@@ -10,6 +10,7 @@ namespace MZAsistencial.Server.Services
         Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto);
         Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto);
         Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId);
+        Task<IEnumerable<EspecialidadesConciertoDTO>> GetEspecialidadesByCentroAsync(int centroId);
     }
 
     public class CentrosConcertadosService : ICentrosConcertadosService
@@ -157,6 +158,25 @@ namespace MZAsistencial.Server.Services
             ).Distinct().ToListAsync();
 
             return mutuasDelCentro;
+        }
+
+        public async Task<IEnumerable<EspecialidadesConciertoDTO>> GetEspecialidadesByCentroAsync(int centroId)
+        {
+            var query = from v in _context.VwEspecialidadesConciertos
+                        where v.CentroId == centroId
+                        // Agrupación para unificar las especialidades si el centro tiene varios conciertos
+                        group v by new { v.Año, v.Servicio, v.Especialidad } into g
+                        // Ordenación por año (el más reciente primero) y luego alfabéticamente
+                        orderby g.Key.Año descending, g.Key.Servicio
+                        select new EspecialidadesConciertoDTO
+                        {
+                            Anyo = g.Key.Año,
+                            Servicio = g.Key.Servicio ?? "Sin servicio",
+                            Especialidad = g.Key.Especialidad ?? "Sin especialidad",
+                            Cantidad = g.Sum(x => x.Cantidad ?? 0)
+                        };
+
+            return await query.ToListAsync();
         }
     }
 }

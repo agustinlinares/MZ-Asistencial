@@ -75,5 +75,19 @@ namespace MZAsistencial.Server.Controllers
                 return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpGet("{id}/Especialidades")]
+        public async Task<IActionResult> GetEspecialidades(int id)
+        {
+            try
+            {
+                var especialidades = await _service.GetEspecialidadesByCentroAsync(id);
+                return Ok(especialidades);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al obtener las especialidades", details = ex.Message });
+            }
+        }
     }
 }
