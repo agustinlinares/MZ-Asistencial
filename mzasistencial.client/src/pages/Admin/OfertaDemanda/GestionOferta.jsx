@@ -336,7 +336,7 @@ const GestionOferta = () => {
                                 <Item location="after" name="searchPanel" />
                             </Toolbar>
 
-                            <Column dataField="año" caption="Año" width={70} fixed fixedPosition="left" />
+                            <Column dataField="año" caption="Año" width={70}/>
                             <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} fixed fixedPosition="left" />
                             <Column dataField="centro" caption="Centro" width={180} />
                             <Column dataField="provincia" caption="Provincia" width={120} />
