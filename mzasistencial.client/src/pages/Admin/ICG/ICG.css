@@ -87,3 +87,26 @@
 .DatosUtilizacion .radio-group label {
     margin-bottom: 0;
 }
+
+/* Invierte el botón de examinar a la derecha */
+.uploader-btn-derecha .dx-fileuploader-content {
+    position: relative !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+.uploader-btn-derecha .dx-fileuploader-input-wrapper {
+    text-align: left !important;
+    padding-right: 130px !important;
+    padding-left: 5px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+.uploader-btn-derecha .dx-fileuploader-button {
+    position: absolute !important;
+    right: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+}
