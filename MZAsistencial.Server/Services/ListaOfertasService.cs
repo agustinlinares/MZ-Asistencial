@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 
@@ -20,9 +20,9 @@ public class ListaOfertasService : IListaOfertasService
                     join d in _context.Demandas
                         on (int?)o.DemandaId equals (int?)d.DemandaId into demJoin
                     from d in demJoin.DefaultIfEmpty()
-                    join m in _context.Mutuas
-                        on (int?)d.MutuaDemandaId equals (int?)m.MutuaId into mutJoin
-                    from m in mutJoin.DefaultIfEmpty()
+                    join mDem in _context.Mutuas
+                        on (int?)d.MutuaDemandaId equals (int?)mDem.MutuaId into mDemJoin
+                    from mDem in mDemJoin.DefaultIfEmpty()
                     join cc in _context.CentrosConcertados
                         on (int?)o.CentroId equals (int?)cc.CentroId into ccJoin
                     from cc in ccJoin.DefaultIfEmpty()
@@ -38,29 +38,16 @@ public class ListaOfertasService : IListaOfertasService
                     join tp in _context.AuxTiposDemanda
                         on (int?)d.TipoId equals (int?)tp.TipoId into tpJoin
                     from tp in tpJoin.DefaultIfEmpty()
-                    join pob in _context.AuxPoblaciones
-                        on (int?)d.Localidad equals (int?)pob.PoblacionId into pobJoin
-                    from pob in pobJoin.DefaultIfEmpty()
-                    join prov in _context.AuxProvincias
-                        on (int?)pob.ProvinciaId equals (int?)prov.ProvinciaId into provJoin
-                    from prov in provJoin.DefaultIfEmpty()
-                    select new { o, d, m, cc, e, s, est, tp, pob, prov };
+                    select new { o, d, mDem, cc, e, s, est, tp };
 
-        // Filtro Estado
         if (filtros.EstadoId.HasValue)
             query = query.Where(x => x.o.EstadoId == filtros.EstadoId);
-
-        // Filtro Año
         if (filtros.Año.HasValue)
             query = query.Where(x => x.o.Año == filtros.Año);
-
-        // Filtro Tipo
         if (filtros.Tipo == "Anuales")
             query = query.Where(x => x.d != null && x.d.TipoId == 1);
         else if (filtros.Tipo == "Individuales")
             query = query.Where(x => x.d != null && x.d.TipoId == 2);
-
-        // Filtros de fecha
         if (filtros.FechaSolicitudDesde.HasValue)
             query = query.Where(x => x.d != null && x.d.FechaAlta >= filtros.FechaSolicitudDesde);
         if (filtros.FechaSolicitudHasta.HasValue)
@@ -73,11 +60,8 @@ public class ListaOfertasService : IListaOfertasService
             query = query.Where(x => x.o.FechaConfirmacion >= filtros.FechaConfirmacionDesde);
         if (filtros.FechaConfirmacionHasta.HasValue)
             query = query.Where(x => x.o.FechaConfirmacion <= filtros.FechaConfirmacionHasta);
-
-        // Filtros texto
         if (!string.IsNullOrEmpty(filtros.NecesidadesServicio))
-            query = query.Where(x => x.d != null &&
-                x.d.Descripcion != null &&
+            query = query.Where(x => x.d != null && x.d.Descripcion != null &&
                 x.d.Descripcion.Contains(filtros.NecesidadesServicio));
         if (!string.IsNullOrEmpty(filtros.ContestacionNecesidades))
             query = query.Where(x => x.o.NotaContestacion != null &&
@@ -85,16 +69,13 @@ public class ListaOfertasService : IListaOfertasService
         if (filtros.DemandaId.HasValue)
             query = query.Where(x => x.o.DemandaId == filtros.DemandaId);
 
-        // Traer datos a memoria para resolver CentrosPropios (HasNoKey)
         var lista = await query.Select(x => new
         {
             x.o.OfertaId,
-            x.o.Año,
-            MutuaOferta = x.m != null ? x.m.Mutua1 : null,
+            Año = x.o.Año,
+            MutuaDemandante = x.mDem != null ? x.mDem.Mutua1 : null,
             CentroConcertado = x.cc != null ? x.cc.Centro : null,
-            x.o.CentroId,
-            Provincia = x.prov != null ? x.prov.Provincia : null,
-            Localidad = x.pob != null ? x.pob.Poblacion : null,
+            CentroId = (int?)x.o.CentroId,
             Especialidad = x.e != null ? x.e.Especialidad : null,
             TipoMovimiento = x.tp != null ? x.tp.Tipo : null,
             Servicio = x.s != null ? x.s.Servicio : null,
@@ -120,59 +101,102 @@ public class ListaOfertasService : IListaOfertasService
             x.o.NotaContestacion,
         }).ToListAsync();
 
-        // Resolver centros propios en memoria
         var centrosPropiosIds = lista
             .Where(x => x.CentroConcertado == null && x.CentroId.HasValue)
             .Select(x => x.CentroId!.Value)
-            .Distinct()
-            .ToList();
+            .Distinct().ToList();
 
-        var centrosPropiosNombres = await _context.CentrosPropios
+        var centrosPropios = await _context.CentrosPropios
             .Where(cp => centrosPropiosIds.Contains(cp.CentroId))
-            .Select(cp => new { cp.CentroId, cp.Centro })
+            .Select(cp => new { cp.CentroId, cp.Centro, cp.MutuaId, cp.PoblacionId })
             .ToListAsync();
 
-        var centrosPropiosDict = centrosPropiosNombres
-            .ToDictionary(cp => cp.CentroId, cp => cp.Centro);
+        var cpDict = centrosPropios.ToDictionary(cp => cp.CentroId);
 
-        var result = lista.Select(x => new ListaOfertasDTO
+        var mutuaIds = centrosPropios.Select(cp => cp.MutuaId).Distinct().ToList();
+        var mutuasDict = await _context.Mutuas
+            .Where(m => mutuaIds.Contains(m.MutuaId))
+            .Select(m => new { m.MutuaId, m.Mutua1 })
+            .ToDictionaryAsync(m => m.MutuaId, m => m.Mutua1);
+
+        var pobIds = centrosPropios
+            .Where(cp => cp.PoblacionId.HasValue)
+            .Select(cp => cp.PoblacionId!.Value)
+            .Distinct().ToList();
+
+        var poblaciones = await _context.AuxPoblaciones
+            .Where(p => pobIds.Contains(p.PoblacionId))
+            .Select(p => new { p.PoblacionId, p.Poblacion, p.ProvinciaId })
+            .ToListAsync();
+
+        var provIds = poblaciones
+      .Select(p => p.ProvinciaId)
+      .Distinct().ToList();
+
+        var provincias = await _context.AuxProvincias
+            .Where(p => provIds.Contains(p.ProvinciaId))
+            .Select(p => new { p.ProvinciaId, p.Provincia })
+            .ToDictionaryAsync(p => p.ProvinciaId, p => p.Provincia);
+
+        var pobDict = poblaciones.ToDictionary(p => p.PoblacionId);
+
+        var result = lista.Select(x =>
         {
-            OfertaId = x.OfertaId,
-            Año = x.Año,
-            MutuaOferta = x.MutuaOferta,
-            Centro = x.CentroConcertado
-                                      ?? (x.CentroId.HasValue && centrosPropiosDict.ContainsKey(x.CentroId.Value)
-                                          ? centrosPropiosDict[x.CentroId.Value]
-                                          : null),
-            Provincia = x.Provincia,
-            Localidad = x.Localidad,
-            Especialidad = x.Especialidad,
-            TipoMovimiento = x.TipoMovimiento,
-            Servicio = x.Servicio,
-            Ene = x.Ene,
-            Feb = x.Feb,
-            Mar = x.Mar,
-            Abr = x.Abr,
-            May = x.May,
-            Jun = x.Jun,
-            Jul = x.Jul,
-            Ago = x.Ago,
-            Sep = x.Sep,
-            Oct = x.Oct,
-            Nov = x.Nov,
-            Dic = x.Dic,
-            Total = (x.Ene ?? 0) + (x.Feb ?? 0) + (x.Mar ?? 0) +
-                                      (x.Abr ?? 0) + (x.May ?? 0) + (x.Jun ?? 0) +
-                                      (x.Jul ?? 0) + (x.Ago ?? 0) + (x.Sep ?? 0) +
-                                      (x.Oct ?? 0) + (x.Nov ?? 0) + (x.Dic ?? 0),
-            EstadoId = x.EstadoId,
-            Estado = x.Estado,
-            DemandaId = x.DemandaId,
-            FechaSolicitud = x.FechaSolicitud,
-            FechaAsignacion = x.FechaAsignacion,
-            FechaConfirmacion = x.FechaConfirmacion,
-            NecesidadesServicio = x.NecesidadesServicio,
-            ContestacionNecesidades = x.NotaContestacion,
+            var cp = x.CentroId.HasValue && cpDict.ContainsKey(x.CentroId.Value)
+                ? cpDict[x.CentroId.Value] : null;
+
+            string? mutuaOferta = null;
+            string? localidad = null;
+            string? provincia = null;
+
+            if (cp != null)
+            {
+                mutuasDict.TryGetValue(cp.MutuaId, out mutuaOferta);
+                if (cp.PoblacionId.HasValue && pobDict.ContainsKey(cp.PoblacionId.Value))
+                {
+                    var pob = pobDict[cp.PoblacionId.Value];
+                    localidad = pob.Poblacion;
+                    if (provincias.ContainsKey(pob.ProvinciaId))
+                        provincia = provincias[pob.ProvinciaId];
+                }
+            }
+
+            return new ListaOfertasDTO
+            {
+                OfertaId = x.OfertaId,
+                Año = x.Año,
+                MutuaOferta = mutuaOferta,
+                Centro = x.CentroConcertado ?? cp?.Centro,
+                Provincia = provincia,
+                Localidad = localidad,
+                Especialidad = x.Especialidad,
+                TipoMovimiento = x.TipoMovimiento,
+                Servicio = x.Servicio,
+                Ene = x.Ene,
+                Feb = x.Feb,
+                Mar = x.Mar,
+                Abr = x.Abr,
+                May = x.May,
+                Jun = x.Jun,
+                Jul = x.Jul,
+                Ago = x.Ago,
+                Sep = x.Sep,
+                Oct = x.Oct,
+                Nov = x.Nov,
+                Dic = x.Dic,
+                Total = (x.Ene ?? 0) + (x.Feb ?? 0) + (x.Mar ?? 0) +
+                        (x.Abr ?? 0) + (x.May ?? 0) + (x.Jun ?? 0) +
+                        (x.Jul ?? 0) + (x.Ago ?? 0) + (x.Sep ?? 0) +
+                        (x.Oct ?? 0) + (x.Nov ?? 0) + (x.Dic ?? 0),
+                EstadoId = x.EstadoId,
+                Estado = x.Estado,
+                DemandaId = x.DemandaId,
+                FechaSolicitud = x.FechaSolicitud,
+                FechaAsignacion = x.FechaAsignacion,
+                FechaConfirmacion = x.FechaConfirmacion,
+                NecesidadesServicio = x.NecesidadesServicio,
+                ContestacionNecesidades = x.NotaContestacion,
+            };
         }).ToList();
 
         return result;
@@ -185,7 +209,7 @@ public class ListaOfertasService : IListaOfertasService
             .ToListAsync<object>();
     }
 
-    public async Task<IEnumerable<int>> GetAñosAsync()
+    public async Task<IEnumerable<int>> GetAnosAsync()
     {
         return await _context.Ofertas
             .Where(o => o.Año.HasValue)
@@ -194,6 +218,7 @@ public class ListaOfertasService : IListaOfertasService
             .OrderByDescending(a => a)
             .ToListAsync();
     }
+
     public async Task<OfertaEditDTO?> GetByIdAsync(int id)
     {
         var oferta = await _context.Ofertas.FindAsync(id);
@@ -235,22 +260,17 @@ public class ListaOfertasService : IListaOfertasService
         oferta.CentroId = dto.CentroId;
         oferta.Año = dto.Año;
         oferta.DemandaId = dto.DemandaId;
-        oferta.Ene = dto.Ene;
-        oferta.Feb = dto.Feb;
-        oferta.Mar = dto.Mar;
-        oferta.Abr = dto.Abr;
-        oferta.May = dto.May;
-        oferta.Jun = dto.Jun;
-        oferta.Jul = dto.Jul;
-        oferta.Ago = dto.Ago;
-        oferta.Sep = dto.Sep;
-        oferta.Oct = dto.Oct;
-        oferta.Nov = dto.Nov;
-        oferta.Dic = dto.Dic;
+        oferta.Ene = dto.Ene; oferta.Feb = dto.Feb; oferta.Mar = dto.Mar;
+        oferta.Abr = dto.Abr; oferta.May = dto.May; oferta.Jun = dto.Jun;
+        oferta.Jul = dto.Jul; oferta.Ago = dto.Ago; oferta.Sep = dto.Sep;
+        oferta.Oct = dto.Oct; oferta.Nov = dto.Nov; oferta.Dic = dto.Dic;
         oferta.EstadoId = dto.EstadoId;
         oferta.NotaContestacion = dto.NotaContestacion;
         oferta.ContestacionPlazos = dto.ContestacionPlazos;
         oferta.FechaModificacion = DateTime.Now;
+
+        if (dto.EstadoId == 3 && oferta.FechaConfirmacion == null)
+            oferta.FechaConfirmacion = DateTime.Now;
 
         await _context.SaveChangesAsync();
         return true;
@@ -260,7 +280,6 @@ public class ListaOfertasService : IListaOfertasService
     {
         var oferta = await _context.Ofertas.FindAsync(id);
         if (oferta == null) return false;
-
         _context.Ofertas.Remove(oferta);
         await _context.SaveChangesAsync();
         return true;
