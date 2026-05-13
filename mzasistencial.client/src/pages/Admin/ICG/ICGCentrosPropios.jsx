@@ -18,6 +18,7 @@ const API_ESPECIALIDAD = "/api/Icg06Especialidad";
 const API_CREAR_ICG    = "/api/Icg06Crear";
 const YEAR_NOW         = new Date().getFullYear();
 const YEARS            = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
+const API_VALIDAR = "/api/Icg06Validar";
 
 // ─── Helper: campos de plantilla por grupo de personal ───────────────────────
 const cp = (prefijo, label) => [
@@ -646,18 +647,101 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
 const FichaICG06 = ({ centro, año, onBack }) => {
     const [tabActiva,      setTabActiva]      = useState("generales");
     const [esHospitalario, setEsHospitalario] = useState(true);
+    const [validado,       setValidado]       = useState(null);   // null = cargando
+    const [idIcg,          setIdIcg]          = useState(null);
+    const [validando,      setValidando]       = useState(false);
+    const [msgValidar,     setMsgValidar]     = useState(null);
+ 
     const tab          = TABS.find(t => t.key === tabActiva);
     const tabsVisibles = TABS.filter(t => !t.hospitalario || esHospitalario);
-
+ 
+    // Detectar perfil de admin (perfilId === 1)
+    const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+    const esAdmin = user?.perfilId === 1;
+ 
+    // Cargar el idIcg y estado validado al montar
+    useEffect(() => {
+        fetch(`/api/Icg06DatosGenerales?centroId=${centro.centroId}&a%C3%B1o=${año}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (d) {
+                    setIdIcg(d.idIcg);
+                    setValidado(d.validado ?? 0);
+                }
+            })
+            .catch(() => {});
+    }, [centro.centroId, año]);
+ 
+    const cambiarValidado = async () => {
+        if (!idIcg || validando) return;
+        setValidando(true);
+        setMsgValidar(null);
+        const nuevoEstado = validado === 1 ? 0 : 1;
+        try {
+            const res = await fetch(`${API_VALIDAR}/${idIcg}`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ validado: nuevoEstado, usuarioId: user?.usuarioId ?? null }),
+            });
+            if (!res.ok) throw new Error();
+            setValidado(nuevoEstado);
+            setMsgValidar({ ok: true, text: nuevoEstado === 1 ? 'ICG validado correctamente.' : 'ICG desvalidado correctamente.' });
+            setTimeout(() => setMsgValidar(null), 3500);
+        } catch {
+            setMsgValidar({ ok: false, text: 'Error al cambiar el estado de validación.' });
+        } finally {
+            setValidando(false);
+        }
+    };
+ 
     return (
         <div>
             <div style={st.backBtn}>
                 <Button text="← Volver a la lista" onClick={onBack} stylingMode="outlined" />
             </div>
             <div style={st.fichaWrap}>
-                <div style={st.fichaHead}>
-                    <div style={st.fichaTitle}>ICG06 — {centro.centro} ({centro.localizador})</div>
-                    <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
+                <div style={{ ...st.fichaHead, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                        <div style={st.fichaTitle}>ICG06 — {centro.centro} ({centro.localizador})</div>
+                        <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
+                    </div>
+                    {/* ── Botón de validación (solo admin) ── */}
+                    {esAdmin && idIcg && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            {msgValidar && (
+                                <span style={{ fontSize: 12.5, color: msgValidar.ok ? "#c8e6c9" : "#ffcdd2" }}>
+                                    {msgValidar.text}
+                                </span>
+                            )}
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: 8,
+                                background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px",
+                            }}>
+                                <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>
+                                    Estado:
+                                </span>
+                                <span style={{
+                                    fontSize: 12, fontWeight: 700,
+                                    color: validado === 1 ? "#c8e6c9" : "#ffcc80",
+                                }}>
+                                    {validado === null ? "…" : validado === 1 ? "✓ Validado" : "⏳ Pendiente"}
+                                </span>
+                                <button
+                                    onClick={cambiarValidado}
+                                    disabled={validando || validado === null}
+                                    style={{
+                                        border: "none", borderRadius: 4, padding: "4px 14px",
+                                        fontSize: 12, fontWeight: 700, cursor: validando ? "wait" : "pointer",
+                                        background: validado === 1 ? "#e53935" : "#43a047",
+                                        color: "#fff",
+                                        opacity: (validando || validado === null) ? 0.6 : 1,
+                                    }}
+                                >
+                                    {validando ? "…" : validado === 1 ? "Desvalidar" : "Validar"}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div style={st.tabBar}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
@@ -710,7 +794,7 @@ const ICGCentrosPropios = () => {
     }, []);
 
     useEffect(() => {
-        const user     = JSON.parse(sessionStorage.getItem('user'));
+        const user     = JSON.parse(localStorage.getItem('UsuarioActual'));
         const perfilId = user?.perfilId ?? '';
         fetch(`${API_CENTROS}?perfilId=${perfilId}`)
             .then(r => r.ok ? r.json() : [])
@@ -734,7 +818,7 @@ const ICGCentrosPropios = () => {
         if (creando) return;
         setCreando(true);
         try {
-            const user = JSON.parse(sessionStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem('UsuarioActual'));
             const res  = await fetch(API_CREAR_ICG, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
