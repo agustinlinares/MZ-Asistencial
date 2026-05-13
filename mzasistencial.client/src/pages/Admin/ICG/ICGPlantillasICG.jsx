@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
 import { Workbook } from 'exceljs';
 import './ICG.css';
+import '../../../styles/FichaGlobal.css'; // Aplicamos estilo premium y estandarizado
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
@@ -12,8 +13,8 @@ import DataGrid, {
     FilterRow,
     HeaderFilter,
     Selection,
-    GroupPanel,
     Grouping,
+    GroupPanel,
     ColumnChooser,
     Export,
     Scrolling,
@@ -22,394 +23,36 @@ import DataGrid, {
     ColumnFixing,
     Pager,
     Toolbar,
-    Item,
-    Lookup
+    Item
 } from "devextreme-react/data-grid";
-
+import { SelectBox } from "devextreme-react/select-box";
+import { Popup } from "devextreme-react/popup";
+import { FileUploader } from "devextreme-react/file-uploader";
+import { LoadPanel } from 'devextreme-react/load-panel';
 import { useTranslation } from "react-i18next";
+import notify from "devextreme/ui/notify";
+import { custom } from 'devextreme/ui/dialog';
+import PlantillasICGService from "../../../services/admin/PlantillasICGService";
 
-// ─── LOOKUP DATA ─────────────────────────────────────────────────────────────
-const services = ["Vivienda", "Empleo", "Salud Mental", "Formación", "Jurídico", "Becas"];
-const genders = ["Hombre", "Mujer", "No binario", "Prefiere no indicar"];
-const nationalities = ["Española", "Marroquí", "Rumana", "Colombiana", "Venezolana", "Senegalesa", "Otra"];
-const functionalDiversity = ["Ninguna", "Física", "Intelectual", "Sensorial", "Psíquica", "Múltiple"];
-const studyLevels = ["Sin estudios", "Primaria", "ESO", "Bachillerato", "FP Básica", "FP Media", "FP Superior", "Universidad"];
-const courses = ["1º ESO", "2º ESO", "3º ESO", "4º ESO", "1º Bach", "2º Bach", "1º FP", "2º FP", "Universidad"];
-const titulations = ["Sin titulación", "Graduado ESO", "Bachiller", "FP", "Grado Universitario", "Máster"];
-const laborSituation = ["Desempleado", "Empleado", "Estudiante", "En prácticas", "Autónomo", "Inactivo"];
-const incomeOrigin = ["Sin ingresos", "Trabajo", "Prestación", "Pensión", "RGI/IMV", "Familia", "Otros"];
-const riskLevels = ["Alto", "Medio", "Bajo"];
-const statusList = ["Urgente", "En revisión", "Resuelto"];
-// ─── SAMPLE DATA ─────────────────────────────────────────────────────────────
-const sampleData = [
-    {
-        CodigoPersona: "P-0041", Servicio: "Vivienda", Nombre: "Laura", Apellido: "Martínez",
-        Apellido2: "Sánchez", FechaNacimiento: new Date("2002-04-12"), DNI: "12345678A",
-        Género: "Mujer", Nacionalidad: "Española", OrigenNacional: "Madrid",
-        DiversidadFuncional: "Ninguna", Telefono1: 612345678, Telefono2: null,
-        CorreoElectronico: "laura.m@email.com", NivelEstudios: "ESO",
-        Colegio: "IES Cervantes", Curso: "4º ESO", ConExpedienteEnEPI: true,
-        TitulacionAlcanzada: "Sin titulación", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Riesgo alto de abandono escolar.", Riesgo: "Alto", Estado: "Urgente",
-    },
-    {
-        CodigoPersona: "P-0038", Servicio: "Empleo", Nombre: "Carlos", Apellido: "Díaz",
-        Apellido2: "López", FechaNacimiento: new Date("2005-09-23"), DNI: "87654321B",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Marruecos",
-        DiversidadFuncional: "Ninguna", Telefono1: 698765432, Telefono2: 912345678,
-        CorreoElectronico: "carlos.d@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Lope de Vega", Curso: "2º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Desempleado",
-        ProcedenciaDeIngresos: "RGI/IMV", ConExpedienteEnCSM: false,
-        Observaciones: "", Riesgo: "Medio", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0035", Servicio: "Formación", Nombre: "Amira", Apellido: "Khalil",
-        Apellido2: "", FechaNacimiento: new Date("2000-11-05"), DNI: "11223344C",
-        Género: "Mujer", Nacionalidad: "Senegalesa", OrigenNacional: "Dakar",
-        DiversidadFuncional: "Ninguna", Telefono1: 654321987, Telefono2: null,
-        CorreoElectronico: "amira.k@email.com", NivelEstudios: "FP Media",
-        Colegio: "", Curso: "2º FP", ConExpedienteEnEPI: true,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "En prácticas",
-        ProcedenciaDeIngresos: "Trabajo", ConExpedienteEnCSM: false,
-        Observaciones: "Proceso de inserción laboral activo.", Riesgo: "Bajo", Estado: "Resuelto",
-    },
-    {
-        CodigoPersona: "P-0030", Servicio: "Salud Mental", Nombre: "Javier", Apellido: "Ruiz",
-        Apellido2: "García", FechaNacimiento: new Date("2003-07-18"), DNI: "99887766D",
-        Género: "Hombre", Nacionalidad: "Española", OrigenNacional: "Barcelona",
-        DiversidadFuncional: "Psíquica", Telefono1: 677889900, Telefono2: null,
-        CorreoElectronico: "", NivelEstudios: "ESO", Colegio: "IES Picasso",
-        Curso: "3º ESO", ConExpedienteEnEPI: true, TitulacionAlcanzada: "Sin titulación",
-        SituacionLaboral: "Desempleado", ProcedenciaDeIngresos: "Prestación",
-        ConExpedienteEnCSM: true, Observaciones: "Sin contacto 48h. Requiere visita urgente.",
-        Riesgo: "Alto", Estado: "Urgente",
-    },
-    {
-        CodigoPersona: "P-0028", Servicio: "Jurídico", Nombre: "Sofía", Apellido: "Torres",
-        Apellido2: "Vega", FechaNacimiento: new Date("2001-02-28"), DNI: "44556677E",
-        Género: "Mujer", Nacionalidad: "Colombiana", OrigenNacional: "Bogotá",
-        DiversidadFuncional: "Ninguna", Telefono1: 611223344, Telefono2: 933221100,
-        CorreoElectronico: "sofia.t@email.com", NivelEstudios: "Universidad",
-        Colegio: "UAM", Curso: "Universidad", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Grado Universitario", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Pendiente resolución expediente.", Riesgo: "Medio", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    },
-    {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    }, {
-        CodigoPersona: "P-0025", Servicio: "Becas", Nombre: "Ahmed", Apellido: "Benali",
-        Apellido2: "", FechaNacimiento: new Date("2004-06-14"), DNI: "55443322F",
-        Género: "Hombre", Nacionalidad: "Marroquí", OrigenNacional: "Casablanca",
-        DiversidadFuncional: "Física", Telefono1: 622334455, Telefono2: null,
-        CorreoElectronico: "ahmed.b@email.com", NivelEstudios: "Bachillerato",
-        Colegio: "IES Europa", Curso: "1º Bach", ConExpedienteEnEPI: false,
-        TitulacionAlcanzada: "Graduado ESO", SituacionLaboral: "Estudiante",
-        ProcedenciaDeIngresos: "Familia", ConExpedienteEnCSM: false,
-        Observaciones: "Beca solicitada pendiente de validación.", Riesgo: "Bajo", Estado: "En revisión",
-    },
-];
+const TIPOS = ["ICG06", "ICG07", "FINCAS", "CENTROS CONCERTADOS", "CONCIERTOS"];
+const PLANTILLAS = ["CSV", "XML"];
+const YEARS = ["2022", "2023", "2024", "2025", "2026"];
+const MUTUAS = ["Mutua Universal", "Asepeyo", "Fremap", "Ibermutua", "MC Mutual"]; // Mocked options for Mutuas if needed, should ideally come from an endpoint
+
+// Utility para sacar info del usuario actual
+const getUserInfo = () => {
+    try {
+        const user = JSON.parse(localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user') || '{}');
+        const isAdmin = user.perfilId === 1 || user.perfilID === 1 || user.rol === 'Administrador' || user.Rol === 'Administrador' || user.perfil === 'Administrador';
+        return {
+            nombre: user.nombre || user.Nombre || 'Usuario',
+            mutua: user.mutua || user.Mutua || '',
+            isAdmin
+        };
+    } catch {
+        return { nombre: 'Usuario', mutua: '', isAdmin: false };
+    }
+};
 
 const onExporting = (e) => {
     e.component.beginUpdate();
@@ -421,7 +64,7 @@ const onExporting = (e) => {
         autoFilterEnabled: true,
     }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'estaciones.xlsx');
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'PlantillasICG.xlsx');
         });
     })
     e.cancel = true;
@@ -430,24 +73,428 @@ const onExporting = (e) => {
 const ICGPlantillasICG = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
-
-    // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         console.error('No está registradoel usuario');
-    //         // navigate('/'); 
-    //     }
-    // }, [isAuthenticated, navigate]); 
+    // Estado local del usuario
+    const userInfo = getUserInfo();
+
+    // Filtros Generales
+    const [tipo, setTipo] = useState("FINCAS");
+    const [mutua, setMutua] = useState("");
+    const [anio, setAnio] = useState(new Date().getFullYear().toString());
+    const [plantilla, setPlantilla] = useState("CSV");
+
+    // Grid Data
+    const [informes, setInformes] = useState([]);
+    const [cargando, setCargando] = useState(false);
+
+    // Modal de Subir Plantilla
+    const [popupVisible, setPopupVisible] = useState(false);
+    const [uploadForm, setUploadForm] = useState({
+        mutua: "",
+        anio: new Date().getFullYear().toString(),
+        tipoICG: "",
+        fichero: null,
+        usuario: userInfo.nombre,
+        fechaSubida: new Date().toLocaleString()
+    });
+
+    // Helper: Saber si la mutua es obligatoria según el tipo
+    const isMutuaRequired = (tipoSeleccionado) => {
+        return ["ICG06", "ICG07", "FINCAS"].includes(tipoSeleccionado);
+    };
+
+    // Carga inicial (Valores por defecto)
+    useEffect(() => {
+        const fetchDatosIniciales = async () => {
+            try {
+                // Simulamos o llamamos al backend si existe el endpoint (ej. PlantillasICGService.getDatosIniciales)
+                // Para este caso, cargamos valores base
+                const currentAnio = new Date().getFullYear().toString();
+                setAnio(currentAnio);
+                setUploadForm(prev => ({ ...prev, anio: currentAnio }));
+                
+                if (!userInfo.isAdmin && userInfo.mutua) {
+                    setMutua(userInfo.mutua);
+                    setUploadForm(prev => ({ ...prev, mutua: userInfo.mutua }));
+                }
+            } catch (error) {
+                console.error("Error al cargar datos iniciales:", error);
+            }
+        };
+        fetchDatosIniciales();
+    }, []);
+
+    // Cargar la Grid
+    const cargarGrid = async () => {
+        try {
+            setCargando(true);
+            const data = await PlantillasICGService.getInformes(mutua, anio);
+            setInformes(data);
+        } catch (error) {
+            console.error("Error cargando grid:", error);
+            // Si el backend aún no está listo, ponemos una tabla vacía para no bloquear la UI
+            setInformes([]);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarGrid();
+    }, [mutua, anio]);
+
+    const handleGenerarPlantilla = async () => {
+        // Validaciones: Tipos 1, 2, 3 obligan a Mutua y Tipo
+        const tiposEstrictos = ["ICG06", "ICG07", "FINCAS"];
+        
+        if (!tipo) {
+            notify(t("Debe seleccionar el Tipo de ICG"), "error", 3000);
+            return;
+        }
+
+        if (tiposEstrictos.includes(tipo)) {
+            if (!mutua) {
+                notify(t("Debe seleccionar una Mutua para este tipo de ICG"), "error", 3000);
+                return;
+            }
+            if (!anio) {
+                notify(t("Debe seleccionar un Año para este tipo de ICG"), "error", 3000);
+                return;
+            }
+        }
+
+        try {
+            setCargando(true);
+            await PlantillasICGService.generarPlantilla(mutua, anio, tipo, plantilla);
+            notify(t("Plantilla descargada correctamente"), "success", 2000);
+        } catch (error) {
+            notify(error.message, "error", 4000);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const handleProcesarPlantillas = async () => {
+        try {
+            setCargando(true);
+            await PlantillasICGService.procesarPlantillas();
+            notify(t("Plantillas procesadas correctamente"), "success", 2000);
+            cargarGrid();
+        } catch (error) {
+            notify(error.message, "error", 4000);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const handleSubirAceptar = async () => {
+        // Validaciones obligatorias en orden (respetando la regla de mutua opcional)
+        if (isMutuaRequired(uploadForm.tipoICG) && !uploadForm.mutua) {
+            notify(t("Mutua seleccionada obligatoria"), "error", 3000);
+            return;
+        }
+        if (!uploadForm.anio) {
+            notify(t("Año seleccionado obligatorio"), "error", 3000);
+            return;
+        }
+        if (!uploadForm.tipoICG) {
+            notify(t("Tipo de ICG seleccionado obligatorio"), "error", 3000);
+            return;
+        }
+        if (!uploadForm.fichero) {
+            notify(t("Fichero adjuntado obligatorio"), "error", 3000);
+            return;
+        }
+
+        try {
+            setCargando(true);
+            const formData = new FormData();
+            formData.append('mutua', uploadForm.mutua);
+            formData.append('anio', uploadForm.anio);
+            formData.append('tipoICG', uploadForm.tipoICG);
+            formData.append('fichero', uploadForm.fichero);
+
+            await PlantillasICGService.subirPlantilla(formData);
+            
+            notify(t("Fichero subido correctamente"), "success", 2000);
+            setPopupVisible(false);
+            setUploadForm({ ...uploadForm, fichero: null });
+            cargarGrid();
+        } catch (error) {
+            notify(error.message, "error", 4000);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const handleDelete = async (row) => {
+        let dialog = custom({
+            title: t("Confirmar eliminación"),
+            messageHtml: `${t("¿Estás seguro de que deseas eliminar el informe")} <b>${row.data.Informe}</b>?`,
+            buttons: [{
+                text: t("Sí, eliminar"),
+                type: "danger",
+                onClick: (e) => { return true; }
+            }, {
+                text: t("Cancelar"),
+                onClick: (e) => { return false; }
+            }]
+        });
+
+        const dialogResult = await dialog.show();
+        if (dialogResult) {
+            notify(t("Informe eliminado (Simulación)"), "success", 2000);
+            // Aquí llamarías a PlantillasICGService.eliminarPlantilla(row.data.Id)
+        }
+    };
 
     return (
         <React.Fragment>
+            <LoadPanel
+                shadingColor="rgba(0,0,0,0.4)"
+                position={{ of: '#root' }}
+                visible={cargando}
+                showIndicator={true}
+                showPane={true}
+                shading={true}
+                message={t("Cargando...")}
+            />
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
+                    
+                    {/* ENCABEZADO */}
+                    <div className="header-page">
+                        <div className="title">
+                            {t('PLANTILLAS ICG')}
+                        </div>
+                        <div className="header-actions-side" style={{ display: 'flex', gap: '15px' }}>
+                            <button className="acciones-btn" onClick={() => setPopupVisible(true)}>
+                                <i className="ri-file-upload-line" style={{ color: '#1a5fa8' }}></i> {t('Subir Plantilla')}
+                            </button>
+                            <button className="acciones-btn" onClick={handleProcesarPlantillas}>
+                                <i className="ri-settings-4-line" style={{ color: '#1a5fa8' }}></i> {t('Procesar Plantillas')}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* DATOS GENERALES (Filtros) */}
+                    <div className="ficha-section" style={{ padding: "20px 25px 0 25px", marginBottom: "15px" }}>
+                        <p className="ficha-section-title" style={{ fontSize: "16px", fontWeight: "600", marginBottom: "15px" }}>
+                            <i className="ri-folder-info-line"></i> {t('Datos Generales')}
+                        </p>
+                        <div className="ficha-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+                            <div className="ficha-field">
+                                <label>{t('Tipo')}</label>
+                                <SelectBox
+                                    items={TIPOS}
+                                    value={tipo}
+                                    onValueChanged={(e) => setTipo(e.value)}
+                                    placeholder={t("Seleccionar Tipo")}
+                                />
+                            </div>
+                            <div className="ficha-field">
+                                <label>{t('Mutua')}</label>
+                                <SelectBox
+                                    items={MUTUAS}
+                                    value={mutua}
+                                    onValueChanged={(e) => setMutua(e.value)}
+                                    placeholder={t("Seleccionar Mutua")}
+                                    showClearButton={true}
+                                    disabled={!isMutuaRequired(tipo) || (!userInfo.isAdmin && !!userInfo.mutua)}
+                                />
+                            </div>
+                            <div className="ficha-field">
+                                <label>{t('Año')}</label>
+                                <SelectBox
+                                    items={YEARS}
+                                    value={anio}
+                                    onValueChanged={(e) => setAnio(e.value)}
+                                    placeholder={t("Seleccionar Año")}
+                                />
+                            </div>
+                            <div className="ficha-field">
+                                <label>{t('Plantilla')}</label>
+                                <SelectBox
+                                    items={PLANTILLAS}
+                                    value={plantilla}
+                                    onValueChanged={(e) => setPlantilla(e.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Botones de acción de filtros */}
+                        <div style={{ display: "flex", gap: "15px", marginTop: "20px", justifyContent: "flex-end" }}>
+                            <button className="ficha-btn-primary" onClick={handleGenerarPlantilla}>
+                                <i className="ri-file-download-line"></i> {t('Generar Plantilla')}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* GRID DE DATOS */}
+                    <div className="table-container">
+                        <DataGrid
+                            ref={dataGridRef}
+                            dataSource={informes}
+                            keyExpr="Id"
+                            showBorders={true}
+                            columnAutoWidth={true}
+                            allowColumnResizing={true}
+                            onExporting={onExporting}
+                            className="mz-table"
+                            rowAlternationEnabled={true}
+                            showRowLines={true}
+                            showColumnLines={true}
+                            wordWrapEnabled={false}
+                            noDataText={cargando ? t("Cargando...") : t("No hay datos")}
+                        >
+                            <Scrolling mode="standard" showScrollbar="always" />
+                            <Paging defaultPageSize={25} />
+                            <Pager visible={true} allowedPageSizes={[10, 25, 50, 100]} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
+                            
+                            <FilterRow visible={true} applyFilter="auto" />
+                            <HeaderFilter visible searchMode='contains' />
+                            <Selection mode="multiple" allowSelectAll />
+                            <Grouping autoExpandAll={false} contextMenuEnabled={true} />
+                            <GroupPanel visible={true} emptyPanelText={t('Arrastre una columna aquí para agrupar por dicha columna')} />
+                            <ColumnChooser enabled mode="select" />
+                            <Export enabled fileName="PlantillasICG" allowExportSelectedData />
+                            <Sorting mode="multiple" />
+                            <ColumnFixing enabled />
+
+                            <Column dataField="Informe" caption={t('Informe')} width={280} />
+                            <Column dataField="ResultadoInforme" caption={t('Resultado Informe')} width={150} />
+                            <Column dataField="EstadoInforme" caption={t('Estado Informe')} width={180} />
+                            <Column dataField="TipoICG" caption={t('TipoICG')} width={100} />
+                            <Column dataField="Mutua" caption={t('Mutua')} width={150} />
+                            <Column dataField="Anio" caption={t('Año')} width={100} />
+                            <Column dataField="Mes" caption={t('Mes')} width={120} />
+                            <Column dataField="Usuario" caption={t('Usuario')} width={150} />
+                            <Column dataField="FechaAlta" caption={t('Fecha Alta')} dataType="datetime" format="dd/MM/yyyy HH:mm:ss" width={180} />
+                            
+                            <Column
+                                caption={t('Acciones')}
+                                width={80}
+                                fixed={true}
+                                fixedPosition="right"
+                                alignment="center"
+                                cellRender={(cell) => (
+                                    <div className="ficha-row-actions">
+                                        <i 
+                                            className="ri-delete-bin-line delete-icon" 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDelete(cell);
+                                            }}
+                                            title={t('Eliminar')}
+                                        />
+                                    </div>
+                                )}
+                            />
+                        </DataGrid>
+                    </div>
 
                 </div>
             </div>
+
+            {/* MODAL FICHA DOC. ADJUNTO */}
+            <Popup
+                visible={popupVisible}
+                onHiding={() => setPopupVisible(false)}
+                dragEnabled={true}
+                hideOnOutsideClick={false}
+                showCloseButton={false}
+                showTitle={false}
+                width={650}
+                height="auto"
+                wrapperAttr={{ class: "ficha-popup-wrapper" }}
+            >
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title" style={{ fontSize: "16px", fontWeight: "bold", textTransform: "uppercase" }}>
+                        {t('FICHA DOC. ADJUNTO')}
+                    </span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleSubirAceptar}>
+                            <i className="ri-check-line"></i> {t('Aceptar')}
+                        </button>
+                        <button className="ficha-btn-secondary" onClick={() => setPopupVisible(false)}>
+                            <i className="ri-close-line"></i> {t('Salir')}
+                        </button>
+                    </div>
+                </div>
+                
+                <div style={{ padding: "20px" }}>
+                    <div className="ficha-grid" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: "15px" }}>
+                        <div className="ficha-field">
+                            <label>{t('Tipo ICG')}</label>
+                            <SelectBox
+                                items={TIPOS}
+                                value={uploadForm.tipoICG}
+                                onValueChanged={(e) => {
+                                    setUploadForm(prev => {
+                                        const newForm = {...prev, tipoICG: e.value};
+                                        if (!isMutuaRequired(e.value)) {
+                                            newForm.mutua = ""; // Limpiamos la mutua si no hace falta
+                                        }
+                                        return newForm;
+                                    });
+                                }}
+                                placeholder=""
+                            />
+                        </div>
+                        <div className="ficha-field">
+                            <label>{t('Mutua')}</label>
+                            <SelectBox
+                                items={MUTUAS}
+                                value={uploadForm.mutua}
+                                onValueChanged={(e) => setUploadForm({...uploadForm, mutua: e.value})}
+                                placeholder=""
+                                disabled={!isMutuaRequired(uploadForm.tipoICG) || (!userInfo.isAdmin && !!userInfo.mutua)}
+                            />
+                        </div>
+                    </div>
+                    
+                    <div className="ficha-grid" style={{ gridTemplateColumns: "1fr", marginBottom: "15px" }}>
+                        <div className="ficha-field">
+                            <label>{t('Año')}</label>
+                            <SelectBox
+                                items={YEARS}
+                                value={uploadForm.anio}
+                                onValueChanged={(e) => setUploadForm({...uploadForm, anio: e.value})}
+                                placeholder=""
+                            />
+                        </div>
+                    </div>
+
+                    <div className="ficha-grid" style={{ gridTemplateColumns: "1fr", marginBottom: "15px" }}>
+                        <div className="ficha-field">
+                            <label>{t('Fichero')}</label>
+                            <div className="uploader-btn-derecha" style={{ border: "1px solid #d1d5db", padding: "5px", borderRadius: "6px", backgroundColor: "#fff" }}>
+                                <FileUploader
+                                    selectButtonText={t('Examinar...')}
+                                    labelText={t('Ningún archivo seleccionado')}
+                                    accept=".csv, .xml"
+                                    uploadMode="useForm"
+                                    onValueChanged={(e) => {
+                                        setUploadForm({...uploadForm, fichero: e.value[0]});
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="ficha-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                        <div className="ficha-field">
+                            <label>{t('Usuario')}</label>
+                            <input type="text" value={uploadForm.usuario} readOnly className="ficha-input-readonly" style={{ backgroundColor: "#eef5fd" }} />
+                        </div>
+                        <div className="ficha-field">
+                            <label>{t('Fecha de Subida')}</label>
+                            <input type="text" value={uploadForm.fechaSubida} readOnly className="ficha-input-readonly" style={{ backgroundColor: "#eef5fd" }} />
+                        </div>
+                    </div>
+                </div>
+            </Popup>
         </React.Fragment>
     );
 };

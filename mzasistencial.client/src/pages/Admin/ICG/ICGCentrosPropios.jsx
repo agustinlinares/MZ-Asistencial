@@ -15,8 +15,10 @@ import SelectBox from "devextreme-react/select-box";
 
 const API_CENTROS      = "/api/CentrosPropios";
 const API_ESPECIALIDAD = "/api/Icg06Especialidad";
+const API_CREAR_ICG    = "/api/Icg06Crear";
 const YEAR_NOW         = new Date().getFullYear();
 const YEARS            = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
+const API_VALIDAR = "/api/Icg06Validar";
 
 // ─── Helper: campos de plantilla por grupo de personal ───────────────────────
 const cp = (prefijo, label) => [
@@ -142,43 +144,43 @@ const camposAmb = [
 ];
 
 const camposConvHos = [
-    { key: "pitrmutConvSecBilMultHos",                   label: "PI trmut Conv. Sec. Bil. Mult. HOS" },
-    { key: "esttrmutConvSecBilMultHos",                  label: "Estancias trmut Conv. Sec. Bil. Mult. HOS" },
-    { key: "primConsConvSecBilMultHosProg",              label: "1ª Consulta Conv. (Prog.)" },
-    { key: "primConsConvSecBilMultHosProgVideo",         label: "1ª Consulta Conv. (Prog. Vídeo)" },
-    { key: "primConsConvSecBilMultHosNoProg",            label: "1ª Consulta Conv. (No Prog.)" },
-    { key: "primConsConvSecBilMultHosNoProgVideo",       label: "1ª Consulta Conv. (No Prog. Vídeo)" },
-    { key: "conssucConvSecBilMultHos",                   label: "Cons. sucesivas Conv. HOS" },
-    { key: "conssucConvSecBilMultHosVideo",              label: "Cons. sucesivas Conv. HOS (Vídeo)" },
-    { key: "consEnfConvSecBilMultHos",                   label: "Cons. enfermería Conv. HOS" },
-    { key: "srehabtrmutConvSecBilMultHos",               label: "Sesiones rehabilitación Conv. HOS" },
-    { key: "prmydtrmutConvSecBilMultHosRm",              label: "Pruebas diagnósticas Conv. HOS (RM)" },
-    { key: "prmydtrmutConvSecBilMultHosEco",             label: "Pruebas diagnósticas Conv. HOS (Eco)" },
-    { key: "prmydtrmutConvSecBilMultHosTac",             label: "Pruebas diagnósticas Conv. HOS (TAC)" },
-    { key: "prmydtrmutConvSecBilMultHosRadio",           label: "Pruebas diagnósticas Conv. HOS (Radio)" },
-    { key: "iquirtrmutConvSecBilMultHos",                label: "Intervenciones quirúrgicas Conv. HOS" },
-    { key: "opptrmutConvSecBilMultHos",                  label: "Otras prácticas Conv. HOS" },
-    { key: "paurgNoIngrConvSecBilMultHos",               label: "PA urgencias no ingreso Conv. HOS" },
-    { key: "prueBiomConvSecBilMultHos",                  label: "Pruebas biomecánicas Conv. HOS" },
+    { key: "pitrmutConvSecBilMultHos",             label: "PI trmut Conv. Sec. Bil. Mult. HOS" },
+    { key: "esttrmutConvSecBilMultHos",            label: "Estancias trmut Conv. Sec. Bil. Mult. HOS" },
+    { key: "primConsConvSecBilMultHosProg",        label: "1ª Consulta Conv. (Prog.)" },
+    { key: "primConsConvSecBilMultHosProgVideo",   label: "1ª Consulta Conv. (Prog. Vídeo)" },
+    { key: "primConsConvSecBilMultHosNoProg",      label: "1ª Consulta Conv. (No Prog.)" },
+    { key: "primConsConvSecBilMultHosNoProgVideo", label: "1ª Consulta Conv. (No Prog. Vídeo)" },
+    { key: "conssucConvSecBilMultHos",             label: "Cons. sucesivas Conv. HOS" },
+    { key: "conssucConvSecBilMultHosVideo",        label: "Cons. sucesivas Conv. HOS (Vídeo)" },
+    { key: "consEnfConvSecBilMultHos",             label: "Cons. enfermería Conv. HOS" },
+    { key: "srehabtrmutConvSecBilMultHos",         label: "Sesiones rehabilitación Conv. HOS" },
+    { key: "prmydtrmutConvSecBilMultHosRm",        label: "Pruebas diagnósticas Conv. HOS (RM)" },
+    { key: "prmydtrmutConvSecBilMultHosEco",       label: "Pruebas diagnósticas Conv. HOS (Eco)" },
+    { key: "prmydtrmutConvSecBilMultHosTac",       label: "Pruebas diagnósticas Conv. HOS (TAC)" },
+    { key: "prmydtrmutConvSecBilMultHosRadio",     label: "Pruebas diagnósticas Conv. HOS (Radio)" },
+    { key: "iquirtrmutConvSecBilMultHos",          label: "Intervenciones quirúrgicas Conv. HOS" },
+    { key: "opptrmutConvSecBilMultHos",            label: "Otras prácticas Conv. HOS" },
+    { key: "paurgNoIngrConvSecBilMultHos",         label: "PA urgencias no ingreso Conv. HOS" },
+    { key: "prueBiomConvSecBilMultHos",            label: "Pruebas biomecánicas Conv. HOS" },
 ];
 
 const camposConvAmb = [
-    { key: "pacenConvSectBilMult",                  label: "PA centro Conv. Sect." },
-    { key: "primConsConvSectBilMultProg",            label: "1ª Consulta Conv. Sect. (Prog.)" },
-    { key: "primConsConvSectBilMultProgVideo",       label: "1ª Consulta Conv. Sect. (Prog. Vídeo)" },
-    { key: "primConsConvSectBilMultNoProg",          label: "1ª Consulta Conv. Sect. (No Prog.)" },
-    { key: "primConsConvSectBilMultNoProgVideo",     label: "1ª Consulta Conv. Sect. (No Prog. Vídeo)" },
-    { key: "conssucConvSectBilMult",                 label: "Cons. sucesivas Conv. Sect." },
-    { key: "conssucConvSectBilMultVideo",            label: "Cons. sucesivas Conv. Sect. (Vídeo)" },
-    { key: "sesrehabConvSectBilMult",                label: "Sesiones rehabilitación Conv. Sect." },
-    { key: "consEnfConvSectBilMult",                 label: "Cons. enfermería Conv. Sect." },
-    { key: "pradConvSectBilMultRm",                  label: "Pruebas diagnósticas Conv. Sect. (RM)" },
-    { key: "pradConvSectBilMultEco",                 label: "Pruebas diagnósticas Conv. Sect. (Eco)" },
-    { key: "pradConvSectBilMultTac",                 label: "Pruebas diagnósticas Conv. Sect. (TAC)" },
-    { key: "pradConvSectBilMultRadio",               label: "Pruebas diagnósticas Conv. Sect. (Radio)" },
-    { key: "iquircenConvSectBilMult",                label: "Intervenciones quirúrgicas Conv. Sect." },
-    { key: "oppractConvSectBilMult",                 label: "Otras prácticas Conv. Sect." },
-    { key: "pruBiomConvSectBilMult",                 label: "Pruebas biomecánicas Conv. Sect." },
+    { key: "pacenConvSectBilMult",              label: "PA centro Conv. Sect." },
+    { key: "primConsConvSectBilMultProg",        label: "1ª Consulta Conv. Sect. (Prog.)" },
+    { key: "primConsConvSectBilMultProgVideo",   label: "1ª Consulta Conv. Sect. (Prog. Vídeo)" },
+    { key: "primConsConvSectBilMultNoProg",      label: "1ª Consulta Conv. Sect. (No Prog.)" },
+    { key: "primConsConvSectBilMultNoProgVideo", label: "1ª Consulta Conv. Sect. (No Prog. Vídeo)" },
+    { key: "conssucConvSectBilMult",             label: "Cons. sucesivas Conv. Sect." },
+    { key: "conssucConvSectBilMultVideo",        label: "Cons. sucesivas Conv. Sect. (Vídeo)" },
+    { key: "sesrehabConvSectBilMult",            label: "Sesiones rehabilitación Conv. Sect." },
+    { key: "consEnfConvSectBilMult",             label: "Cons. enfermería Conv. Sect." },
+    { key: "pradConvSectBilMultRm",              label: "Pruebas diagnósticas Conv. Sect. (RM)" },
+    { key: "pradConvSectBilMultEco",             label: "Pruebas diagnósticas Conv. Sect. (Eco)" },
+    { key: "pradConvSectBilMultTac",             label: "Pruebas diagnósticas Conv. Sect. (TAC)" },
+    { key: "pradConvSectBilMultRadio",           label: "Pruebas diagnósticas Conv. Sect. (Radio)" },
+    { key: "iquircenConvSectBilMult",            label: "Intervenciones quirúrgicas Conv. Sect." },
+    { key: "oppractConvSectBilMult",             label: "Otras prácticas Conv. Sect." },
+    { key: "pruBiomConvSectBilMult",             label: "Pruebas biomecánicas Conv. Sect." },
 ];
 
 const camposItHos = [
@@ -452,11 +454,6 @@ const TABS = [
 
 // ─── Estilos ──────────────────────────────────────────────────────────────────
 const st = {
-    page:       { fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 13, padding: "16px 20px" },
-    header:     { display: "flex", alignItems: "center", gap: 12, marginBottom: 14 },
-    title:      { fontSize: 17, fontWeight: 700, color: "#1976d2", flex: 1 },
-    yearWrap:   { display: "flex", alignItems: "center", gap: 8 },
-    yearLabel:  { fontSize: 13, color: "#555" },
     backBtn:    { marginBottom: 14 },
     fichaWrap:  { background: "#fff", border: "1px solid #e0e0e0", borderRadius: 6 },
     fichaHead:  { background: "#1976d2", color: "#fff", borderRadius: "6px 6px 0 0", padding: "12px 20px" },
@@ -517,22 +514,13 @@ const TabEspecialidades = ({ centroId, año }) => {
         e.cancel = true;
         try {
             const res = await fetch(API_ESPECIALIDAD, {
-                method:  "POST",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify({
-                    centroId,
-                    año,
-                    especialidad: e.data.especialidad ?? null,
-                    servicio:     e.data.servicio     ?? null,
-                    cantidad:     e.data.cantidad     ?? null,
-                }),
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ centroId, año, especialidad: e.data.especialidad ?? null, servicio: e.data.servicio ?? null, cantidad: e.data.cantidad ?? null }),
             });
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad añadida.");
             cargar();
-        } catch {
-            mostrarMsg(false, "Error al añadir la especialidad.");
-        }
+        } catch { mostrarMsg(false, "Error al añadir la especialidad."); }
     };
 
     const onRowUpdating = async (e) => {
@@ -540,16 +528,12 @@ const TabEspecialidades = ({ centroId, año }) => {
         const actualizado = { ...e.oldData, ...e.newData, centroId, año };
         try {
             const res = await fetch(`${API_ESPECIALIDAD}/${actualizado.id}`, {
-                method:  "PUT",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify(actualizado),
+                method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(actualizado),
             });
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad actualizada.");
             cargar();
-        } catch {
-            mostrarMsg(false, "Error al actualizar la especialidad.");
-        }
+        } catch { mostrarMsg(false, "Error al actualizar la especialidad."); }
     };
 
     const onRowRemoving = async (e) => {
@@ -559,9 +543,7 @@ const TabEspecialidades = ({ centroId, año }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad eliminada.");
             cargar();
-        } catch {
-            mostrarMsg(false, "Error al eliminar la especialidad.");
-        }
+        } catch { mostrarMsg(false, "Error al eliminar la especialidad."); }
     };
 
     if (loading) return <div style={st.loading}>Cargando especialidades…</div>;
@@ -575,30 +557,14 @@ const TabEspecialidades = ({ centroId, año }) => {
                 </span>
                 {msg && <span style={st.espMsg(msg.ok)}>{msg.text}</span>}
             </div>
-            <DataGrid
-                dataSource={rows}
-                keyExpr="id"
-                showBorders
-                rowAlternationEnabled
-                columnAutoWidth
-                onRowInserting={onRowInserting}
-                onRowUpdating={onRowUpdating}
-                onRowRemoving={onRowRemoving}
+            <DataGrid dataSource={rows} keyExpr="id" showBorders rowAlternationEnabled columnAutoWidth
+                onRowInserting={onRowInserting} onRowUpdating={onRowUpdating} onRowRemoving={onRowRemoving}
                 noDataText="Sin especialidades registradas para este centro y año."
             >
                 <FilterRow visible />
                 <Paging defaultPageSize={20} />
-                <Editing
-                    mode="row"
-                    allowAdding
-                    allowUpdating
-                    allowDeleting
-                    confirmDelete
-                    useIcons
-                />
-                <Toolbar>
-                    <Item name="addRowButton" showText="always" />
-                </Toolbar>
+                <Editing mode="row" allowAdding allowUpdating allowDeleting confirmDelete useIcons />
+                <Toolbar><Item name="addRowButton" showText="always" /></Toolbar>
                 <Column dataField="especialidad" caption="Especialidad" minWidth={200}>
                     <RequiredRule message="La especialidad es obligatoria." />
                 </Column>
@@ -609,7 +575,7 @@ const TabEspecialidades = ({ centroId, año }) => {
     );
 };
 
-// ─── TabContent (genérico para el resto de pestañas) ─────────────────────────
+// ─── TabContent (genérico) ────────────────────────────────────────────────────
 const TabContent = ({ centroId, año, tabKey, apiName }) => {
     const [datos,   setDatos]   = useState(null);
     const [loading, setLoading] = useState(true);
@@ -634,9 +600,7 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
         try {
             const id  = datos.idIcg ?? datos.id;
             const res = await fetch(`/api/${apiName}/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos),
+                method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(datos),
             });
             if (!res.ok) throw new Error();
             setMsg({ ok: true, text: "Guardado correctamente." });
@@ -650,8 +614,7 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
 
     const camposList = (CAMPOS[tabKey] || []).length > 0
         ? CAMPOS[tabKey].map(c => ({ ...c, type: c.type || "number" }))
-        : Object.keys(datos)
-            .filter(k => !["idIcg","id","centroId","año"].includes(k))
+        : Object.keys(datos).filter(k => !["idIcg","id","centroId","año"].includes(k))
             .map(k => ({ key: k, label: k, type: typeof datos[k] === "number" ? "number" : "text" }));
 
     return (
@@ -667,23 +630,11 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
                     <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
                         <span style={st.fieldLabel}>{label}</span>
                         {type === "text" ? (
-                            <textarea
-                                style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
-                                value={datos[key] ?? ""}
-                                onChange={e => handleChange(key, e.target.value)}
-                                placeholder="Escriba aquí..."
-                            />
+                            <textarea style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
+                                value={datos[key] ?? ""} onChange={e => handleChange(key, e.target.value)} placeholder="Escriba aquí..." />
                         ) : (
-                            <input
-                                style={{
-                                    ...st.fieldInput,
-                                    color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222",
-                                }}
-                                type="number"
-                                value={datos[key] ?? ""}
-                                onChange={e => handleChange(key, e.target.value)}
-                                placeholder="0"
-                            />
+                            <input style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222" }}
+                                type="number" value={datos[key] ?? ""} onChange={e => handleChange(key, e.target.value)} placeholder="0" />
                         )}
                     </div>
                 ))}
@@ -694,20 +645,103 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
 
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
 const FichaICG06 = ({ centro, año, onBack }) => {
-    const [tabActiva, setTabActiva] = useState("generales");
+    const [tabActiva,      setTabActiva]      = useState("generales");
     const [esHospitalario, setEsHospitalario] = useState(true);
-    const tab = TABS.find(t => t.key === tabActiva);
+    const [validado,       setValidado]       = useState(null);   // null = cargando
+    const [idIcg,          setIdIcg]          = useState(null);
+    const [validando,      setValidando]       = useState(false);
+    const [msgValidar,     setMsgValidar]     = useState(null);
+ 
+    const tab          = TABS.find(t => t.key === tabActiva);
     const tabsVisibles = TABS.filter(t => !t.hospitalario || esHospitalario);
-
+ 
+    // Detectar perfil de admin (perfilId === 1)
+    const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+    const esAdmin = user?.perfilId === 1;
+ 
+    // Cargar el idIcg y estado validado al montar
+    useEffect(() => {
+        fetch(`/api/Icg06DatosGenerales?centroId=${centro.centroId}&a%C3%B1o=${año}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (d) {
+                    setIdIcg(d.idIcg);
+                    setValidado(d.validado ?? 0);
+                }
+            })
+            .catch(() => {});
+    }, [centro.centroId, año]);
+ 
+    const cambiarValidado = async () => {
+        if (!idIcg || validando) return;
+        setValidando(true);
+        setMsgValidar(null);
+        const nuevoEstado = validado === 1 ? 0 : 1;
+        try {
+            const res = await fetch(`${API_VALIDAR}/${idIcg}`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ validado: nuevoEstado, usuarioId: user?.usuarioId ?? null }),
+            });
+            if (!res.ok) throw new Error();
+            setValidado(nuevoEstado);
+            setMsgValidar({ ok: true, text: nuevoEstado === 1 ? 'ICG validado correctamente.' : 'ICG desvalidado correctamente.' });
+            setTimeout(() => setMsgValidar(null), 3500);
+        } catch {
+            setMsgValidar({ ok: false, text: 'Error al cambiar el estado de validación.' });
+        } finally {
+            setValidando(false);
+        }
+    };
+ 
     return (
         <div>
             <div style={st.backBtn}>
                 <Button text="← Volver a la lista" onClick={onBack} stylingMode="outlined" />
             </div>
             <div style={st.fichaWrap}>
-                <div style={st.fichaHead}>
-                    <div style={st.fichaTitle}>ICG06 — {centro.centro} ({centro.localizador})</div>
-                    <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
+                <div style={{ ...st.fichaHead, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                        <div style={st.fichaTitle}>ICG06 — {centro.centro} ({centro.localizador})</div>
+                        <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
+                    </div>
+                    {/* ── Botón de validación (solo admin) ── */}
+                    {esAdmin && idIcg && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            {msgValidar && (
+                                <span style={{ fontSize: 12.5, color: msgValidar.ok ? "#c8e6c9" : "#ffcdd2" }}>
+                                    {msgValidar.text}
+                                </span>
+                            )}
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: 8,
+                                background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px",
+                            }}>
+                                <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>
+                                    Estado:
+                                </span>
+                                <span style={{
+                                    fontSize: 12, fontWeight: 700,
+                                    color: validado === 1 ? "#c8e6c9" : "#ffcc80",
+                                }}>
+                                    {validado === null ? "…" : validado === 1 ? "✓ Validado" : "⏳ Pendiente"}
+                                </span>
+                                <button
+                                    onClick={cambiarValidado}
+                                    disabled={validando || validado === null}
+                                    style={{
+                                        border: "none", borderRadius: 4, padding: "4px 14px",
+                                        fontSize: 12, fontWeight: 700, cursor: validando ? "wait" : "pointer",
+                                        background: validado === 1 ? "#e53935" : "#43a047",
+                                        color: "#fff",
+                                        opacity: (validando || validado === null) ? 0.6 : 1,
+                                    }}
+                                >
+                                    {validando ? "…" : validado === 1 ? "Desvalidar" : "Validar"}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div style={st.tabBar}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
@@ -723,22 +757,12 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                     ))}
                 </div>
                 <div style={st.tabContent}>
-                    {/* ── Pestaña especialidades: grid editable ── */}
                     {tabActiva === "especialidades" ? (
-                        <TabEspecialidades
-                            key={`esp-${centro.centroId}-${año}`}
-                            centroId={centro.centroId}
-                            año={año}
-                        />
+                        <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} />
                     ) : (
                         tab && (
-                            <TabContent
-                                key={`${centro.centroId}-${año}-${tabActiva}`}
-                                centroId={centro.centroId}
-                                año={año}
-                                tabKey={tabActiva}
-                                apiName={tab.api}
-                            />
+                            <TabContent key={`${centro.centroId}-${año}-${tabActiva}`}
+                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api} />
                         )
                     )}
                 </div>
@@ -757,21 +781,20 @@ const ICGCentrosPropios = () => {
     const [loading,            setLoading]            = useState(true);
     const [año,                setAño]                = useState(YEAR_NOW);
     const [centroSeleccionado, setCentroSeleccionado] = useState(null);
-    const [menuAbierto, setMenuAbierto] = useState(false);
+    const [creando,            setCreando]            = useState(false);
+    const [menuAbierto,        setMenuAbierto]        = useState(false);
     const menuRef = useRef(null);
 
     useEffect(() => {
         const handleClick = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-                setMenuAbierto(false);
-            }
+            if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAbierto(false);
         };
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
     useEffect(() => {
-        const user     = JSON.parse(sessionStorage.getItem('user'));
+        const user     = JSON.parse(localStorage.getItem('UsuarioActual'));
         const perfilId = user?.perfilId ?? '';
         fetch(`${API_CENTROS}?perfilId=${perfilId}`)
             .then(r => r.ok ? r.json() : [])
@@ -779,7 +802,7 @@ const ICGCentrosPropios = () => {
             .catch(() => setCentros([]));
     }, []);
 
-    useEffect(() => {
+    const cargarIcgData = useCallback(() => {
         setLoading(true);
         fetch(`/api/ListadoPropiosIcg?a%C3%B1o=${año}`)
             .then(r => r.ok ? r.json() : [])
@@ -787,6 +810,29 @@ const ICGCentrosPropios = () => {
             .catch(() => setIcgData([]))
             .finally(() => setLoading(false));
     }, [año]);
+
+    useEffect(() => { cargarIcgData(); }, [cargarIcgData]);
+
+    // ── Crear ICG06 vacío ──────────────────────────────────────────────────
+    const crearIcg06 = async (centro) => {
+        if (creando) return;
+        setCreando(true);
+        try {
+            const user = JSON.parse(localStorage.getItem('UsuarioActual'));
+            const res  = await fetch(API_CREAR_ICG, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ centroId: centro.centroId, año, usuarioId: user?.usuarioId ?? null }),
+            });
+            if (!res.ok) throw new Error();
+            await cargarIcgData();
+            setCentroSeleccionado(centro);
+        } catch {
+            alert('Error al crear el registro ICG06.');
+        } finally {
+            setCreando(false);
+        }
+    };
 
     const dataSource = centros.map(c => {
         const icg = icgData.find(i => i.centroId === c.centroId) || {};
@@ -821,7 +867,7 @@ const ICGCentrosPropios = () => {
                     <FichaICG06
                         centro={centroSeleccionado}
                         año={año}
-                        onBack={() => setCentroSeleccionado(null)}
+                        onBack={() => { setCentroSeleccionado(null); cargarIcgData(); }}
                     />
                 </div>
             </div>
@@ -832,9 +878,7 @@ const ICGCentrosPropios = () => {
         <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
             <div className="file-box">
                 <div className="header-page">
-                    <div className="title">
-                        {t('Lista Centros Propios — ICG06')}
-                    </div>
+                    <div className="title">{t('Lista Centros Propios — ICG06')}</div>
                     <div className="header-actions-side">
                         <div className="year-selector-wrap">
                             <span className="year-label">{t('Año')}:</span>
@@ -857,15 +901,8 @@ const ICGCentrosPropios = () => {
                     </div>
                 </div>
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
-                    <DataGrid
-                        ref={dataGridRef}
-                        dataSource={dataSource}
-                        showBorders
-                        rowAlternationEnabled
-                        columnAutoWidth
-                        allowColumnResizing
-                        allowColumnReordering
-                        onExporting={onExporting}
+                    <DataGrid ref={dataGridRef} dataSource={dataSource} showBorders rowAlternationEnabled
+                        columnAutoWidth allowColumnResizing allowColumnReordering onExporting={onExporting}
                         noDataText={loading ? "Cargando…" : "No hay centros disponibles"}
                     >
                         <SearchPanel visible placeholder="Buscar…" />
@@ -895,12 +932,12 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        <Column dataField="cap1GastosPersonal"       caption="Cap. 1 - Personal"     width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap2GastosCorrientes"     caption="Cap. 2 - Corrientes"   width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap3GastosFinancieros"    caption="Cap. 3 - Financieros"  width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cuenta68Amortizaciones"   caption="Cta. 68 - Amortiz."   width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art32OtrosIngresos"       caption="Art. 32 - Ingresos"   width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art62InversionNueva"      caption="Art. 62 - Inv. Nueva" width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap1GastosPersonal"       caption="Cap. 1 - Personal"      width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap2GastosCorrientes"     caption="Cap. 2 - Corrientes"    width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap3GastosFinancieros"    caption="Cap. 3 - Financieros"   width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cuenta68Amortizaciones"   caption="Cta. 68 - Amortiz."    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art32OtrosIngresos"       caption="Art. 32 - Ingresos"    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art62InversionNueva"      caption="Art. 62 - Inv. Nueva"  width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
                         <Column dataField="art63InversionReposicion" caption="Art. 63 - Inv. Repos." width={150} dataType="number" cellRender={({ value }) => fmtNum(value)} />
                         <Column dataField="totalGastos" caption="Total Gastos" width={130} dataType="number"
                             cellRender={({ value }) => (
@@ -916,19 +953,29 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        <Column caption="ICG06" width={110}
-                            cellRender={({ data }) => (
-                                <button
-                                    style={{
-                                        border: "none", borderRadius: 3, padding: "3px 12px",
-                                        background: data.tieneIcg ? "#1976d2" : "#90a4ae",
-                                        color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600
-                                    }}
-                                    onClick={() => setCentroSeleccionado(data)}
-                                >
-                                    {data.tieneIcg ? "Ver ficha" : "Sin ICG"}
-                                </button>
-                            )}
+                        {/* ── Columna ICG06: Ver ficha o Crear ICG ── */}
+                        <Column caption="ICG06" width={130}
+                            cellRender={({ data }) => {
+                                if (data.tieneIcg) {
+                                    return (
+                                        <button
+                                            style={{ border: "none", borderRadius: 3, padding: "3px 12px", background: "#1976d2", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+                                            onClick={() => setCentroSeleccionado(data)}
+                                        >
+                                            Ver ficha
+                                        </button>
+                                    );
+                                }
+                                return (
+                                    <button
+                                        style={{ border: "none", borderRadius: 3, padding: "3px 12px", background: creando ? "#bbb" : "#e65100", color: "#fff", fontSize: 12, cursor: creando ? "not-allowed" : "pointer", fontWeight: 600 }}
+                                        disabled={creando}
+                                        onClick={() => crearIcg06(data)}
+                                    >
+                                        + Crear ICG
+                                    </button>
+                                );
+                            }}
                         />
                     </DataGrid>
                 </div>
