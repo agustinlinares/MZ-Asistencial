@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import '../../../styles/FichaGlobal.css';
+import notify from 'devextreme/ui/notify';
 import MapaModal from './MapaModal';
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
 import { Workbook } from "exceljs";
@@ -112,9 +113,15 @@ const handleAceptar = async () => {
                 personaContacto: form.PersonaContacto, desactivado: form.CentroDesactivado,
             })
         });
-        if (res.ok) { alert('Centro guardado correctamente'); onClose(); }
-        else { alert('Error al guardar el centro'); }
-    } catch (err) { alert('Error de conexion: ' + err.message); }
+        if (res.ok) {
+            notify('Centro guardado correctamente', 'success', 2000);
+            onClose();
+        } else {
+            notify('Error al guardar el centro', 'error', 3000);
+        }
+    } catch (err) {
+        notify('Error de conexión: ' + err.message, 'error', 3000);
+    }
 };
     return (
         <div className="ficha-overlay">

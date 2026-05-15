@@ -7,6 +7,8 @@ import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 import DataGrid, {
     Column,
@@ -200,17 +202,16 @@ const Conciertos = () => {
                                             className="ri-edit-line edit-icon" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                console.log('Editar concierto:', cellData.data.Id_Icg);
+                                                notify('Edición de concierto pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Editar')}
                                         />
                                         <i 
                                             className="ri-delete-bin-line delete-icon" 
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm(t('¿Está seguro de que desea eliminar este registro?'))) {
-                                                    console.log('Eliminar concierto:', cellData.data.Id_Icg);
-                                                }
+                                                const ok = await dxConfirm(t('¿Está seguro de que desea eliminar este registro?'), 'Confirmar eliminación');
+                                                if (ok) notify('Eliminación de concierto pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Eliminar')}
                                         />

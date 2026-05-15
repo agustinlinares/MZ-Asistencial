@@ -27,6 +27,8 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 // ─── LOOKUP DATA ─────────────────────────────────────────────────────────────
 const services = ["Vivienda", "Empleo", "Salud Mental", "Formación", "Jurídico", "Becas"];
@@ -451,7 +453,7 @@ const Delegaciones = () => {
 
     const handleNuevo = () => {
         setMenuAbierto(false);
-        console.log('Nueva delegación');
+        notify('Creación de delegación pendiente de implementar', 'warning', 2000);
     };
 
     // useEffect(() => {
@@ -640,17 +642,16 @@ const Delegaciones = () => {
                                             className="ri-edit-line edit-icon" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                console.log('Editar delegación:', cellData.data.CodigoPersona);
+                                                notify('Edición de delegación pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Editar')}
                                         />
                                         <i 
                                             className="ri-delete-bin-line delete-icon" 
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm(t('¿Está seguro de que desea eliminar esta delegación?'))) {
-                                                    console.log('Eliminar delegación:', cellData.data.CodigoPersona);
-                                                }
+                                                const ok = await dxConfirm(t('¿Está seguro de que desea eliminar esta delegación?'), 'Confirmar eliminación');
+                                                if (ok) notify('Eliminación de delegación pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Eliminar')}
                                         />
