@@ -49,6 +49,7 @@ namespace MZAsistencial.Server.Controllers
                 perfilId = usuario.PerfilId,
                 nombre = usuario.Nombre,
                 apellidos = usuario.Apellidos,
+                mutuaId = usuario.MutuaId
             });
         }
     }
