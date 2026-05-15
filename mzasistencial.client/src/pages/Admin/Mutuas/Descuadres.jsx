@@ -12,7 +12,7 @@ import DataGrid, {
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
+const API = '/api';
 
 const Descuadres = () => {
     const { t } = useTranslation();
