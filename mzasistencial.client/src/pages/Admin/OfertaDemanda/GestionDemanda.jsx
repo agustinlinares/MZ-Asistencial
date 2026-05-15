@@ -15,6 +15,8 @@ import TextBox from "devextreme-react/text-box";
 import RadioGroup from "devextreme-react/radio-group";
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
@@ -149,19 +151,20 @@ const GestionDemanda = () => {
         setDemandaId('');
     };
 
-    const handleBorrar = (e, rowData) => {
+    const handleBorrar = async (e, rowData) => {
         e.stopPropagation();
-        if (window.confirm(`Seguro que deseas eliminar la demanda ${rowData.demandaId}?`)) {
-            fetch(`${API}/ListaDemandas/${rowData.demandaId}`, { method: 'DELETE' })
-                .then(res => {
-                    if (res.ok) {
-                        setDatos(prev => prev.filter(d => d.demandaId !== rowData.demandaId));
-                    } else {
-                        alert('Error al eliminar el registro');
-                    }
-                })
-                .catch(err => console.error('Error:', err));
-        }
+        const ok = await dxConfirm(`¿Seguro que deseas eliminar la demanda ${rowData.demandaId}?`, 'Confirmar eliminación');
+        if (!ok) return;
+        fetch(`${API}/ListaDemandas/${rowData.demandaId}`, { method: 'DELETE' })
+            .then(res => {
+                if (res.ok) {
+                    notify('Demanda eliminada correctamente', 'success', 2000);
+                    setDatos(prev => prev.filter(d => d.demandaId !== rowData.demandaId));
+                } else {
+                    notify('Error al eliminar el registro', 'error', 3000);
+                }
+            })
+            .catch(err => console.error('Error:', err));
     };
 
     return (

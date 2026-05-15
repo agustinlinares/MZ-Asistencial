@@ -6,6 +6,8 @@ import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 import FichaCentroPropio from "./FichaCentroPropio";
 import DataGrid, {
     Column, Paging, SearchPanel, FilterRow, HeaderFilter,
@@ -299,11 +301,11 @@ const CentrosPropios = () => {
                                         />
                                         <i 
                                             className="ri-delete-bin-line delete-icon" 
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
-                                                // TODO: Implementar eliminar si es necesario
-                                                if (window.confirm(t('¿Está seguro de que desea eliminar este centro?'))) {
-                                                    console.log('Eliminar centro:', cell.data.centroId);
+                                                const ok = await dxConfirm(t('¿Está seguro de que desea eliminar este centro?'), 'Confirmar eliminación');
+                                                if (ok) {
+                                                    notify('Funcionalidad de eliminación pendiente de implementar', 'warning', 3000);
                                                 }
                                             }}
                                             title={t('Eliminar')}

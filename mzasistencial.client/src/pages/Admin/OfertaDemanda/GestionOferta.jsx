@@ -15,6 +15,8 @@ import TextBox from "devextreme-react/text-box";
 import RadioGroup from "devextreme-react/radio-group";
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
@@ -186,10 +188,11 @@ const GestionOferta = () => {
         })
             .then(res => {
                 if (res.ok) {
+                    notify('Oferta guardada correctamente', 'success', 2000);
                     setOfertaEditando(null);
                     buscarRef.current();
                 } else {
-                    alert('Error al guardar');
+                    notify('Error al guardar la oferta', 'error', 3000);
                 }
             })
             .catch(err => console.error('Error:', err));
@@ -391,15 +394,17 @@ const GestionOferta = () => {
                                         <div
                                             style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
                                             title="Eliminar"
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm('Seguro que desea eliminar esta oferta?')) {
+                                                const ok = await dxConfirm('¿Seguro que desea eliminar esta oferta?', 'Confirmar eliminación');
+                                                if (ok) {
                                                     fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
                                                         .then(res => {
                                                             if (res.ok) {
+                                                                notify('Oferta eliminada correctamente', 'success', 2000);
                                                                 setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
                                                             } else {
-                                                                alert('Error al eliminar la oferta');
+                                                                notify('Error al eliminar la oferta', 'error', 3000);
                                                             }
                                                         })
                                                         .catch(err => console.error('Error:', err));
