@@ -163,19 +163,26 @@ const GestionOferta = () => {
 
     const handleGuardarEdicion = async () => {
         if (ofertaEditando.estadoId === 3) {
+            const ofertaTemp = { ...ofertaEditando };
+            setOfertaEditando(null);
             const ok = await dxConfirm(
                 '¿Seguro que desea confirmar esta oferta? El resto de subsolicitudes de esta demanda quedarán rechazadas automáticamente.',
                 'Confirmar asignación'
             );
-            if (!ok) return;
+            if (!ok) { setOfertaEditando(ofertaTemp); return; }
+            ofertaEditando.estadoId = ofertaTemp.estadoId;
+            Object.assign(ofertaEditando, ofertaTemp);
         }
 
-        if (ofertaEditando.estadoId === 8) {
+        if (ofertaEditando?.estadoId === 8) {
+            const ofertaTemp = { ...ofertaEditando };
+            setOfertaEditando(null);
             const ok = await dxConfirm(
                 '¿Seguro que desea rechazar esta oferta? Todas las subsolicitudes de esta demanda quedarán rechazadas.',
                 'Confirmar rechazo'
             );
-            if (!ok) return;
+            if (!ok) { setOfertaEditando(ofertaTemp); return; }
+            Object.assign(ofertaEditando, ofertaTemp);
         }
 
         fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {

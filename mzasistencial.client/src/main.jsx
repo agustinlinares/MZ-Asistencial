@@ -9,6 +9,11 @@ import 'devextreme/dist/css/dx.material.teal.light.compact.css'
 import './index.css'
 
 import.meta.glob(["./styles/**/*.css"], { eager: true });
+import { locale, loadMessages } from 'devextreme/localization';
+import esMessages from 'devextreme/localization/messages/es.json';
+
+loadMessages(esMessages);
+locale('es');
 
 
 createRoot(document.getElementById('root')).render(
