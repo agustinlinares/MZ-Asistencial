@@ -27,6 +27,8 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 // ─── LOOKUP DATA ─────────────────────────────────────────────────────────────
 const services = ["Vivienda", "Empleo", "Salud Mental", "Formación", "Jurídico", "Becas"];
@@ -451,7 +453,7 @@ const Proveedores = () => {
 
     const handleNuevo = () => {
         setMenuAbierto(false);
-        console.log('Nuevo proveedor');
+        notify('Creación de proveedor pendiente de implementar', 'warning', 2000);
     };
 
     // useEffect(() => {
@@ -642,17 +644,16 @@ const Proveedores = () => {
                                             className="ri-edit-line edit-icon" 
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                console.log('Editar proveedor:', cellData.data.CodigoPersona);
+                                                notify('Edición de proveedor pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Editar')}
                                         />
                                         <i 
                                             className="ri-delete-bin-line delete-icon" 
-                                            onClick={(e) => {
+                                            onClick={async (e) => {
                                                 e.stopPropagation();
-                                                if (window.confirm(t('¿Está seguro de que desea eliminar este proveedor?'))) {
-                                                    console.log('Eliminar proveedor:', cellData.data.CodigoPersona);
-                                                }
+                                                const ok = await dxConfirm(t('¿Está seguro de que desea eliminar este proveedor?'), 'Confirmar eliminación');
+                                                if (ok) notify('Eliminación de proveedor pendiente de implementar', 'warning', 2000);
                                             }}
                                             title={t('Eliminar')}
                                         />

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace MZAsistencial.Server.Models;
@@ -21,7 +21,7 @@ public partial class VwCitacione
 
     public string? Especialidad { get; set; }
 
-    public int MovimientoId { get; set; }
+    public int? MovimientoId { get; set; }
 
     public string? TipoMovimiento { get; set; }
 
@@ -73,17 +73,17 @@ public partial class VwCitacione
 
     public int MutuaDemandanteId { get; set; }
 
-    public int CitacionId { get; set; }
+    public int? CitacionId { get; set; }
 
-    public int CentroId { get; set; }
+    public int? CentroId { get; set; }
 
-    public int EspecialidadId { get; set; }
+    public int? EspecialidadId { get; set; }
 
-    public long ServicioId { get; set; }
+    public long? ServicioId { get; set; }
 
-    public int ProvinciaId { get; set; }
+    public int? ProvinciaId { get; set; }
 
-    public int LocalidadId { get; set; }
+    public int? LocalidadId { get; set; }
 
     public string? Estado { get; set; }
 

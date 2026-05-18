@@ -34,7 +34,6 @@ const onExportingGrid = (e, filename) => {
     e.cancel = true;
 };
 
-// ─── Helpers de estilos de tabla manual ──────────────────────────────────────
 const thS = (align, width) => ({
     padding: '8px 6px', textAlign: align, width, minWidth: width,
     fontWeight: 700, fontSize: 11, borderRight: '1px solid rgba(255,255,255,0.2)',
@@ -44,7 +43,6 @@ const tdS = (align) => ({
     borderRight: '1px solid #f0f0f0',
 });
 
-// ─── Componente principal ─────────────────────────────────────────────────────
 const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const { t }    = useTranslation();
     const navigate = useNavigate();
@@ -62,11 +60,9 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(2024);
     const [bloqueado,   setBloqueado]   = useState(false);
-
-    // ── Estados para edición de disponibilidad ────────────────────────────────
-    const [editandoEsp,   setEditandoEsp]   = useState({}); // { [id]: { ene,feb,...,dic } }
-    const [guardandoEsp,  setGuardandoEsp]  = useState(false);
-    const [msgEsp,        setMsgEsp]        = useState(null);
+    const [editandoEsp,  setEditandoEsp]  = useState({});
+    const [guardandoEsp, setGuardandoEsp] = useState(false);
+    const [msgEsp,       setMsgEsp]       = useState(null);
 
     useEffect(() => {
         modalRef.current?.focus();
@@ -97,65 +93,74 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     useEffect(() => {
         if (!cliente) { onClose(); return; }
         setForm({
-            Localizador:            cliente.localizador            || cliente.Localizador            || "",
-            TipoCentro:             cliente.tipoCentro             || cliente.TipoCentro             || "",
-            CentroId:               cliente.centroId               || cliente.CentroId               || "",
-            Centro:                 cliente.centro                 || cliente.Centro                 || "",
-            Mutua:                  cliente.mutuaId                || cliente.Mutua                  || "",
-            ProvinciaId:            cliente.provinciaId            || cliente.ProvinciaId            || "",
-            PoblacionId:            cliente.poblacionId            || cliente.PoblacionId            || "",
-            Cp:                     cliente.cp                     || cliente.Cp                     || "",
-            ViaPublica:             cliente.ViaPublica             || "AVENIDA",
-            Direccion:              cliente.Direccion              || "",
-            Numero:                 cliente.Numero                 || "",
-            Piso:                   cliente.Piso                   || "",
-            Puerta:                 cliente.Puerta                 || "",
-            ServiciosEspeciales:    cliente.ServiciosEspeciales    || "",
-            Telefono:               cliente.telefono               || cliente.Telefono               || "",
-            DireccionGoogle:        cliente.DireccionGoogle        || "",
+            Localizador:             cliente.localizador            || cliente.Localizador            || "",
+            TipoCentro:              cliente.tipoCentro             || cliente.TipoCentro             || "",
+            CentroId:                cliente.centroId               || cliente.CentroId               || "",
+            Centro:                  cliente.centro                 || cliente.Centro                 || "",
+            Mutua:                   cliente.mutuaId                || cliente.Mutua                  || "",
+            ProvinciaId:             cliente.provinciaId            || cliente.ProvinciaId            || "",
+            PoblacionId:             cliente.poblacionId            || cliente.PoblacionId            || "",
+            Cp:                      cliente.cp                     || cliente.Cp                     || "",
+            ViaPublica:              cliente.ViaPublica             || "AVENIDA",
+            Direccion:               cliente.Direccion              || "",
+            Numero:                  cliente.Numero                 || "",
+            Piso:                    cliente.Piso                   || "",
+            Puerta:                  cliente.Puerta                 || "",
+            ServiciosEspeciales:     cliente.ServiciosEspeciales    || "",
+            Telefono:                cliente.telefono               || cliente.Telefono               || "",
+            DireccionGoogle:         cliente.DireccionGoogle        || "",
             VerificarDireccionGoogle: cliente.VerificarDireccionGoogle || "",
-            Latitud:                cliente.latitud                || cliente.Latitud                || "",
-            Longitud:               cliente.longitud               || cliente.Longitud               || "",
-            Email:                  cliente.Email                  || "",
-            PersonaContacto:        cliente.PersonaContacto        || "",
-            OtrosDatos:             cliente.OtrosDatos             || "",
-            Autorizacion:           cliente.Autorizacion           || "",
-            PuestaFuncionamiento:   cliente.PuestaFuncionamiento   || "",
-            Calificacion:           cliente.Calificacion           || "",
-            CentroInicial:          cliente.CentroInicial          || "",
-            TipoCentroRadio:        cliente.TipoCentroRadio        || "hospitalarios",
-            ActividadHospitalaria:  cliente.asistenciaHospitalaria ?? cliente.ActividadHospitalaria  ?? false,
-            ActividadAmbulatoria:   cliente.asistenciaAmbulatoria  ?? cliente.ActividadAmbulatoria   ?? false,
-            ActividadRehabilitacion:cliente.rehabilitacion         ?? cliente.ActividadRehabilitacion ?? false,
-            ActividadControlIT:     cliente.incapacidadTransitoria ?? cliente.ActividadControlIT     ?? false,
-            ActividadPrevencion:    cliente.prevencion             ?? cliente.ActividadPrevencion     ?? false,
-            ActividadOtras:         cliente.otrasActividades       ?? cliente.ActividadOtras         ?? false,
-            ActividadAdmon:         cliente.administracion         ?? cliente.ActividadAdmon         ?? false,
-            MotivoBaja:             cliente.MotivoBaja             || "",
-            FechaBaja:              cliente.FechaBaja              || "",
-            Traslado:               cliente.Traslado               ?? false,
-            CentroDesactivado:      cliente.desactivado            ?? cliente.CentroDesactivado      ?? false,
-            NuevoCentro:            cliente.NuevoCentro            || "",
-            MapaValidado:           cliente.mapaValidado           ?? cliente.MapaValidado           ?? false,
+            Latitud:                 cliente.latitud                || cliente.Latitud                || "",
+            Longitud:                cliente.longitud               || cliente.Longitud               || "",
+            Email:                   cliente.Email                  || "",
+            PersonaContacto:         cliente.PersonaContacto        || "",
+            OtrosDatos:              cliente.OtrosDatos             || "",
+            Autorizacion:            cliente.Autorizacion           || "",
+            PuestaFuncionamiento:    cliente.PuestaFuncionamiento   || "",
+            Calificacion:            cliente.Calificacion           || "",
+            CentroInicial:           cliente.CentroInicial          || "",
+            TipoCentroRadio:         cliente.TipoCentroRadio        || "hospitalarios",
+            ActividadHospitalaria:   cliente.asistenciaHospitalaria ?? cliente.ActividadHospitalaria  ?? false,
+            ActividadAmbulatoria:    cliente.asistenciaAmbulatoria  ?? cliente.ActividadAmbulatoria   ?? false,
+            ActividadRehabilitacion: cliente.rehabilitacion         ?? cliente.ActividadRehabilitacion ?? false,
+            ActividadControlIT:      cliente.incapacidadTransitoria ?? cliente.ActividadControlIT     ?? false,
+            ActividadPrevencion:     cliente.prevencion             ?? cliente.ActividadPrevencion     ?? false,
+            ActividadOtras:          cliente.otrasActividades       ?? cliente.ActividadOtras         ?? false,
+            ActividadAdmon:          cliente.administracion         ?? cliente.ActividadAdmon         ?? false,
+            MotivoBaja:              cliente.MotivoBaja             || "",
+            FechaBaja:               cliente.FechaBaja              || "",
+            Traslado:                cliente.Traslado               ?? false,
+            CentroDesactivado:       cliente.desactivado            ?? cliente.CentroDesactivado      ?? false,
+            NuevoCentro:             cliente.NuevoCentro            || "",
+            MapaValidado:            cliente.mapaValidado           ?? cliente.MapaValidado           ?? false,
         });
     }, [cliente, onClose]);
 
+    // ── Leer coordenadas al volver de MapaPage ────────────────────────────────
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const leerMapaRetorno = () => {
             const mapaData = sessionStorage.getItem('mapaRetorno');
             if (mapaData) {
-                const { latitud, longitud, direccion, mapaValidado } = JSON.parse(mapaData);
-                sessionStorage.removeItem('mapaRetorno');
-                setForm(f => ({
-                    ...f,
-                    Latitud:        latitud   || f.Latitud,
-                    Longitud:       longitud  || f.Longitud,
-                    DireccionGoogle: direccion || f.DireccionGoogle,
-                    MapaValidado:   mapaValidado === true ? true : f.MapaValidado,
-                }));
+                try {
+                    const { latitud, longitud, direccion, mapaValidado } = JSON.parse(mapaData);
+                    sessionStorage.removeItem('mapaRetorno');
+                    setForm(f => ({
+                        ...f,
+                        Latitud:         latitud   || f.Latitud,
+                        Longitud:        longitud  || f.Longitud,
+                        DireccionGoogle: direccion || f.DireccionGoogle,
+                        MapaValidado:    mapaValidado === true ? true : f.MapaValidado,
+                    }));
+                } catch {}
             }
-        }, 300);
-        return () => clearTimeout(timer);
+        };
+
+        // Al montar: por si ya hay datos (caso remount)
+        leerMapaRetorno();
+
+        // Al recuperar foco: cuando se vuelve desde MapaPage con navigate(-1)
+        window.addEventListener('focus', leerMapaRetorno);
+        return () => window.removeEventListener('focus', leerMapaRetorno);
     }, []);
 
     useEffect(() => {
@@ -253,7 +258,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         }
     };
 
-    // ── Guardar disponibilidad mensual ────────────────────────────────────────
     const handleActualizarDisponibilidad = async () => {
         const ids = Object.keys(editandoEsp);
         if (ids.length === 0) return;
@@ -286,7 +290,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         <div className="ficha-container-inline">
             <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
 
-                {/* ── HEADER ── */}
+                {/* HEADER */}
                 <div className="ficha-modal-header">
                     <span className="ficha-modal-title">
                         <i className="ri-edit-box-line"></i> {t('Ficha Centro Propio')} | {form.Localizador || t('Nuevo')} | {form.Centro}
@@ -301,7 +305,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     </div>
                 </div>
 
-                {/* ── PESTAÑAS ── */}
+                {/* PESTAÑAS */}
                 <div className="ficha-tabs">
                     {TABS.map(({ key, label }) => (
                         <button key={key} className={"ficha-tab" + (tabActiva === key ? " active" : "")} onClick={() => setTabActiva(key)}>
@@ -310,7 +314,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     ))}
                 </div>
 
-                {/* ── CONTENIDO ── */}
+                {/* CONTENIDO */}
                 <div className="ficha-tab-content">
 
                     {/* GENERAL */}
@@ -370,6 +374,21 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                         <i className="ri-map-pin-line"></i>
                                     </button>
                                 </div>
+                            </div>
+                            <div className="ficha-field">
+                                <label>Coordenadas GPS</label>
+                                <input type="text" readOnly className="readonly"
+                                    value={form.Latitud && form.Longitud ? `${form.Latitud}, ${form.Longitud}` : ""}
+                                    placeholder="Sin coordenadas"
+                                    style={{ color: form.MapaValidado ? '#2e7d32' : '#888' }}
+                                />
+                            </div>
+                            <div className="ficha-field">
+                                <label>Mapa validado</label>
+                                <input type="text" readOnly className="readonly"
+                                    value={form.MapaValidado ? '✓ Validado' : '✗ No validado'}
+                                    style={{ color: form.MapaValidado ? '#2e7d32' : '#c62828', fontWeight: 600 }}
+                                />
                             </div>
                             <div className="ficha-field"><label>Dirección Electrónica</label><input type="email" value={form.Email || ""} onChange={set("Email")} /></div>
                             <div className="ficha-field"><label>Persona de Contacto</label><input type="text" value={form.PersonaContacto || ""} onChange={set("PersonaContacto")} /></div>
@@ -441,11 +460,11 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <Scrolling mode="standard" /><Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" /><Export enabled />
-                                <Column dataField="ano"               caption="Año"                  width={80} />
-                                <Column dataField="mutua"             caption="Mutua"                width={220} />
-                                <Column dataField="centro"            caption="Centro"               width={220} />
-                                <Column dataField="fechaActualizacion" caption="Fecha Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="usuario"           caption="Usuario"              width={150} />
+                                <Column dataField="ano"                caption="Año"                  width={80} />
+                                <Column dataField="mutua"              caption="Mutua"                width={220} />
+                                <Column dataField="centro"             caption="Centro"               width={220} />
+                                <Column dataField="fechaActualizacion" caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuario"            caption="Usuario"              width={150} />
                             </DataGrid>
                         </div>
                     )}
@@ -457,13 +476,13 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <Scrolling mode="standard" /><Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" /><Export enabled />
-                                <Column dataField="Finca_id"   caption="ID"          width={70} />
-                                <Column dataField="Localizador" caption="Localizador" width={110} />
+                                <Column dataField="Finca_id"    caption="ID"            width={70} />
+                                <Column dataField="Localizador" caption="Localizador"   width={110} />
                                 <Column caption="Dirección" width={250} cellRender={(cell) => (
                                     <span>{cell.data.Direccion}{cell.data.Numero ? ` nº ${cell.data.Numero}` : ''}{cell.data.Piso ? `, ${cell.data.Piso}` : ''}{cell.data.Puerta ? ` - ${cell.data.Puerta}` : ''}</span>
                                 )} />
-                                <Column dataField="Superficie"  caption="Superficie"  width={100} format="#,##0.00 m²" />
-                                <Column dataField="Titularidad" caption="Titularidad" width={180} />
+                                <Column dataField="Superficie"  caption="Superficie"    width={100} format="#,##0.00 m²" />
+                                <Column dataField="Titularidad" caption="Titularidad"   width={180} />
                                 <Column dataField="Coste" caption="Coste" width={100} dataType="number" format={{ type: 'currency', currency: 'EUR', precision: 2 }}
                                     cellRender={(cell) => (
                                         <span style={{ color: !cell.value ? '#d32f2f' : 'inherit', fontWeight: !cell.value ? 'bold' : 'normal' }}>
@@ -471,13 +490,13 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                         </span>
                                     )}
                                 />
-                                <Column dataField="F_Alquiler"   caption="F. Alquiler"   width={130} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="F_Alquiler"    caption="F. Alquiler"    width={130} dataType="date" format="dd/MM/yyyy" />
                                 <Column dataField="F_Inscripcion" caption="F. Inscripción" width={140} dataType="date" format="dd/MM/yyyy" />
                             </DataGrid>
                         </div>
                     )}
 
-                    {/* ESPECIALIDADES ── tabla editable con inputs por mes ── */}
+                    {/* ESPECIALIDADES */}
                     {tabActiva === "especialidades" && (
                         <div className="ficha-tab-inner">
                             {bloqueado && (
@@ -486,8 +505,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     <span>La edición de disponibilidad está <strong>bloqueada</strong>. El período de bloqueo activo no permite realizar modificaciones.</span>
                                 </div>
                             )}
-
-                            {/* Filtros */}
                             <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 15 }}>
                                 <div className="ficha-field" style={{ minWidth: 220 }}>
                                     <label>Centro</label>
@@ -505,8 +522,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </span>
                                 )}
                             </div>
-
-                            {/* Tabla editable */}
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
                                     <thead>
@@ -531,14 +546,12 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                                 may: row.may, jun: row.jun, jul: row.jul, ago: row.ago,
                                                 sep: row.sep, oct: row.oct, nov: row.nov, dic: row.dic,
                                             };
-                                            const total     = MESES.reduce((s, m) => s + (Number(edit[m]) || 0), 0);
+                                            const total      = MESES.reduce((s, m) => s + (Number(edit[m]) || 0), 0);
                                             const hayEdicion = !!editandoEsp[id];
-
                                             const setMes = (mes, val) => setEditandoEsp(prev => ({
                                                 ...prev,
                                                 [id]: { ...edit, [mes]: Number(val) || 0 }
                                             }));
-
                                             return (
                                                 <tr key={id} style={{
                                                     background: i % 2 === 0 ? '#fff' : '#f9f9f9',
@@ -551,17 +564,10 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                                     <td style={tdS('center')}>{row.disponibilidad}</td>
                                                     {MESES.map(mes => (
                                                         <td key={mes} style={{ ...tdS('center'), padding: '2px 3px' }}>
-                                                            <input
-                                                                type="number" min={0}
-                                                                disabled={bloqueado}
+                                                            <input type="number" min={0} disabled={bloqueado}
                                                                 value={edit[mes] ?? 0}
                                                                 onChange={e => setMes(mes, e.target.value)}
-                                                                style={{
-                                                                    width: 48, textAlign: 'center',
-                                                                    border: '1px solid #ccc', borderRadius: 3,
-                                                                    padding: '2px 4px', fontSize: 11,
-                                                                    background: bloqueado ? '#f5f5f5' : '#fff',
-                                                                }}
+                                                                style={{ width: 48, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px', fontSize: 11, background: bloqueado ? '#f5f5f5' : '#fff' }}
                                                             />
                                                         </td>
                                                     ))}
@@ -572,14 +578,11 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </tbody>
                                 </table>
                             </div>
-
                             <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
-                                <button
-                                    className="ficha-btn-primary"
+                                <button className="ficha-btn-primary"
                                     disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
                                     style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
-                                    onClick={handleActualizarDisponibilidad}
-                                >
+                                    onClick={handleActualizarDisponibilidad}>
                                     {guardandoEsp ? 'Guardando…' : 'Actualizar'}
                                 </button>
                                 <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
 import './Acuerdos.css';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
+const API = '/api';
 
 const Acuerdos = () => {
     const { t } = useTranslation();

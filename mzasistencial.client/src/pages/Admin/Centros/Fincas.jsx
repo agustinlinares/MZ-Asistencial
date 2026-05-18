@@ -31,6 +31,8 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const onExporting = (e) => {
     e.component.beginUpdate();
@@ -115,21 +117,25 @@ const Fincas = () => {
     const handleSaveFinca = async (data) => {
         try {
             await FincasService.save(data);
+            notify('Finca guardada correctamente', 'success', 2000);
             setSelectedFinca(null);
             await recargarFincas();
         } catch (error) {
             console.error('Error al guardar finca:', error);
-            alert(`Error: ${error.message}`);
+            notify(`Error al guardar: ${error.message}`, 'error', 3000);
         }
     };
 
     const handleEliminar = async (id) => {
-        if (!window.confirm(t('¿Está seguro de que desea eliminar esta finca?'))) return;
+        const ok = await dxConfirm(t('¿Está seguro de que desea eliminar esta finca?'), 'Confirmar eliminación');
+        if (!ok) return;
         try {
             await FincasService.delete(id);
+            notify('Finca eliminada correctamente', 'success', 2000);
             await recargarFincas();
         } catch (error) {
             console.error('Error al eliminar finca:', error);
+            notify('Error al eliminar la finca', 'error', 3000);
         }
     };
 

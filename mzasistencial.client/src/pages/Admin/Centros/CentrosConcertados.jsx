@@ -14,6 +14,8 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const onExporting = (e) => {
     e.component.beginUpdate();
@@ -226,10 +228,11 @@ const CentrosConcertados = () => {
                                                 />
                                                 <i 
                                                     className="ri-delete-bin-line delete-icon" 
-                                                    onClick={(e) => {
+                                                    onClick={async (e) => {
                                                         e.stopPropagation();
-                                                        if (window.confirm(t('¿Está seguro de que desea eliminar este centro?'))) {
-                                                            console.log('Eliminar centro:', cellData.data.centro_id);
+                                                        const ok = await dxConfirm(t('¿Está seguro de que desea eliminar este centro?'), 'Confirmar eliminación');
+                                                        if (ok) {
+                                                            notify('Funcionalidad de eliminación pendiente de implementar', 'warning', 3000);
                                                         }
                                                     }}
                                                     title={t('Eliminar')}
