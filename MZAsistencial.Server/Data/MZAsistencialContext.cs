@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -2423,8 +2423,8 @@ public partial class MZAsistencialContext : DbContext
         modelBuilder.Entity<Icg06>(entity =>
         {
             entity
-                .HasNoKey()
-                .ToTable("ICG06");
+                .HasKey(e => e.IdIcg);
+            entity.ToTable("ICG06");
 
             entity.Property(e => e.Actidesde).HasColumnType("datetime");
             entity.Property(e => e.Actihasta).HasColumnType("datetime");

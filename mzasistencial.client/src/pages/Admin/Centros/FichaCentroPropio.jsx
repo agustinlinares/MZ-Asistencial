@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
@@ -58,7 +58,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [fincas,      setFincas]      = useState([]);
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
-    const [anioEsp,     setAnioEsp]     = useState(2024);
+    const [anioEsp,     setAnioEsp]     = useState(null);
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -512,7 +512,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field" style={{ minWidth: 90 }}>
                                     <label>Año</label>
-                                    <select value={anioEsp} onChange={e => { setAnioEsp(Number(e.target.value)); setEditandoEsp({}); }}>
+                                    <select value={anioEsp || ''} onChange={e => { setAnioEsp(e.target.value ? Number(e.target.value) : null); setEditandoEsp({}); }}>
+                                        <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
@@ -616,7 +617,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field">
                                     <label>Año</label>
-                                    <select value={anioEsp} onChange={e => setAnioEsp(Number(e.target.value))}>
+                                    <select value={anioEsp || ''} onChange={e => setAnioEsp(e.target.value ? Number(e.target.value) : null)}>
+                                        <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
