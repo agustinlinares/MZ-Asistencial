@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Services;
 
@@ -326,10 +327,84 @@ public class ListaOfertasService : IListaOfertasService
         oferta.ContestacionPlazos = dto.ContestacionPlazos;
         oferta.FechaModificacion = DateTime.Now;
 
+        // Si se confirma (estado 3), poner FechaConfirmacion
         if (dto.EstadoId == 3 && oferta.FechaConfirmacion == null)
             oferta.FechaConfirmacion = DateTime.Now;
 
         await _context.SaveChangesAsync();
+
+        // Si se confirma (estado 3) y tiene demanda asociada → rechazar resto
+        if (dto.EstadoId == 3 && oferta.DemandaId.HasValue)
+        {
+            // Ver si la demanda es individual (TipoId = 2)
+            var demanda = await _context.Demandas.FindAsync(oferta.DemandaId.Value);
+            if (demanda != null && demanda.TipoId == 2)
+            {
+                // Obtener todas las subsolicitudes de esta demanda excepto la que tiene esta oferta
+                var subsolicitudes = await _context.DemandasSubSols
+                    .Where(s => s.DemandaId == oferta.DemandaId && s.OfertaId != id)
+                    .ToListAsync();
+
+                foreach (var sub in subsolicitudes)
+                {
+                    if (sub.OfertaId.HasValue)
+                    {
+                        // Ya tiene oferta → ponerla en estado 8
+                        var ofertaRechazada = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
+                        if (ofertaRechazada != null)
+                        {
+                            ofertaRechazada.EstadoId = 8;
+                            ofertaRechazada.FechaConfirmacion = DateTime.Now;
+                            ofertaRechazada.FechaAsignacion = DateTime.Now;
+                            ofertaRechazada.FechaModificacion = DateTime.Now;
+                        }
+                    }
+                    else
+                    {
+                        // No tiene oferta → crear oferta vacía en estado 8
+                        var ofertaVacia = new Oferta
+                        {
+                            CentroId = sub.CentroId,
+                            EspecialidadId = oferta.EspecialidadId,
+                            ServicioId = oferta.ServicioId,
+                            DemandaId = oferta.DemandaId,
+                            Año = oferta.Año,
+                            EstadoId = 8,
+                            Ene = 0,
+                            Feb = 0,
+                            Mar = 0,
+                            Abr = 0,
+                            May = 0,
+                            Jun = 0,
+                            Jul = 0,
+                            Ago = 0,
+                            Sep = 0,
+                            Oct = 0,
+                            Nov = 0,
+                            Dic = 0,
+                            FechaConfirmacion = DateTime.Now,
+                            FechaAsignacion = DateTime.Now,
+                            FechaModificacion = DateTime.Now,
+                        };
+                        _context.Ofertas.Add(ofertaVacia);
+                        await _context.SaveChangesAsync();
+
+                        // Vincular la oferta vacía a la subsolicitud
+                        sub.OfertaId = ofertaVacia.OfertaId;
+                        sub.EstadoId = 8;
+                    }
+
+                    // Poner la subsolicitud en estado 8
+                    sub.EstadoId = 8;
+                }
+
+                // Actualizar estado de la demanda a confirmada (3)
+                demanda.EstadoId = 3;
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
         return true;
     }
 

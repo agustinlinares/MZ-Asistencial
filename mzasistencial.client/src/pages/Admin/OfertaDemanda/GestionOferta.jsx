@@ -51,12 +51,10 @@ const GestionOferta = () => {
     const [datos, setDatos] = useState([]);
     const [cargando, setCargando] = useState(false);
 
-    // --- FUNCIONES DE EXPORTACIÓN  ---
     const exportToExcel = () => {
         const context = dataGridRef.current.instance();
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet('Lista Ofertas');
-
         exportDataGridToExcel({
             component: context,
             worksheet,
@@ -71,7 +69,6 @@ const GestionOferta = () => {
     const exportToPdf = () => {
         const doc = new jsPDF();
         const context = dataGridRef.current.instance;
-
         exportDataGridToPdf({
             jsPDFDocument: doc,
             component: context
@@ -80,7 +77,6 @@ const GestionOferta = () => {
         });
     };
 
-    // --- LÓGICA DE BÚSQUEDA ---
     const ejecutarBusqueda = useCallback((filtros) => {
         fetch(`${API}/ListaOfertas/lista`, {
             method: 'POST',
@@ -165,7 +161,23 @@ const GestionOferta = () => {
         setDemandaId('');
     };
 
-    const handleGuardarEdicion = () => {
+    const handleGuardarEdicion = async () => {
+        if (ofertaEditando.estadoId === 3) {
+            const ok = await dxConfirm(
+                '¿Seguro que desea confirmar esta oferta? El resto de subsolicitudes de esta demanda quedarán rechazadas automáticamente.',
+                'Confirmar asignación'
+            );
+            if (!ok) return;
+        }
+
+        if (ofertaEditando.estadoId === 8) {
+            const ok = await dxConfirm(
+                '¿Seguro que desea rechazar esta oferta? Todas las subsolicitudes de esta demanda quedarán rechazadas.',
+                'Confirmar rechazo'
+            );
+            if (!ok) return;
+        }
+
         fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -203,7 +215,6 @@ const GestionOferta = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    {/* HEADER */}
                     <div className="header-page">
                         <div className="title">{t('Lista de Ofertas')}</div>
                         <div className="acciones-container" ref={menuRef}>
@@ -213,17 +224,11 @@ const GestionOferta = () => {
                             </div>
                             {menuAbierto && (
                                 <div className="acciones-menu">
-                                  <div className="acciones-item" onClick={() => {
-                                        setMenuAbierto(false);
-                                        exportToExcel();
-                                    }}>
+                                    <div className="acciones-item" onClick={() => { setMenuAbierto(false); exportToExcel(); }}>
                                         <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
                                         {t('Exportar a Excel')}
                                     </div>
-                                    <div className="acciones-item" onClick={() => {
-                                        setMenuAbierto(false);
-                                        exportToPdf();
-                                    }}>
+                                    <div className="acciones-item" onClick={() => { setMenuAbierto(false); exportToPdf(); }}>
                                         <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
                                         {t('Exportar a PDF')}
                                     </div>
@@ -232,7 +237,6 @@ const GestionOferta = () => {
                         </div>
                     </div>
 
-                    {/* FILTROS PRINCIPALES */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -305,7 +309,6 @@ const GestionOferta = () => {
                         )}
                     </div>
 
-                    {/* TABLA */}
                     <div className="ficha-tab-content" style={{ padding: '16px' }}>
                         <DataGrid
                             ref={dataGridRef}
@@ -443,7 +446,6 @@ const GestionOferta = () => {
                         </DataGrid>
                     </div>
 
-                    {/* MODAL EDICION */}
                     {ofertaEditando && (
                         <div style={{
                             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
