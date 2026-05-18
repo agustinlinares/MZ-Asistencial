@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import '../../../styles/FichaGlobal.css';
+import notify from 'devextreme/ui/notify';
 
 // Recibimos dos props:
 // - mutua: los datos de la fila que clickó el usuario
@@ -156,15 +157,15 @@ const FichaMutua = ({ mutua, onClose }) => {
             });
 
             if (response.ok) {
-                //alert("Mutua guardada correctamente");
+                notify(esNuevo ? 'Mutua creada correctamente' : 'Mutua guardada correctamente', 'success', 2000);
                 onClose();
             } else {
-                alert("Error al guardar la mutua");
+                notify('Error al guardar la mutua', 'error', 3000);
             }
 
         } catch (error) {
             console.error("Error guardando mutua:", error);
-            alert("Error de conexión");
+            notify('Error de conexión', 'error', 3000);
         }
     };
 

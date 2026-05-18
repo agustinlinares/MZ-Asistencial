@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MZAsistencial.Server.Models;
 
@@ -57,6 +58,7 @@ public partial class Citacione
 
     public int? Diciembre { get; set; }
 
+    [Column("Anio")]
     public int? Año { get; set; }
 
     public int? Total { get; set; }

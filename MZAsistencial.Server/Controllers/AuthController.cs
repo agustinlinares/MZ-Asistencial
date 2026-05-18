@@ -54,6 +54,7 @@ namespace MZAsistencial.Server.Controllers
                 usuarioId = usuario.UsuarioId,
                 usuario   = usuario.Usuario1,
                 perfilId  = usuario.PerfilId,
+                mutuaId   = usuario.MutuaId,
                 nombre    = usuario.Nombre,
                 apellidos = usuario.Apellidos,
                 token     = token
@@ -88,7 +89,7 @@ namespace MZAsistencial.Server.Controllers
 
     public class LoginRequest
     {
-        public string Usuario   { get; set; } = "";
+        public string Usuario    { get; set; } = "";
         public string Contrasena { get; set; } = "";
     }
 }

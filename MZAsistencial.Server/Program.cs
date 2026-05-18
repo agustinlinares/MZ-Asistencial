@@ -60,6 +60,7 @@ builder.Services.AddDbContext<MZAsistencialContext>(options =>
 // -- Servicios
 builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
 builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSectorialesService>();
+builder.Services.AddScoped<IAcreditacionesIndividualesService, AcreditacionesIndividualesService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
 builder.Services.AddScoped<RegistroICGService>();
@@ -69,6 +70,8 @@ builder.Services.AddScoped<CentroPropioIcgService>();
 builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
 builder.Services.AddScoped<IMutuasService, MutuasService>();
 builder.Services.AddScoped<IListaOfertasService, ListaOfertasService>();
+builder.Services.AddScoped<PlantillasICGService>();
+builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 
 // -- Servicios ICG06
 builder.Services.AddScoped<Icg06HosService>();

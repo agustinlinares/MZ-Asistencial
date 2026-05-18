@@ -29,6 +29,8 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 import { loadMessages, locale } from 'devextreme/localization';
 
@@ -140,10 +142,7 @@ const Mutuas = () => {
     const cargarMutuas = () => {
         fetch("/api/mutuas")
             .then(response => response.json())
-            .then(data => {
-                console.log("Datos recibidos:", data);
-                setMutuas(data);
-            })
+            .then(data => setMutuas(data))
             .catch(error => console.error("Error cargando mutuas:", error));
     };
 
@@ -205,20 +204,20 @@ const Mutuas = () => {
 
     //Eliminar mutua
     const handleEliminar = async (id) => {
-        if (!window.confirm('¿Está seguro de que desea eliminar esta mutua?')) return;
+        const ok = await dxConfirm('¿Está seguro de que desea eliminar esta mutua?', 'Confirmar eliminación');
+        if (!ok) return;
 
         try {
-            const res = await fetch(`/api/mutuas/${id}`, {
-                method: 'DELETE'
-            });
-
+            const res = await fetch(`/api/mutuas/${id}`, { method: 'DELETE' });
             if (res.ok) {
-                cargarMutuas(); //Recarga la tabla
+                notify('Mutua eliminada correctamente', 'success', 2000);
+                cargarMutuas();
             } else {
-                alert('Error al eliminar');
+                notify('Error al eliminar la mutua', 'error', 3000);
             }
         } catch (error) {
             console.error('Error al eliminar mutua:', error);
+            notify('Error de conexión al eliminar', 'error', 3000);
         }
     };
 
