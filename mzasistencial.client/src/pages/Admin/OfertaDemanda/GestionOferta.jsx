@@ -310,16 +310,26 @@ const GestionOferta = () => {
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={datos}
-                            keyExpr="ofertaId"
+                            keyExpr="rowKey"
                             showBorders={true}
                             columnAutoWidth={false}
                             allowColumnResizing={true}
                             className="mz-table"
-                            rowAlternationEnabled={true}
+                            rowAlternationEnabled={false}
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
                             noDataText={cargando ? 'Cargando...' : 'Sin datos para mostrar'}
+                            onRowPrepared={(e) => {
+                                if (e.rowType === 'data') {
+                                    if (e.data.tipoLinea === 'Asignación') {
+                                        e.rowElement.style.background = '#e8f4fd';
+                                        e.rowElement.style.fontWeight = '600';
+                                    } else if (e.data.tipoLinea === 'Demanda') {
+                                        e.rowElement.style.background = '#fff8e1';
+                                    }
+                                }
+                            }}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
@@ -327,7 +337,7 @@ const GestionOferta = () => {
                             <FilterRow visible={true} applyFilter="auto" />
                             <HeaderFilter visible searchMode="contains" />
                             <Selection mode="multiple" allowSelectAll />
-                            <GroupPanel visible={vista === 'Agrupada'} emptyPanelText="Arrastra una columna aqui para agrupar" />
+                            <GroupPanel visible={true} emptyPanelText="Arrastra una columna aqui para agrupar" />
                             <Grouping autoExpandAll={false} />
                             <ColumnChooser enabled mode="select" />
                             <Export enabled allowExportSelectedData />
@@ -339,19 +349,31 @@ const GestionOferta = () => {
                                 <Item location="after" name="searchPanel" />
                             </Toolbar>
 
-                            <Column dataField="año" caption="Año" width={70}/>
-                            <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} fixed fixedPosition="left" />
-                            <Column dataField="centro" caption="Centro" width={180} />
+                            <Column dataField="tipoLinea" caption="Tipo" width={100} fixed fixedPosition="left"
+                                cellRender={(cell) => (
+                                    <span style={{
+                                        padding: '2px 8px',
+                                        borderRadius: 4,
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        background: cell.value === 'Asignación' ? '#1a5fa8' : '#f59e0b',
+                                        color: '#fff'
+                                    }}>
+                                        {cell.value}
+                                    </span>
+                                )}
+                            />
+                            <Column dataField="año" caption="Año" width={70} groupIndex={0} />
+                            <Column dataField="especialidad" caption="Especialidad" width={160} groupIndex={1} />
+                            <Column dataField="servicio" caption="Servicio" width={150} groupIndex={2} />
+                            <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} groupIndex={3} />
+                            <Column dataField="centro" caption="Centro" width={180} groupIndex={4} />
                             <Column dataField="provincia" caption="Provincia" width={120} />
                             <Column dataField="localidad" caption="Localidad" width={120} />
-                            <Column dataField="especialidad" caption="Especialidad" width={160} />
                             <Column dataField="tipoMovimiento" caption="Tipo Movimiento" width={140} />
-                            <Column dataField="servicio" caption="Servicio" width={150} />
                             <Column dataField="estado" caption="Estado" width={140} />
                             <Column dataField="demandaId" caption="Num. Pet." width={90} />
-                            <Column dataField="peticionesPendientesAsignar" caption="Pet. Pend. Asig." width={110} />
 
-                            {/* Meses */}
                             <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
@@ -377,43 +399,45 @@ const GestionOferta = () => {
                                 allowHeaderFiltering={false}
                                 allowSorting={false}
                                 cellRender={(cell) => (
-                                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                                        <div
-                                            style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
-                                            title="Editar"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`)
-                                                    .then(res => res.json())
-                                                    .then(data => setOfertaEditando(data))
-                                                    .catch(err => console.error('Error:', err));
-                                            }}
-                                        >
-                                            <i className="ri-edit-line"></i>
-                                        </div>
-                                        <div
-                                            style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
-                                            title="Eliminar"
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                const ok = await dxConfirm('¿Seguro que desea eliminar esta oferta?', 'Confirmar eliminación');
-                                                if (ok) {
-                                                    fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
-                                                        .then(res => {
-                                                            if (res.ok) {
-                                                                notify('Oferta eliminada correctamente', 'success', 2000);
-                                                                setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
-                                                            } else {
-                                                                notify('Error al eliminar la oferta', 'error', 3000);
-                                                            }
-                                                        })
+                                    cell.data.tipoLinea === 'Asignación' ? (
+                                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                                            <div
+                                                style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
+                                                title="Editar"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`)
+                                                        .then(res => res.json())
+                                                        .then(data => setOfertaEditando(data))
                                                         .catch(err => console.error('Error:', err));
-                                                }
-                                            }}
-                                        >
-                                            <i className="ri-delete-bin-line"></i>
+                                                }}
+                                            >
+                                                <i className="ri-edit-line"></i>
+                                            </div>
+                                            <div
+                                                style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
+                                                title="Eliminar"
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    const ok = await dxConfirm('¿Seguro que desea eliminar esta oferta?', 'Confirmar eliminación');
+                                                    if (ok) {
+                                                        fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
+                                                            .then(res => {
+                                                                if (res.ok) {
+                                                                    notify('Oferta eliminada correctamente', 'success', 2000);
+                                                                    setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
+                                                                } else {
+                                                                    notify('Error al eliminar la oferta', 'error', 3000);
+                                                                }
+                                                            })
+                                                            .catch(err => console.error('Error:', err));
+                                                    }
+                                                }}
+                                            >
+                                                <i className="ri-delete-bin-line"></i>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : null
                                 )}
                             />
                         </DataGrid>

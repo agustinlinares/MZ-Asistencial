@@ -99,6 +99,18 @@ public class ListaOfertasService : IListaOfertasService
             x.o.FechaConfirmacion,
             NecesidadesServicio = x.d != null ? x.d.Descripcion : null,
             x.o.NotaContestacion,
+            DemandaEne = x.d != null ? x.d.Ene : null,
+            DemandaFeb = x.d != null ? x.d.Feb : null,
+            DemandaMar = x.d != null ? x.d.Mar : null,
+            DemandaAbr = x.d != null ? x.d.Abr : null,
+            DemandaMay = x.d != null ? x.d.May : null,
+            DemandaJun = x.d != null ? x.d.Jun : null,
+            DemandaJul = x.d != null ? x.d.Jul : null,
+            DemandaAgo = x.d != null ? x.d.Ago : null,
+            DemandaSep = x.d != null ? x.d.Sep : null,
+            DemandaOct = x.d != null ? x.d.Oct : null,
+            DemandaNov = x.d != null ? x.d.Nov : null,
+            DemandaDic = x.d != null ? x.d.Dic : null,
         }).ToListAsync();
 
         var centrosPropiosIds = lista
@@ -130,8 +142,8 @@ public class ListaOfertasService : IListaOfertasService
             .ToListAsync();
 
         var provIds = poblaciones
-      .Select(p => p.ProvinciaId)
-      .Distinct().ToList();
+            .Select(p => p.ProvinciaId)
+            .Distinct().ToList();
 
         var provincias = await _context.AuxProvincias
             .Where(p => provIds.Contains(p.ProvinciaId))
@@ -140,7 +152,9 @@ public class ListaOfertasService : IListaOfertasService
 
         var pobDict = poblaciones.ToDictionary(p => p.PoblacionId);
 
-        var result = lista.Select(x =>
+        var result = new List<ListaOfertasDTO>();
+
+        foreach (var x in lista)
         {
             var cp = x.CentroId.HasValue && cpDict.ContainsKey(x.CentroId.Value)
                 ? cpDict[x.CentroId.Value] : null;
@@ -161,8 +175,11 @@ public class ListaOfertasService : IListaOfertasService
                 }
             }
 
-            return new ListaOfertasDTO
+            // Fila ASIGNACIÓN — meses de Ofertas
+            result.Add(new ListaOfertasDTO
             {
+                RowKey = $"{x.OfertaId}_A",
+                TipoLinea = "Asignación",
                 OfertaId = x.OfertaId,
                 Año = x.Año,
                 MutuaOferta = mutuaOferta,
@@ -196,8 +213,48 @@ public class ListaOfertasService : IListaOfertasService
                 FechaConfirmacion = x.FechaConfirmacion,
                 NecesidadesServicio = x.NecesidadesServicio,
                 ContestacionNecesidades = x.NotaContestacion,
-            };
-        }).ToList();
+            });
+
+            // Fila DEMANDA — meses de Demandas
+            result.Add(new ListaOfertasDTO
+            {
+                RowKey = $"{x.OfertaId}_D",
+                TipoLinea = "Demanda",
+                OfertaId = x.OfertaId,
+                Año = x.Año,
+                MutuaOferta = mutuaOferta,
+                Centro = x.CentroConcertado ?? cp?.Centro,
+                Provincia = provincia,
+                Localidad = localidad,
+                Especialidad = x.Especialidad,
+                TipoMovimiento = x.TipoMovimiento,
+                Servicio = x.Servicio,
+                Ene = x.DemandaEne,
+                Feb = x.DemandaFeb,
+                Mar = x.DemandaMar,
+                Abr = x.DemandaAbr,
+                May = x.DemandaMay,
+                Jun = x.DemandaJun,
+                Jul = x.DemandaJul,
+                Ago = x.DemandaAgo,
+                Sep = x.DemandaSep,
+                Oct = x.DemandaOct,
+                Nov = x.DemandaNov,
+                Dic = x.DemandaDic,
+                Total = (x.DemandaEne ?? 0) + (x.DemandaFeb ?? 0) + (x.DemandaMar ?? 0) +
+                        (x.DemandaAbr ?? 0) + (x.DemandaMay ?? 0) + (x.DemandaJun ?? 0) +
+                        (x.DemandaJul ?? 0) + (x.DemandaAgo ?? 0) + (x.DemandaSep ?? 0) +
+                        (x.DemandaOct ?? 0) + (x.DemandaNov ?? 0) + (x.DemandaDic ?? 0),
+                EstadoId = x.EstadoId,
+                Estado = x.Estado,
+                DemandaId = x.DemandaId,
+                FechaSolicitud = x.FechaSolicitud,
+                FechaAsignacion = x.FechaAsignacion,
+                FechaConfirmacion = x.FechaConfirmacion,
+                NecesidadesServicio = x.NecesidadesServicio,
+                ContestacionNecesidades = x.NotaContestacion,
+            });
+        }
 
         return result;
     }
