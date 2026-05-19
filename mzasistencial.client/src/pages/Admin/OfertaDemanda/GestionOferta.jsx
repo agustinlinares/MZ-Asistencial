@@ -6,7 +6,7 @@ import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { jsPDF } from 'jspdf';
 import DataGrid, {
     Column, Paging, FilterRow, HeaderFilter, Selection,
-    GroupPanel, Grouping, ColumnChooser, Export, Scrolling,
+    ColumnChooser, Export, Scrolling,
     Sorting, ColumnFixing, Pager, Toolbar, Item,
 } from "devextreme-react/data-grid";
 import DateBox from "devextreme-react/date-box";
@@ -20,7 +20,6 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
-const VISTAS = ['Agrupada', 'Desagrupada'];
 
 const GestionOferta = () => {
     const { t } = useTranslation();
@@ -29,7 +28,6 @@ const GestionOferta = () => {
     const menuRef = useRef(null);
 
     const [tipo, setTipo] = useState('Todos');
-    const [vista, setVista] = useState('Agrupada');
     const [añoSeleccionado, setAñoSeleccionado] = useState(null);
     const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
     const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
@@ -68,7 +66,7 @@ const GestionOferta = () => {
 
     const exportToPdf = () => {
         const doc = new jsPDF();
-        const context = dataGridRef.current.instance;
+        const context = dataGridRef.current.instance();
         exportDataGridToPdf({
             jsPDFDocument: doc,
             component: context
@@ -95,7 +93,7 @@ const GestionOferta = () => {
             año: añoSeleccionado,
             estadoId: estadoSeleccionado,
             tipo: tipo === 'Todos' ? null : tipo,
-            vistaAgrupada: vista === 'Agrupada',
+            vistaAgrupada: false,
             fechaSolicitudDesde: fechaSolicitudDesde || null,
             fechaSolicitudHasta: fechaSolicitudHasta || null,
             fechaAsignacionDesde: fechaAsignacionDesde || null,
@@ -107,7 +105,7 @@ const GestionOferta = () => {
             demandaId: demandaId ? parseInt(demandaId) : null,
         });
     }, [
-        añoSeleccionado, estadoSeleccionado, tipo, vista,
+        añoSeleccionado, estadoSeleccionado, tipo,
         fechaSolicitudDesde, fechaSolicitudHasta,
         fechaAsignacionDesde, fechaAsignacionHasta,
         fechaConfirmacionDesde, fechaConfirmacionHasta,
@@ -170,7 +168,6 @@ const GestionOferta = () => {
                 'Confirmar asignación'
             );
             if (!ok) { setOfertaEditando(ofertaTemp); return; }
-            ofertaEditando.estadoId = ofertaTemp.estadoId;
             Object.assign(ofertaEditando, ofertaTemp);
         }
 
@@ -256,18 +253,13 @@ const GestionOferta = () => {
                             </div>
                             <div className="ficha-field" style={{ minWidth: 220 }}>
                                 <label>Estado</label>
-                                <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Selecciona un estado" width={220} />
+                                <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Todas" width={220} />
                             </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: 32, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
-                            <div className="ficha-field">
-                                <label>Vista</label>
-                                <RadioGroup items={VISTAS} value={vista} onValueChanged={e => setVista(e.value)} layout="horizontal" />
+                            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 2 }}>
+                                <button type="button" className="ficha-btn-primary" onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
+                                    {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
+                                </button>
                             </div>
-                            <button type="button" className="ficha-btn-primary" style={{ marginTop: 16 }} onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
-                                {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
-                            </button>
                         </div>
 
                         {filtrosExpandidos && (
@@ -333,10 +325,10 @@ const GestionOferta = () => {
                             onRowPrepared={(e) => {
                                 if (e.rowType === 'data') {
                                     if (e.data.tipoLinea === 'Asignación') {
-                                        e.rowElement.style.background = '#e8f4fd';
+                                        e.rowElement.style.background = '#dbeafe';
                                         e.rowElement.style.fontWeight = '600';
                                     } else if (e.data.tipoLinea === 'Demanda') {
-                                        e.rowElement.style.background = '#fff8e1';
+                                        e.rowElement.style.background = '#eff6ff';
                                     }
                                 }
                             }}
@@ -347,43 +339,25 @@ const GestionOferta = () => {
                             <FilterRow visible={true} applyFilter="auto" />
                             <HeaderFilter visible searchMode="contains" />
                             <Selection mode="multiple" allowSelectAll />
-                            <GroupPanel visible={true} emptyPanelText="Arrastra una columna aqui para agrupar" />
-                            <Grouping autoExpandAll={false} />
                             <ColumnChooser enabled mode="select" />
                             <Export enabled allowExportSelectedData />
                             <Sorting mode="multiple" />
                             <ColumnFixing enabled />
                             <Toolbar>
-                                <Item name="groupPanel" />
                                 <Item name="columnChooserButton" />
                                 <Item location="after" name="searchPanel" />
                             </Toolbar>
 
-                            <Column dataField="tipoLinea" caption="Tipo" width={100} fixed fixedPosition="left"
-                                cellRender={(cell) => (
-                                    <span style={{
-                                        padding: '2px 8px',
-                                        borderRadius: 4,
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        background: cell.value === 'Asignación' ? '#1a5fa8' : '#f59e0b',
-                                        color: '#fff'
-                                    }}>
-                                        {cell.value}
-                                    </span>
-                                )}
-                            />
-                            <Column dataField="año" caption="Año" width={70} groupIndex={0} />
-                            <Column dataField="especialidad" caption="Especialidad" width={160} groupIndex={1} />
-                            <Column dataField="servicio" caption="Servicio" width={150} groupIndex={2} />
-                            <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} groupIndex={3} />
-                            <Column dataField="centro" caption="Centro" width={180} groupIndex={4} />
+                            <Column dataField="especialidad" caption="Especialidad" width={160} />
+                            <Column dataField="servicio" caption="Servicio" width={150} />
+                            <Column dataField="año" caption="Año" width={70} />
+                            <Column dataField="mutuaOferta" caption="Mutua Ofertante" width={160} />
+                            <Column dataField="centro" caption="Centro" width={180} />
                             <Column dataField="provincia" caption="Provincia" width={120} />
                             <Column dataField="localidad" caption="Localidad" width={120} />
-                            <Column dataField="tipoMovimiento" caption="Tipo Movimiento" width={140} />
+                            <Column dataField="tipoLinea" caption="Tipo Movimiento" width={120} />
                             <Column dataField="estado" caption="Estado" width={140} />
                             <Column dataField="demandaId" caption="Num. Pet." width={90} />
-
                             <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
@@ -396,12 +370,10 @@ const GestionOferta = () => {
                             <Column dataField="oct" caption="Oct" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="nov" caption="Nov" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="dic" caption="Dic" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-
                             <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
-
                             <Column
                                 caption="Acciones"
-                                width={90}
+                                width={60}
                                 fixed
                                 fixedPosition="right"
                                 alignment="center"
@@ -410,7 +382,7 @@ const GestionOferta = () => {
                                 allowSorting={false}
                                 cellRender={(cell) => (
                                     cell.data.tipoLinea === 'Asignación' ? (
-                                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                                             <div
                                                 style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
                                                 title="Editar"
