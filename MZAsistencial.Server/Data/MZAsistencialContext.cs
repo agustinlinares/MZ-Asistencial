@@ -2379,12 +2379,13 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorAnio");
+            entity.ToTable("FincasRegistrales_CostesPorA\u00f1o");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
             entity.Property(e => e.Localizador).HasMaxLength(50);
-
+            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
+            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
             entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorAños)
                 .HasForeignKey(d => d.FincaId)
                 .HasConstraintName("FK_FincasRegistrales_CostesPorAño_FincasRegistrales");
