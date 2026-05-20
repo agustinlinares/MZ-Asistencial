@@ -144,7 +144,7 @@ const GestionOferta = () => {
     }, []);
 
     useEffect(() => {
-        if (añoSeleccionado !== null) buscarRef.current();
+        buscarRef.current();
     }, [añoSeleccionado, estadoSeleccionado, tipo]);
 
     const limpiarFiltros = () => {

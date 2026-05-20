@@ -74,6 +74,8 @@ public class ListaOfertasService : IListaOfertasService
         {
             x.o.OfertaId,
             Año = x.o.Año,
+            EspecialidadId = x.o.EspecialidadId,
+            ServicioId = x.o.ServicioId,
             MutuaDemandante = x.mDem != null ? x.mDem.Mutua1 : null,
             CentroConcertado = x.cc != null ? x.cc.Centro : null,
             CentroId = (int?)x.o.CentroId,
@@ -153,6 +155,16 @@ public class ListaOfertasService : IListaOfertasService
 
         var pobDict = poblaciones.ToDictionary(p => p.PoblacionId);
 
+        // Obtener disponibilidad declarada
+        var disponibilidades = await _context.VwDisponibilidads
+            .Where(v => centrosPropiosIds.Contains(v.CentroId))
+            .ToListAsync();
+
+        // Obtener ofertas confirmadas para calcular comprometido
+        var ofertasConfirmadas = await _context.Ofertas
+            .Where(o => centrosPropiosIds.Contains(o.CentroId ?? 0) && o.EstadoId == 3)
+            .ToListAsync();
+
         var result = new List<ListaOfertasDTO>();
 
         foreach (var x in lista)
@@ -176,7 +188,46 @@ public class ListaOfertasService : IListaOfertasService
                 }
             }
 
-            // Fila ASIGNACIÓN — meses de Ofertas
+            // Calcular disponibilidad real
+            var disp = disponibilidades.FirstOrDefault(d =>
+                d.CentroId == (x.CentroId ?? 0) &&
+                d.EspecialidadId == x.EspecialidadId &&
+                d.ServicioId == x.ServicioId &&
+                d.Año == x.Año);
+
+            var comprometido = ofertasConfirmadas.Where(o =>
+                o.CentroId == x.CentroId &&
+                o.EspecialidadId == x.EspecialidadId &&
+                o.ServicioId == x.ServicioId &&
+                o.Año == x.Año).ToList();
+
+            int compEne = comprometido.Sum(o => o.Ene ?? 0);
+            int compFeb = comprometido.Sum(o => o.Feb ?? 0);
+            int compMar = comprometido.Sum(o => o.Mar ?? 0);
+            int compAbr = comprometido.Sum(o => o.Abr ?? 0);
+            int compMay = comprometido.Sum(o => o.May ?? 0);
+            int compJun = comprometido.Sum(o => o.Jun ?? 0);
+            int compJul = comprometido.Sum(o => o.Jul ?? 0);
+            int compAgo = comprometido.Sum(o => o.Ago ?? 0);
+            int compSep = comprometido.Sum(o => o.Sep ?? 0);
+            int compOct = comprometido.Sum(o => o.Oct ?? 0);
+            int compNov = comprometido.Sum(o => o.Nov ?? 0);
+            int compDic = comprometido.Sum(o => o.Dic ?? 0);
+
+            int? dispEne = disp != null ? (disp.Enero ?? 0) - compEne : null;
+            int? dispFeb = disp != null ? (disp.Febrero ?? 0) - compFeb : null;
+            int? dispMar = disp != null ? (disp.Marzo ?? 0) - compMar : null;
+            int? dispAbr = disp != null ? (disp.Abril ?? 0) - compAbr : null;
+            int? dispMay = disp != null ? (disp.Mayo ?? 0) - compMay : null;
+            int? dispJun = disp != null ? (disp.Junio ?? 0) - compJun : null;
+            int? dispJul = disp != null ? (disp.Julio ?? 0) - compJul : null;
+            int? dispAgo = disp != null ? (disp.Agosto ?? 0) - compAgo : null;
+            int? dispSep = disp != null ? (disp.Septiembre ?? 0) - compSep : null;
+            int? dispOct = disp != null ? (disp.Octubre ?? 0) - compOct : null;
+            int? dispNov = disp != null ? (disp.Noviembre ?? 0) - compNov : null;
+            int? dispDic = disp != null ? (disp.Diciembre ?? 0) - compDic : null;
+
+            // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO
             {
                 RowKey = $"{x.OfertaId}_A",
@@ -214,9 +265,24 @@ public class ListaOfertasService : IListaOfertasService
                 FechaConfirmacion = x.FechaConfirmacion,
                 NecesidadesServicio = x.NecesidadesServicio,
                 ContestacionNecesidades = x.NotaContestacion,
+                DispEne = dispEne,
+                DispFeb = dispFeb,
+                DispMar = dispMar,
+                DispAbr = dispAbr,
+                DispMay = dispMay,
+                DispJun = dispJun,
+                DispJul = dispJul,
+                DispAgo = dispAgo,
+                DispSep = dispSep,
+                DispOct = dispOct,
+                DispNov = dispNov,
+                DispDic = dispDic,
+                DispTotal = (dispEne ?? 0) + (dispFeb ?? 0) + (dispMar ?? 0) + (dispAbr ?? 0) +
+                            (dispMay ?? 0) + (dispJun ?? 0) + (dispJul ?? 0) + (dispAgo ?? 0) +
+                            (dispSep ?? 0) + (dispOct ?? 0) + (dispNov ?? 0) + (dispDic ?? 0),
             });
 
-            // Fila DEMANDA — meses de Demandas
+            // Fila DEMANDA
             result.Add(new ListaOfertasDTO
             {
                 RowKey = $"{x.OfertaId}_D",
@@ -327,20 +393,16 @@ public class ListaOfertasService : IListaOfertasService
         oferta.ContestacionPlazos = dto.ContestacionPlazos;
         oferta.FechaModificacion = DateTime.Now;
 
-        // Si se confirma (estado 3), poner FechaConfirmacion
         if (dto.EstadoId == 3 && oferta.FechaConfirmacion == null)
             oferta.FechaConfirmacion = DateTime.Now;
 
         await _context.SaveChangesAsync();
 
-        // Si se confirma (estado 3) y tiene demanda asociada → rechazar resto
         if (dto.EstadoId == 3 && oferta.DemandaId.HasValue)
         {
-            // Ver si la demanda es individual (TipoId = 2)
             var demanda = await _context.Demandas.FindAsync(oferta.DemandaId.Value);
             if (demanda != null && demanda.TipoId == 2)
             {
-                // Obtener todas las subsolicitudes de esta demanda excepto la que tiene esta oferta
                 var subsolicitudes = await _context.DemandasSubSols
                     .Where(s => s.DemandaId == oferta.DemandaId && s.OfertaId != id)
                     .ToListAsync();
@@ -349,7 +411,6 @@ public class ListaOfertasService : IListaOfertasService
                 {
                     if (sub.OfertaId.HasValue)
                     {
-                        // Ya tiene oferta → ponerla en estado 8
                         var ofertaRechazada = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
                         if (ofertaRechazada != null)
                         {
@@ -361,7 +422,6 @@ public class ListaOfertasService : IListaOfertasService
                     }
                     else
                     {
-                        // No tiene oferta → crear oferta vacía en estado 8
                         var ofertaVacia = new Oferta
                         {
                             CentroId = sub.CentroId,
@@ -388,19 +448,73 @@ public class ListaOfertasService : IListaOfertasService
                         };
                         _context.Ofertas.Add(ofertaVacia);
                         await _context.SaveChangesAsync();
-
-                        // Vincular la oferta vacía a la subsolicitud
                         sub.OfertaId = ofertaVacia.OfertaId;
                         sub.EstadoId = 8;
                     }
-
-                    // Poner la subsolicitud en estado 8
                     sub.EstadoId = 8;
                 }
 
-                // Actualizar estado de la demanda a confirmada (3)
                 demanda.EstadoId = 3;
+                await _context.SaveChangesAsync();
+            }
+        }
 
+        if (dto.EstadoId == 8 && oferta.DemandaId.HasValue)
+        {
+            var demanda = await _context.Demandas.FindAsync(oferta.DemandaId.Value);
+            if (demanda != null && demanda.TipoId == 2)
+            {
+                var todasSubsolicitudes = await _context.DemandasSubSols
+                    .Where(s => s.DemandaId == id)
+                    .ToListAsync();
+
+                foreach (var sub in todasSubsolicitudes)
+                {
+                    sub.EstadoId = 8;
+                    if (sub.OfertaId.HasValue)
+                    {
+                        var ofertaSub = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
+                        if (ofertaSub != null)
+                        {
+                            ofertaSub.EstadoId = 8;
+                            ofertaSub.FechaConfirmacion = DateTime.Now;
+                            ofertaSub.FechaAsignacion = DateTime.Now;
+                            ofertaSub.FechaModificacion = DateTime.Now;
+                        }
+                    }
+                    else
+                    {
+                        var ofertaVacia = new Oferta
+                        {
+                            CentroId = sub.CentroId,
+                            EspecialidadId = oferta.EspecialidadId,
+                            ServicioId = oferta.ServicioId,
+                            DemandaId = oferta.DemandaId,
+                            Año = oferta.Año,
+                            EstadoId = 8,
+                            Ene = 0,
+                            Feb = 0,
+                            Mar = 0,
+                            Abr = 0,
+                            May = 0,
+                            Jun = 0,
+                            Jul = 0,
+                            Ago = 0,
+                            Sep = 0,
+                            Oct = 0,
+                            Nov = 0,
+                            Dic = 0,
+                            FechaConfirmacion = DateTime.Now,
+                            FechaAsignacion = DateTime.Now,
+                            FechaModificacion = DateTime.Now,
+                        };
+                        _context.Ofertas.Add(ofertaVacia);
+                        await _context.SaveChangesAsync();
+                        sub.OfertaId = ofertaVacia.OfertaId;
+                    }
+                }
+
+                demanda.EstadoId = 8;
                 await _context.SaveChangesAsync();
             }
         }
