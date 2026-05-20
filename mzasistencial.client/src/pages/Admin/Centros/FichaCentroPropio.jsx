@@ -473,8 +473,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <Column dataField="ano"                caption="Año"                  width={80} />
                                 <Column dataField="mutua"              caption="Mutua"                width={220} />
                                 <Column dataField="centro"             caption="Centro"               width={220} />
-                                <Column dataField="fechaActualizacion" caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="usuario"            caption="Usuario"              width={150} />
+                                <Column dataField="fechaModificacion"  caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuarioModificacionId" caption="Usuario"           width={100} />
                             </DataGrid>
                         </div>
                     )}
