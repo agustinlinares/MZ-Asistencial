@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Services;
 
@@ -180,4 +181,133 @@ public class ListaDemandasService : IListaDemandasService
         await _context.SaveChangesAsync();
         return true;
     }
+    public async Task<bool> UpdateAsync(int id, ActualizarDemandaDTO dto)
+    {
+        var demanda = await _context.Demandas.FindAsync(id);
+        if (demanda == null) return false;
+
+        demanda.EstadoId = dto.EstadoId;
+        demanda.FechaModificacion = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        // Si se rechaza (estado 8) → rechazar todas las subsolicitudes
+        if (dto.EstadoId == 8)
+        {
+            var subsolicitudes = await _context.DemandasSubSols
+                .Where(s => s.DemandaId == id)
+                .ToListAsync();
+
+            foreach (var sub in subsolicitudes)
+            {
+                sub.EstadoId = 8;
+
+                if (sub.OfertaId.HasValue)
+                {
+                    var oferta = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
+                    if (oferta != null)
+                    {
+                        oferta.EstadoId = 8;
+                        oferta.FechaConfirmacion = DateTime.Now;
+                        oferta.FechaAsignacion = DateTime.Now;
+                        oferta.FechaModificacion = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    var ofertaVacia = new Oferta
+                    {
+                        CentroId = sub.CentroId,
+                        EspecialidadId = demanda.EspecialidadId,
+                        ServicioId = demanda.ServicioId,
+                        DemandaId = id,
+                        Año = demanda.Año,
+                        EstadoId = 8,
+                        Ene = 0,
+                        Feb = 0,
+                        Mar = 0,
+                        Abr = 0,
+                        May = 0,
+                        Jun = 0,
+                        Jul = 0,
+                        Ago = 0,
+                        Sep = 0,
+                        Oct = 0,
+                        Nov = 0,
+                        Dic = 0,
+                        FechaConfirmacion = DateTime.Now,
+                        FechaAsignacion = DateTime.Now,
+                        FechaModificacion = DateTime.Now,
+                    };
+                    _context.Ofertas.Add(ofertaVacia);
+                    await _context.SaveChangesAsync();
+                    sub.OfertaId = ofertaVacia.OfertaId;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        return true;
+    }
+    public async Task<bool> UpdateAsync(int id, ActualizarDemandaDTO dto)
+{
+    var demanda = await _context.Demandas.FindAsync(id);
+    if (demanda == null) return false;
+
+    demanda.EstadoId = dto.EstadoId;
+    demanda.FechaModificacion = DateTime.Now;
+
+    await _context.SaveChangesAsync();
+
+    // Si se rechaza (estado 8) → rechazar todas las subsolicitudes
+    if (dto.EstadoId == 8)
+    {
+        var subsolicitudes = await _context.DemandasSubSols
+            .Where(s => s.DemandaId == id)
+            .ToListAsync();
+
+        foreach (var sub in subsolicitudes)
+        {
+            sub.EstadoId = 8;
+
+            if (sub.OfertaId.HasValue)
+            {
+                var oferta = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
+                if (oferta != null)
+                {
+                    oferta.EstadoId = 8;
+                    oferta.FechaConfirmacion = DateTime.Now;
+                    oferta.FechaAsignacion = DateTime.Now;
+                    oferta.FechaModificacion = DateTime.Now;
+                }
+            }
+            else
+            {
+                var ofertaVacia = new Oferta
+                {
+                    CentroId = sub.CentroId,
+                    EspecialidadId = demanda.EspecialidadId,
+                    ServicioId = demanda.ServicioId,
+                    DemandaId = id,
+                    Año = demanda.Año,
+                    EstadoId = 8,
+                    Ene = 0, Feb = 0, Mar = 0, Abr = 0,
+                    May = 0, Jun = 0, Jul = 0, Ago = 0,
+                    Sep = 0, Oct = 0, Nov = 0, Dic = 0,
+                    FechaConfirmacion = DateTime.Now,
+                    FechaAsignacion = DateTime.Now,
+                    FechaModificacion = DateTime.Now,
+                };
+                _context.Ofertas.Add(ofertaVacia);
+                await _context.SaveChangesAsync();
+                sub.OfertaId = ofertaVacia.OfertaId;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    return true;
+}
 }
