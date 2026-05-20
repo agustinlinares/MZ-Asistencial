@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -157,12 +157,12 @@ public class ListaOfertasService : IListaOfertasService
 
         // Obtener disponibilidad declarada
         var disponibilidades = await _context.VwDisponibilidads
-            .Where(v => centrosPropiosIds.Contains(v.CentroId))
+            .Where(v => v.CentroId.HasValue && centrosPropiosIds.Contains(v.CentroId.Value))
             .ToListAsync();
 
         // Obtener ofertas confirmadas para calcular comprometido
         var ofertasConfirmadas = await _context.Ofertas
-            .Where(o => centrosPropiosIds.Contains(o.CentroId ?? 0) && o.EstadoId == 3)
+            .Where(o => o.CentroId.HasValue && centrosPropiosIds.Contains(o.CentroId.Value) && o.EstadoId == 3)
             .ToListAsync();
 
         var result = new List<ListaOfertasDTO>();
@@ -213,19 +213,19 @@ public class ListaOfertasService : IListaOfertasService
             int compOct = comprometido.Sum(o => o.Oct ?? 0);
             int compNov = comprometido.Sum(o => o.Nov ?? 0);
             int compDic = comprometido.Sum(o => o.Dic ?? 0);
+            int? dispEne = disp != null ? disp.Enero - compEne : null;
+            int? dispFeb = disp != null ? disp.Febrero - compFeb : null;
+            int? dispMar = disp != null ? disp.Marzo - compMar : null;
+            int? dispAbr = disp != null ? disp.Abril - compAbr : null;
+            int? dispMay = disp != null ? disp.Mayo - compMay : null;
+            int? dispJun = disp != null ? disp.Junio - compJun : null;
+            int? dispJul = disp != null ? disp.Julio - compJul : null;
+            int? dispAgo = disp != null ? disp.Agosto - compAgo : null;
+            int? dispSep = disp != null ? disp.Septiembre - compSep : null;
+            int? dispOct = disp != null ? disp.Octubre - compOct : null;
+            int? dispNov = disp != null ? disp.Noviembre - compNov : null;
+            int? dispDic = disp != null ? disp.Diciembre - compDic : null;
 
-            int? dispEne = disp != null ? (disp.Enero ?? 0) - compEne : null;
-            int? dispFeb = disp != null ? (disp.Febrero ?? 0) - compFeb : null;
-            int? dispMar = disp != null ? (disp.Marzo ?? 0) - compMar : null;
-            int? dispAbr = disp != null ? (disp.Abril ?? 0) - compAbr : null;
-            int? dispMay = disp != null ? (disp.Mayo ?? 0) - compMay : null;
-            int? dispJun = disp != null ? (disp.Junio ?? 0) - compJun : null;
-            int? dispJul = disp != null ? (disp.Julio ?? 0) - compJul : null;
-            int? dispAgo = disp != null ? (disp.Agosto ?? 0) - compAgo : null;
-            int? dispSep = disp != null ? (disp.Septiembre ?? 0) - compSep : null;
-            int? dispOct = disp != null ? (disp.Octubre ?? 0) - compOct : null;
-            int? dispNov = disp != null ? (disp.Noviembre ?? 0) - compNov : null;
-            int? dispDic = disp != null ? (disp.Diciembre ?? 0) - compDic : null;
 
             // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO

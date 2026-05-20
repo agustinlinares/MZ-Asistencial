@@ -1,4 +1,4 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +21,36 @@ namespace MZAsistencial.Server.Services
             if (perfilId == null || (perfilId != 1 && perfilId != 4))
                 query = query.Where(x => x.Desactivado != true);
 
-            return await query
-                .Select(c => new CentrosPropiosDTO
+            var centros = await query.ToListAsync();
+
+            var poblacionIds = centros
+                .Where(c => c.PoblacionId.HasValue)
+                .Select(c => c.PoblacionId!.Value)
+                .Distinct()
+                .ToList();
+
+            var poblaciones = await _context.AuxPoblaciones
+                .Where(p => poblacionIds.Contains(p.PoblacionId))
+                .Select(p => new { p.PoblacionId, Nombre = p.Poblacion, p.ProvinciaId })
+                .ToListAsync();
+
+            var provinciaIds = poblaciones.Select(p => p.ProvinciaId).Distinct().ToList();
+
+            var provincias = await _context.AuxProvincias
+                .Where(p => provinciaIds.Contains(p.ProvinciaId))
+                .Select(p => new { p.ProvinciaId, Nombre = p.Provincia })
+                .ToListAsync();
+
+            return centros.Select(c =>
+            {
+                var pob  = c.PoblacionId.HasValue
+                    ? poblaciones.FirstOrDefault(p => p.PoblacionId == c.PoblacionId.Value)
+                    : null;
+                var prov = pob != null
+                    ? provincias.FirstOrDefault(p => p.ProvinciaId == pob.ProvinciaId)
+                    : null;
+
+                return new CentrosPropiosDTO
                 {
                     Localizador            = c.Localizador,
                     CentroId               = c.CentroId,
@@ -30,6 +58,8 @@ namespace MZAsistencial.Server.Services
                     Centro                 = c.Centro,
                     Cp                     = c.Cp,
                     PoblacionId            = c.PoblacionId,
+                    Poblacion              = pob?.Nombre,
+                    Provincia              = prov?.Nombre,
                     Telefono               = c.Telefono,
                     Latitud                = c.Latitud,
                     Longitud               = c.Longitud,
@@ -59,8 +89,8 @@ namespace MZAsistencial.Server.Services
                     Fcalisuf               = c.Fcalisuf,
                     TipoCentro             = c.TipoCentro,
                     MapaValidado           = c.MapaValidado,
-                })
-                .ToListAsync();
+                };
+            }).ToList();
         }
 
         public async Task<CentrosPropiosDTO?> GetByIdAsync(int centroId)
@@ -70,6 +100,20 @@ namespace MZAsistencial.Server.Services
 
             if (c is null) return null;
 
+            var pob = c.PoblacionId.HasValue
+                ? await _context.AuxPoblaciones
+                    .Where(p => p.PoblacionId == c.PoblacionId.Value)
+                    .Select(p => new { p.PoblacionId, Nombre = p.Poblacion, p.ProvinciaId })
+                    .FirstOrDefaultAsync()
+                : null;
+
+            var prov = pob != null
+                ? await _context.AuxProvincias
+                    .Where(p => p.ProvinciaId == pob.ProvinciaId)
+                    .Select(p => new { p.ProvinciaId, Nombre = p.Provincia })
+                    .FirstOrDefaultAsync()
+                : null;
+
             return new CentrosPropiosDTO
             {
                 Localizador            = c.Localizador,
@@ -78,6 +122,8 @@ namespace MZAsistencial.Server.Services
                 Centro                 = c.Centro,
                 Cp                     = c.Cp,
                 PoblacionId            = c.PoblacionId,
+                Poblacion              = pob?.Nombre,
+                Provincia              = prov?.Nombre,
                 Telefono               = c.Telefono,
                 Latitud                = c.Latitud,
                 Longitud               = c.Longitud,
