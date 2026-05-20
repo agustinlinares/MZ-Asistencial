@@ -60,6 +60,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(null);
+    const [anioCat,     setAnioCat]     = useState(null);
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -190,7 +191,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId || !anioEsp) return;
         fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
-        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
             .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
     };
 
