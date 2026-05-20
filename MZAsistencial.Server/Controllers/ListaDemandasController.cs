@@ -31,7 +31,7 @@ public class ListaDemandasController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("años")]
+    [HttpGet("anos")]
     public async Task<IActionResult> GetAños()
     {
         var result = await _service.GetAñosAsync();

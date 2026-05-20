@@ -2227,6 +2227,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
+            entity.Property(e => e.Año).HasColumnName("Anio");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>
