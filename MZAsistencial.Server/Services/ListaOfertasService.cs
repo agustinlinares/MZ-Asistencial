@@ -157,6 +157,7 @@ public class ListaOfertasService : IListaOfertasService
 
         // Obtener disponibilidad declarada
         var disponibilidades = await _context.VwDisponibilidads
+
             .Where(v => v.CentroId.HasValue && centrosPropiosIds.Contains(v.CentroId.Value))
             .ToListAsync();
 
@@ -225,7 +226,6 @@ public class ListaOfertasService : IListaOfertasService
             int? dispOct = disp != null ? disp.Octubre - compOct : null;
             int? dispNov = disp != null ? disp.Noviembre - compNov : null;
             int? dispDic = disp != null ? disp.Diciembre - compDic : null;
-
 
             // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO
@@ -348,6 +348,39 @@ public class ListaOfertasService : IListaOfertasService
         var oferta = await _context.Ofertas.FindAsync(id);
         if (oferta == null) return null;
 
+        // Datos de la demanda asociada
+        Demanda? demanda = null;
+        if (oferta.DemandaId.HasValue)
+            demanda = await _context.Demandas.FindAsync(oferta.DemandaId.Value);
+
+        // Especialidad y Servicio
+        var especialidad = oferta.EspecialidadId.HasValue
+            ? await _context.AuxEspecialidades.FindAsync(oferta.EspecialidadId.Value)
+            : null;
+        var servicio = oferta.ServicioId.HasValue
+            ? await _context.AuxServicios.FindAsync(oferta.ServicioId.Value)
+            : null;
+        var estado = oferta.EstadoId.HasValue
+            ? await _context.AuxEstadosDemanda.FindAsync(oferta.EstadoId.Value)
+            : null;
+
+        // Centro y Mutua
+        string? centro = null;
+        string? mutuaOferta = null;
+        if (oferta.CentroId.HasValue)
+        {
+            var cp = await _context.CentrosPropios
+                .Where(c => c.CentroId == oferta.CentroId.Value)
+                .Select(c => new { c.Centro, c.MutuaId })
+                .FirstOrDefaultAsync();
+            if (cp != null)
+            {
+                centro = cp.Centro;
+                var mutua = await _context.Mutuas.FindAsync(cp.MutuaId);
+                mutuaOferta = mutua?.Mutua1;
+            }
+        }
+
         return new OfertaEditDTO
         {
             OfertaId = oferta.OfertaId,
@@ -371,6 +404,23 @@ public class ListaOfertasService : IListaOfertasService
             EstadoId = oferta.EstadoId,
             NotaContestacion = oferta.NotaContestacion,
             ContestacionPlazos = oferta.ContestacionPlazos,
+            MutuaOferta = mutuaOferta,
+            Centro = centro,
+            Especialidad = especialidad?.Especialidad,
+            Servicio = servicio?.Servicio,
+            Estado = estado?.Estado,
+            DemandaEne = demanda?.Ene,
+            DemandaFeb = demanda?.Feb,
+            DemandaMar = demanda?.Mar,
+            DemandaAbr = demanda?.Abr,
+            DemandaMay = demanda?.May,
+            DemandaJun = demanda?.Jun,
+            DemandaJul = demanda?.Jul,
+            DemandaAgo = demanda?.Ago,
+            DemandaSep = demanda?.Sep,
+            DemandaOct = demanda?.Oct,
+            DemandaNov = demanda?.Nov,
+            DemandaDic = demanda?.Dic,
         };
     }
 

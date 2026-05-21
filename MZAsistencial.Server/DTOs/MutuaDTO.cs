@@ -17,6 +17,9 @@
         public string? DireccionElectronica { get; set; }
         public string? PersonaContacto { get; set; }
 
+        //Usuario para el registro de actividad
+        public int? UsuarioId { get; set; }
+
 
     }
 }

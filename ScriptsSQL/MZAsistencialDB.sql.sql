@@ -1387,7 +1387,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Mutuas](
 	[Mutua_id] [int] IDENTITY(1,1) NOT NULL,
-	[NumeroMutua] [varchar](5) NULL,
+	[NumeroMutua] [varchar](3) NULL,
 	[Mutua] [varchar](100) NULL,
 	[RazonSocial] [varchar](100) NULL,
 	[Direccion] [varchar](100) NULL,

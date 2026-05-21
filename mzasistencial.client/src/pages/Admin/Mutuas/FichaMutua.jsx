@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import '../../../styles/FichaGlobal.css';
 import notify from 'devextreme/ui/notify';
+import './FichaMutua.css';
+import MapaModal from '../../Admin/Centros/MapaModal'; // La ruta a MapaModal.jsx
+import DataGrid, {
+    Column,
+    Paging,
+    FilterRow,
+    HeaderFilter,
+    Pager,
+    Scrolling,
+    Sorting,
+    GroupPanel,
+    Grouping,
+    Export
+} from "devextreme-react/data-grid";
+
 
 // Recibimos dos props:
 // - mutua: los datos de la fila que clickó el usuario
@@ -36,6 +51,22 @@ const FichaMutua = ({ mutua, onClose }) => {
 
     //Sirve para detectar si la mutua que se va a guarda es nueva
     const esNuevo = !mutua.numeroId;
+
+    // Estado para errores de validación
+    const [errors, setErrors] = useState({});
+
+    // Estado para centros propios
+    const [centrosPropios, setCentrosPropios] = useState([]);
+
+    // Estado para el modal del mapa
+    const [mapaData, setMapaData] = useState(null); // null = cerrado
+
+    // Estado para conciertos
+    const [conciertos, setConciertos] = useState([]);
+
+    // Estados para especialidades
+    const [especialidadesPropios, setEspecialidadesPropios] = useState([]);
+    const [especialidadesConciertos, setEspecialidadesConciertos] = useState([]);
 
     // Igual que FichaFinca: foco al abrir y cerrar con Escape
     useEffect(() => {
@@ -125,8 +156,71 @@ const FichaMutua = ({ mutua, onClose }) => {
             .catch(err => console.error("Error cargando poblaciones:", err));
     }, [provinciaId]); // Se ejecuta cada vez que provincia cambia
 
+    // Carga centros propios cuando se abre la pestaña
+    useEffect(() => {
+        if (activeTab !== "centrosPropios" || !mutua.numeroId) return;
+        fetch(`/api/mutuas/${mutua.numeroId}/centrosPropios`)
+            .then(r => r.json())
+            .then(data => setCentrosPropios(data))
+            .catch(err => console.error("Error cargando centros propios:", err));
+    }, [activeTab, mutua.numeroId]);
+
+    // Carga conciertos cuando se abre la pestaña
+    useEffect(() => {
+        if (activeTab !== "conciertos" || !mutua.numeroId) return;
+        fetch(`/api/mutuas/${mutua.numeroId}/conciertos`)
+            .then(r => r.json())
+            .then(data => setConciertos(data))
+            .catch(err => console.error("Error cargando conciertos:", err));
+    }, [activeTab, mutua.numeroId]);
+
+    // Carga especialidades propios cuando se abre la pestaña
+    useEffect(() => {
+        if (activeTab !== "especialidadesPropios" || !mutua.numeroId) return;
+        fetch(`/api/mutuas/${mutua.numeroId}/especialidadesPropios`)
+            .then(r => r.json())
+            .then(data => setEspecialidadesPropios(data))
+            .catch(err => console.error("Error cargando especialidades propios:", err));
+    }, [activeTab, mutua.numeroId]);
+
+    // Carga especialidades conciertos cuando se abre la pestaña
+    useEffect(() => {
+        if (activeTab !== "especialidadesConciertos" || !mutua.numeroId) return;
+        fetch(`/api/mutuas/${mutua.numeroId}/especialidadesConciertos`)
+            .then(r => r.json())
+            .then(data => setEspecialidadesConciertos(data))
+            .catch(err => console.error("Error cargando especialidades conciertos:", err));
+    }, [activeTab, mutua.numeroId]);
+
     // función que llama al PUT cuando el usuario pulsa Aceptar
     const handleGuardar = async () => {
+
+        // Validación de campos obligatorios
+        const newErrors = {};
+        if (!form.mutua) newErrors.mutua = true;
+        if (!form.razonSocial) newErrors.razonSocial = true;
+        if (!form.direccion) newErrors.direccion = true;
+        if (!form.cp) newErrors.cp = true;
+        if (!form.telefono) newErrors.telefono = true;
+        if (!form.fax) newErrors.fax = true;
+        if (!form.personaContacto) newErrors.personaContacto = true;
+        if (!provinciaId) newErrors.provincia = true;
+        if (!form.poblacionId) newErrors.poblacion = true;
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return; // No guardamos si hay errores
+        }
+
+        // Obtenemos el usuario de la sesión
+        const userData = JSON.parse(
+            localStorage.getItem('UsuarioActual') ||
+            sessionStorage.getItem('user') ||
+            '{}'
+        );
+        const usuarioId = userData.usuarioId || userData.UsuarioId || null;
+
+
     
         try {
 
@@ -150,9 +244,12 @@ const FichaMutua = ({ mutua, onClose }) => {
                     cp: form.cp,
                     telefono: form.telefono,
                     fax: form.fax,
-                    direccionElectronica: form.direccionElectronica,
+                    // Email opcional — si está vacío se envía null
+                    direccionElectronica: form.direccionElectronica || null,
                     personaContacto: form.personaContacto,
                     //numeroMutua: form.numeroMutua,
+                    // Usuario de la sesión para el registro de actividad
+                    usuarioId: usuarioId,
                 })
             });
 
@@ -229,15 +326,32 @@ const FichaMutua = ({ mutua, onClose }) => {
                             <div className="ficha-field">
                                 <label>Mutua</label>
                                 {/* Usa form.mutua y tiene onChange */}
-                                <input type="text" value={form.mutua || ""} onChange={set("mutua")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.mutua ? 'error' : ''}
+                                    value={form.mutua || ""} 
+                                    onChange={(e)=>{
+                                        set("mutua")(e);
+                                        setErrors(f => ({ ...f, mutua: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Código Razón Social</label>
-                                <input type="text" value={form.razonSocial || ""} onChange={set("razonSocial")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.razonSocial ? 'error' : ''}
+                                    value={form.razonSocial || ""} 
+                                    onChange={(e)=>{
+                                        set("razonSocial")(e);
+                                        setErrors(f => ({ ...f, razonSocial: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Provincia</label>
                                 <select
+                                    className={errors.provincia ? 'error' : ''}
                                     value={provinciaId || ""}
                                     onChange={(e) => {
                                         const id = parseInt(e.target.value);
@@ -246,6 +360,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                         const prov = provincias.find(p => p.provinciaId === id);
                                         setForm(f => ({ ...f, provincia: prov?.provincia || "", poblacion: "" }));
                                         setPoblaciones([]); // limpia el combo de población
+                                        setErrors(f => ({ ...f, provincia: false })); // limpia el error
                                     }}
                                 >
                                     <option value="">-- Selecciona provincia --</option>
@@ -259,6 +374,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                             <div className="ficha-field">
                                 <label>Población</label>
                                 <select
+                                    className={errors.poblacion ? 'error' : ''}
                                     value={form.poblacionId || ""}
                                     onChange={(e) => {
                                         const id = parseInt(e.target.value);
@@ -268,6 +384,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                             poblacion: pob?.poblacion || "",
                                             poblacionId: id  // Guardamos el id
                                         }));
+                                        setErrors(f => ({ ...f, poblacion: false })); // limpia el error
                                     }}
                                     disabled={!provinciaId} // deshabilitado hasta que haya provincia
                                 >
@@ -281,19 +398,51 @@ const FichaMutua = ({ mutua, onClose }) => {
                             </div>
                             <div className="ficha-field">
                                 <label>Dirección</label>
-                                <input type="text" value={form.direccion || ""} onChange={set("direccion")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.direccion ? 'error' : ''}
+                                    value={form.direccion || ""} 
+                                    onChange={(e)=>{
+                                        set("direccion")(e);
+                                        setErrors(f => ({ ...f, direccion: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Código Postal</label>
-                                <input type="text" value={form.cp || ""} onChange={set("cp")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.cp ? 'error' : ''}
+                                    value={form.cp || ""} 
+                                    onChange={(e)=>{
+                                        set("cp")(e);
+                                        setErrors(f => ({ ...f, cp: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Teléfono</label>
-                                <input type="text" value={form.telefono || ""} onChange={set("telefono")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.telefono ? 'error' : ''}
+                                    value={form.telefono || ""} 
+                                    onChange={(e)=>{
+                                        set("telefono")(e);
+                                        setErrors(f => ({ ...f, telefono: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Fax</label>
-                                <input type="text" value={form.fax || ""} onChange={set("fax")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.fax ? 'error' : ''}
+                                    value={form.fax || ""} 
+                                    onChange={(e)=>{
+                                        set("fax")(e);
+                                        setErrors(f => ({ ...f, fax: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Dirección Electrónica</label>
@@ -301,7 +450,15 @@ const FichaMutua = ({ mutua, onClose }) => {
                             </div>
                             <div className="ficha-field">
                                 <label>Persona de Contacto</label>
-                                <input type="text" value={form.personaContacto || ""} onChange={set("personaContacto")} />
+                                <input 
+                                    type="text" 
+                                    className={errors.personaContacto ? 'error' : ''}
+                                    value={form.personaContacto || ""} 
+                                    onChange={(e)=>{
+                                        set("personaContacto")(e);
+                                        setErrors(f => ({ ...f, personaContacto: false })); // limpia el error al escribir
+                                    }} 
+                                />
                             </div>
                             <div className="ficha-field">
                                 <label>Número de Mutua</label>
@@ -313,22 +470,185 @@ const FichaMutua = ({ mutua, onClose }) => {
 
                     {/* PESTAÑAS CENTROS PROPIOS — ??? */}
                     {activeTab === "centrosPropios" && (
-                        <p>Centros Propios</p>
+                            <div style={{ padding: '8px 0' }}>
+
+                                {/* Modal del mapa — se abre al pulsar el icono */}
+                                {mapaData && (
+                                    <MapaModal
+                                        latitud={mapaData.latitud}
+                                        longitud={mapaData.longitud}
+                                        direccion={mapaData.direccion}
+                                        onAceptar={() => {}} // solo lectura, no guardamos
+                                        onCerrar={() => setMapaData(null)}
+                                    />
+                                )}
+
+                                <DataGrid
+                                    dataSource={centrosPropios} // Conectar con el endpoint
+                                    showBorders={true}
+                                    rowAlternationEnabled={true}
+                                    noDataText="Sin datos para mostrar"
+                                    className="mz-table"
+                                    height={400}
+                                >
+                                    <Scrolling mode="standard" />
+                                    <Paging defaultPageSize={10} />
+                                    <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10,20,50]} showPageSizeSelector={true} />
+                                    <FilterRow visible={true} />
+                                    <HeaderFilter visible={true} />
+                                    <Sorting mode="multiple" />
+                                    <Export enabled={true} />
+                                    <Column dataField="localizador" caption="Localizador" width={180} />
+                                    <Column dataField="centro" caption="Centro" width={200} />
+                                    <Column dataField="cp" caption="C.P" width={80} />
+                                    <Column dataField="poblacion" caption="Población" width={130} />
+                                    <Column dataField="provincia" caption="Provincia" width={130} />
+                                    <Column dataField="telefono" caption="Teléfono" width={120} />
+                                    <Column dataField="contacto" caption="Contacto" width={130} />
+                                    <Column dataField="email" caption="Email" width={160} />
+                                    
+                                    {/* Columna Mapa — abre el MapaModal */}
+                                    <Column
+                                        caption="Mapa"
+                                        width={80}
+                                        alignment="center"
+                                        cellRender={(cell) => {
+                                            const { latitud, longitud, centro } = cell.data;
+                                            if (!latitud || !longitud) return <span style={{ color: '#aaa' }}>—</span>;
+                                            return (
+                                                <div
+                                                    style={{ color: '#1a5fa8', cursor: 'pointer', textAlign: 'center' }}
+                                                    title="Ver en mapa"
+                                                    onClick={() => setMapaData({
+                                                        latitud,
+                                                        longitud,
+                                                        direccion: centro
+                                                    })}
+                                                >
+                                                    <i className="ri-map-pin-line"></i>
+                                                </div>
+                                            );
+                                        }}
+                                    />
+
+                                    <Column dataField="validado" caption="Validado" width={90} alignment="center" />
+                                </DataGrid>
+                            </div>
                     )}
 
                     {/* PESTAÑAS CONCIERTOS — ??? */}
                     {activeTab === "conciertos" && (
-                        <p>Conciertos</p>
+                        <div style={{ padding: '8px 0' }}>
+
+                            {/* Modal del mapa */}
+                            {mapaData && (
+                                <MapaModal
+                                    latitud={mapaData.latitud}
+                                    longitud={mapaData.longitud}
+                                    direccion={mapaData.direccion}
+                                    onAceptar={() => {}}
+                                    onCerrar={() => setMapaData(null)}
+                                />
+                            )}
+
+                            <DataGrid
+                                dataSource={conciertos} // TODO: fetch /api/conciertos?mutuaId={mutua.numeroId}
+                                showBorders={true}
+                                rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar"
+                                className="mz-table"
+                                height={400}
+                            >
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10,20,50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <Column dataField="codMutua" caption="Cód. Mutua" width={150} alignment="left"/>
+                                <Column dataField="codCentro" caption="Cód. Centro" width={180} alignment="center"/>
+                                <Column dataField="centro" caption="Centro" width={200} />
+                                <Column dataField="cifNif" caption="CIF/NIF" width={120} />
+                                <Column dataField="cp" caption="C.P" width={80} />
+                                <Column dataField="poblacion" caption="Población" width={130} />
+                                <Column dataField="provincia" caption="Provincia" width={130} />
+                                <Column dataField="contacto" caption="Contacto" width={150} />
+                                <Column dataField="email" caption="Email" width={160} />
+                                <Column
+                                    caption="Mapa"
+                                    width={80}
+                                    alignment="center"
+                                    cellRender={(cell) => {
+                                        const { latitud, longitud, centro } = cell.data;
+                                        if (!latitud || !longitud) return <span style={{ color: '#aaa' }}>—</span>;
+                                        return (
+                                            <div
+                                                style={{ color: '#1a5fa8', cursor: 'pointer', textAlign: 'center' }}
+                                                title="Ver en mapa"
+                                                onClick={() => setMapaData({ latitud, longitud, direccion: centro })}
+                                            >
+                                                <i className="ri-map-pin-line"></i>
+                                            </div>
+                                        );
+                                    }}
+                                />
+                                <Column dataField="autorizado" caption="Autorizado" width={100} alignment="center"/>
+                            </DataGrid>
+                        </div>
                     )}
 
                     {/* PESTAÑAS ESPECIALIDADES /SERV. (PROPIOS) — ??? */}
                     {activeTab === "especialidadesPropios" && (
-                        <p>Especialidades / Serv. (Propios)</p>
+                        <div style={{ padding: '8px 0' }}>
+                            <DataGrid
+                                dataSource={especialidadesPropios} // TODO: fetch /api/especialidades/propios?mutuaId={mutua.numeroId}
+                                showBorders={true}
+                                rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar"
+                                className="mz-table"
+                                height={400}
+                            >
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10,20,50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
+                                <Grouping autoExpandAll={false} />
+                                <Column dataField="ano" caption="Año" width={80} />
+                                <Column dataField="servicio" caption="Servicio" width={300} />
+                                <Column dataField="especialidad" caption="Especialidad" width={200} />
+                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                            </DataGrid>
+                        </div>
                     )}
 
                     {/* PESTAÑAS ESPECIALIDADES /SERV. (CONCIERTOS) — ??? */}
                     {activeTab === "especialidadesConciertos" && (
-                        <p>Especialidades / Serv. (Conciertos)</p>
+                        <div style={{ padding: '8px 0' }}>
+                            <DataGrid
+                                dataSource={especialidadesConciertos} // TODO: fetch /api/especialidades/conciertos?mutuaId={mutua.numeroId}
+                                showBorders={true}
+                                rowAlternationEnabled={true}
+                                noDataText="Sin datos para mostrar"
+                                className="mz-table"
+                                height={400}
+                            >
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
+                                <Pager visible={true} showInfo={true} showNavigationButtons={true} displayMode="full" allowedPageSizes={[10,20,50]} showPageSizeSelector={true} />
+                                <FilterRow visible={true} />
+                                <HeaderFilter visible={true} />
+                                <Sorting mode="multiple" />
+                                <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
+                                <Grouping autoExpandAll={false} />
+                                <Column dataField="ano" caption="Año" width={80} />
+                                <Column dataField="servicio" caption="Servicio" width={300} />
+                                <Column dataField="especialidad" caption="Especialidad" width={200} />
+                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                            </DataGrid>
+                        </div>
                     )}
 
                 </div>

@@ -2227,6 +2227,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
+            entity.Property(e => e.Año).HasColumnName("Anio");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>
@@ -4592,6 +4593,12 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.Apellidos).HasMaxLength(150);
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
+            /*
+            entity.Property(e => e.Contraseña)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("Contraseña");
+            */
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);
             entity.Property(e => e.DgossrecibeCorreo).HasColumnName("DGOSSRecibeCorreo");
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);

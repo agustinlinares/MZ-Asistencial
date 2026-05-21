@@ -207,8 +207,21 @@ const Mutuas = () => {
         const ok = await dxConfirm('¿Está seguro de que desea eliminar esta mutua?', 'Confirmar eliminación');
         if (!ok) return;
 
+        // Usuario de sesión
+        const userData = JSON.parse(
+            localStorage.getItem('UsuarioActual') ||
+            sessionStorage.getItem('user') ||
+            '{}'
+        );
+
+        const usuarioId = userData.usuarioId || userData.UsuarioId || null;
+
         try {
-            const res = await fetch(`/api/mutuas/${id}`, { method: 'DELETE' });
+            
+            const res = await fetch(`/api/mutuas/${id}?usuarioId=${usuarioId}`, {
+                method: 'DELETE'
+            });
+
             if (res.ok) {
                 notify('Mutua eliminada correctamente', 'success', 2000);
                 cargarMutuas();
@@ -343,7 +356,7 @@ const Mutuas = () => {
                                 width={80}
                             />
 
-                            <Column dataField="numeroMutua" caption="Número de Mutua" fixed={true} fixedPosition="left"width={160} />
+                            <Column dataField="numeroMutua" caption="Número de Mutua" fixed={true} fixedPosition="left"width={180} />
 
                             <Column
                                 //dataField="mutua"
