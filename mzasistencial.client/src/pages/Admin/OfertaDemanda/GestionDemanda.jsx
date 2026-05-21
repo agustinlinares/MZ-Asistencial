@@ -116,7 +116,7 @@ const GestionDemanda = () => {
     }, []);
 
     useEffect(() => {
-        fetch(`${API}/ListaDemanda/años`)
+        fetch(`${API}/ListaDemandas/anos`)
             .then(res => res.json())
             .then(data => {
                 setAños(data);
@@ -124,7 +124,7 @@ const GestionDemanda = () => {
             })
             .catch(err => console.error('Error al cargar años:', err));
 
-        fetch(`${API}/ListaDemanda/estados`)
+        fetch(`${API}/ListaDemandas/estados`)
             .then(res => res.json())
             .then(data => {
                 const todos = [{ estadoId: null, estado: 'Todas' }, ...data];
@@ -157,7 +157,7 @@ const GestionDemanda = () => {
             Object.assign(demandaEditando, temp);
         }
 
-        fetch(`${API}/ListaDemanda/${demandaEditando.demandaId}`, {
+        fetch(`${API}/ListaDemandas/${demandaEditando.demandaId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ estadoId: demandaEditando.estadoId }),

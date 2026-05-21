@@ -2227,7 +2227,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
-            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.Año).HasColumnName("Año");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>
@@ -4150,7 +4150,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.EstadoInformeId).HasColumnName("EstadoInforme_id");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.Año).HasColumnName("Año");
             entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificación");
             entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)
