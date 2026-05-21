@@ -266,10 +266,7 @@ public class ListaDemandasService : IListaDemandasService
         if (demanda == null) return false;
 
         demanda.EstadoId = dto.EstadoId;
-<<<<<<< HEAD
 
-=======
->>>>>>> deea521 (Actualizaciones GestionOferta)
         await _context.SaveChangesAsync();
 
         if (dto.EstadoId == 8)

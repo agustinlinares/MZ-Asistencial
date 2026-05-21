@@ -227,22 +227,6 @@ public class ListaOfertasService : IListaOfertasService
             int? dispNov = disp != null ? disp.Noviembre - compNov : null;
             int? dispDic = disp != null ? disp.Diciembre - compDic : null;
 
-<<<<<<< HEAD
-
-=======
-            int? dispEne = disp != null ? disp.Enero - compEne : null;
-            int? dispFeb = disp != null ? disp.Febrero - compFeb : null;
-            int? dispMar = disp != null ? disp.Marzo - compMar : null;
-            int? dispAbr = disp != null ? disp.Abril - compAbr : null;
-            int? dispMay = disp != null ? disp.Mayo - compMay : null;
-            int? dispJun = disp != null ? disp.Junio - compJun : null;
-            int? dispJul = disp != null ? disp.Julio - compJul : null;
-            int? dispAgo = disp != null ? disp.Agosto - compAgo : null;
-            int? dispSep = disp != null ? disp.Septiembre - compSep : null;
-            int? dispOct = disp != null ? disp.Octubre - compOct : null;
-            int? dispNov = disp != null ? disp.Noviembre - compNov : null;
-            int? dispDic = disp != null ? disp.Diciembre - compDic : null;
->>>>>>> deea521 (Actualizaciones GestionOferta)
             // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO
             {

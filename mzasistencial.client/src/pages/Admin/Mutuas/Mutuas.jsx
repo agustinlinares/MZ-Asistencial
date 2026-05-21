@@ -217,7 +217,7 @@ const Mutuas = () => {
         const usuarioId = userData.usuarioId || userData.UsuarioId || null;
 
         try {
-            const res = await fetch(`/api/mutuas/${id}`, { method: 'DELETE' });
+            
             const res = await fetch(`/api/mutuas/${id}?usuarioId=${usuarioId}`, {
                 method: 'DELETE'
             });
