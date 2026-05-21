@@ -1,0 +1,141 @@
+using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Data;
+using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
+
+namespace MZAsistencial.Server.Services
+{
+    public class FicherosService : IFicherosService
+    {
+        private readonly MZAsistencialContext _context;
+        private readonly IConfiguration _configuration;
+
+        public FicherosService(MZAsistencialContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
+
+        public async Task<IEnumerable<FicheroDTO>> GetAllAsync()
+        {
+            return await _context.Ficheros
+                .GroupJoin(_context.AuxAreas,
+                    f => f.AreaId,
+                    a => a.AreaId,
+                    (f, areas) => new { f, areas })
+                .SelectMany(
+                    x => x.areas.DefaultIfEmpty(),
+                    (x, a) => new FicheroDTO
+                    {
+                        FicheroId     = x.f.FicheroId,
+                        NombreFichero = x.f.Fichero1,
+                        Descripción   = x.f.Descripción,
+                        UsuarioId     = x.f.UsuarioId,
+                        Fecha         = x.f.Fecha,
+                        AreaId        = x.f.AreaId,
+                        Area          = a != null ? a.Area : null,
+                        FechaAlta     = x.f.FechaAlta,
+                        UsuarioAltaId = x.f.UsuarioAltaId,
+                    })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<AuxArea>> GetAreasAsync()
+        {
+            return await _context.AuxAreas.ToListAsync();
+        }
+
+        public async Task<FicheroDTO> CreateAsync(string? descripcion, DateTime? fecha, int? areaId, IFormFile archivo, int usuarioId)
+        {
+            var basePath = _configuration["FicherosPaths:Base"] ?? @"C:\MZFiles\Ficheros";
+            if (!Directory.Exists(basePath))
+                Directory.CreateDirectory(basePath);
+
+            var extension = Path.GetExtension(archivo.FileName);
+            var uniqueName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(basePath, uniqueName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await archivo.CopyToAsync(stream);
+
+            var fichero = new Fichero
+            {
+                Fichero1      = uniqueName,
+                Descripción   = descripcion,
+                UsuarioId     = usuarioId,
+                Fecha         = fecha,
+                AreaId        = areaId,
+                FechaAlta     = DateTime.Now,
+                UsuarioAltaId = usuarioId,
+            };
+
+            _context.Ficheros.Add(fichero);
+            _context.RegistroActividads.Add(new RegistroActividad
+            {
+                UsuarioId = usuarioId,
+                Fecha     = DateTime.Now,
+                Accion    = $"CREAR FICHERO - {archivo.FileName}",
+                Sql       = $"Fichero: {uniqueName}, Area: {areaId}, Descripción: {descripcion}",
+            });
+
+            await _context.SaveChangesAsync();
+
+            return new FicheroDTO
+            {
+                FicheroId     = fichero.FicheroId,
+                NombreFichero = fichero.Fichero1,
+                Descripción   = fichero.Descripción,
+                UsuarioId     = fichero.UsuarioId,
+                Fecha         = fichero.Fecha,
+                AreaId        = fichero.AreaId,
+                FechaAlta     = fichero.FechaAlta,
+                UsuarioAltaId = fichero.UsuarioAltaId,
+            };
+        }
+
+        public async Task<bool> DeleteAsync(int id, int usuarioId)
+        {
+            var fichero = await _context.Ficheros.FindAsync(id);
+            if (fichero == null) return false;
+
+            var basePath = _configuration["FicherosPaths:Base"] ?? @"C:\MZFiles\Ficheros";
+            var filePath = Path.Combine(basePath, fichero.Fichero1 ?? string.Empty);
+
+            if (!string.IsNullOrEmpty(fichero.Fichero1) && File.Exists(filePath))
+                File.Delete(filePath);
+
+            var nombre = fichero.Fichero1;
+
+            _context.Ficheros.Remove(fichero);
+            _context.RegistroActividads.Add(new RegistroActividad
+            {
+                UsuarioId = usuarioId,
+                Fecha     = DateTime.Now,
+                Accion    = $"ELIMINAR FICHERO - {nombre}",
+            });
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id, int usuarioId)
+        {
+            var fichero = await _context.Ficheros.FindAsync(id);
+            if (fichero == null || string.IsNullOrEmpty(fichero.Fichero1))
+                return (null, null);
+
+            var basePath = _configuration["FicherosPaths:Base"] ?? @"C:\MZFiles\Ficheros";
+            var filePath = Path.Combine(basePath, fichero.Fichero1);
+
+            _context.RegistroActividads.Add(new RegistroActividad
+            {
+                UsuarioId = usuarioId,
+                Fecha     = DateTime.Now,
+                Accion    = $"DESCARGAR FICHERO - {fichero.Fichero1}",
+            });
+            await _context.SaveChangesAsync();
+
+            return (filePath, fichero.Descripción ?? fichero.Fichero1);
+        }
+    }
+}
