@@ -173,3 +173,16 @@
     color: #aaa;
     cursor: not-allowed;
 }
+
+/* ── VALIDACIÓN — campos obligatorios en rojo ──────────────────── */
+.fm-field input.error,
+.fm-field select.error {
+    border-bottom-color: #d32f2f;
+}
+
+.fm-field input.error:focus,
+.fm-field select.error:focus {
+    border-bottom-color: #d32f2f;
+    box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.1);
+}
+
