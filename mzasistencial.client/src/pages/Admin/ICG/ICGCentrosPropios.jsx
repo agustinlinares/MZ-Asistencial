@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
+﻿import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -955,13 +955,13 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        <Column dataField="cap1GastosPersonal"       caption="Cap. 1 - Personal"      width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap2GastosCorrientes"     caption="Cap. 2 - Corrientes"    width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap3GastosFinancieros"    caption="Cap. 3 - Financieros"   width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cuenta68Amortizaciones"   caption="Cta. 68 - Amortiz."    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art32OtrosIngresos"       caption="Art. 32 - Ingresos"    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art62InversionNueva"      caption="Art. 62 - Inv. Nueva"  width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art63InversionReposicion" caption="Art. 63 - Inv. Repos." width={150} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap1GastosPersonal"       caption="C.1 Personal"   width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap2GastosCorrientes"     caption="C.2 Corrientes" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap3GastosFinancieros"    caption="C.3 Financiero" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cuenta68Amortizaciones"   caption="Cta.68 Amort."  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art32OtrosIngresos"       caption="A.32 Ingresos"  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art62InversionNueva"      caption="A.62 Inv.Nueva" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art63InversionReposicion" caption="A.63 Inv.Repo." width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
                         <Column dataField="totalGastos" caption="Total Gastos" width={130} dataType="number"
                             cellRender={({ value }) => (
                                 <span style={{ fontWeight: 700, color: "#1565c0" }}>
