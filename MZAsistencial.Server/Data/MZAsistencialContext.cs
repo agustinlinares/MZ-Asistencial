@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -2380,13 +2380,12 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorA\u00f1o");
+            entity.ToTable("FincasRegistrales_CostesPorAnio");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
             entity.Property(e => e.Localizador).HasMaxLength(50);
-            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
-            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
+            entity.Property(e => e.Anio).HasColumnName("Anio");
             entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorAños)
                 .HasForeignKey(d => d.FincaId)
                 .HasConstraintName("FK_FincasRegistrales_CostesPorAño_FincasRegistrales");
@@ -4150,8 +4149,8 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.EstadoInformeId).HasColumnName("EstadoInforme_id");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-            entity.Property(e => e.Año).HasColumnName("Año");
-            entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificación");
+            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificacion");
             entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)
                 .HasColumnName("TipoICG");

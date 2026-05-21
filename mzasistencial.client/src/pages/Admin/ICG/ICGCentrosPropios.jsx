@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
+import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -924,78 +924,104 @@ const ICGCentrosPropios = () => {
                     </div>
                 </div>
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
-                    <DataGrid ref={dataGridRef} dataSource={dataSource} showBorders rowAlternationEnabled
-                        columnAutoWidth allowColumnResizing allowColumnReordering onExporting={onExporting}
-                        noDataText={loading ? "Cargando…" : "No hay centros disponibles"}
+                    <DataGrid 
+                        ref={dataGridRef} 
+                        dataSource={dataSource} 
+                        showBorders={true} 
+                        rowAlternationEnabled={true}
+                        columnAutoWidth={true} 
+                        allowColumnResizing={true} 
+                        allowColumnReordering={true} 
+                        onExporting={onExporting}
+                        className="mz-table"
+                        showRowLines={true}
+                        showColumnLines={true}
+                        wordWrapEnabled={false}
+                        hoverStateEnabled={true}
+                        noDataText={loading ? t("Cargando…") : t("No hay centros disponibles")}
                     >
-                        <SearchPanel visible placeholder="Buscar…" />
-                        <FilterRow visible />
-                        <HeaderFilter visible />
-                        <GroupPanel visible />
+                        <Scrolling mode="standard" showScrollbar="always" />
+                        <SearchPanel visible={true} placeholder={t("Buscar…")} />
+                        <FilterRow visible={true} />
+                        <HeaderFilter visible={true} />
+                        <GroupPanel visible={true} />
                         <Grouping autoExpandAll={false} />
-                        <ColumnChooser enabled />
+                        <ColumnChooser enabled={true} />
                         <Selection mode="single" />
-                        <Export enabled allowExportSelectedData />
+                        <Export enabled={true} allowExportSelectedData={true} />
                         <Paging defaultPageSize={20} />
+                        <Pager visible={true} allowedPageSizes={[10, 20, 50, 100]} displayMode="full" showPageSizeSelector={true} showInfo={true} showNavigationButtons={true} />
                         <Toolbar>
                             <Item location="after" name="searchPanel" />
                             <Item location="after" name="columnChooserButton" />
                         </Toolbar>
-                        <Column dataField="localizador" caption="Localizador"  width={110} />
-                        <Column dataField="mutuaId"     caption="Mutua"        width={70}  />
-                        <Column dataField="centroId"    caption="Centro ID"    width={90}  />
-                        <Column dataField="centro"      caption="Centro"       minWidth={200} />
-                        <Column dataField="cp"          caption="C.P."         width={80}  />
-                        <Column dataField="provincia"   caption="Provincia"    width={130} />
-                        <Column dataField="telefono"    caption="Teléfono"     width={130} />
-                        <Column dataField="desactivado" caption="Desactivado"  width={110}
+
+                        <Column dataField="localizador" caption={t("Localizador")}  width={130} />
+                        <Column dataField="mutuaId"     caption={t("Mutua")}        width={90}  />
+                        <Column dataField="centroId"    caption={t("Centro ID")}    width={100}  />
+                        <Column dataField="centro"      caption={t("Centro")}       width={250} />
+                        <Column dataField="cp"          caption={t("C.P.")}         width={80}  />
+                        <Column dataField="provincia"   caption={t("Provincia")}    width={150} />
+                        <Column dataField="telefono"    caption={t("Teléfono")}     width={130} />
+                        <Column dataField="desactivado" caption={t("Desactivado")}  width={110} alignment="center"
                             cellRender={({ value }) => (
                                 <span style={{ color: value ? "#c62828" : "#2e7d32", fontWeight: 600 }}>
-                                    {value ? "Sí" : "No"}
+                                    {value ? t("Sí") : t("No")}
                                 </span>
                             )}
                         />
-                        <Column dataField="cap1GastosPersonal"       caption="C.1 Personal"   width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap2GastosCorrientes"     caption="C.2 Corrientes" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap3GastosFinancieros"    caption="C.3 Financiero" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cuenta68Amortizaciones"   caption="Cta.68 Amort."  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art32OtrosIngresos"       caption="A.32 Ingresos"  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art62InversionNueva"      caption="A.62 Inv.Nueva" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art63InversionReposicion" caption="A.63 Inv.Repo." width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="totalGastos" caption="Total Gastos" width={130} dataType="number"
+                        <Column dataField="cap1GastosPersonal"       caption={t("C.1 Personal")}   width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap2GastosCorrientes"     caption={t("C.2 Corrientes")} width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap3GastosFinancieros"    caption={t("C.3 Financiero")} width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cuenta68Amortizaciones"   caption={t("Cta.68 Amort.")}  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art32OtrosIngresos"       caption={t("A.32 Ingresos")}  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art62InversionNueva"      caption={t("A.62 Inv.Nueva")} width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art63InversionReposicion" caption={t("A.63 Inv.Repo.")} width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="totalGastos" caption={t("Total Gastos")} width={130} dataType="number"
                             cellRender={({ value }) => (
                                 <span style={{ fontWeight: 700, color: "#1565c0" }}>
                                     {value === null || value === undefined ? "—" : Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             )}
                         />
-                        <Column dataField="totalInversion" caption="Total Inversión" width={130} dataType="number"
+                        <Column dataField="totalInversion" caption={t("Total Inversión")} width={130} dataType="number"
                             cellRender={({ value }) => (
                                 <span style={{ fontWeight: 700, color: "#2e7d32" }}>
                                     {value === null || value === undefined ? "—" : Number(value).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             )}
                         />
-                        <Column caption="ICG06" width={130}
+                        <Column 
+                            caption={t("Acciones")} 
+                            width={110}
+                            fixed={true}
+                            fixedPosition="right"
+                            alignment="center"
                             cellRender={({ data }) => {
                                 if (data.tieneIcg) {
                                     return (
-                                        <button
-                                            style={{ border: "none", borderRadius: 3, padding: "3px 12px", background: "#1976d2", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
-                                            onClick={() => setCentroSeleccionado(data)}
-                                        >
-                                            Ver ficha
-                                        </button>
+                                        <div className="ficha-row-actions">
+                                            <i 
+                                                className="ri-file-search-line action-icon" 
+                                                onClick={(e) => { e.stopPropagation(); setCentroSeleccionado(data); }}
+                                                title={t('Ver ICG')}
+                                                style={{ color: "#1976d2", fontSize: "18px", cursor: "pointer" }}
+                                            />
+                                        </div>
                                     );
                                 }
                                 return (
-                                    <button
-                                        style={{ border: "none", borderRadius: 3, padding: "3px 12px", background: creando ? "#bbb" : "#e65100", color: "#fff", fontSize: 12, cursor: creando ? "not-allowed" : "pointer", fontWeight: 600 }}
-                                        disabled={creando}
-                                        onClick={() => crearIcg06(data)}
-                                    >
-                                        + Crear ICG
-                                    </button>
+                                    <div className="ficha-row-actions">
+                                        <i 
+                                            className="ri-file-add-line action-icon" 
+                                            style={{ color: creando ? "#bbb" : "#e65100", fontSize: "18px", cursor: creando ? "not-allowed" : "pointer" }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!creando) crearIcg06(data);
+                                            }}
+                                            title={t('Crear ICG')}
+                                        />
+                                    </div>
                                 );
                             }}
                         />

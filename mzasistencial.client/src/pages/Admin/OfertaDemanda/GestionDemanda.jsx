@@ -228,7 +228,8 @@ const GestionDemanda = () => {
                                 <label>Estado</label>
                                 <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Todas" width={220} />
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 2 }}>
+                            <div className="ficha-field">
+                                <label>&nbsp;</label>
                                 <button type="button" className="ficha-btn-primary" onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
                                     {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
                                 </button>
@@ -281,7 +282,7 @@ const GestionDemanda = () => {
                         )}
                     </div>
 
-                    <div className="ficha-tab-content" style={{ padding: '16px' }}>
+                    <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={datos}
@@ -290,6 +291,7 @@ const GestionDemanda = () => {
                             columnAutoWidth={false}
                             allowColumnResizing={true}
                             className="mz-table"
+                            height="100%"
                             rowAlternationEnabled={false}
                             showRowLines={true}
                             showColumnLines={true}

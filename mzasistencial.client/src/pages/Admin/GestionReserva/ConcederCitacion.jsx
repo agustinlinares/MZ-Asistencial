@@ -240,14 +240,14 @@ const ConcederCitacion = () => {
                         dataSource={citaciones}
                         keyExpr="CitacionId"
                         showBorders={true}
-                        columnAutoWidth={true}
+                        columnAutoWidth={false}
                         allowColumnResizing={true}
                         className="mz-table"
                         rowAlternationEnabled={true}
                         showRowLines={true}
                         showColumnLines={true}
                         wordWrapEnabled={false}
-                        height="calc(100vh - 340px)"
+                        height="100%"
                     >
                         <Toolbar>
                             <Item location="after" name="searchPanel" />
@@ -273,26 +273,26 @@ const ConcederCitacion = () => {
                         {filtros.vista === 'Agrupada' && <Grouping autoExpandAll={false} />}
                         {filtros.vista === 'Agrupada' && <GroupPanel visible={true} />}
 
-                        <Column dataField="DemandaId" caption={t('Demanda')} width={90} groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
+                        <Column dataField="DemandaId" caption={t('Demanda')} width={100} groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
                         <Column dataField="Anio" caption={t('Año')} width={80} alignment="center" />
-                        <Column dataField="MutuaSolicitante" caption={t('Mutua Solicitante')} width={150} />
-                        <Column dataField="Centro" caption={t('Centro')} width={200} />
-                        <Column dataField="Especialidad" caption={t('Especialidad')} width={150} />
+                        <Column dataField="MutuaSolicitante" caption={t('Mutua Solicitante')} width={160} />
+                        <Column dataField="Centro" caption={t('Centro')} width={180} />
+                        <Column dataField="Especialidad" caption={t('Especialidad')} width={160} />
                         <Column dataField="Servicio" caption={t('Servicio')} width={150} />
                         
                         <Column caption={t('Mensualidades')} alignment="center">
-                            <Column dataField="Ene" caption="Ene" width={45} />
-                            <Column dataField="Feb" caption="Feb" width={45} />
-                            <Column dataField="Mar" caption="Mar" width={45} />
-                            <Column dataField="Abr" caption="Abr" width={45} />
-                            <Column dataField="May" caption="May" width={45} />
-                            <Column dataField="Jun" caption="Jun" width={45} />
-                            <Column dataField="Jul" caption="Jul" width={45} />
-                            <Column dataField="Ago" caption="Ago" width={45} />
-                            <Column dataField="Sep" caption="Sep" width={45} />
-                            <Column dataField="Oct" caption="Oct" width={45} />
-                            <Column dataField="Nov" caption="Nov" width={45} />
-                            <Column dataField="Diciembre" caption="Dic" width={45} />
+                            <Column dataField="Ene" caption="Ene" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Feb" caption="Feb" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Mar" caption="Mar" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Abr" caption="Abr" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="May" caption="May" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Jun" caption="Jun" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Jul" caption="Jul" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Ago" caption="Ago" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Sep" caption="Sep" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Oct" caption="Oct" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Nov" caption="Nov" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="Diciembre" caption="Dic" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
                         </Column>
 
                         <Column dataField="Total" caption={t('Total')} width={70} alignment="center" />
