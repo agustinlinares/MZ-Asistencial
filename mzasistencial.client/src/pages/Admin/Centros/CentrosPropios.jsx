@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import '../../../styles/FichaGlobal.css';
@@ -228,7 +228,7 @@ const CentrosPropios = () => {
                 )}
 
                 {/* TABLA */}
-                <div style={{ padding: '0 20px 20px 20px' }}>
+                <div style={{ padding: selectedCentro ? '0' : '0 20px 20px 20px', height: selectedCentro ? 'calc(100vh - 130px)' : 'auto', display: 'flex', flexDirection: 'column' }}>
                     {selectedCentro ? (
                         <FichaCentroPropio
                             cliente={selectedCentro}

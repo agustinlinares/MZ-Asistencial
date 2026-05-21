@@ -97,9 +97,15 @@ public class MutuasController : ControllerBase
                 Cp = dto.CP,
                 Telefono = dto.Telefono,
                 Fax = dto.Fax,
-                DireccionElectronica = dto.DireccionElectronica,
+                // Email es opcional — se guarda null si viene vacío
+                DireccionElectronica = string.IsNullOrWhiteSpace(dto.DireccionElectronica)
+                    ? null
+                    : dto.DireccionElectronica,
                 PersonaContacto = dto.PersonaContacto,
-                PoblacionId = dto.PoblacionId // IMPORTANTE si se usa
+                PoblacionId = dto.PoblacionId, // IMPORTANTE si se usa
+                // Registramos fecha de alta y usuario desde la sesión
+                FechaAlta = DateTime.Now,
+                UsuarioAltaId = dto.UsuarioId
             };
 
             // 1. Guardamos primero para obtener el ID
@@ -107,9 +113,20 @@ public class MutuasController : ControllerBase
             await _context.SaveChangesAsync();
 
             // 2. Generamos NumeroMutua automáticamente
-            mutua.NumeroMutua = $"M{mutua.MutuaId}";
+            mutua.NumeroMutua = $"M{mutua.MutuaId:D2}";
 
             // 3. Guardamos de nuevo
+            await _context.SaveChangesAsync();
+
+            // 4. Registramos la acción en RegistroActividad
+            var registro = new RegistroActividad
+                {
+                    UsuarioId = dto.UsuarioId,
+                    Fecha = DateTime.Now,
+                    Accion = $"ALTA MUTUA: {mutua.Mutua1} ({mutua.NumeroMutua})",
+                    Sql = $"INSERT Mutuas - MutuaId: {mutua.MutuaId}"
+                };
+            _context.RegistroActividads.Add(registro);
             await _context.SaveChangesAsync();
 
             return Ok(mutua);
@@ -129,37 +146,198 @@ public class MutuasController : ControllerBase
     public async Task<IActionResult> UpdateMutua(int id, MutuaDTO dto)
     {
 
-        var mutua = await _context.Mutuas.FindAsync(id);
-        if (mutua == null) return NotFound();
-        if (id != dto?.NumeroId) return BadRequest();
+        try
+        {    
+                
+            var mutua = await _context.Mutuas.FindAsync(id);
+            if (mutua == null) return NotFound();
+            if (id != dto?.NumeroId) return BadRequest();
 
-        // Solo actualizamos los campos editables
-        mutua.Mutua1 = dto.Mutua;
-        mutua.Direccion = dto.Direccion;
-        mutua.Cp = dto.CP;
-        mutua.PoblacionId = dto.PoblacionId;//
-        mutua.RazonSocial = dto.RazonSocial;
-        mutua.Telefono = dto.Telefono;
-        mutua.Fax = dto.Fax;
-        mutua.DireccionElectronica = dto.DireccionElectronica;
-        mutua.PersonaContacto = dto.PersonaContacto;
-        //mutua.NumeroMutua = dto.NumeroMutua;
+            // Solo actualizamos los campos editables
+            mutua.Mutua1 = dto.Mutua;
+            mutua.Direccion = dto.Direccion;
+            mutua.Cp = dto.CP;
+            mutua.PoblacionId = dto.PoblacionId;//
+            mutua.RazonSocial = dto.RazonSocial;
+            mutua.Telefono = dto.Telefono;
+            mutua.Fax = dto.Fax;
+            mutua.DireccionElectronica = string.IsNullOrWhiteSpace(dto.DireccionElectronica)
+                ? null
+                : dto.DireccionElectronica;
+            mutua.PersonaContacto = dto.PersonaContacto;
+            //mutua.NumeroMutua = dto.NumeroMutua;
 
-        await _context.SaveChangesAsync();
-        return NoContent();
+            // Guardamos cambios
+            await _context.SaveChangesAsync();
+
+            // Registro de actividad
+            var registro = new RegistroActividad
+            {
+                UsuarioId = dto.UsuarioId,
+                Fecha = DateTime.Now,
+                Accion = $"MODIFICACIÓN MUTUA: {mutua.Mutua1} ({mutua.NumeroMutua})",
+                Sql = $"UPDATE Mutuas - MutuaId: {mutua.MutuaId}"
+            };
+
+            _context.RegistroActividads.Add(registro);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR PUT Mutua: {ex.Message}");
+            Console.WriteLine($"Inner: {ex.InnerException?.Message}");
+
+            return StatusCode(500, ex.Message);
+        }
     }
 
     // DELETE: api/mutuas/5
     // Elimina una mutua por id
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMutua(int id)
+    public async Task<IActionResult> DeleteMutua(int id, [FromQuery] int usuarioId)
     {
-        var mutua = await _context.Mutuas.FindAsync(id);
-        if (mutua == null)
-            return NotFound();
+        try
+        {
+            var mutua = await _context.Mutuas.FindAsync(id);
+            if (mutua == null)
+                return NotFound();
 
-        _context.Mutuas.Remove(mutua);
-        await _context.SaveChangesAsync();
-        return NoContent();
+            // Guardamos datos antes de eliminar
+            var nombreMutua = mutua.Mutua1;
+            var numeroMutua = mutua.NumeroMutua;
+            var mutuaId = mutua.MutuaId;
+
+            // Eliminamos la mutua
+            _context.Mutuas.Remove(mutua);
+            await _context.SaveChangesAsync();
+
+                    // Registro de actividad
+            var registro = new RegistroActividad
+            {
+                UsuarioId = usuarioId,
+                Fecha = DateTime.Now,
+                Accion = $"ELIMINACIÓN MUTUA: {nombreMutua} ({numeroMutua})",
+                Sql = $"DELETE Mutuas - MutuaId: {mutuaId}"
+            };
+
+            _context.RegistroActividads.Add(registro);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR DELETE Mutua: {ex.Message}");
+            Console.WriteLine($"Inner: {ex.InnerException?.Message}");
+
+            return StatusCode(500, ex.Message);
+        }
     }
+
+    //---------------------PESTAÑAS--------------------------------------
+    // GET: api/mutuas/5/centrosPropios
+    // Devuelve los centros propios de una mutua
+    [HttpGet("{id}/centrosPropios")]
+    public async Task<ActionResult> GetCentrosPropios(int id)
+    {
+        var centros = await (
+            from c in _context.CentrosPropios
+            join p in _context.AuxPoblaciones on c.PoblacionId equals p.PoblacionId into poblacionesJoin
+            from p in poblacionesJoin.DefaultIfEmpty()
+            join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId into provinciasJoin
+            from pr in provinciasJoin.DefaultIfEmpty()
+            where c.MutuaId == id
+            select new {
+                localizador = c.Localizador ?? "",
+                centro = c.Centro ?? "",
+                cp = c.Cp ?? "",
+                poblacion = p != null ? p.Poblacion : "",
+                provincia = pr != null ? pr.Provincia.Trim() : "",
+                telefono = c.Telefono ?? "",
+                contacto = c.PersonaContacto ?? "",
+                email = c.DireccionElectronica ?? "",
+                latitud = c.Latitud ?? "",
+                longitud = c.Longitud ?? "",
+                validado = c.Validado == true ? "Sí" : "No"
+            }
+        ).ToListAsync();
+
+        return Ok(centros);
+    }
+
+    // GET: api/mutuas/5/conciertos
+    // Devuelve los centros concertados de una mutua a través de la tabla Conciertos
+    [HttpGet("{id}/conciertos")]
+    public async Task<ActionResult> GetConciertos(int id)
+    {
+        var conciertos = await (
+            from con in _context.Conciertos
+            join cc in _context.CentrosConcertados on con.CentroId equals cc.CentroId into centrosJoin
+            from cc in centrosJoin.DefaultIfEmpty()
+            join p in _context.AuxPoblaciones on cc.PoblacionId equals p.PoblacionId into poblacionesJoin
+            from p in poblacionesJoin.DefaultIfEmpty()
+            join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId into provinciasJoin
+            from pr in provinciasJoin.DefaultIfEmpty()
+            where con.MutuaId == id
+            select new {
+                //codMutua = con.CodigoMz ?? "",
+                codMutua = con.MutuaId,
+                //codCentro = cc != null ? cc.CodigoMz ?? "" : "",
+                codCentro = cc != null ? cc.CentroId : (int?)null,
+                centro = cc != null ? cc.Centro ?? "" : "",
+                cifNif = cc != null ? cc.Cifnif ?? "" : "",
+                cp = cc != null ? cc.Cp ?? "" : "",
+                poblacion = p != null ? p.Poblacion ?? "" : "",
+                provincia = pr != null ? pr.Provincia.Trim() ?? "" : "",
+                contacto = cc != null ? cc.PersonaContacto ?? "" : "",
+                email = cc != null ? cc.DireccionElectronica ?? "" : "",
+                latitud = cc != null ? cc.Latitud ?? "" : "",
+                longitud = cc != null ? cc.Longitud ?? "" : "",
+                autorizado = con.Autorizado == true ? "Sí" : "No"
+            }
+        ).ToListAsync();
+
+        return Ok(conciertos);
+    }
+
+    // GET: api/mutuas/5/especialidadesPropios
+    // Devuelve las especialidades de los centros propios de una mutua
+    [HttpGet("{id}/especialidadesPropios")]
+    public async Task<ActionResult> GetEspecialidadesPropios(int id)
+    {
+        var especialidades = await _context.VwEspecialidadesPropios
+            .Where(e => e.MutuaId == id)
+            .Select(e => new {
+                ano = e.Año,
+                servicio = e.Servicio ?? "",
+                especialidad = e.Especialidad ?? "",
+                cantidad = e.Cantidad ?? 0
+            })
+            .ToListAsync();
+
+        return Ok(especialidades);
+    }
+
+    // GET: api/mutuas/5/especialidadesConciertos
+    // Devuelve las especialidades de los centros concertados de una mutua
+    [HttpGet("{id}/especialidadesConciertos")]
+    public async Task<ActionResult> GetEspecialidadesConciertos(int id)
+    {
+        var especialidades = await _context.VwEspecialidadesConciertos
+            .Where(e => e.MutuaId == id)
+            .Select(e => new {
+                ano = e.Año,
+                servicio = e.Servicio ?? "",
+                especialidad = e.Especialidad ?? "",
+                cantidad = e.Cantidad ?? 0
+            })
+            .ToListAsync();
+
+        return Ok(especialidades);
+    }
+
+
 }

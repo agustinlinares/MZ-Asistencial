@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
@@ -14,12 +15,25 @@ namespace MZAsistencial.Server.Controllers
             _service = service;
         }
 
-        // GET: api/descuadres
+        // GET: api/Descuadres
         [HttpGet]
         public async Task<IActionResult> GetDescuadres()
         {
             var descuadres = await _service.GetDescuadresAsync();
             return Ok(descuadres);
+        }
+
+        // PUT: api/Descuadres/{mutuaId}
+        [HttpPut("{mutuaId}")]
+        public async Task<IActionResult> PutDescuadre(int mutuaId, [FromBody] DescuadreDTO dto)
+        {
+            var usuarioId = dto.UsuarioId ?? 0;
+            if (usuarioId == 0)
+                return BadRequest(new { error = "UsuarioId requerido" });
+
+            var ok = await _service.UpsertDescuadreAsync(mutuaId, usuarioId, dto);
+            if (!ok) return NotFound();
+            return Ok(new { ok = true });
         }
     }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+﻿import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -473,8 +473,6 @@ const st = {
     field:      { display: "flex", flexDirection: "column" },
     fieldLabel: { fontSize: 10.5, color: "#1565c0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 2 },
     fieldInput: { border: "1px solid #d0d0d0", borderRadius: 3, padding: "4px 8px", fontSize: 13, outline: "none", background: "#fff", color: "#222", width: "100%", boxSizing: "border-box", fontFamily: "inherit" },
-    saveBar:    { display: "flex", gap: 10, marginTop: 16, alignItems: "center" },
-    saveBtn:    { border: "none", borderRadius: 4, padding: "6px 22px", fontSize: 13, cursor: "pointer", fontWeight: 600, background: "#2e7d32", color: "#fff" },
     msg: (ok)  => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828" }),
     espInfo:    { fontSize: 12, color: "#666", marginBottom: 10 },
     espMsg: (ok) => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828", marginLeft: 12 }),
@@ -575,8 +573,8 @@ const TabEspecialidades = ({ centroId, año }) => {
     );
 };
 
-// ─── TabContent (genérico) ────────────────────────────────────────────────────
-const TabContent = ({ centroId, año, tabKey, apiName }) => {
+// ─── TabContent (genérico) — con ref para exponer guardar al padre ────────────
+const TabContent = forwardRef(({ centroId, año, tabKey, apiName }, ref) => {
     const [datos,   setDatos]   = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving,  setSaving]  = useState(false);
@@ -604,10 +602,15 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
             });
             if (!res.ok) throw new Error();
             setMsg({ ok: true, text: "Guardado correctamente." });
+            setTimeout(() => setMsg(null), 3500);
         } catch {
             setMsg({ ok: false, text: "Error al guardar." });
         } finally { setSaving(false); }
+        return saving;
     };
+
+    // Exponer guardar y estado al componente padre via ref
+    useImperativeHandle(ref, () => ({ guardar, isSaving: () => saving }));
 
     if (loading) return <div style={st.loading}>Cargando…</div>;
     if (!datos)  return <div style={st.nodata}>No hay datos para este centro y año.</div>;
@@ -619,12 +622,7 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
 
     return (
         <div>
-            <div style={st.saveBar}>
-                <button style={st.saveBtn} onClick={guardar} disabled={saving}>
-                    {saving ? "Guardando\u2026" : "Guardar"}
-                </button>
-                {msg && <span style={st.msg(msg.ok)}>{msg.text}</span>}
-            </div>
+            {msg && <div style={{ ...st.msg(msg.ok), marginBottom: 12, padding: "6px 10px", background: msg.ok ? "#e8f5e9" : "#ffebee", borderRadius: 4 }}>{msg.text}</div>}
             <div style={st.fieldGrid}>
                 {camposList.map(({ key, label, type = "number" }) => (
                     <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
@@ -641,25 +639,26 @@ const TabContent = ({ centroId, año, tabKey, apiName }) => {
             </div>
         </div>
     );
-};
+});
 
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
 const FichaICG06 = ({ centro, año, onBack }) => {
     const [tabActiva,      setTabActiva]      = useState("generales");
     const [esHospitalario, setEsHospitalario] = useState(true);
-    const [validado,       setValidado]       = useState(null);   // null = cargando
+    const [validado,       setValidado]       = useState(null);
     const [idIcg,          setIdIcg]          = useState(null);
-    const [validando,      setValidando]       = useState(false);
+    const [validando,      setValidando]      = useState(false);
     const [msgValidar,     setMsgValidar]     = useState(null);
- 
+    const [guardando,      setGuardando]      = useState(false);
+
+    const tabContentRef = useRef(null);
+
     const tab          = TABS.find(t => t.key === tabActiva);
     const tabsVisibles = TABS.filter(t => !t.hospitalario || esHospitalario);
- 
-    // Detectar perfil de admin (perfilId === 1)
+
     const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
     const esAdmin = user?.perfilId === 1;
- 
-    // Cargar el idIcg y estado validado al montar
+
     useEffect(() => {
         fetch(`/api/Icg06DatosGenerales?centroId=${centro.centroId}&a%C3%B1o=${año}`)
             .then(r => r.ok ? r.json() : null)
@@ -671,7 +670,7 @@ const FichaICG06 = ({ centro, año, onBack }) => {
             })
             .catch(() => {});
     }, [centro.centroId, año]);
- 
+
     const cambiarValidado = async () => {
         if (!idIcg || validando) return;
         setValidando(true);
@@ -693,7 +692,19 @@ const FichaICG06 = ({ centro, año, onBack }) => {
             setValidando(false);
         }
     };
- 
+
+    // Botón Guardar centralizado: llama a guardar() del TabContent activo via ref
+    const handleGuardar = async () => {
+        if (tabActiva === "especialidades") return; // especialidades gestiona su propio guardado inline
+        if (!tabContentRef.current) return;
+        setGuardando(true);
+        try {
+            await tabContentRef.current.guardar();
+        } finally {
+            setGuardando(false);
+        }
+    };
+
     return (
         <div>
             <div style={st.backBtn}>
@@ -705,25 +716,35 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                         <div style={st.fichaTitle}>ICG06 — {centro.centro} ({centro.localizador})</div>
                         <div style={st.fichaAnio}>Año: {año} · Centro ID: {centro.centroId}</div>
                     </div>
-                    {/* ── Botón de validación (solo admin) ── */}
-                    {esAdmin && idIcg && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            {msgValidar && (
-                                <span style={{ fontSize: 12.5, color: msgValidar.ok ? "#c8e6c9" : "#ffcdd2" }}>
-                                    {msgValidar.text}
-                                </span>
-                            )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        {msgValidar && (
+                            <span style={{ fontSize: 12.5, color: msgValidar.ok ? "#c8e6c9" : "#ffcdd2" }}>
+                                {msgValidar.text}
+                            </span>
+                        )}
+                        {/* ── Botón Guardar centralizado ── */}
+                        {tabActiva !== "especialidades" && (
+                            <button
+                                onClick={handleGuardar}
+                                disabled={guardando}
+                                style={{
+                                    border: "none", borderRadius: 4, padding: "6px 20px",
+                                    fontSize: 13, fontWeight: 700, cursor: guardando ? "wait" : "pointer",
+                                    background: "#fff", color: "#1976d2",
+                                    opacity: guardando ? 0.7 : 1,
+                                }}
+                            >
+                                {guardando ? "Guardando…" : "💾 Guardar"}
+                            </button>
+                        )}
+                        {/* ── Botón de validación (solo admin) ── */}
+                        {esAdmin && idIcg && (
                             <div style={{
                                 display: "flex", alignItems: "center", gap: 8,
                                 background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px",
                             }}>
-                                <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>
-                                    Estado:
-                                </span>
-                                <span style={{
-                                    fontSize: 12, fontWeight: 700,
-                                    color: validado === 1 ? "#c8e6c9" : "#ffcc80",
-                                }}>
+                                <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>Estado:</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: validado === 1 ? "#c8e6c9" : "#ffcc80" }}>
                                     {validado === null ? "…" : validado === 1 ? "✓ Validado" : "⏳ Pendiente"}
                                 </span>
                                 <button
@@ -740,8 +761,8 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                                     {validando ? "…" : validado === 1 ? "Desvalidar" : "Validar"}
                                 </button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
                 <div style={st.tabBar}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
@@ -761,8 +782,11 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                         <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} />
                     ) : (
                         tab && (
-                            <TabContent key={`${centro.centroId}-${año}-${tabActiva}`}
-                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api} />
+                            <TabContent
+                                ref={tabContentRef}
+                                key={`${centro.centroId}-${año}-${tabActiva}`}
+                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api}
+                            />
                         )
                     )}
                 </div>
@@ -813,7 +837,6 @@ const ICGCentrosPropios = () => {
 
     useEffect(() => { cargarIcgData(); }, [cargarIcgData]);
 
-    // ── Crear ICG06 vacío ──────────────────────────────────────────────────
     const crearIcg06 = async (centro) => {
         if (creando) return;
         setCreando(true);
@@ -932,13 +955,13 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        <Column dataField="cap1GastosPersonal"       caption="Cap. 1 - Personal"      width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap2GastosCorrientes"     caption="Cap. 2 - Corrientes"    width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cap3GastosFinancieros"    caption="Cap. 3 - Financieros"   width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="cuenta68Amortizaciones"   caption="Cta. 68 - Amortiz."    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art32OtrosIngresos"       caption="Art. 32 - Ingresos"    width={140} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art62InversionNueva"      caption="Art. 62 - Inv. Nueva"  width={145} dataType="number" cellRender={({ value }) => fmtNum(value)} />
-                        <Column dataField="art63InversionReposicion" caption="Art. 63 - Inv. Repos." width={150} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap1GastosPersonal"       caption="C.1 Personal"   width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap2GastosCorrientes"     caption="C.2 Corrientes" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cap3GastosFinancieros"    caption="C.3 Financiero" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="cuenta68Amortizaciones"   caption="Cta.68 Amort."  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art32OtrosIngresos"       caption="A.32 Ingresos"  width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art62InversionNueva"      caption="A.62 Inv.Nueva" width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
+                        <Column dataField="art63InversionReposicion" caption="A.63 Inv.Repo." width={110} dataType="number" cellRender={({ value }) => fmtNum(value)} />
                         <Column dataField="totalGastos" caption="Total Gastos" width={130} dataType="number"
                             cellRender={({ value }) => (
                                 <span style={{ fontWeight: 700, color: "#1565c0" }}>
@@ -953,7 +976,6 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        {/* ── Columna ICG06: Ver ficha o Crear ICG ── */}
                         <Column caption="ICG06" width={130}
                             cellRender={({ data }) => {
                                 if (data.tieneIcg) {

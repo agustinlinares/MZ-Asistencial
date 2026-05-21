@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrolling, Sorting } from "devextreme-react/data-grid";
@@ -52,13 +52,15 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
     const [form,        setForm]        = useState({});
+    const [cargando,    setCargando]    = useState(true);
     const [registrosICG, setRegistrosICG] = useState([]);
     const [tabActiva,   setTabActiva]   = useState("general");
     const [guardando,   setGuardando]   = useState(false);
     const [fincas,      setFincas]      = useState([]);
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
-    const [anioEsp,     setAnioEsp]     = useState(2024);
+    const [anioEsp,     setAnioEsp]     = useState(null);
+    const [anioCat,     setAnioCat]     = useState(null);
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -92,48 +94,56 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
 
     useEffect(() => {
         if (!cliente) { onClose(); return; }
-        setForm({
-            Localizador:             cliente.localizador            || cliente.Localizador            || "",
-            TipoCentro:              cliente.tipoCentro             || cliente.TipoCentro             || "",
-            CentroId:                cliente.centroId               || cliente.CentroId               || "",
-            Centro:                  cliente.centro                 || cliente.Centro                 || "",
-            Mutua:                   cliente.mutuaId                || cliente.Mutua                  || "",
-            ProvinciaId:             cliente.provinciaId            || cliente.ProvinciaId            || "",
-            PoblacionId:             cliente.poblacionId            || cliente.PoblacionId            || "",
-            Cp:                      cliente.cp                     || cliente.Cp                     || "",
-            ViaPublica:              cliente.ViaPublica             || "AVENIDA",
-            Direccion:               cliente.Direccion              || "",
-            Numero:                  cliente.Numero                 || "",
-            Piso:                    cliente.Piso                   || "",
-            Puerta:                  cliente.Puerta                 || "",
-            ServiciosEspeciales:     cliente.ServiciosEspeciales    || "",
-            Telefono:                cliente.telefono               || cliente.Telefono               || "",
-            DireccionGoogle:         cliente.DireccionGoogle        || "",
-            VerificarDireccionGoogle: cliente.VerificarDireccionGoogle || "",
-            Latitud:                 cliente.latitud                || cliente.Latitud                || "",
-            Longitud:                cliente.longitud               || cliente.Longitud               || "",
-            Email:                   cliente.Email                  || "",
-            PersonaContacto:         cliente.PersonaContacto        || "",
-            OtrosDatos:              cliente.OtrosDatos             || "",
-            Autorizacion:            cliente.Autorizacion           || "",
-            PuestaFuncionamiento:    cliente.PuestaFuncionamiento   || "",
-            Calificacion:            cliente.Calificacion           || "",
-            CentroInicial:           cliente.CentroInicial          || "",
-            TipoCentroRadio:         cliente.TipoCentroRadio        || "hospitalarios",
-            ActividadHospitalaria:   cliente.asistenciaHospitalaria ?? cliente.ActividadHospitalaria  ?? false,
-            ActividadAmbulatoria:    cliente.asistenciaAmbulatoria  ?? cliente.ActividadAmbulatoria   ?? false,
-            ActividadRehabilitacion: cliente.rehabilitacion         ?? cliente.ActividadRehabilitacion ?? false,
-            ActividadControlIT:      cliente.incapacidadTransitoria ?? cliente.ActividadControlIT     ?? false,
-            ActividadPrevencion:     cliente.prevencion             ?? cliente.ActividadPrevencion     ?? false,
-            ActividadOtras:          cliente.otrasActividades       ?? cliente.ActividadOtras         ?? false,
-            ActividadAdmon:          cliente.administracion         ?? cliente.ActividadAdmon         ?? false,
-            MotivoBaja:              cliente.MotivoBaja             || "",
-            FechaBaja:               cliente.FechaBaja              || "",
-            Traslado:                cliente.Traslado               ?? false,
-            CentroDesactivado:       cliente.desactivado            ?? cliente.CentroDesactivado      ?? false,
-            NuevoCentro:             cliente.NuevoCentro            || "",
-            MapaValidado:            cliente.mapaValidado           ?? cliente.MapaValidado           ?? false,
-        });
+        const centroId = cliente.centroId || cliente.CentroId;
+        fetch(`/api/CentrosPropios/${centroId}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                const c = data || cliente;
+                setForm({
+                    Localizador:             c.localizador            || c.Localizador            || "",
+                    TipoCentro:              c.tipoCentro             || c.TipoCentro             || "",
+                    CentroId:                c.centroId               || c.CentroId               || "",
+                    Centro:                  c.centro                 || c.Centro                 || "",
+                    Mutua:                   c.mutuaId                || c.Mutua                  || "",
+                    ProvinciaId:             c.provinciaId            || c.ProvinciaId            || "",
+                    PoblacionId:             c.poblacionId            || c.PoblacionId            || "",
+                    Cp:                      c.cp                     || c.Cp                     || "",
+                    ViaPublica:              c.ViaPublica             || "AVENIDA",
+                    Direccion:               c.direccion              || c.Direccion              || "",
+                    Numero:                  c.numero                 || c.Numero                 || "",
+                    Piso:                    c.piso                   || c.Piso                   || "",
+                    Puerta:                  c.puerta                 || c.Puerta                 || "",
+                    ServiciosEspeciales:     c.serviciosEspeciales    || c.ServiciosEspeciales    || "",
+                    Telefono:                c.telefono               || c.Telefono               || "",
+                    DireccionGoogle:         c.direccionGoogle        || c.DireccionGoogle        || "",
+                    VerificarDireccionGoogle: c.VerificarDireccionGoogle || "",
+                    Latitud:                 c.latitud                || c.Latitud                || "",
+                    Longitud:               c.longitud               || c.Longitud               || "",
+                    Email:                   c.email                  || c.Email                  || "",
+                    PersonaContacto:         c.personaContacto        || c.PersonaContacto        || "",
+                    OtrosDatos:              c.otrosDatos             || c.OtrosDatos             || "",
+                    Autorizacion:            c.Autorizacion           || "",
+                    PuestaFuncionamiento:    c.PuestaFuncionamiento   || "",
+                    Calificacion:            c.Calificacion           || "",
+                    CentroInicial:           c.CentroInicial          || "",
+                    TipoCentroRadio:         c.TipoCentroRadio        || "hospitalarios",
+                    ActividadHospitalaria:   c.asistenciaHospitalaria ?? c.ActividadHospitalaria  ?? false,
+                    ActividadAmbulatoria:    c.asistenciaAmbulatoria  ?? c.ActividadAmbulatoria   ?? false,
+                    ActividadRehabilitacion: c.rehabilitacion         ?? c.ActividadRehabilitacion ?? false,
+                    ActividadControlIT:      c.incapacidadTransitoria ?? c.ActividadControlIT     ?? false,
+                    ActividadPrevencion:     c.prevencion             ?? c.ActividadPrevencion     ?? false,
+                    ActividadOtras:          c.otrasActividades       ?? c.ActividadOtras         ?? false,
+                    ActividadAdmon:          c.administracion         ?? c.ActividadAdmon         ?? false,
+                    MotivoBaja:              c.motivoBaja             || c.MotivoBaja             || "",
+                    FechaBaja:               c.fechaBaja              || c.FechaBaja              || "",
+                    Traslado:                c.traslado               ?? c.Traslado               ?? false,
+                    CentroDesactivado:       c.desactivado            ?? c.CentroDesactivado      ?? false,
+                    NuevoCentro:             c.NuevoCentro            || "",
+                    MapaValidado:            c.mapaValidado           ?? c.MapaValidado           ?? false,
+                });
+            })
+            .catch(() => { setCargando(false); });
+
     }, [cliente, onClose]);
 
     // ── Leer coordenadas al volver de MapaPage ────────────────────────────────
@@ -181,7 +191,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId || !anioEsp) return;
         fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
-        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
             .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
     };
 
@@ -199,7 +209,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
                 .then(r => r.ok ? r.text() : null)
                 .then(loc => { if (loc) setForm(f => ({ ...f, Localizador: loc.replace(/"/g, '') })); })
-                .catch(() => {});
+                .catch(() => { setCargando(false); });
         }
     }, [form.Mutua, form.CentroId]);
 
@@ -250,6 +260,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 mapaValidado:           form.MapaValidado ?? false,
                 usuarioId:              JSON.parse(localStorage.getItem('UsuarioActual') || '{}')?.usuarioId ?? null,
             };
+            console.log('dataToSave:', JSON.stringify(dataToSave));
             onSave(dataToSave);
         } catch (err) {
             alert('Error: ' + err.message);
@@ -463,8 +474,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <Column dataField="ano"                caption="Año"                  width={80} />
                                 <Column dataField="mutua"              caption="Mutua"                width={220} />
                                 <Column dataField="centro"             caption="Centro"               width={220} />
-                                <Column dataField="fechaActualizacion" caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="usuario"            caption="Usuario"              width={150} />
+                                <Column dataField="fechaModificacion"  caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuarioModificacionId" caption="Usuario"           width={100} />
                             </DataGrid>
                         </div>
                     )}
@@ -512,7 +523,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field" style={{ minWidth: 90 }}>
                                     <label>Año</label>
-                                    <select value={anioEsp} onChange={e => { setAnioEsp(Number(e.target.value)); setEditandoEsp({}); }}>
+                                    <select value={anioEsp || ''} onChange={e => { setAnioEsp(e.target.value ? Number(e.target.value) : null); setEditandoEsp({}); }}>
+                                        <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
@@ -616,7 +628,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field">
                                     <label>Año</label>
-                                    <select value={anioEsp} onChange={e => setAnioEsp(Number(e.target.value))}>
+                                    <select value={anioEsp || ''} onChange={e => setAnioEsp(e.target.value ? Number(e.target.value) : null)}>
+                                        <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>

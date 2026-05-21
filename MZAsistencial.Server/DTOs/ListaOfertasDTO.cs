@@ -6,6 +6,7 @@ public class ListaOfertasDTO
     public int? Año { get; set; }
     public string? MutuaOferta { get; set; }      // nombre mutua (via Demanda.MutuaDemandaId → Mutua)
     public string? Centro { get; set; }            // CentrosConcertados.Centro
+    public string? TipoLinea { get; set; }  // "Asignación" o "Demanda"
     public string? Provincia { get; set; }         // AuxProvincias.Provincia
     public string? Localidad { get; set; }         // AuxPoblaciones.Poblacion (nombre)
     public string? Especialidad { get; set; }      // AuxEspecialidades.Especialidad
@@ -34,4 +35,19 @@ public class ListaOfertasDTO
     public DateTime? FechaConfirmacion { get; set; }
     public string? NecesidadesServicio { get; set; } // Demanda.Descripcion
     public string? ContestacionNecesidades { get; set; } // Oferta.NotaContestacion
+    public string? RowKey { get; set; }  // ofertaId + "_" + TipoLinea
+                                         // Disponibilidad real (declarada - comprometida)
+    public int? DispEne { get; set; }
+    public int? DispFeb { get; set; }
+    public int? DispMar { get; set; }
+    public int? DispAbr { get; set; }
+    public int? DispMay { get; set; }
+    public int? DispJun { get; set; }
+    public int? DispJul { get; set; }
+    public int? DispAgo { get; set; }
+    public int? DispSep { get; set; }
+    public int? DispOct { get; set; }
+    public int? DispNov { get; set; }
+    public int? DispDic { get; set; }
+    public int? DispTotal { get; set; }
 }

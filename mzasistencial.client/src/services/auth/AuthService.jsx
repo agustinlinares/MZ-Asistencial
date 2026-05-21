@@ -1,30 +1,51 @@
-// src/services/authService.js
-const AuthService = {
+﻿const AuthService = {
     setUserData: (data) => {
         localStorage.setItem('UsuarioActual', JSON.stringify(data));
     },
     getUserData: () => {
-        const datosUsuario = localStorage.getItem('UsuarioActual');
-        return datosUsuario ? JSON.parse(datosUsuario) : null;
+        const datos = localStorage.getItem('UsuarioActual');
+        return datos ? JSON.parse(datos) : null;
     },
     getToken: () => {
-        const datosUsuario = AuthService.getUserData(); // Usa getUserData para obtener el objeto parseado
-        return datosUsuario && datosUsuario.token ? datosUsuario.token : null;
+        const datos = AuthService.getUserData();
+        return datos?.token ?? null;
     },
     getUser: () => {
-        const datosUsuario = AuthService.getUserData(); // Usa getUserData para obtener el objeto parseado
-        return datosUsuario && datosUsuario.usuario ? datosUsuario.usuario : '';
+        const datos = AuthService.getUserData();
+        return datos?.usuario ?? '';
     },
     getUserId: () => {
-        const datosUsuario = AuthService.getUserData();
-        return datosUsuario && datosUsuario.usuarioId ? datosUsuario.usuarioId : '';
+        const datos = AuthService.getUserData();
+        return datos?.usuarioId ?? '';
+    },
+    getPerfilId: () => {
+        const datos = AuthService.getUserData();
+        return datos?.perfilId ?? null;
     },
     removeUserData: () => {
         localStorage.removeItem('UsuarioActual');
     },
     isTokenValid: () => {
-        const datosUsuario = AuthService.getUserData();
-        return datosUsuario !== null && !!datosUsuario.usuario;
+        const token = AuthService.getToken();
+        if (!token) return false;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.exp * 1000 > Date.now();
+        } catch {
+            return false;
+        }
+    },
+    // Helper para fetch autenticado
+    fetch: (url, options = {}) => {
+        const token = AuthService.getToken();
+        return fetch(url, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(options.headers ?? {})
+            }
+        });
     }
 };
 

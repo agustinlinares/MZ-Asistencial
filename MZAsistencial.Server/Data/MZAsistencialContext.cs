@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -2227,6 +2227,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
+            entity.Property(e => e.Año).HasColumnName("Anio");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>
@@ -2379,12 +2380,13 @@ public partial class MZAsistencialContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__FincasRe__3214EC274BC808FA");
 
-            entity.ToTable("FincasRegistrales_CostesPorAnio");
+            entity.ToTable("FincasRegistrales_CostesPorA\u00f1o");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
             entity.Property(e => e.Localizador).HasMaxLength(50);
-
+            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
+            entity.Property(e => e.Anio).HasColumnName("A\u00f1o");
             entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorAños)
                 .HasForeignKey(d => d.FincaId)
                 .HasConstraintName("FK_FincasRegistrales_CostesPorAño_FincasRegistrales");
@@ -2423,8 +2425,8 @@ public partial class MZAsistencialContext : DbContext
         modelBuilder.Entity<Icg06>(entity =>
         {
             entity
-                .HasNoKey()
-                .ToTable("ICG06");
+                .HasKey(e => e.IdIcg);
+            entity.ToTable("ICG06");
 
             entity.Property(e => e.Actidesde).HasColumnType("datetime");
             entity.Property(e => e.Actihasta).HasColumnType("datetime");
@@ -4591,6 +4593,12 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.UsuarioId).HasColumnName("Usuario_id");
             entity.Property(e => e.Apellidos).HasMaxLength(150);
             entity.Property(e => e.CentroId).HasColumnName("Centro_id");
+            /*
+            entity.Property(e => e.Contraseña)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("Contraseña");
+            */
             entity.Property(e => e.CorreoElectronico).IsUnicode(false);
             entity.Property(e => e.DgossrecibeCorreo).HasColumnName("DGOSSRecibeCorreo");
             entity.Property(e => e.DireccionElectronica).HasMaxLength(150);

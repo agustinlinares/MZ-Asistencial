@@ -23,4 +23,26 @@ public class OfertaEditDTO
     public int? EstadoId { get; set; }
     public string? NotaContestacion { get; set; }
     public string? ContestacionPlazos { get; set; }
+
+    // Datos descriptivos
+    public string? MutuaOferta { get; set; }
+    public string? Centro { get; set; }
+    public string? Especialidad { get; set; }
+    public string? Servicio { get; set; }
+    public string? Estado { get; set; }
+    public string? TipoDemanda { get; set; }
+
+    // Meses de la demanda
+    public int? DemandaEne { get; set; }
+    public int? DemandaFeb { get; set; }
+    public int? DemandaMar { get; set; }
+    public int? DemandaAbr { get; set; }
+    public int? DemandaMay { get; set; }
+    public int? DemandaJun { get; set; }
+    public int? DemandaJul { get; set; }
+    public int? DemandaAgo { get; set; }
+    public int? DemandaSep { get; set; }
+    public int? DemandaOct { get; set; }
+    public int? DemandaNov { get; set; }
+    public int? DemandaDic { get; set; }
 }

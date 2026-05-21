@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server.DTOs
+﻿namespace MZAsistencial.Server.DTOs
 {
     public class CentrosPropiosDTO
     {
@@ -8,6 +8,8 @@ namespace MZAsistencial.Server.DTOs
         public string?   Centro               { get; set; }
         public string?   Cp                   { get; set; }
         public int?      PoblacionId          { get; set; }
+        public string?   Poblacion            { get; set; }
+        public int?      ProvinciaId          { get; set; }
         public string?   Telefono             { get; set; }
         public string?   Latitud              { get; set; }
         public string?   Longitud             { get; set; }
