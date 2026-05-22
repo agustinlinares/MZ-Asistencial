@@ -29,7 +29,7 @@ namespace MZAsistencial.Server.Services
                     {
                         FicheroId     = x.f.FicheroId,
                         NombreFichero = x.f.Fichero1,
-                        Descripción   = x.f.Descripción,
+                        Descripcion   = x.f.Descripción,
                         UsuarioId     = x.f.UsuarioId,
                         Fecha         = x.f.Fecha,
                         AreaId        = x.f.AreaId,
@@ -75,7 +75,7 @@ namespace MZAsistencial.Server.Services
                 UsuarioId = usuarioId,
                 Fecha     = DateTime.Now,
                 Accion    = $"CREAR FICHERO - {archivo.FileName}",
-                Sql       = $"Fichero: {uniqueName}, Area: {areaId}, Descripción: {descripcion}",
+                Sql       = $"Fichero: {uniqueName}, Area: {areaId}, Descripcion: {descripcion}",
             });
 
             await _context.SaveChangesAsync();
@@ -84,7 +84,7 @@ namespace MZAsistencial.Server.Services
             {
                 FicheroId     = fichero.FicheroId,
                 NombreFichero = fichero.Fichero1,
-                Descripción   = fichero.Descripción,
+                Descripcion   = fichero.Descripción,
                 UsuarioId     = fichero.UsuarioId,
                 Fecha         = fichero.Fecha,
                 AreaId        = fichero.AreaId,
@@ -124,16 +124,25 @@ namespace MZAsistencial.Server.Services
             if (fichero == null || string.IsNullOrEmpty(fichero.Fichero1))
                 return (null, null);
 
-            var basePath = _configuration["FicherosPaths:Base"] ?? @"C:\MZFiles\Ficheros";
-            var filePath = Path.Combine(basePath, fichero.Fichero1);
-
-            _context.RegistroActividads.Add(new RegistroActividad
+            string filePath;
+            if (Path.IsPathRooted(fichero.Fichero1))
+                filePath = fichero.Fichero1;
+            else
             {
-                UsuarioId = usuarioId,
-                Fecha     = DateTime.Now,
-                Accion    = $"DESCARGAR FICHERO - {fichero.Fichero1}",
-            });
-            await _context.SaveChangesAsync();
+                var basePath = _configuration["FicherosPaths:Base"] ?? @"C:\MZFiles\Ficheros";
+                filePath = Path.Combine(basePath, fichero.Fichero1);
+            }
+
+            if (File.Exists(filePath))
+            {
+                _context.RegistroActividads.Add(new RegistroActividad
+                {
+                    UsuarioId = usuarioId,
+                    Fecha     = DateTime.Now,
+                    Accion    = $"DESCARGAR FICHERO - {fichero.Fichero1}",
+                });
+                await _context.SaveChangesAsync();
+            }
 
             return (filePath, fichero.Descripción ?? fichero.Fichero1);
         }

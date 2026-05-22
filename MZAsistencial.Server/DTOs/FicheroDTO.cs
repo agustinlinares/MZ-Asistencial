@@ -4,8 +4,9 @@ namespace MZAsistencial.Server.DTOs
     {
         public int FicheroId { get; set; }
         public string? NombreFichero { get; set; }
-        public string? Descripción { get; set; }
+        public string? Descripcion { get; set; }
         public int? UsuarioId { get; set; }
+        public string? Usuario { get; set; }
         public DateTime? Fecha { get; set; }
         public int? AreaId { get; set; }
         public string? Area { get; set; }
