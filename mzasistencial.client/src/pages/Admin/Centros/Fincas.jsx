@@ -166,15 +166,13 @@ const Fincas = () => {
 
                             <div className="header-actions-side" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                                 <div className="filter-controls">
-                                    <div className="year-selector-container">
-                                        <i className="ri-calendar-line year-icon"></i>
+                                    <div className="year-selector-wrap">
+                                        <span className="year-label">{t('Año')}:</span>
                                         <SelectBox
                                             items={YEARS}
                                             value={anio}
                                             onValueChanged={(e) => setAnio(e.value)}
-                                            width={90}
-                                            stylingMode="filled"
-                                            className="premium-year-select"
+                                            width={100}
                                         />
                                     </div>
 

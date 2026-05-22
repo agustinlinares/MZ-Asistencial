@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MZAsistencial.Server.Data;
@@ -95,6 +95,7 @@ builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
+builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
 
 // -- Pipeline
 var app = builder.Build();

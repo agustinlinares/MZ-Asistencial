@@ -116,7 +116,7 @@ const GestionDemanda = () => {
     }, []);
 
     useEffect(() => {
-        fetch(`${API}/ListaDemanda/años`)
+        fetch(`${API}/ListaDemandas/anos`)
             .then(res => res.json())
             .then(data => {
                 setAños(data);
@@ -124,7 +124,7 @@ const GestionDemanda = () => {
             })
             .catch(err => console.error('Error al cargar años:', err));
 
-        fetch(`${API}/ListaDemanda/estados`)
+        fetch(`${API}/ListaDemandas/estados`)
             .then(res => res.json())
             .then(data => {
                 const todos = [{ estadoId: null, estado: 'Todas' }, ...data];
@@ -157,7 +157,7 @@ const GestionDemanda = () => {
             Object.assign(demandaEditando, temp);
         }
 
-        fetch(`${API}/ListaDemanda/${demandaEditando.demandaId}`, {
+        fetch(`${API}/ListaDemandas/${demandaEditando.demandaId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ estadoId: demandaEditando.estadoId }),
@@ -228,7 +228,8 @@ const GestionDemanda = () => {
                                 <label>Estado</label>
                                 <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Todas" width={220} />
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 2 }}>
+                            <div className="ficha-field">
+                                <label>&nbsp;</label>
                                 <button type="button" className="ficha-btn-primary" onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
                                     {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
                                 </button>
@@ -281,7 +282,7 @@ const GestionDemanda = () => {
                         )}
                     </div>
 
-                    <div className="ficha-tab-content" style={{ padding: '16px' }}>
+                    <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={datos}
@@ -290,6 +291,7 @@ const GestionDemanda = () => {
                             columnAutoWidth={false}
                             allowColumnResizing={true}
                             className="mz-table"
+                            height="100%"
                             rowAlternationEnabled={false}
                             showRowLines={true}
                             showColumnLines={true}
