@@ -63,6 +63,7 @@ builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSect
 builder.Services.AddScoped<IAcreditacionesIndividualesService, AcreditacionesIndividualesService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
+builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<FincaRegistralService>();
 builder.Services.AddScoped<ICentrosConcertadosService, CentrosConcertadosService>();
