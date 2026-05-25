@@ -66,6 +66,20 @@ namespace MZAsistencial.Server.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromForm] string? descripcion,
+            [FromForm] DateTime? fecha,
+            [FromForm] int? areaId,
+            IFormFile? archivo,
+            [FromQuery] int usuarioId)
+        {
+            var result = await _service.UpdateAsync(id, descripcion, fecha, areaId, archivo, usuarioId);
+            if (result == null) return NotFound(new { message = "Fichero no encontrado." });
+            return Ok(result);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, [FromQuery] int usuarioId)
         {
