@@ -9,9 +9,9 @@ const Acuerdos = () => {
     const { t } = useTranslation();
 
     const [mutuas, setMutuas] = useState([]);
-    const [años, setAños] = useState([]);
+    const [anos, setAnos] = useState([]);
     const [mutuaSeleccionada, setMutuaSeleccionada] = useState('');
-    const [añoSeleccionado, setAñoSeleccionado] = useState('');
+    const [anoSeleccionado, setAnoSeleccionado] = useState('');
 
     const [seccionMutua, setSeccionMutua] = useState(true);
     const [seccionProvincia, setSeccionProvincia] = useState(false);
@@ -37,17 +37,17 @@ const Acuerdos = () => {
         fetch(`${API}/InformesAcuerdos`)
             .then(res => res.json())
             .then(data => {
-                const añosUnicos = [...new Set(data.map(i => i.año))]
+                const anosUnicos = [...new Set(data.map(i => i.año))]
                     .filter(Boolean)
                     .sort((a, b) => b - a);
-                setAños(añosUnicos);
+                setAnos(anosUnicos);
             })
-            .catch(err => console.error('Error al cargar años:', err));
+            .catch(err => console.error('Error al cargar anos:', err));
     }, []);
 
     useEffect(() => {
-        if (!mutuaSeleccionada || !añoSeleccionado) return;
-        const params = `mutuaId=${mutuaSeleccionada}&anio=${añoSeleccionado}`;
+        if (!mutuaSeleccionada || !anoSeleccionado) return;
+        const params = `mutuaId=${mutuaSeleccionada}&anio=${anoSeleccionado}`;
 
         fetch(`${API}/AcuerdosBI/mutuas/oferta?${params}`)
             .then(res => res.json()).then(setDatosMutuaOferta).catch(console.error);
@@ -61,7 +61,7 @@ const Acuerdos = () => {
             .then(res => res.json()).then(setDatosTipoServicioOferta).catch(console.error);
         fetch(`${API}/AcuerdosBI/tiposervicio/demanda?${params}`)
             .then(res => res.json()).then(setDatosTipoServicioDemanda).catch(console.error);
-    }, [mutuaSeleccionada, añoSeleccionado]);
+    }, [mutuaSeleccionada, anoSeleccionado]);
 
     return (
         <div className="ficha-container-inline">
@@ -84,10 +84,10 @@ const Acuerdos = () => {
                         </div>
                         <div className="ficha-field" style={{ minWidth: 120, maxWidth: 180 }}>
                             <label>Año</label>
-                            <select value={añoSeleccionado} onChange={e => setAñoSeleccionado(e.target.value)}>
+                            <select value={anoSeleccionado} onChange={e => setAnoSeleccionado(e.target.value)}>
                                 <option value="">-- Selecciona un año --</option>
-                                {años.map(año => (
-                                    <option key={año} value={año}>{año}</option>
+                                {anos.map(ano => (
+                                    <option key={ano} value={ano}>{ano}</option>
                                 ))}
                             </select>
                         </div>
@@ -96,6 +96,7 @@ const Acuerdos = () => {
 
                 <div className="ficha-tab-content">
 
+                    {/* SECCION MUTUA */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionMutua(!seccionMutua)}>
                             <span>Acuerdos Bilaterales o Multilaterales Mutua</span>
@@ -135,6 +136,7 @@ const Acuerdos = () => {
                         )}
                     </div>
 
+                    {/* SECCION PROVINCIA */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionProvincia(!seccionProvincia)}>
                             <span>Acuerdos Bilaterales o Multilaterales Provincia</span>
@@ -153,13 +155,13 @@ const Acuerdos = () => {
                                             <th>Provincia</th>
                                             <th>Num Servicios</th>
                                             <th>Contraprestación Económica</th>
-                                            <th>Num Servicios Terceros</th>
-                                            <th>Contraprestación Económica Terceros</th>
+                                            {tabProvincia === 'demanda' && <th>Num Servicios Terceros</th>}
+                                            {tabProvincia === 'demanda' && <th>Contraprestación Económica Terceros</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {(tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).length === 0 ? (
-                                            <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                            <tr><td colSpan={tabProvincia === 'oferta' ? 4 : 6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
                                         ) : (
                                             (tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).map((row, i) => (
                                                 <tr key={i}>
@@ -167,8 +169,8 @@ const Acuerdos = () => {
                                                     <td>{row.provincia}</td>
                                                     <td>{row.numServicios}</td>
                                                     <td>{row.contraprestacionEconomica}</td>
-                                                    <td>{row.numServiciosTerceros}</td>
-                                                    <td>{row.contraprestacionEconomicaTerceros}</td>
+                                                    {tabProvincia === 'demanda' && <td>{row.numServiciosTerceros}</td>}
+                                                    {tabProvincia === 'demanda' && <td>{row.contraprestacionEconomicaTerceros}</td>}
                                                 </tr>
                                             ))
                                         )}
@@ -178,6 +180,7 @@ const Acuerdos = () => {
                         )}
                     </div>
 
+                    {/* SECCION TIPO SERVICIO */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionTipoServicio(!seccionTipoServicio)}>
                             <span>Acuerdos Bilaterales o Multilaterales Tipo de Servicio</span>
@@ -189,34 +192,55 @@ const Acuerdos = () => {
                                     <button className={`ficha-tab ${tabTipoServicio === 'oferta' ? 'active' : ''}`} onClick={() => setTabTipoServicio('oferta')}>Oferta</button>
                                     <button className={`ficha-tab ${tabTipoServicio === 'demanda' ? 'active' : ''}`} onClick={() => setTabTipoServicio('demanda')}>Demanda</button>
                                 </div>
-                                <table className="acuerdos-tabla">
-                                    <thead>
-                                        <tr>
-                                            <th>Tipo de Servicio</th>
-                                            <th>Tipo Servicio</th>
-                                            <th>Num Servicios</th>
-                                            <th>Contraprestación Económica</th>
-                                            {tabTipoServicio === 'demanda' && <th>Num Servicios Terceros</th>}
-                                            {tabTipoServicio === 'demanda' && <th>Contraprestación Económica Terceros</th>}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda).length === 0 ? (
-                                            <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
-                                        ) : (
-                                            (tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda).map((row, i) => (
-                                                <tr key={i}>
-                                                    <td>{row.tipoServicio}</td>
-                                                    <td>{row.tipoServicioNombre}</td>
-                                                    <td>{row.numServicios}</td>
-                                                    <td>{row.contraprestacionEconomica}</td>
-                                                    {tabTipoServicio === 'demanda' && <td>{row.numServiciosTerceros}</td>}
-                                                    {tabTipoServicio === 'demanda' && <td>{row.contraprestacionEconomicaTerceros}</td>}
+                                {(() => {
+                                    const datos = tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda;
+                                    const totalNumServicios = datos.reduce((s, r) => s + (r.numServicios || 0), 0);
+                                    const totalContraprestacion = datos.reduce((s, r) => s + (r.contraprestacionEconomica || 0), 0);
+                                    const totalNumServiciosTerceros = datos.reduce((s, r) => s + (r.numServiciosTerceros || 0), 0);
+                                    const totalContraprestacionTerceros = datos.reduce((s, r) => s + (r.contraprestacionEconomicaTerceros || 0), 0);
+
+                                    return (
+                                        <table className="acuerdos-tabla">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo de Servicio</th>
+                                                    <th>Tipo Servicio</th>
+                                                    <th>Num Servicios</th>
+                                                    <th>Contraprestación Económica</th>
+                                                    {tabTipoServicio === 'demanda' && <th>Num Servicios Terceros</th>}
+                                                    {tabTipoServicio === 'demanda' && <th>Contraprestación Económica Terceros</th>}
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody>
+                                                {datos.length === 0 ? (
+                                                    <tr><td colSpan={tabTipoServicio === 'oferta' ? 4 : 6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                                ) : (
+                                                    datos.map((row, i) => (
+                                                        <tr key={i}>
+                                                            <td>{row.tipoServicio}</td>
+                                                            <td>{row.tipoServicioNombre}</td>
+                                                            <td style={{ textAlign: 'right' }}>{row.numServicios}</td>
+                                                            <td style={{ textAlign: 'right' }}>{(row.contraprestacionEconomica || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                                                            {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right' }}>{row.numServiciosTerceros}</td>}
+                                                            {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right' }}>{(row.contraprestacionEconomicaTerceros || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>}
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                            {datos.length > 0 && (
+                                                <tfoot>
+                                                    <tr style={{ fontWeight: 700, background: '#f0f4ff', borderTop: '2px solid #1a5fa8' }}>
+                                                        <td colSpan={2} style={{ padding: '8px 12px' }}>TOTAL</td>
+                                                        <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalNumServicios}</td>
+                                                        <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalContraprestacion.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                                                        {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalNumServiciosTerceros}</td>}
+                                                        {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalContraprestacionTerceros.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>}
+                                                    </tr>
+                                                </tfoot>
+                                            )}
+                                        </table>
+                                    );
+                                })()}
                             </div>
                         )}
                     </div>

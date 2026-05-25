@@ -25,7 +25,8 @@ import DataGrid, {
     Toolbar,
     Item,
     Lookup,
-    Editing
+    Editing,
+    Button as GridButton
 } from "devextreme-react/data-grid";
 
 import { useTranslation } from "react-i18next";
@@ -348,6 +349,41 @@ const PlantillasAcuerdos = () => {
                                 dataType="datetime"
                                 format="dd/MM/yyyy HH:mm:ss"
                             />
+                            
+                            <Column type="buttons" caption={t('Acciones')} alignment="center" width={120}>
+                                <GridButton
+                                    name="edit"
+                                    render={(cellInfo) => (
+                                        <div className="ficha-row-actions" style={{ display: 'inline-flex', marginRight: '8px' }}>
+                                            <i
+                                                className="ri-edit-line edit-icon"
+                                                title={t('Editar')}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    dataGridRef.current.instance().editRow(cellInfo.rowIndex);
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                />
+                                <GridButton
+                                    name="delete"
+                                    render={(cellInfo) => (
+                                        <div className="ficha-row-actions" style={{ display: 'inline-flex' }}>
+                                            <i
+                                                className="ri-delete-bin-line delete-icon"
+                                                title={t('Eliminar')}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    dataGridRef.current.instance().deleteRow(cellInfo.rowIndex);
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                />
+                                <GridButton name="save" />
+                                <GridButton name="cancel" />
+                            </Column>
                         </DataGrid>
                     </div>
                 </div>

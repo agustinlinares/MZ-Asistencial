@@ -345,23 +345,65 @@ public class ListaOfertasService : IListaOfertasService
 
     public async Task<OfertaEditDTO?> GetByIdAsync(int id)
     {
-        var oferta = await _context.Ofertas.FindAsync(id);
+        var oferta = await _context.Ofertas
+            .Where(o => o.OfertaId == id)
+            .Select(o => new {
+                o.OfertaId,
+                o.EspecialidadId,
+                o.ServicioId,
+                o.CentroId,
+                o.Año,
+                o.DemandaId,
+                o.Ene,
+                o.Feb,
+                o.Mar,
+                o.Abr,
+                o.May,
+                o.Jun,
+                o.Jul,
+                o.Ago,
+                o.Sep,
+                o.Oct,
+                o.Nov,
+                o.Dic,
+                o.EstadoId,
+                o.NotaContestacion,
+                o.ContestacionPlazos
+            })
+            .FirstOrDefaultAsync();
+
         if (oferta == null) return null;
 
-        // Datos de la demanda asociada
-        Demanda? demanda = null;
-        if (oferta.DemandaId.HasValue)
-            demanda = await _context.Demandas.FindAsync(oferta.DemandaId.Value);
+        // Demanda
+        var demanda = oferta.DemandaId.HasValue
+            ? await _context.Demandas
+                .Where(d => d.DemandaId == oferta.DemandaId.Value)
+                .Select(d => new { d.Ene, d.Feb, d.Mar, d.Abr, d.May, d.Jun, d.Jul, d.Ago, d.Sep, d.Oct, d.Nov, d.Dic })
+                .FirstOrDefaultAsync()
+            : null;
 
-        // Especialidad y Servicio
+        // Especialidad
         var especialidad = oferta.EspecialidadId.HasValue
-            ? await _context.AuxEspecialidades.FindAsync(oferta.EspecialidadId.Value)
+            ? await _context.AuxEspecialidades
+                .Where(e => e.EspecialidadId == oferta.EspecialidadId.Value)
+                .Select(e => e.Especialidad)
+                .FirstOrDefaultAsync()
             : null;
+
+        // Servicio
         var servicio = oferta.ServicioId.HasValue
-            ? await _context.AuxServicios.FindAsync(oferta.ServicioId.Value)
+            ? await _context.AuxServicios
+                .Where(s => s.ServicioId == oferta.ServicioId.Value)
+                .Select(s => s.Servicio)
+                .FirstOrDefaultAsync()
             : null;
+
+        // Estado
         var estado = oferta.EstadoId.HasValue
-            ? await _context.AuxEstadosDemanda.FindAsync(oferta.EstadoId.Value)
+            ? await _context.AuxEstadosDemanda
+                .Where(e => e.EstadoId == oferta.EstadoId.Value)
+                .Select(e => e.Estado)
+                .FirstOrDefaultAsync()
             : null;
 
         // Centro y Mutua
@@ -376,8 +418,10 @@ public class ListaOfertasService : IListaOfertasService
             if (cp != null)
             {
                 centro = cp.Centro;
-                var mutua = await _context.Mutuas.FindAsync(cp.MutuaId);
-                mutuaOferta = mutua?.Mutua1;
+                mutuaOferta = await _context.Mutuas
+                    .Where(m => m.MutuaId == cp.MutuaId)
+                    .Select(m => m.Mutua1)
+                    .FirstOrDefaultAsync();
             }
         }
 
@@ -406,9 +450,9 @@ public class ListaOfertasService : IListaOfertasService
             ContestacionPlazos = oferta.ContestacionPlazos,
             MutuaOferta = mutuaOferta,
             Centro = centro,
-            Especialidad = especialidad?.Especialidad,
-            Servicio = servicio?.Servicio,
-            Estado = estado?.Estado,
+            Especialidad = especialidad,
+            Servicio = servicio,
+            Estado = estado,
             DemandaEne = demanda?.Ene,
             DemandaFeb = demanda?.Feb,
             DemandaMar = demanda?.Mar,

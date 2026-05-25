@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import '../../../styles/FichaGlobal.css';
@@ -242,7 +242,7 @@ const CentrosPropios = () => {
                                 dataSource={centros}
                                 keyExpr="centroId"
                                 showBorders={true}
-                                columnAutoWidth={false}
+                                columnAutoWidth={true}
                                 allowColumnResizing={true}
                                 onExporting={handleExportarExcel}
                                 className="mz-table"
@@ -273,15 +273,15 @@ const CentrosPropios = () => {
                             <Export enabled={true} allowExportSelectedData={true} />
                             <Sorting mode="multiple" />
                             <ColumnFixing enabled={true} />
-                            <Column dataField="localizador" caption="Localizador" width={110} />
+                            <Column dataField="localizador" caption="Localizador" width={130} />
                             <Column dataField="centroId" caption="No" width={80} />
                             <Column dataField="mutuaId" caption="Mutua" width={90} />
-                            <Column dataField="codigoMz" caption="Centro ID" width={100} />
-                            <Column dataField="centro" caption="Centro" width={200} />
+                            <Column dataField="codigoMz" caption="Centro ID" width={110} />
+                            <Column dataField="centro" caption="Centro" width={250} />
                             <Column dataField="cp" caption="C.P." width={80} />
-                            <Column dataField="provincia" caption="Provincia" width={130} />
-                            <Column dataField="poblacionId" caption="Poblacion" width={100} />
-                            <Column dataField="telefono" caption="Telefono" width={120} />
+                            <Column dataField="provincia" caption="Provincia" width={150} />
+                            <Column dataField="poblacionId" caption="Población" width={150} />
+                            <Column dataField="telefono" caption="Teléfono" width={130} />
                             <Column dataField="latitud" caption="Mapa" width={90} alignment="center" cellRender={MapaCell} />
                             {/* ✅ Solo admin ve la columna Desactivado */}
                             {admin && (

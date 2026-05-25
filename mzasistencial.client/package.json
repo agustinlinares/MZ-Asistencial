@@ -14,6 +14,7 @@
     "bootstrap-css-only": "^4.4.1",
     "classnames": "^2.3.1",
     "devextreme": "24.2.5",
+    "devextreme-aspnet-data-nojquery": "^5.1.0",
     "devextreme-react": "24.2.5",
     "exceljs": "^4.4.0",
     "file-saver-es": "^2.0.5",

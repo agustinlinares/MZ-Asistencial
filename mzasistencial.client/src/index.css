@@ -20,20 +20,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar global para todo el proyecto */
+/* Scrollbar global para todo el proyecto (MacOS style) */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 ::-webkit-scrollbar-track {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(130, 130, 130, 0.4);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(130, 130, 130, 0.7);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .dx-widget {
@@ -496,7 +496,7 @@ body#main button:focus {
   margin-left: 10px;
 }
 
-/*DATA GRID*/
+/*DATA GRID GLOBAL OVERRIDES*/
 body#main .dx-dialog .dx-toolbar-center {
   margin: 0 auto;
   text-align: center;
@@ -511,6 +511,110 @@ body#main .dx-dialog .dx-button-mode-text.dx-button-default {
 
 #action_list .dx-popup-content {
   padding: 0;
+}
+
+.dx-datagrid {
+    background-color: transparent !important;
+    font-family: var(--font-family) !important;
+}
+
+.dx-datagrid-headers {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dx-datagrid-headers .dx-header-row td {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 10px !important;
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.dx-datagrid-rowsview .dx-row {
+    font-size: 14px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.dx-datagrid-rowsview .dx-row-alt {
+    background-color: #f8fafc !important;
+}
+
+.dx-datagrid-rowsview .dx-row:hover {
+    background-color: #f1f5f9 !important;
+    transition: background-color 0.2s ease;
+}
+
+.dx-datagrid-search-panel {
+    margin: 0 !important;
+}
+
+.dx-datagrid-search-panel .dx-texteditor-input {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+}
+
+.dx-datagrid-search-panel .dx-placeholder {
+    font-size: 13px !important;
+}
+
+.dx-datagrid-header-panel {
+    padding: 12px 0 !important;
+    border-bottom: none !important;
+}
+
+.dx-toolbar-items-container {
+    height: 48px !important;
+}
+
+.dx-toolbar-item-content .dx-button {
+    border-radius: 6px !important;
+    transition: all 0.2s ease;
+}
+
+.dx-datagrid-filter-panel {
+    padding: 10px 15px !important;
+    background-color: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+.dx-datagrid-filter-panel .dx-icon-filter {
+    color: #1a5fa8 !important;
+    font-size: 18px !important;
+}
+
+.dx-datagrid-filter-panel .dx-datagrid-filter-panel-text {
+    color: #1a5fa8 !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    font-size: 13px !important;
+}
+
+.dx-datagrid-filter-panel .dx-datagrid-filter-panel-clear-filter {
+    color: #e53e3e !important;
+    font-weight: 600 !important;
+}
+
+.dx-pager .dx-pages .dx-selection,
+.dx-pager .dx-page-sizes .dx-selection,
+.dx-datagrid-rowsview .dx-selection > td {
+    background-color: var(--bg-menu-color) !important;
+    color: #fff !important;
+}
+
+.dx-datagrid-rowsview .dx-selection.dx-row:hover > td {
+    background-color: #122d64 !important;
+}
+
+.dx-checkbox-checked .dx-checkbox-icon {
+    background-color: var(--main-color) !important;
+    color: #fff !important;
 }
 
 /*====================
@@ -640,5 +744,41 @@ Fichas
     color: #213547;
     background-color: #ffffff;
   }
+}
 
+/* ==============================================================
+   TABLE CONTAINER HOMOGENIZATION
+   Garantiza que todas las tablas tengan el mismo margen (25px) y 
+   se estiren hasta el fondo (usando flexbox en vez de calc)
+   ============================================================== */
+.body-content .file-box {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+}
+
+.body-content .table-container {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 25px 25px 25px !important;
+    min-height: 0 !important;
+    height: auto !important; /* Override inline heights */
+}
+
+/* Asegurar que cualquier div intermediario (wrapper) o DataGrid se estire */
+.body-content .table-container > div {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+.body-content .table-container .dx-datagrid {
+    flex: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
 }

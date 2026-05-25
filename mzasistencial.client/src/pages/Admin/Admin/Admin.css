@@ -87,3 +87,418 @@
 .DatosUtilizacion .radio-group label {
     margin-bottom: 0;
 }
+
+/* ══════════════════════════════════════════════════════════
+   FICHEROS PAGE
+══════════════════════════════════════════════════════════ */
+
+.ficheros-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background: #fff;
+    font-family: var(--font-family, 'Outfit', sans-serif);
+}
+
+/* ── Cabecera ─────────────────────────────────────────────── */
+.ficheros-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 44px;
+    min-height: 44px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ficheros-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ficheros-title i {
+    font-size: 16px;
+    color: var(--brand-primary, #1a5fa8);
+}
+
+.ficheros-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Botón Nuevo Fichero */
+.fich-btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px;
+    background: var(--brand-primary, #1a5fa8);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.fich-btn-primary:hover {
+    background: var(--brand-hover, #14508e);
+}
+
+/* Botón menú "···" */
+.fich-btn-menu {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+.fich-btn-menu:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Menú desplegable */
+.acciones-container {
+    position: relative;
+}
+.fich-acciones-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 200px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    overflow: hidden;
+}
+.fich-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+.fich-menu-header i {
+    cursor: pointer;
+    font-size: 16px;
+    color: #94a3b8;
+}
+.fich-menu-header i:hover { color: #475569; }
+.fich-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.fich-menu-item:hover {
+    background: #f8fafc;
+    color: var(--brand-primary, #1a5fa8);
+}
+.fich-menu-item i { font-size: 15px; }
+
+/* ── Grid contenedor ─────────────────────────────────────── */
+.ficheros-grid-wrap {
+    flex: 1;
+    overflow: hidden;
+    padding: 0;
+}
+
+.fich-drag-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 0 8px;
+}
+
+/* ── Columna Acciones (botones editar/eliminar) ───────────── */
+.ficheros-acciones {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+.fich-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.15s;
+}
+.fich-btn-edit {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.fich-btn-edit:hover {
+    background: #0369a1;
+    color: #fff;
+}
+.fich-btn-delete {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.fich-btn-delete:hover {
+    background: #dc2626;
+    color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════
+   POPUP FICHA FICHERO  (overlay modal manual)
+══════════════════════════════════════════════════════════ */
+
+.fich-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.fich-popup {
+    width: 680px;
+    max-width: 96vw;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* Título de popup */
+.fich-popup-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #f4f6f8;
+    border-bottom: 1px solid #d0d7de;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.fich-popup-title-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.fich-popup-btn-accept {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    background: var(--brand-primary, #1a5fa8);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.fich-popup-btn-accept:hover:not(:disabled) { background: var(--brand-hover, #14508e); }
+.fich-popup-btn-accept:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.fich-popup-btn-cancel {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.fich-popup-btn-cancel:hover { background: #e2e8f0; }
+
+/* Cuerpo del popup */
+.fich-popup-body {
+    padding: 18px 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fich-popup-row {
+    display: flex;
+    gap: 16px;
+}
+
+.fich-popup-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fich-popup-field-full {
+    flex: 0 0 100%;
+}
+
+.fich-popup-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Inputs base */
+.fich-input, .fich-select, .fich-textarea {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #fff;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.fich-input:focus,
+.fich-select:focus,
+.fich-textarea:focus {
+    border-color: var(--brand-primary, #1a5fa8);
+    box-shadow: 0 0 0 2px rgba(26, 95, 168, 0.12);
+}
+
+.fich-readonly {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    cursor: default;
+}
+
+.fich-select {
+    appearance: auto;
+    height: 30px;
+}
+
+.fich-textarea {
+    resize: vertical;
+    min-height: 70px;
+    font-family: inherit;
+}
+
+/* File input custom */
+.fich-file-wrap {
+    display: flex;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.fich-file-text {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+}
+.fich-file-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    height: 30px;
+    background: #f1f5f9;
+    border-left: 1px solid #cbd5e1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: background 0.15s;
+}
+.fich-file-btn:hover { background: #e2e8f0; }
+.fich-file-hidden {
+    display: none;
+}
+
+/* ── Modal Confirmar ─────────────────────────────────────── */
+.fich-confirm {
+    width: 460px;
+    max-width: 96vw;
+    background: #fff;
+    border: 1px solid #d0d7de;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.fich-confirm-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--brand-primary, #1a5fa8);
+    border-bottom: 1px solid #d0d7de;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.fich-confirm-body {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px 20px;
+}
+
+.fich-confirm-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: var(--brand-primary, #1a5fa8);
+}
+
+.fich-confirm-body p {
+    margin: 0;
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+}
