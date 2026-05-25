@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
@@ -19,11 +20,10 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-const MESES_LABEL = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 const GestionOferta = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const dataGridRef = useRef(null);
     const buscarRef = useRef(null);
     const menuRef = useRef(null);
@@ -33,7 +33,6 @@ const GestionOferta = () => {
     const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
     const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
-    const [ofertaEditando, setOfertaEditando] = useState(null);
 
     const [fechaSolicitudDesde, setFechaSolicitudDesde] = useState(null);
     const [fechaSolicitudHasta, setFechaSolicitudHasta] = useState(null);
@@ -145,57 +144,6 @@ const GestionOferta = () => {
         setNecesidadesServicio(''); setContestacionNecesidades(''); setDemandaId('');
     };
 
-    const handleGuardarEdicion = async () => {
-        if (ofertaEditando.estadoId === 3) {
-            const ofertaTemp = { ...ofertaEditando };
-            setOfertaEditando(null);
-            const ok = await dxConfirm(
-                '¿Seguro que desea confirmar esta oferta? El resto de subsolicitudes de esta demanda quedarán rechazadas automáticamente.',
-                'Confirmar asignación'
-            );
-            if (!ok) { setOfertaEditando(ofertaTemp); return; }
-            Object.assign(ofertaEditando, ofertaTemp);
-        }
-
-        if (ofertaEditando?.estadoId === 8) {
-            const ofertaTemp = { ...ofertaEditando };
-            setOfertaEditando(null);
-            const ok = await dxConfirm(
-                '¿Seguro que desea rechazar esta oferta? Todas las subsolicitudes de esta demanda quedarán rechazadas.',
-                'Confirmar rechazo'
-            );
-            if (!ok) { setOfertaEditando(ofertaTemp); return; }
-            Object.assign(ofertaEditando, ofertaTemp);
-        }
-
-        fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                estadoId: ofertaEditando.estadoId,
-                notaContestacion: ofertaEditando.notaContestacion,
-                ene: ofertaEditando.ene, feb: ofertaEditando.feb, mar: ofertaEditando.mar,
-                abr: ofertaEditando.abr, may: ofertaEditando.may, jun: ofertaEditando.jun,
-                jul: ofertaEditando.jul, ago: ofertaEditando.ago, sep: ofertaEditando.sep,
-                oct: ofertaEditando.oct, nov: ofertaEditando.nov, dic: ofertaEditando.dic
-            }),
-        })
-            .then(res => {
-                if (res.ok) {
-                    notify('Oferta guardada correctamente', 'success', 2000);
-                    setOfertaEditando(null);
-                    buscarRef.current();
-                } else {
-                    notify('Error al guardar la oferta', 'error', 3000);
-                }
-            })
-            .catch(err => console.error('Error:', err));
-    };
-
-    const totalAsignacion = ofertaEditando ? MESES.reduce((s, m) => s + (ofertaEditando[m] || 0), 0) : 0;
-    const totalDemanda = ofertaEditando ? MESES.reduce((s, m) => s + (ofertaEditando[`demanda${m.charAt(0).toUpperCase() + m.slice(1)}`] || 0), 0) : 0;
-    const totalDiferencia = totalAsignacion - totalDemanda;
-
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
@@ -233,7 +181,7 @@ const GestionOferta = () => {
                         </div>
                     </div>
 
-                    {/* PANEL FILTROS PRINCIPALES */}
+                    {/* PANEL FILTROS */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -343,6 +291,21 @@ const GestionOferta = () => {
                                 <Item name="groupPanel" />
                             </Toolbar>
 
+                            <Column
+                                dataField="grupoKey"
+                                caption="Especialidad / Servicio"
+                                groupIndex={0}
+                                defaultSortOrder="asc"
+                                visible={false}
+                                allowFiltering={false}
+                                allowHeaderFiltering={false}
+                                groupCellRender={(e) => (
+                                    <span style={{ fontWeight: 600, color: '#1a5fa8' }}>
+                                        {e.value}
+                                    </span>
+                                )}
+                            />
+
                             <Column dataField="especialidad" caption="Especialidad" width={160} />
                             <Column dataField="servicio" caption="Servicio" width={150} />
                             <Column dataField="año" caption="Año" width={70} />
@@ -378,19 +341,18 @@ const GestionOferta = () => {
                                 cellRender={(cell) => (
                                     cell.data.tipoLinea === 'Asignación' ? (
                                         <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                            {/* ── Editar → navega a la ficha completa ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
                                                 title="Editar"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`)
-                                                        .then(res => res.json())
-                                                        .then(data => setOfertaEditando(data))
-                                                        .catch(err => console.error('Error:', err));
+                                                    navigate(`/admin/OfertaDemanda/GestionOferta/ficha/${cell.data.ofertaId}`);
                                                 }}
                                             >
                                                 <i className="ri-edit-line"></i>
                                             </div>
+                                            {/* ── Eliminar ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
                                                 title="Eliminar"
@@ -419,125 +381,6 @@ const GestionOferta = () => {
                             />
                         </DataGrid>
                     </div>
-
-                    {/* MODAL EDICION */}
-                    {ofertaEditando && (
-                        <div style={{
-                            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                        }}>
-                            <div style={{
-                                background: '#fff', borderRadius: 8, width: 820,
-                                maxHeight: '90vh', overflow: 'auto',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                            }}>
-                                <div className="ficha-modal-header">
-                                    <span className="ficha-modal-title">Ficha Gestión Oferta</span>
-                                    <div className="ficha-header-btns">
-                                        <button className="ficha-btn-primary" onClick={handleGuardarEdicion}>Guardar</button>
-                                        <button className="ficha-btn-secondary" onClick={() => setOfertaEditando(null)}>Salir</button>
-                                    </div>
-                                </div>
-
-                                <div style={{ padding: 20 }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
-                                        <div className="ficha-field">
-                                            <label>Mutua Ofertante</label>
-                                            <input type="text" readOnly value={ofertaEditando.mutuaOferta || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Centro</label>
-                                            <input type="text" readOnly value={ofertaEditando.centro || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Especialidad</label>
-                                            <input type="text" readOnly value={ofertaEditando.especialidad || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Servicio</label>
-                                            <input type="text" readOnly value={ofertaEditando.servicio || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Estado</label>
-                                            <select
-                                                value={ofertaEditando.estadoId || ''}
-                                                onChange={e => setOfertaEditando(prev => ({ ...prev, estadoId: parseInt(e.target.value) }))}
-                                            >
-                                                {estados.filter(e => e.estadoId !== null).map(e => (
-                                                    <option key={e.estadoId} value={e.estadoId}>{e.estado}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Nota Contestacion</label>
-                                            <input
-                                                type="text"
-                                                value={ofertaEditando.notaContestacion || ''}
-                                                onChange={e => setOfertaEditando(prev => ({ ...prev, notaContestacion: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                            <thead>
-                                                <tr style={{ background: '#1a5fa8', color: '#fff' }}>
-                                                    <th style={{ padding: '8px 12px', textAlign: 'left', width: 160 }}></th>
-                                                    {MESES_LABEL.map(m => (
-                                                        <th key={m} style={{ padding: '8px 6px', textAlign: 'center', width: 55 }}>{m}</th>
-                                                    ))}
-                                                    <th style={{ padding: '8px 6px', textAlign: 'center', width: 60 }}>Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr style={{ background: '#dbeafe' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#1a5fa8' }}>ASIGNACION TOTAL</td>
-                                                    {MESES.map(m => (
-                                                        <td key={m} style={{ padding: '4px 6px', textAlign: 'center' }}>
-                                                            <input
-                                                                type="number"
-                                                                value={ofertaEditando[m] || 0}
-                                                                onChange={e => setOfertaEditando(prev => ({ ...prev, [m]: parseInt(e.target.value) || 0 }))}
-                                                                style={{ width: 44, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px' }}
-                                                            />
-                                                        </td>
-                                                    ))}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700 }}>{totalAsignacion}</td>
-                                                </tr>
-                                                <tr style={{ background: '#eff6ff' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#555' }}>DEMANDA TOTAL</td>
-                                                    {MESES.map(m => {
-                                                        const key = `demanda${m.charAt(0).toUpperCase() + m.slice(1)}`;
-                                                        return (
-                                                            <td key={m} style={{ padding: '8px 6px', textAlign: 'center', color: '#555' }}>
-                                                                {ofertaEditando[key] || 0}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: '#555' }}>{totalDemanda}</td>
-                                                </tr>
-                                                <tr style={{ background: '#f0fdf4' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#2e7d32' }}>DIFERENCIA</td>
-                                                    {MESES.map(m => {
-                                                        const keyD = `demanda${m.charAt(0).toUpperCase() + m.slice(1)}`;
-                                                        const diff = (ofertaEditando[m] || 0) - (ofertaEditando[keyD] || 0);
-                                                        return (
-                                                            <td key={m} style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 600, color: diff < 0 ? '#c62828' : '#2e7d32' }}>
-                                                                {diff}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: totalDiferencia < 0 ? '#c62828' : '#2e7d32' }}>
-                                                        {totalDiferencia}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                 </div>
             </div>
