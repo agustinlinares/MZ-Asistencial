@@ -331,6 +331,7 @@ const CentrosConcertados = () => {
                                         fixed={true}
                                         fixedPosition="right"
                                         alignment="center"
+                                        allowExporting={false}
                                         cellRender={(cellData) => (
                                             <div className="ficha-row-actions">
                                                 <i 
