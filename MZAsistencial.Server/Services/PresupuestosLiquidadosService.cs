@@ -25,7 +25,7 @@ namespace MZAsistencial.Server.Services
 
         public async Task<List<PresupuestosLiquidadosListDTO>> ObtenerTodosAsync()
         {
-            return await _context.MutuasPresupuesto
+            return await _context.MutuasPresupuestos
                 .Join(_context.Mutuas, // Cruzamos con la tabla de mutuas existente
                     p => p.MutuaId,
                     m => m.MutuaId,
@@ -62,7 +62,7 @@ namespace MZAsistencial.Server.Services
 
         public async Task<PresupuestoLiquidadoFormDTO?> ObtenerPorIdAsync(int id)
         {
-            var p = await _context.MutuasPresupuesto.FindAsync(id);
+            var p = await _context.MutuasPresupuestos.FindAsync(id);
             if (p == null) return null;
 
             return new PresupuestoLiquidadoFormDTO
@@ -87,7 +87,7 @@ namespace MZAsistencial.Server.Services
 
         public async Task<int> InsertarAsync(PresupuestoLiquidadoFormDTO dto)
         {
-            bool existe = await _context.MutuasPresupuesto
+            bool existe = await _context.MutuasPresupuestos
                 .AnyAsync(m => m.MutuaId == dto.MutuaId && m.Año == dto.Año);
 
             if (existe) throw new InvalidOperationException("Ya existe un presupuesto para esta mutua y año.");
@@ -110,7 +110,7 @@ namespace MZAsistencial.Server.Services
                 PresupuestoCapitulo6Propio = dto.PresupuestoCapitulo6Propio
             };
 
-            _context.MutuasPresupuesto.Add(entidad);
+            _context.MutuasPresupuestos.Add(entidad);
             
             // Guardamos para que SQL genere el Id_Presupuesto y poder registrarlo
             await _context.SaveChangesAsync();
@@ -132,10 +132,10 @@ namespace MZAsistencial.Server.Services
 
         public async Task<bool> EliminarAsync(int id)
         {
-            var entidad = await _context.MutuasPresupuesto.FindAsync(id);
+            var entidad = await _context.MutuasPresupuestos.FindAsync(id);
             if (entidad == null) return false;
 
-            _context.MutuasPresupuesto.Remove(entidad);
+            _context.MutuasPresupuestos.Remove(entidad);
 
             // Inserción en el Registro de Actividad
             var log = new RegistroActividad
@@ -156,7 +156,7 @@ namespace MZAsistencial.Server.Services
 
         public async Task<bool> ActualizarAsync(PresupuestoLiquidadoFormDTO dto)
         {
-            var entidad = await _context.MutuasPresupuesto.FindAsync(dto.IdPresupuesto);
+            var entidad = await _context.MutuasPresupuestos.FindAsync(dto.IdPresupuesto);
             if (entidad == null) return false;
 
             entidad.PresupuestoCapitulo1Propio = dto.PresupuestoCapitulo1Propio;
