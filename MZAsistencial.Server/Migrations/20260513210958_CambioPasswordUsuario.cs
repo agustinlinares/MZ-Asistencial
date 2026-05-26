@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,10 +10,10 @@ namespace MZAsistencial.Server.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Año",
-                table: "Informes_ICG",
-                newName: "Anio");
+            // migrationBuilder.RenameColumn(
+            //    name: "Año",
+            //    table: "Informes_ICG",
+            //    newName: "Anio");
 
             migrationBuilder.AlterColumn<bool>(
                 name: "Rehabilitacion",

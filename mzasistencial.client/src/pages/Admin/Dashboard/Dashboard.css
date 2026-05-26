@@ -1,0 +1,282 @@
+/* ─── DASHBOARD CONTAINER ──────────────────────────────────────────────────── */
+.db-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #f4f7fa;
+    overflow: hidden;
+}
+
+.db-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* ─── FILTROS ───────────────────────────────────────────────────────────────── */
+.db-filtros {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.db-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5568;
+    cursor: pointer;
+    padding: 6px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.db-select:hover {
+    border-color: #cbd5e0;
+}
+
+/* ─── SECCIÓN TÍTULO ────────────────────────────────────────────────────────── */
+.db-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* ─── TABLAS ────────────────────────────────────────────────────────────────── */
+.db-tablas {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.db-bloque {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(25, 57, 126, 0.07);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.db-bloque:hover {
+    box-shadow: 0 8px 30px rgba(25, 57, 126, 0.12);
+}
+
+.db-bloque-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, var(--brand-primary, #1976d2) 0%, var(--brand-dark, #0d47a1) 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.db-bloque-icon {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.db-tabla-wrap {
+    overflow-x: auto;
+}
+
+.db-tabla {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.db-tabla thead th {
+    background: #f8fafc;
+    color: #64748b;
+    padding: 10px 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #edf2f7;
+    white-space: nowrap;
+}
+
+.db-tabla thead th:not(:first-child) {
+    text-align: right;
+}
+
+.db-tabla tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+}
+
+.db-tabla tbody tr:hover {
+    background: #f1f5f9;
+}
+
+.db-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.db-tabla td.num {
+    text-align: right;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.db-tabla td.diff {
+    font-weight: 700;
+}
+
+.db-tabla td.diff.neg {
+    color: #e53e3e;
+}
+
+.db-tabla td.diff.pos {
+    color: #2e7d32;
+}
+
+.db-tabla td .pct {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: #a0aec0;
+    margin-top: 2px;
+}
+
+.db-tabla tr.total-row td {
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 13px;
+    border-top: 2px solid #e2e8f0;
+}
+
+/* ─── GRÁFICOS ──────────────────────────────────────────────────────────────── */
+.db-graficos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 1100px) {
+    .db-graficos {
+        grid-template-columns: 1fr;
+    }
+}
+
+.db-grafico-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(25, 57, 126, 0.07);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.db-grafico-card:hover {
+    box-shadow: 0 8px 30px rgba(25, 57, 126, 0.12);
+}
+
+.db-grafico-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--brand-primary, #1976d2) 0%, var(--brand-dark, #0d47a1) 100%);
+    color: white;
+}
+
+.db-grafico-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.db-grafico-total {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    padding: 8px 0 0 0;
+}
+
+/* ─── TOGGLE PRESUPUESTO / LIQUIDACIÓN ──────────────────────────────────────── */
+.db-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.db-toggle button {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.db-toggle button.active {
+    background: white;
+    color: var(--brand-primary, #1976d2);
+}
+
+.db-toggle button:hover:not(.active) {
+    color: white;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ─── ESTADOS ───────────────────────────────────────────────────────────────── */
+.db-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #64748b;
+    font-size: 14px;
+    padding: 40px;
+    justify-content: center;
+}
+
+.db-error {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    color: #c53030;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 14px;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}

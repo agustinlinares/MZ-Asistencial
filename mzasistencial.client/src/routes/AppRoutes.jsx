@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+﻿import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
@@ -10,6 +10,7 @@ const MapaPage = lazy(() => import("@pages/Admin/Centros/MapaPage"));
 // Layouts
 const AdminLayout = lazy(() => import("../components/_layout/AdminLayout"));
 const ResumendeGastos = lazy(() => import("../pages/Admin/ResumendeGastos/ResumendeGastos"));
+const Dashboard = lazy(() => import("../pages/Admin/Dashboard/Dashboard"));
  
 const Proveedores = lazy(() => import("../pages/Admin/Proveedores/Proveedores"));
 const Delegaciones = lazy(() => import("../pages/Admin/Proveedores/Delegaciones"));
@@ -68,6 +69,7 @@ const AppRoutes = () => {
                 <Route path="admin" element={<PrivateRoute />}>
                     <Route element={<AdminLayout />}>
                         <Route path="resumendeGastos" element={<ResumendeGastos />} />
+                        <Route path="Dashboard" element={<Dashboard />} />
  
                         <Route path="Proveedores">
                             <Route path="Proveedores" element={<Proveedores />} />
