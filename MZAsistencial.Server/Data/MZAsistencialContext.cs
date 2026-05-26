@@ -161,7 +161,7 @@ public partial class MZAsistencialContext : DbContext
 
     public virtual DbSet<MutuasBm> MutuasBms { get; set; }
 
-    public virtual DbSet<MutuasPresupuesto> MutuasPresupuestos { get; set; }
+    public virtual DbSet<MutuasPresupuesto> MutuasPresupuesto { get; set; }
 
     public virtual DbSet<Oferta> Ofertas { get; set; }
 
