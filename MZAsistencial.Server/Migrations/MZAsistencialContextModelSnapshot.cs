@@ -3423,6 +3423,9 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("CodigoMZ");
 
+                    b.Property<string>("Comentarios")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Cp")
                         .HasMaxLength(5)
                         .IsUnicode(false)
@@ -3652,13 +3655,13 @@ namespace MZAsistencial.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CentroId"));
 
-                    b.Property<bool>("Administracion")
+                    b.Property<bool?>("Administracion")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("AsistenciaAmbulatoria")
+                    b.Property<bool?>("AsistenciaAmbulatoria")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("AsistenciaHospitalaria")
+                    b.Property<bool?>("AsistenciaHospitalaria")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("AsistenciaSanitaria")
@@ -3695,7 +3698,7 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnName("CP")
                         .IsFixedLength();
 
-                    b.Property<bool>("Desactivado")
+                    b.Property<bool?>("Desactivado")
                         .HasColumnType("bit");
 
                     b.Property<string>("Direccion")
@@ -3744,7 +3747,7 @@ namespace MZAsistencial.Server.Migrations
                     b.Property<DateTime?>("Fpufuncio")
                         .HasColumnType("datetime");
 
-                    b.Property<bool>("IncapacidadTransitoria")
+                    b.Property<bool?>("IncapacidadTransitoria")
                         .HasColumnType("bit");
 
                     b.Property<string>("Latitud")
@@ -3785,7 +3788,7 @@ namespace MZAsistencial.Server.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<bool>("OtrasActividades")
+                    b.Property<bool?>("OtrasActividades")
                         .HasColumnType("bit");
 
                     b.Property<string>("OtrosDatos")
@@ -3805,14 +3808,14 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnType("int")
                         .HasColumnName("Poblacion_id");
 
-                    b.Property<bool>("Prevencion")
+                    b.Property<bool?>("Prevencion")
                         .HasColumnType("bit");
 
                     b.Property<string>("Puerta")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<bool>("Rehabilitacion")
+                    b.Property<bool?>("Rehabilitacion")
                         .HasColumnType("bit");
 
                     b.Property<int?>("ServiciosEspeciales")
@@ -4498,7 +4501,8 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("Año")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Año");
 
                     b.Property<int?>("CentroId")
                         .HasColumnType("int")
@@ -7915,7 +7919,8 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnName("ASHNsesrehab");
 
                     b.Property<int>("Año")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Año");
 
                     b.Property<int?>("CitnintervencionesQuirurjicas")
                         .HasColumnType("int")
@@ -8253,7 +8258,8 @@ namespace MZAsistencial.Server.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InformeId"));
 
                     b.Property<int?>("Año")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Anio");
 
                     b.Property<int?>("EstadoInformeId")
                         .HasColumnType("int")
@@ -8587,7 +8593,8 @@ namespace MZAsistencial.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("Año")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Año");
 
                     b.Property<int?>("CentroId")
                         .HasColumnType("int")

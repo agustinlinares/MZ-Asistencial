@@ -18,7 +18,7 @@ namespace MZAsistencial.Server.Controllers
         public AuthController(MZAsistencialContext context, IConfiguration config)
         {
             _context = context;
-            _config  = config;
+            _config = config;
         }
 
         [HttpGet("ping")]
@@ -47,24 +47,34 @@ namespace MZAsistencial.Server.Controllers
             if (usuario == null)
                 return Unauthorized(new { message = "Usuario o contrasena incorrectos." });
 
+            // Obtener el año del ejercicio activo (sin FechaCierre)
+            // Si no hay ejercicio abierto, usar el año actual
+            var ejercicioActivo = await _context.Ejercicios
+                .Where(e => e.FechaCierre == null)
+                .OrderByDescending(e => e.Año)
+                .FirstOrDefaultAsync();
+
+            var anio = ejercicioActivo?.Año ?? DateTime.Now.Year;
+
             var token = GenerarToken(usuario);
 
             return Ok(new
             {
                 usuarioId = usuario.UsuarioId,
-                usuario   = usuario.Usuario1,
-                perfilId  = usuario.PerfilId,
-                mutuaId   = usuario.MutuaId,
-                nombre    = usuario.Nombre,
+                usuario = usuario.Usuario1,
+                perfilId = usuario.PerfilId,
+                mutuaId = usuario.MutuaId,
+                nombre = usuario.Nombre,
                 apellidos = usuario.Apellidos,
-                token     = token
+                anio = anio,
+                token = token
             });
         }
 
         private string GenerarToken(MZAsistencial.Server.Models.Usuario usuario)
         {
-            var key     = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-            var creds   = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.UtcNow.AddHours(double.Parse(_config["Jwt:ExpiresInHours"] ?? "8"));
 
             var claims = new[]
@@ -76,10 +86,10 @@ namespace MZAsistencial.Server.Controllers
             };
 
             var tokenJwt = new JwtSecurityToken(
-                issuer:             _config["Jwt:Issuer"],
-                audience:           _config["Jwt:Audience"],
-                claims:             claims,
-                expires:            expires,
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: expires,
                 signingCredentials: creds
             );
 
@@ -89,7 +99,7 @@ namespace MZAsistencial.Server.Controllers
 
     public class LoginRequest
     {
-        public string Usuario    { get; set; } = "";
+        public string Usuario { get; set; } = "";
         public string Contrasena { get; set; } = "";
     }
 }

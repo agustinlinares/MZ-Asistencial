@@ -346,6 +346,7 @@ const ICGPlantillasICG = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            hoverStateEnabled={true}
                             noDataText={cargando ? t("Cargando...") : t("No hay datos")}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />

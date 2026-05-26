@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
@@ -6,8 +7,7 @@ import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { jsPDF } from 'jspdf';
 import DataGrid, {
     Column, Paging, FilterRow, HeaderFilter, Selection,
-    GroupPanel, Grouping, ColumnChooser, Export, Scrolling,
-    Sorting, ColumnFixing, Pager, Toolbar, Item,
+    GroupPanel, Grouping, Scrolling, Sorting, ColumnFixing, Pager, Toolbar, Item,
 } from "devextreme-react/data-grid";
 import DateBox from "devextreme-react/date-box";
 import SelectBox from "devextreme-react/select-box";
@@ -20,21 +20,19 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
-const VISTAS = ['Agrupada', 'Desagrupada'];
 
 const GestionOferta = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const dataGridRef = useRef(null);
     const buscarRef = useRef(null);
     const menuRef = useRef(null);
 
     const [tipo, setTipo] = useState('Todos');
-    const [vista, setVista] = useState('Agrupada');
     const [añoSeleccionado, setAñoSeleccionado] = useState(null);
     const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
     const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
-    const [ofertaEditando, setOfertaEditando] = useState(null);
 
     const [fechaSolicitudDesde, setFechaSolicitudDesde] = useState(null);
     const [fechaSolicitudHasta, setFechaSolicitudHasta] = useState(null);
@@ -51,36 +49,22 @@ const GestionOferta = () => {
     const [datos, setDatos] = useState([]);
     const [cargando, setCargando] = useState(false);
 
-    // --- FUNCIONES DE EXPORTACIÓN  ---
     const exportToExcel = () => {
         const context = dataGridRef.current.instance();
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet('Lista Ofertas');
-
-        exportDataGridToExcel({
-            component: context,
-            worksheet,
-            autoFilterEnabled: true
-        }).then(() => {
-            workbook.xlsx.writeBuffer().then((buffer) => {
-                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaOfertas.xlsx');
-            });
-        });
+        exportDataGridToExcel({ component: context, worksheet, autoFilterEnabled: true })
+            .then(() => workbook.xlsx.writeBuffer()
+                .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaOfertas.xlsx')));
     };
 
     const exportToPdf = () => {
         const doc = new jsPDF();
-        const context = dataGridRef.current.instance;
-
-        exportDataGridToPdf({
-            jsPDFDocument: doc,
-            component: context
-        }).then(() => {
-            doc.save('ListaOfertas.pdf');
-        });
+        const context = dataGridRef.current.instance();
+        exportDataGridToPdf({ jsPDFDocument: doc, component: context })
+            .then(() => doc.save('ListaOfertas.pdf'));
     };
 
-    // --- LÓGICA DE BÚSQUEDA ---
     const ejecutarBusqueda = useCallback((filtros) => {
         fetch(`${API}/ListaOfertas/lista`, {
             method: 'POST',
@@ -99,7 +83,7 @@ const GestionOferta = () => {
             año: añoSeleccionado,
             estadoId: estadoSeleccionado,
             tipo: tipo === 'Todos' ? null : tipo,
-            vistaAgrupada: vista === 'Agrupada',
+            vistaAgrupada: false,
             fechaSolicitudDesde: fechaSolicitudDesde || null,
             fechaSolicitudHasta: fechaSolicitudHasta || null,
             fechaAsignacionDesde: fechaAsignacionDesde || null,
@@ -111,7 +95,7 @@ const GestionOferta = () => {
             demandaId: demandaId ? parseInt(demandaId) : null,
         });
     }, [
-        añoSeleccionado, estadoSeleccionado, tipo, vista,
+        añoSeleccionado, estadoSeleccionado, tipo,
         fechaSolicitudDesde, fechaSolicitudHasta,
         fechaAsignacionDesde, fechaAsignacionHasta,
         fechaConfirmacionDesde, fechaConfirmacionHasta,
@@ -150,52 +134,14 @@ const GestionOferta = () => {
     }, []);
 
     useEffect(() => {
-        if (añoSeleccionado !== null) buscarRef.current();
+        buscarRef.current();
     }, [añoSeleccionado, estadoSeleccionado, tipo]);
 
     const limpiarFiltros = () => {
-        setFechaSolicitudDesde(null);
-        setFechaSolicitudHasta(null);
-        setFechaAsignacionDesde(null);
-        setFechaAsignacionHasta(null);
-        setFechaConfirmacionDesde(null);
-        setFechaConfirmacionHasta(null);
-        setNecesidadesServicio('');
-        setContestacionNecesidades('');
-        setDemandaId('');
-    };
-
-    const handleGuardarEdicion = () => {
-        fetch(`${API}/ListaOfertas/${ofertaEditando.ofertaId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                estadoId: ofertaEditando.estadoId,
-                notaContestacion: ofertaEditando.notaContestacion,
-                ene: ofertaEditando.ene,
-                feb: ofertaEditando.feb,
-                mar: ofertaEditando.mar,
-                abr: ofertaEditando.abr,
-                may: ofertaEditando.may,
-                jun: ofertaEditando.jun,
-                jul: ofertaEditando.jul,
-                ago: ofertaEditando.ago,
-                sep: ofertaEditando.sep,
-                oct: ofertaEditando.oct,
-                nov: ofertaEditando.nov,
-                dic: ofertaEditando.dic
-            }),
-        })
-            .then(res => {
-                if (res.ok) {
-                    notify('Oferta guardada correctamente', 'success', 2000);
-                    setOfertaEditando(null);
-                    buscarRef.current();
-                } else {
-                    notify('Error al guardar la oferta', 'error', 3000);
-                }
-            })
-            .catch(err => console.error('Error:', err));
+        setFechaSolicitudDesde(null); setFechaSolicitudHasta(null);
+        setFechaAsignacionDesde(null); setFechaAsignacionHasta(null);
+        setFechaConfirmacionDesde(null); setFechaConfirmacionHasta(null);
+        setNecesidadesServicio(''); setContestacionNecesidades(''); setDemandaId('');
     };
 
     return (
@@ -206,33 +152,36 @@ const GestionOferta = () => {
                     {/* HEADER */}
                     <div className="header-page">
                         <div className="title">{t('Lista de Ofertas')}</div>
-                        <div className="acciones-container" ref={menuRef}>
-                            <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
-                                <i className="ri-settings-3-line"></i>
-                                {t('Acciones')}
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <div
+                                style={{ cursor: 'pointer', fontSize: 20, color: '#555', padding: '4px 8px' }}
+                                title="Selector de columnas"
+                                onClick={() => dataGridRef.current.instance().showColumnChooser()}
+                            >
+                                <i className="ri-layout-column-line"></i>
                             </div>
-                            {menuAbierto && (
-                                <div className="acciones-menu">
-                                  <div className="acciones-item" onClick={() => {
-                                        setMenuAbierto(false);
-                                        exportToExcel();
-                                    }}>
-                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
-                                        {t('Exportar a Excel')}
-                                    </div>
-                                    <div className="acciones-item" onClick={() => {
-                                        setMenuAbierto(false);
-                                        exportToPdf();
-                                    }}>
-                                        <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
-                                        {t('Exportar a PDF')}
-                                    </div>
+                            <div className="acciones-container" ref={menuRef}>
+                                <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                                    <i className="ri-settings-3-line"></i>
+                                    {t('Acciones')}
                                 </div>
-                            )}
+                                {menuAbierto && (
+                                    <div className="acciones-menu">
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); exportToExcel(); }}>
+                                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                            {t('Exportar a Excel')}
+                                        </div>
+                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); exportToPdf(); }}>
+                                            <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                                            {t('Exportar a PDF')}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* FILTROS PRINCIPALES */}
+                    {/* PANEL FILTROS */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -245,18 +194,14 @@ const GestionOferta = () => {
                             </div>
                             <div className="ficha-field" style={{ minWidth: 220 }}>
                                 <label>Estado</label>
-                                <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Selecciona un estado" width={220} />
+                                <SelectBox dataSource={estados} displayExpr="estado" valueExpr="estadoId" value={estadoSeleccionado} onValueChanged={e => setEstadoSeleccionado(e.value)} placeholder="Todas" width={220} />
                             </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: 32, alignItems: 'center', marginTop: 16, flexWrap: 'wrap' }}>
                             <div className="ficha-field">
-                                <label>Vista</label>
-                                <RadioGroup items={VISTAS} value={vista} onValueChanged={e => setVista(e.value)} layout="horizontal" />
+                                <label>&nbsp;</label>
+                                <button type="button" className="ficha-btn-primary" onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
+                                    {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
+                                </button>
                             </div>
-                            <button type="button" className="ficha-btn-primary" style={{ marginTop: 16 }} onClick={() => setFiltrosExpandidos(!filtrosExpandidos)}>
-                                {filtrosExpandidos ? '- Filtros' : '+ Filtros'}
-                            </button>
                         </div>
 
                         {filtrosExpandidos && (
@@ -305,21 +250,32 @@ const GestionOferta = () => {
                         )}
                     </div>
 
-                    {/* TABLA */}
-                    <div className="ficha-tab-content" style={{ padding: '16px' }}>
+                    {/* GRID */}
+                    <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={datos}
-                            keyExpr="ofertaId"
+                            keyExpr="rowKey"
                             showBorders={true}
                             columnAutoWidth={false}
                             allowColumnResizing={true}
                             className="mz-table"
-                            rowAlternationEnabled={true}
+                            height="100%"
+                            rowAlternationEnabled={false}
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
                             noDataText={cargando ? 'Cargando...' : 'Sin datos para mostrar'}
+                            onRowPrepared={(e) => {
+                                if (e.rowType === 'data') {
+                                    if (e.data.tipoLinea === 'Asignación') {
+                                        e.rowElement.style.background = '#dbeafe';
+                                        e.rowElement.style.fontWeight = '600';
+                                    } else if (e.data.tipoLinea === 'Demanda') {
+                                        e.rowElement.style.background = '#eff6ff';
+                                    }
+                                }
+                            }}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
@@ -327,31 +283,39 @@ const GestionOferta = () => {
                             <FilterRow visible={true} applyFilter="auto" />
                             <HeaderFilter visible searchMode="contains" />
                             <Selection mode="multiple" allowSelectAll />
-                            <GroupPanel visible={vista === 'Agrupada'} emptyPanelText="Arrastra una columna aqui para agrupar" />
-                            <Grouping autoExpandAll={false} />
-                            <ColumnChooser enabled mode="select" />
-                            <Export enabled allowExportSelectedData />
                             <Sorting mode="multiple" />
                             <ColumnFixing enabled />
+                            <GroupPanel visible={true} emptyPanelText="Arrastra una columna aqui para agrupar" />
+                            <Grouping autoExpandAll={true} />
                             <Toolbar>
                                 <Item name="groupPanel" />
-                                <Item name="columnChooserButton" />
-                                <Item location="after" name="searchPanel" />
                             </Toolbar>
 
-                            <Column dataField="año" caption="Año" width={70}/>
-                            <Column dataField="mutuaOferta" caption="Mutua Oferta" width={160} fixed fixedPosition="left" />
+                            <Column
+                                dataField="grupoKey"
+                                caption="Especialidad / Servicio"
+                                groupIndex={0}
+                                defaultSortOrder="asc"
+                                visible={false}
+                                allowFiltering={false}
+                                allowHeaderFiltering={false}
+                                groupCellRender={(e) => (
+                                    <span style={{ fontWeight: 600, color: '#1a5fa8' }}>
+                                        {e.value}
+                                    </span>
+                                )}
+                            />
+
+                            <Column dataField="especialidad" caption="Especialidad" width={160} />
+                            <Column dataField="servicio" caption="Servicio" width={150} />
+                            <Column dataField="año" caption="Año" width={70} />
+                            <Column dataField="mutuaOferta" caption="Mutua Ofertante" width={160} />
                             <Column dataField="centro" caption="Centro" width={180} />
                             <Column dataField="provincia" caption="Provincia" width={120} />
                             <Column dataField="localidad" caption="Localidad" width={120} />
-                            <Column dataField="especialidad" caption="Especialidad" width={160} />
-                            <Column dataField="tipoMovimiento" caption="Tipo Movimiento" width={140} />
-                            <Column dataField="servicio" caption="Servicio" width={150} />
+                            <Column dataField="tipoLinea" caption="Tipo Movimiento" width={120} />
                             <Column dataField="estado" caption="Estado" width={140} />
                             <Column dataField="demandaId" caption="Num. Pet." width={90} />
-                            <Column dataField="peticionesPendientesAsignar" caption="Pet. Pend. Asig." width={110} />
-
-                            {/* Meses */}
                             <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
@@ -364,12 +328,10 @@ const GestionOferta = () => {
                             <Column dataField="oct" caption="Oct" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="nov" caption="Nov" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
                             <Column dataField="dic" caption="Dic" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-
                             <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
-
                             <Column
                                 caption="Acciones"
-                                width={90}
+                                width={60}
                                 fixed
                                 fixedPosition="right"
                                 alignment="center"
@@ -377,109 +339,48 @@ const GestionOferta = () => {
                                 allowHeaderFiltering={false}
                                 allowSorting={false}
                                 cellRender={(cell) => (
-                                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                                        <div
-                                            style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
-                                            title="Editar"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`)
-                                                    .then(res => res.json())
-                                                    .then(data => setOfertaEditando(data))
-                                                    .catch(err => console.error('Error:', err));
-                                            }}
-                                        >
-                                            <i className="ri-edit-line"></i>
+                                    cell.data.tipoLinea === 'Asignación' ? (
+                                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                            {/* ── Editar → navega a la ficha completa ── */}
+                                            <div
+                                                style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
+                                                title="Editar"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/admin/OfertaDemanda/GestionOferta/ficha/${cell.data.ofertaId}`);
+                                                }}
+                                            >
+                                                <i className="ri-edit-line"></i>
+                                            </div>
+                                            {/* ── Eliminar ── */}
+                                            <div
+                                                style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
+                                                title="Eliminar"
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    const ok = await dxConfirm('¿Seguro que desea eliminar esta oferta?', 'Confirmar eliminación');
+                                                    if (ok) {
+                                                        fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
+                                                            .then(res => {
+                                                                if (res.ok) {
+                                                                    notify('Oferta eliminada correctamente', 'success', 2000);
+                                                                    setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
+                                                                } else {
+                                                                    notify('Error al eliminar la oferta', 'error', 3000);
+                                                                }
+                                                            })
+                                                            .catch(err => console.error('Error:', err));
+                                                    }
+                                                }}
+                                            >
+                                                <i className="ri-delete-bin-line"></i>
+                                            </div>
                                         </div>
-                                        <div
-                                            style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
-                                            title="Eliminar"
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                const ok = await dxConfirm('¿Seguro que desea eliminar esta oferta?', 'Confirmar eliminación');
-                                                if (ok) {
-                                                    fetch(`${API}/ListaOfertas/${cell.data.ofertaId}`, { method: 'DELETE' })
-                                                        .then(res => {
-                                                            if (res.ok) {
-                                                                notify('Oferta eliminada correctamente', 'success', 2000);
-                                                                setDatos(prev => prev.filter(d => d.ofertaId !== cell.data.ofertaId));
-                                                            } else {
-                                                                notify('Error al eliminar la oferta', 'error', 3000);
-                                                            }
-                                                        })
-                                                        .catch(err => console.error('Error:', err));
-                                                }
-                                            }}
-                                        >
-                                            <i className="ri-delete-bin-line"></i>
-                                        </div>
-                                    </div>
+                                    ) : null
                                 )}
                             />
                         </DataGrid>
                     </div>
-
-                    {/* MODAL EDICION */}
-                    {ofertaEditando && (
-                        <div style={{
-                            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                        }}>
-                            <div style={{
-                                background: '#fff', borderRadius: 8, width: 620,
-                                maxHeight: '90vh', overflow: 'auto',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                            }}>
-                                <div className="ficha-modal-header">
-                                    <span className="ficha-modal-title">Editar Oferta #{ofertaEditando.ofertaId}</span>
-                                    <div className="ficha-header-btns">
-                                        <button className="ficha-btn-primary" onClick={handleGuardarEdicion}>Guardar</button>
-                                        <button className="ficha-btn-secondary" onClick={() => setOfertaEditando(null)}>Cancelar</button>
-                                    </div>
-                                </div>
-                                <div style={{ padding: 20 }}>
-                                    <div className="ficha-grid">
-                                        <div className="ficha-field">
-                                            <label>Estado</label>
-                                            <select
-                                                value={ofertaEditando.estadoId || ''}
-                                                onChange={e => setOfertaEditando(prev => ({ ...prev, estadoId: parseInt(e.target.value) }))}
-                                            >
-                                                {estados.filter(e => e.estadoId !== null).map(e => (
-                                                    <option key={e.estadoId} value={e.estadoId}>{e.estado}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Nota Contestacion</label>
-                                            <input
-                                                type="text"
-                                                value={ofertaEditando.notaContestacion || ''}
-                                                onChange={e => setOfertaEditando(prev => ({ ...prev, notaContestacion: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div style={{ marginTop: 20 }}>
-                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#1a5fa8', textTransform: 'uppercase', marginBottom: 12 }}>
-                                            Plazas por mes
-                                        </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
-                                            {['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'].map(mes => (
-                                                <div className="ficha-field" key={mes}>
-                                                    <label>{mes.charAt(0).toUpperCase() + mes.slice(1)}</label>
-                                                    <input
-                                                        type="number"
-                                                        value={ofertaEditando[mes] || 0}
-                                                        onChange={e => setOfertaEditando(prev => ({ ...prev, [mes]: parseInt(e.target.value) || 0 }))}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                 </div>
             </div>

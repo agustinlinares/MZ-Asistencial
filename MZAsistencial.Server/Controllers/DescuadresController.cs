@@ -17,9 +17,9 @@ namespace MZAsistencial.Server.Controllers
 
         // GET: api/Descuadres
         [HttpGet]
-        public async Task<IActionResult> GetDescuadres()
+        public async Task<IActionResult> GetDescuadres([FromQuery] int usuarioId, [FromQuery] int mutuaIdSesion, [FromQuery] int anio)
         {
-            var descuadres = await _service.GetDescuadresAsync();
+            var descuadres = await _service.RecalcularYObtenerDescuadresAsync(usuarioId, mutuaIdSesion, anio);
             return Ok(descuadres);
         }
 

@@ -1,7 +1,6 @@
 ﻿using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 using Microsoft.AspNetCore.Mvc;
-
 namespace MZAsistencial.Server.Controllers
 {
     [ApiController]
@@ -9,19 +8,16 @@ namespace MZAsistencial.Server.Controllers
     public class CentrosPropiosController : ControllerBase
     {
         private readonly CentrosPropiosService _service;
-
         public CentrosPropiosController(CentrosPropiosService service)
         {
             _service = service;
         }
-
         [HttpGet]
         public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId)
         {
             var result = await _service.GetAllAsync(perfilId);
             return Ok(result);
         }
-
         [HttpGet("{id:int}")]
         public async Task<ActionResult<CentrosPropiosDTO>> GetById(int id)
         {
@@ -29,29 +25,26 @@ namespace MZAsistencial.Server.Controllers
             if (result is null) return NotFound();
             return Ok(result);
         }
-
         [HttpGet("siguiente-localizador/{mutuaId:int}")]
         public async Task<ActionResult<string>> GetSiguienteLocalizador(int mutuaId)
         {
             var result = await _service.GetSiguienteLocalizadorAsync(mutuaId);
             return Ok(result);
         }
-
         [HttpGet("existe-localizador/{localizador}")]
         public async Task<ActionResult<bool>> ExisteLocalizador(string localizador)
         {
             var existe = await _service.ExisteLocalizadorAsync(localizador);
             return Ok(existe);
         }
-
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CentrosPropiosDTO dto)
         {
             var result = await _service.UpdateAsync(id, dto);
             if (!result) return NotFound();
-            return Ok();
+            var updated = await _service.GetByIdAsync(id);
+            return Ok(updated);
         }
-
         [HttpPut("validar")]
         public async Task<IActionResult> Validar([FromBody] List<int> ids)
         {

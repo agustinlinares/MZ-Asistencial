@@ -2,6 +2,8 @@
 
 public class ListaDemandasDTO
 {
+    public string RowKey { get; set; } = "";
+    public string? TipoLinea { get; set; }
     public int DemandaId { get; set; }
     public int? Año { get; set; }
     public string? MutuaSolicitante { get; set; }
@@ -33,4 +35,19 @@ public class ListaDemandasDTO
     public int? Nov { get; set; }
     public int? Dic { get; set; }
     public int Total { get; set; }
+    // Meses de la oferta asociada
+    public int? OfertaEne { get; set; }
+    public int? OfertaFeb { get; set; }
+    public int? OfertaMar { get; set; }
+    public int? OfertaAbr { get; set; }
+    public int? OfertaMay { get; set; }
+    public int? OfertaJun { get; set; }
+    public int? OfertaJul { get; set; }
+    public int? OfertaAgo { get; set; }
+    public int? OfertaSep { get; set; }
+    public int? OfertaOct { get; set; }
+    public int? OfertaNov { get; set; }
+    public int? OfertaDic { get; set; }
+    public int OfertaTotal { get; set; }
+    public int? OfertaId { get; set; }
 }

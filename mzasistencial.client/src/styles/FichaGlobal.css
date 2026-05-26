@@ -436,6 +436,197 @@
 .msg-feedback {
     font-size: 13px;
     font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+
+.ficha-radio-group label:hover,
+.ficha-checkbox-grid label:hover {
+    color: #1a5fa8;
+}
+
+.ficha-radio-group input[type="radio"],
+.ficha-checkbox-grid input[type="checkbox"] {
+    accent-color: #1a5fa8;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* ── SECTIONS ────────────────────────────────────────────────── */
+.ficha-section {
+    margin-bottom: 25px;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.ficha-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a5fa8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #edf2f7;
+}
+
+.ficha-section-title i {
+    font-size: 16px;
+}
+
+.ficha-section-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 10px;
+    margin-top: -8px;
+}
+
+/* ── DIRECCIÓN GOOGLE ─────────────────────────────────────────── */
+.ficha-dir-google {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.ficha-dir-google input {
+    flex: 1;
+}
+
+.ficha-btn-globe {
+    background: #1a5fa8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 34px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.ficha-btn-globe:hover {
+    background: #14508e;
+}
+
+/* ── SUBMODAL MAPA ────────────────────────────────────────────── */
+.mapa-view-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+
+.mapa-view-tab {
+    padding: 7px 22px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: #555;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.mapa-view-tab.active {
+    border-bottom-color: #1a5fa8;
+    color: #1a5fa8;
+    font-weight: 600;
+}
+
+.mapa-container {
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #b8ccd8;
+}
+
+/* ── TABLA COSTES (O CUALQUIER OTRA TABLA SECUNDARIA) ─────────── */
+.ficha-secundaria-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ficha-secundaria-table th {
+    background: #e8f0fe;
+    color: #1a3060;
+    padding: 7px 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #b8ccd8;
+}
+
+.ficha-secundaria-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e8eef4;
+    vertical-align: middle;
+}
+
+.ficha-secundaria-table tr:hover td {
+    background: #f5f8ff;
+}
+
+.ficha-secundaria-table td input {
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── IFRAME (MAPAS/DOCUMENTOS) ────────────────────────────────── */
+.ficha-iframe-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.ficha-iframe-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ── PAGE HEADER LAYOUT ────────────────────────────────────────── */
+.header-page {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px 15px 25px;
+    background: #fff;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.header-page .title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--bg-menu-color);
+    letter-spacing: -0.01em;
+}
+
+.header-actions-side {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.msg-feedback {
+    font-size: 13px;
+    font-weight: 500;
     padding: 4px 12px;
     border-radius: 4px;
     animation: fadeIn 0.3s ease-in;
@@ -514,22 +705,24 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #718096;
+    background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
-    background: #f7fafc;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .acciones-menu-header i {
-    font-size: 16px;
     cursor: pointer;
-    color: #a0aec0;
-    transition: color 0.15s;
+    font-size: 16px;
+    color: #94a3b8;
+    transition: color 0.2s;
 }
 
 .acciones-menu-header i:hover {
-    color: #4a5568;
+    color: #e53e3e;
 }
 
 .acciones-item {
@@ -538,173 +731,31 @@
     gap: 12px;
     padding: 12px 16px;
     font-size: 14px;
-    color: #4a5568;
+    color: #475569;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 .acciones-item:hover {
-    background: #f7fafc;
+    background: #f1f5f9;
     color: #1a5fa8;
 }
 
 .acciones-item i {
     font-size: 18px;
+    color: #64748b;
+    transition: color 0.2s;
 }
 
-/* ── DATA GRID GLOBAL OVERRIDES ────────────────────────────────── */
-.dx-datagrid {
-    background-color: transparent !important;
-    font-family: var(--font-family) !important;
-}
-
-.dx-datagrid-headers {
-    background-color: #f8fafc !important;
-    color: #475569 !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-}
-
-.dx-datagrid-headers .dx-header-row td {
-    font-size: 13.5px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding: 14px 10px !important;
-    background-color: #f8fafc !important;
-    color: #475569 !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-}
-
-.dx-datagrid-rowsview .dx-row {
-    font-size: 14px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-}
-
-/* Soporte para clase .mz-table legacy */
-.mz-table .dx-data-row td {
-    font-size: 14px !important;
-    padding: 8px 6px !important;
-}
-
-.mz-table .dx-header-row td {
-    font-size: 13.5px !important;
-    background-color: #f8fafc !important;
-}
-
-.dx-datagrid-rowsview .dx-row-alt {
-    background-color: #f8fafc !important;
-}
-
-.dx-datagrid-rowsview .dx-row:hover {
-    background-color: #f1f5f9 !important;
-    transition: background-color 0.2s ease;
-}
-
-/* ── SEARCH PANEL ── */
-.dx-datagrid-search-panel {
-    margin: 0 !important;
-}
-
-.dx-datagrid-search-panel .dx-texteditor-input {
-    padding: 10px 12px !important;
-    font-size: 13px !important;
-}
-
-.dx-datagrid-search-panel .dx-placeholder {
-    font-size: 13px !important;
-}
-
-/* ── TOOLBAR ADJUSTMENTS ── */
-.dx-datagrid-header-panel {
-    padding: 12px 0 !important;
-    border-bottom: none !important;
-}
-
-.dx-toolbar-items-container {
-    height: 48px !important;
-}
-
-.dx-toolbar-item-content .dx-button {
-    border-radius: 6px !important;
-    transition: all 0.2s ease;
-}
-
-.table-container {
-    flex: 1;
-    overflow: hidden;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 0 25px 25px 25px; /* Margen interno horizontal y inferior */
-}
-
-.mz-table {
-    width: 100% !important;
-    height: 100% !important;
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    overflow: hidden;
-}
-
-.dx-datagrid {
-    background-color: transparent !important;
-    font-family: var(--font-family) !important;
-}
-
-/* ── FILTER PANEL (Create Filter) ── */
-.dx-datagrid-filter-panel {
-    padding: 10px 15px !important;
-    background-color: #f8fafc !important;
-    border-top: 1px solid #e2e8f0 !important;
-    color: #475569 !important;
-}
-
-.dx-datagrid-filter-panel .dx-icon-filter {
-    color: #1a5fa8 !important;
-    font-size: 18px !important;
-}
-
-.dx-datagrid-filter-panel .dx-datagrid-filter-panel-text {
-    color: #1a5fa8 !important;
-    font-weight: 600 !important;
-    cursor: pointer;
-    text-decoration: none !important;
-    font-size: 13px !important;
-}
-
-.dx-datagrid-filter-panel .dx-datagrid-filter-panel-clear-filter {
-    color: #e53e3e !important;
-    font-weight: 600 !important;
-}
-
-/* ── PAGER & SELECTION UNIFICATION ── */
-.dx-pager .dx-pages .dx-selection,
-.dx-pager .dx-page-sizes .dx-selection,
-.dx-datagrid-rowsview .dx-selection > td {
-    background-color: var(--bg-menu-color) !important;
-    color: #fff !important;
-}
-
-.dx-datagrid-rowsview .dx-selection.dx-row:hover > td {
-    background-color: #122d64 !important; /* Un poco más oscuro que el menu color para el hover de seleccionados */
-}
-
-.dx-checkbox-checked .dx-checkbox-icon {
-    background-color: var(--main-color) !important;
-    color: #fff !important;
-}
-
-.ficha-row-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
+.acciones-item:hover i {
+    color: #1a5fa8;
 }
 
 .ficha-row-actions i {
     cursor: pointer;
     font-size: 18px;
     transition: transform 0.2s;
+    margin: 0 8px;
 }
 
 .ficha-row-actions i:hover {
@@ -713,6 +764,18 @@
 
 .ficha-row-actions .edit-icon { color: #1a5fa8; }
 .ficha-row-actions .delete-icon { color: #e53e3e; }
+
+/* ── DATAGRID TOTALS HIGHLIGHT ─────────────────────────────────── */
+.col-total-highlight {
+    background-color: #f8fafc !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+}
+.col-total-highlight-general {
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
 
 /* ── PRINT ─────────────────────────────────────────────────────── */
 @media print {
@@ -762,19 +825,4 @@
     .dx-datagrid-rowsview {
         width: 100% !important;
     }
-}
-
-/* ── FILAS DADAS DE BAJA (OVERRIDE GLOBAL) ── */
-.dx-datagrid-rowsview .dx-row.fila-baja-naranja,
-.dx-datagrid-rowsview .dx-row-alt.fila-baja-naranja {
-    background-color: #FA8702 !important;
-    color: #ffffff !important;
-}
-
-.dx-datagrid-rowsview .dx-row.fila-baja-naranja:hover {
-    background-color: #e07902 !important; 
-}
-
-.dx-datagrid-rowsview .dx-row.fila-baja-naranja td {
-    color: #ffffff !important;
 }

@@ -63,6 +63,7 @@ builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSect
 builder.Services.AddScoped<IAcreditacionesIndividualesService, AcreditacionesIndividualesService>();
 builder.Services.AddScoped<IDescuadresService, DescuadresService>();
 builder.Services.AddScoped<CentrosPropiosService>();
+builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<FincaRegistralService>();
 builder.Services.AddScoped<ICentrosConcertadosService, CentrosConcertadosService>();
@@ -73,6 +74,7 @@ builder.Services.AddScoped<IListaOfertasService, ListaOfertasService>();
 builder.Services.AddScoped<PlantillasICGService>();
 builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 builder.Services.AddScoped<IPresupuestosLiquidadosService, PresupuestosLiquidadosService>();
+builder.Services.AddScoped<IFicherosService, FicherosService>();
 
 // -- Servicios ICG06
 builder.Services.AddScoped<Icg06HosService>();
@@ -95,6 +97,7 @@ builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
+builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
 
 // -- Pipeline
 var app = builder.Build();
