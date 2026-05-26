@@ -43,7 +43,7 @@ const LoginPage = () => {
     const handleLogin = async () => {
         dispatch({ type: 'START_LOGIN' });
 
-        if (!username || !password) {
+        if (!username && !password) {
             dispatch({ type: 'LOGIN_ERROR', message: 'Se requieren nombre de usuario y contraseña.' });
             return;
         }
