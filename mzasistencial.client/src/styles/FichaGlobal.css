@@ -764,3 +764,17 @@
     }
 }
 
+/* ── FILAS DADAS DE BAJA (OVERRIDE GLOBAL) ── */
+.dx-datagrid-rowsview .dx-row.fila-baja-naranja,
+.dx-datagrid-rowsview .dx-row-alt.fila-baja-naranja {
+    background-color: #FA8702 !important;
+    color: #ffffff !important;
+}
+
+.dx-datagrid-rowsview .dx-row.fila-baja-naranja:hover {
+    background-color: #e07902 !important; 
+}
+
+.dx-datagrid-rowsview .dx-row.fila-baja-naranja td {
+    color: #ffffff !important;
+}

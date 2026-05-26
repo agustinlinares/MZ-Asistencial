@@ -12,6 +12,14 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+import notify from 'devextreme/ui/notify';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog';
+import { useNavigate } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { Workbook } from 'exceljs';
+import { saveAs } from 'file-saver-es';
 
 const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -43,12 +51,13 @@ const TabMapa = ({ form, onChange }) => {
     const [vistaTab, setVistaTab] = useState('mapa');
     const [flyKey, setFlyKey] = useState(0);
     const [buscando, setBuscando] = useState(false);
+    const navigate = useNavigate();
 
     const parsedLat = parseFloat(form.latitud);
     const parsedLng = parseFloat(form.longitud);
     const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
-    // 1. De Texto a Coordenadas (Buscador)
+    // De texto a coordenadas (Buscador)
     const handleBuscarDireccion = async () => {
         if (!form.direccion?.trim()) return;
         
@@ -79,7 +88,7 @@ const TabMapa = ({ form, onChange }) => {
         }
     };
 
-    // 2. De Coordenadas a Texto (Geocodificación Inversa al hacer clic)
+    // De Coordenadas a Texto (Geocodificación Inversa al hacer clic)
     const obtenerDireccionPorCoordenadas = async (lat, lon) => {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
@@ -169,175 +178,251 @@ const TabMapa = ({ form, onChange }) => {
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
-const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => (
-    <div className="ficha-grid">
-        <div className="ficha-field">
-            <label>Localizador (CCN)</label>
-            <input 
-                className={errors.localizador ? 'error' : ''} 
-                type="text" 
-                value={form.localizador || ''} 
-                onChange={e => onChange('localizador', e.target.value)} 
-            />
-        </div>
-
-        <div className="ficha-field">
-            <label>Proveedor</label>
-            <select value={form.proveedor || ''} onChange={e => {
-                onChange('proveedor', e.target.value);
-                onChange('delegacion', '');
-            }}>
-                <option value="">— Seleccionar —</option>
-                {opts.proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-            </select>
-        </div>
-
-        <div className="ficha-field">
-            <label>Delegación</label>
-            <select value={form.delegacion || ''} onChange={e => onChange('delegacion', e.target.value)} disabled={!form.proveedor}>
-                <option value="">— Seleccionar —</option>
-                {opts.delegaciones.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
-            </select>
-        </div>
-
-        <div className="ficha-field">
-            <label>Centro</label>
-            <input className={errors.centro ? 'error' : ''} type="text" value={form.centro || ''} onChange={e => onChange('centro', e.target.value)} />
-        </div>
-
-        <div className="ficha-field">
-            <label>Provincia</label>
-            <select className={errors.provincia ? 'error' : ''} value={form.provincia || ''} onChange={e => {
-                onChange('provincia', e.target.value);
-                onChange('poblacion', ''); 
-            }}>
-                <option value="">— Seleccionar —</option>
-                {opts.provincias.map(p => (
-                    <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
-                ))}
-            </select>
-        </div>
-
-        <div className="ficha-field">
-            <label>Población</label>
-            <select className={errors.poblacion ? 'error' : ''} value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
-                <option value="">— Seleccionar —</option>
-                {opts.poblaciones.map(p => (
-                    <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
-                ))}
-            </select>
-        </div>
-
-        <div className="ficha-field">
-            <label>CIF / NIF</label>
-            <input className={errors.cif ? 'error' : ''} type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
-        </div>
+const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => {
+    
+    const handleLocalizadorChange = (rawText) => {
+        let numbers = rawText.replace(/\D/g, '');
+        numbers = numbers.substring(0, 10);
         
-        <div className="ficha-field">
-            <label>Código Postal</label>
-            <input className={errors.cp ? 'error' : ''} type="text" value={form.cp || ''} onChange={e => onChange('cp', e.target.value)} />
-        </div>
+        let formatted = '';
+        if (numbers.length > 0) formatted += numbers.substring(0, 3);
+        if (numbers.length > 3) formatted += '-' + numbers.substring(3, 5);
+        if (numbers.length > 5) formatted += '-' + numbers.substring(5, 7);
+        if (numbers.length > 7) formatted += '-' + numbers.substring(7, 10);
+        
+        onChange('ccn', formatted); 
+    };
 
-        <div className="ficha-field">
-            <label>Dirección</label>
-            <input 
-                className={errors.direccion ? 'error' : 'readonly'} 
-                type="text" 
-                value={form.direccion || ''} 
-                readOnly 
-                placeholder="⚠️ Ve a la pestaña Mapa para situar la dirección"
-                onClick={() => alert("La dirección se asigna automáticamente. Ve a la pestaña 'Mapa / Ubicación', busca la calle o haz clic en el mapa.")}
-            />
-        </div>
+    return (
+        <div className="ficha-grid">
+            <div className="ficha-field">
+                <label>Localizador Centro</label>
+                <input 
+                    type="text" 
+                    value={form.ccn || ''} 
+                    onChange={(e) => handleLocalizadorChange(e.target.value)} 
+                    placeholder="000-00-00-000"
+                    className={errors.ccn ? 'error' : ''}
+                />
+            </div>
 
-        <div className="ficha-field">
-            <label>Teléfono</label>
-            <input 
-                type="text" 
-                value={form.telefono ? form.telefono.trim() : ''} 
-                onChange={e => onChange('telefono', e.target.value)} 
-            />
-        </div>
+            <div className="ficha-field">
+                <label>Proveedor</label>
+                <select value={form.proveedor || ''} onChange={e => {
+                    onChange('proveedor', e.target.value);
+                    onChange('delegacion', '');
+                }}>
+                    <option value="">— Seleccionar —</option>
+                    {opts.proveedores.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                </select>
+            </div>
 
-        <div className="ficha-field">
-            <label>Número</label>
-            <input 
-                type="text" 
-                value={form.numero || ''} 
-                onChange={e => onChange('numero', e.target.value)} 
-            />
-        </div>
+            <div className="ficha-field">
+                <label>Delegación</label>
+                <select value={form.delegacion || ''} onChange={e => onChange('delegacion', e.target.value)} disabled={!form.proveedor}>
+                    <option value="">— Seleccionar —</option>
+                    {opts.delegaciones.map(d => <option key={d.id} value={d.id}>{d.nombre}</option>)}
+                </select>
+            </div>
 
-        <div className="ficha-field">
-            <label>Nº de Registro Sanitario</label>
-            <input 
-                type="number" 
-                value={form.numRegistroSanitario || ''} 
-                onChange={e => onChange('numRegistroSanitario', e.target.value ? parseInt(e.target.value) : null)} 
-            />
-        </div>
+            <div className="ficha-field">
+                <label>Centro</label>
+                <input className={errors.centro ? 'error' : ''} type="text" value={form.centro || ''} onChange={e => onChange('centro', e.target.value)} />
+            </div>
 
-        <div className="ficha-field">
-            <label>Ubicación (Mapa)</label>
-            <input 
-                className="readonly" 
-                type="text" 
-                value={form.latitud && form.longitud ? `🌐 ${form.latitud}, ${form.longitud}` : '📍 Falta situar en el mapa (Haz clic aquí)'} 
-                readOnly 
-                onClick={onGoToMap} 
-                style={{ 
-                    cursor: 'pointer', 
-                    borderBottom: errors.mapa ? '1px solid #dc3545' : '' 
-                }}
-            />
-        </div>
+            <div className="ficha-field">
+                <label>Provincia</label>
+                <select className={errors.provincia ? 'error' : ''} value={form.provincia || ''} onChange={e => {
+                    onChange('provincia', e.target.value);
+                    onChange('poblacion', ''); 
+                }}>
+                    <option value="">— Seleccionar —</option>
+                    {opts.provincias.map(p => (
+                        <option key={p.provinciaId} value={p.provinciaId}>{p.provincia}</option>
+                    ))}
+                </select>
+            </div>
 
-        <div className="ficha-field">
-            <label>Fecha de alta</label>
-            <input type="date" value={form.fecha_alta || ''} readOnly className="readonly" /> 
-        </div>
+            <div className="ficha-field">
+                <label>Población</label>
+                <select className={errors.poblacion ? 'error' : ''} value={form.poblacion || ''} onChange={e => onChange('poblacion', e.target.value)} disabled={!form.provincia}>
+                    <option value="">— Seleccionar —</option>
+                    {opts.poblaciones.map(p => (
+                        <option key={p.poblacionId} value={p.poblacionId}>{p.poblacion}</option>
+                    ))}
+                </select>
+            </div>
 
-        <div className="ficha-field">
-            <label>Fecha de baja</label>
-            <input type="date" value={form.fecha_baja || ''} onChange={e => onChange('fecha_baja', e.target.value)} />
-        </div>
+            <div className="ficha-field">
+                <label>CIF / NIF</label>
+                <input className={errors.cif ? 'error' : ''} type="text" value={form.cif || ''} onChange={e => onChange('cif', e.target.value)} />
+            </div>
+            
+            <div className="ficha-field">
+                <label>Código Postal</label>
+                <input className={errors.cp ? 'error' : ''} type="text" value={form.cp || ''} onChange={e => onChange('cp', e.target.value)} />
+            </div>
 
-        <div className="ficha-field">
-            <label>Comentarios</label>
-            <textarea 
-                style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
-                value={form.comentarios || ''} 
-                onChange={e => onChange('comentarios', e.target.value)} 
-            />
-        </div>
+            <div className="ficha-field">
+                <label>Dirección</label>
+                <input 
+                    className={errors.direccion ? 'error' : 'readonly'} 
+                    type="text" 
+                    value={form.direccion || ''} 
+                    readOnly 
+                    placeholder="⚠️ Ve a la pestaña Mapa para situar la dirección"
+                    onClick={() => alert("La dirección se asigna automáticamente. Ve a la pestaña 'Mapa / Ubicación', busca la calle o haz clic en el mapa.")}
+                />
+            </div>
 
-        <div className="ficha-field">
-            <label>Motivo de la baja</label>
-            <textarea 
-                style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
-                value={form.motivoBaja || ''} 
-                onChange={e => onChange('motivoBaja', e.target.value)} 
-            />
+            <div className="ficha-field">
+                <label>Teléfono</label>
+                <input 
+                    type="text" 
+                    value={form.telefono ? form.telefono.trim() : ''} 
+                    onChange={e => onChange('telefono', e.target.value)} 
+                />
+            </div>
+
+            <div className="ficha-field">
+                <label>Número</label>
+                <input 
+                    type="text" 
+                    value={form.numero || ''} 
+                    onChange={e => onChange('numero', e.target.value)} 
+                />
+            </div>
+
+            <div className="ficha-field">
+                <label>Nº de Registro Sanitario</label>
+                <input 
+                    type="number" 
+                    value={form.numRegistroSanitario || ''} 
+                    onChange={e => onChange('numRegistroSanitario', e.target.value)} 
+                />
+            </div>
+
+            <div className="ficha-field">
+                <label>Ubicación (Mapa)</label>
+                <input 
+                    className="readonly" 
+                    type="text" 
+                    value={form.latitud && form.longitud ? `🌐 ${form.latitud}, ${form.longitud}` : '📍 Falta situar en el mapa (Haz clic aquí)'} 
+                    readOnly 
+                    onClick={onGoToMap} 
+                    style={{ 
+                        cursor: 'pointer', 
+                        borderBottom: errors.mapa ? '1px solid #dc3545' : '' 
+                    }}
+                />
+            </div>
+
+            <div className="ficha-field">
+                <label>Fecha de alta</label>
+                <input type="date" value={form.fecha_alta || ''} readOnly className="readonly" /> 
+            </div>
+
+            <div className="ficha-field">
+                <label>Fecha de baja</label>
+                <input type="date" value={form.fecha_baja || ''} onChange={e => onChange('fecha_baja', e.target.value)} />
+            </div>
+
+            <div className="ficha-field">
+                <label>Comentarios</label>
+                <textarea 
+                    style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
+                    value={form.comentarios || ''} 
+                    onChange={e => onChange('comentarios', e.target.value)} 
+                />
+            </div>
+
+            <div className="ficha-field">
+                <label>Motivo de la baja</label>
+                <textarea 
+                    style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
+                    value={form.motivoBaja || ''} 
+                    onChange={e => onChange('motivoBaja', e.target.value)} 
+                />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 /* ── PESTAÑAS DE TABLAS SECUNDARIAS ────────────────────────────── */
-const TabDataGrid = ({ datos, children }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginBottom: '10px' }}>
-             <button className="ficha-btn-secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>📊 Excel</button>
-             <button className="ficha-btn-secondary" style={{ padding: '4px 12px', fontSize: '12px' }}>📄 PDF</button>
+const TabDataGrid = ({ datos, children, nombreArchivo = 'Exportacion' }) => {
+    const [gridInstance, setGridInstance] = useState(null);
+
+    // Función para Excel
+    const exportarExcel = () => {
+        if (!gridInstance) return; // Si la tabla aún no existe, no hacemos nada
+        
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Datos');
+
+        exportDataGridToExcel({
+            component: gridInstance, 
+            worksheet: worksheet,
+            autoFilterEnabled: true,
+        }).then(() => {
+            workbook.xlsx.writeBuffer().then((buffer) => {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `${nombreArchivo}.xlsx`);
+            });
+        });
+    };
+
+    // Función para PDF
+    const exportarPDF = () => {
+        if (!gridInstance) return;
+        
+        const doc = new jsPDF();
+        
+        exportDataGridToPdf({
+            jsPDFDocument: doc,
+            component: gridInstance, 
+            indent: 5,
+        }).then(() => {
+            doc.save(`${nombreArchivo}.pdf`);
+        });
+    };
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '15px', marginBottom: '10px' }}>
+                <button 
+                    className="ficha-btn-secondary" 
+                    style={{ padding: '6px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }} 
+                    onClick={exportarExcel}
+                >
+                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32', fontSize: '16px' }}></i>
+                    Excel
+                </button>
+                
+                <button 
+                    className="ficha-btn-secondary" 
+                    style={{ padding: '6px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }} 
+                    onClick={exportarPDF}
+                >
+                    <i className="ri-file-pdf-line" style={{ color: '#d32f2f', fontSize: '16px' }}></i>
+                    PDF
+                </button>
+            </div>
+            
+            <DataGrid 
+                onInitialized={(e) => setGridInstance(e.component)} 
+                dataSource={datos} 
+                showBorders={true} 
+                noDataText="Sin datos para mostrar" 
+                height={350}
+            >
+                <Scrolling mode="standard" />
+                {children}
+            </DataGrid>
         </div>
-        <DataGrid dataSource={datos} showBorders={true} noDataText="Sin datos para mostrar" height={350}>
-            <Scrolling mode="standard" />
-            {children}
-        </DataGrid>
-    </div>
-);
+    );
+};
 
 /* ── COMPONENTE PRINCIPAL ──────────────────────────────────────── */
-const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
+const FichaCentroConcertado = ({ cliente, onClose, onSave }) => { 
     const [activeTab, setActiveTab] = useState('general');
     const [mutuasAsignadas, setMutuasAsignadas] = useState([]);
     const [registrosICG, setRegistrosICG] = useState([]);
@@ -383,8 +468,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         numRegistroSanitario: cliente?.NumRegistroSanitario ?? cliente?.numRegistroSanitario ?? '', 
         comentarios: cliente?.Comentarios ?? cliente?.comentarios ?? '',
         motivoBaja: cliente?.MotivoBaja ?? cliente?.motivoBaja ?? '', 
-        latitud: cliente?.Latitud ?? '', 
-        longitud: cliente?.Longitud ?? ''
+        latitud: cliente?.latitud ?? cliente?.Latitud ?? '', 
+        longitud: cliente?.longitud ?? cliente?.Longitud ?? ''
     });
 
     const [datosMutuas, setDatosMutuas] = useState([]);
@@ -538,7 +623,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
     const handleSave = async () => {
         const newErrors = {};
-    
+        const regexLocalizador = /^\d{3}-\d{2}-\d{2}-\d{3}$/;
+
         // Campos de texto y selectores obligatorios
         if (!form.centro?.trim()) newErrors.centro = true;
         if (!form.provincia) newErrors.provincia = true;
@@ -546,13 +632,21 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         if (!form.direccion?.trim()) newErrors.direccion = true;
         if (!form.cif?.trim()) newErrors.cif = true;
         if (!form.cp?.trim()) newErrors.cp = true;
+
+        // Validación del Localizador 
+        if (!form.ccn) {
+            newErrors.ccn = true;
+        } else if (!regexLocalizador.test(form.ccn)) {
+            newErrors.ccn = true;
+            notify('El localizador debe estar completo y tener el formato 000-00-00-000.', 'error', 4000);
+        }
         
         // Fecha de Alta
         if (!form.fecha_alta) newErrors.fecha_alta = true;
 
         // Localización (Mapa)
         if (!form.latitud || !form.longitud) {
-            newErrors.mapa = true; // Usaremos este error para avisar de que falta el mapa
+            newErrors.mapa = true; 
         }
 
         // Validaciones de longitud (que no pete la BD)
@@ -565,11 +659,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             newErrors.telefono = true;
         }
 
-        // Comprobación final
+        // Comprobación final: Si hay algún error, se los pasamos a React y paramos aquí
         if (Object.keys(newErrors).length > 0) { 
-            setErrors(newErrors); 
+            setErrors(newErrors); // Esto activará los bordes rojos en la interfaz
             
-            // Comprobamos si el único error de toda la ficha es el mapa
             const soloFaltaMapa = Object.keys(newErrors).length === 1 && newErrors.mapa;
 
             if (soloFaltaMapa) {
@@ -577,30 +670,25 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             } else {
                 alert("Faltan campos obligatorios por rellenar. Por favor, revisa los campos marcados en rojo.");
             }
-            return; 
+            return; // Ahora sí cortamos, porque la pantalla ya se ha enterado de los errores
         }
 
         // Construimos el objeto exacto que espera el CentrosConcertadoDTO de C#
         const payload = {
-            // C# espera un int. Si es nuevo (""), le pasamos 0. Si editamos, lo parseamos.
             centro_id: form.centro_id ? parseInt(form.centro_id) : 0, 
-            
-            // Textos básicos. React usa 'localizador', el DTO espera 'ccn'
-            ccn: form.localizador, 
+            ccn: form.ccn, 
             cif: form.cif,
             centro: form.centro,
             direccion: form.direccion,
             cp: form.cp,
-            
-            // Los IDs deben llamarse igual que en el DTO y ser números enteros (o null)
             provinciaId: form.provincia ? parseInt(form.provincia) : null,
             poblacionId: form.poblacion ? parseInt(form.poblacion) : null,
             proveedorId: form.proveedor ? parseInt(form.proveedor) : null,
             delegacionId: form.delegacion ? parseInt(form.delegacion) : null,
-            
             telefono: form.telefono,
             numero: form.numero,
-            nnumRegistroSanitario: form.numRegistroSanitario ? parseInt(form.numRegistroSanitario, 10) : null,
+            numRegistroSanitario: form.numRegistroSanitario ? parseInt(form.numRegistroSanitario, 10) : null,
+            mapaValidado: !!(form.latitud && form.longitud),
             fechaAlta: form.fecha_alta || null,
             fechaBaja: form.fecha_baja || null,
             latitud: form.latitud,
@@ -611,8 +699,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
         try {
             const url = payload.centro_id > 0
-                ? `/api/CentrosConcertados/${payload.centro_id}` // Actualizar
-                : '/api/CentrosConcertados';                     // Crear nuevo
+                ? `/api/CentrosConcertados/${payload.centro_id}` 
+                : '/api/CentrosConcertados';                    
             
             const method = payload.centro_id > 0 ? 'PUT' : 'POST';
 
@@ -622,17 +710,14 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     ...authHeaders(),
                     'Content-Type': 'application/json'
                 },
-                // Enviamos nuestro objeto limpio, no el form crudo
                 body: JSON.stringify(payload) 
             });
 
             if (!response.ok) {
-                // Capturamos el error real del backend si falla
                 const errorText = await response.text();
                 throw new Error(errorText); 
             }
 
-            // Si todo va bien, cerramos la ficha y recargamos la tabla
             onSave?.(payload); 
 
         } catch (error) {
@@ -641,16 +726,50 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         }
     };
 
+    const handleDelete = async () => {
+        if (!form.centro_id || form.centro_id === 0) {
+            notify("No puedes dar de baja un centro que todavía no ha sido creado.", "warning", 3000);
+            return;
+        }
+
+        const confirmar = await dxConfirm(
+            "¿Estás seguro de que deseas dar de baja este centro? Se mantendrá en el historial pero dejará de estar activo.", 
+            "Confirmar Baja"
+        );
+        
+        if (!confirmar) return;
+
+        try {
+            const response = await fetch(`/api/CentrosConcertados/${form.centro_id}`, {
+                method: 'DELETE',
+                headers: authHeaders() 
+            });
+
+            if (response.ok) {
+                notify("Centro dado de baja correctamente.", "success", 2000);
+                setTimeout(() => {
+                    window.location.href = '/admin/centros-concertados'; 
+                }, 1000);
+            } else {
+                const errorData = await response.json();
+                notify(`Error al dar de baja: ${errorData.message}`, "error", 4000);
+            }
+        } catch (error) {
+            console.error("Error de red al borrar el centro:", error);
+            notify("Hubo un error de conexión al intentar dar de baja el centro.", "error", 4000);
+        }
+    };
+
     return (
         <div className="ficha-container-inline">
             <div className="ficha-inline-content" ref={modalRef} tabIndex={-1}>
                 <div className="ficha-modal-header">
                     <span className="ficha-modal-title">
-                        🏥 Ficha Centro Concertado | {form.centro || form.localizador || 'Nuevo'}
+                        Ficha Centro Concertado | {form.centro || form.localizador || 'Nuevo'}
                     </span>
                     <div className="ficha-header-btns">
-                        <button className="ficha-btn-primary" onClick={handleSave}>✓ Aceptar</button>
-                        <button className="ficha-btn-secondary" onClick={onClose}>✗ Salir</button>
+                        <button className="ficha-btn-primary" onClick={handleSave}>Aceptar</button>
+                        <button className="ficha-btn-secondary" onClick={() => window.location.href = '/Admin/Centros/CentrosConcertados'}>Salir</button>
                     </div>
                 </div>
 
@@ -666,7 +785,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
                     
                     {activeTab === 'registroICG' && (
-                        <TabDataGrid datos={registrosICG}>
+                        <TabDataGrid datos={registrosICG} nombreArchivo="Registro_ICG">
                             <Column dataField="ano" caption="Año" width={100} />
                             <Column dataField="mutua" caption="Mutua" />
                             <Column dataField="centro" caption="Centro" />
@@ -676,7 +795,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     )}
 
                     {activeTab === 'mutuasAsignadas' && (
-                        <TabDataGrid datos={mutuasAsignadas}>
+                        <TabDataGrid datos={mutuasAsignadas} nombreArchivo="Mutuas_Asignadas">
                             <Column dataField="mutua" caption="Mutua" />
                             
                             <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
@@ -685,7 +804,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     )}
 
                     {activeTab === 'especialidades' && (
-                        <TabDataGrid datos={especialidades}>
+                        <TabDataGrid datos={especialidades} nombreArchivo="Especialidades">
                             <Column dataField="anyo" caption="Año" width={100} />
                             <Column dataField="servicio" caption="Servicio" />
                             <Column dataField="especialidad" caption="Especialidad" />

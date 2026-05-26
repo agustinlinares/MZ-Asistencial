@@ -62,6 +62,25 @@ namespace MZAsistencial.Server.Controllers
             }
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var exito = await _service.DeleteCentroAsync(id);
+                
+                if (!exito) 
+                    return NotFound(new { message = "No se encontró el centro para dar de baja." });
+
+                // Devuelve un 204 NoContent, que es el estándar HTTP correcto para un DELETE exitoso sin cuerpo de respuesta
+                return NoContent(); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al intentar dar de baja el centro", details = ex.Message });
+            }
+        }
+
         [HttpGet("{centroId}/Mutuas")]
         public async Task<ActionResult<IEnumerable<MutuaAsignadaDTO>>> GetMutuasAsignadas(int centroId)
         {
@@ -87,6 +106,20 @@ namespace MZAsistencial.Server.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error al obtener las especialidades", details = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}/Reactivar")]
+        public async Task<IActionResult> ReactivarCentro(int id)
+        {
+            try
+            {
+                await _service.ReactivarCentroAsync(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno al reactivar: {ex.Message}");
             }
         }
     }
