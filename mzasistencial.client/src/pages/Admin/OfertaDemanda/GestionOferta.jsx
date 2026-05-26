@@ -299,10 +299,8 @@ const GestionOferta = () => {
                                 visible={false}
                                 allowFiltering={false}
                                 allowHeaderFiltering={false}
-                                groupCellRender={(e) => (
-                                    <span style={{ fontWeight: 600, color: '#1a5fa8' }}>
-                                        {e.value}
-                                    </span>
+                                groupCellRender={() => (
+                                    <span style={{ color: 'transparent', userSelect: 'none', fontSize: 1 }}>&nbsp;</span>
                                 )}
                             />
 

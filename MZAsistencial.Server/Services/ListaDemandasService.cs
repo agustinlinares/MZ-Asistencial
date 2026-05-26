@@ -190,6 +190,10 @@ public class ListaDemandasService : IListaDemandasService
                 OfertaId = x.OfertaId,
             });
 
+            // Clave de agrupación preconstruida
+
+            string grupoKey = $"{x.Especialidad ?? "-"} / {x.Servicio ?? "-"}";
+
             // Fila ASIGNACION
             result.Add(new ListaDemandasDTO
             {
