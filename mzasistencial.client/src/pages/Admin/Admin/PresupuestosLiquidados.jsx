@@ -8,6 +8,11 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 import { presupuestosLiquidadosService } from "@services/admin/presupuestosLiquidadosService";
 import FichaPresupuestoLiquidado from "./FichaPresupuestoLiquidado";
 import './Admin.css';
+import { jsPDF } from 'jspdf';
+import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
+import { Workbook } from 'exceljs';
+import { saveAs } from 'file-saver-es';
+import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
 
 const PresupuestosLiquidados = () => {
     const dataGridRef = useRef(null);
@@ -64,14 +69,22 @@ const PresupuestosLiquidados = () => {
 
     const exportarManualExcel = (soloSeleccionados) => {
         if (gridInstance) {
-            // DevExtreme maneja la selección automáticamente si pasas la config adecuada
-            gridInstance.exportToExcel(soloSeleccionados); 
+            onExporting({
+                component: gridInstance,
+                format: 'xlsx',
+                selectedRowsOnly: soloSeleccionados,
+                cancel: false
+            });
         }
     };
 
     const exportarManualPDF = () => {
         if (gridInstance) {
-            gridInstance.exportToPdf();
+            onExporting({
+                component: gridInstance,
+                format: 'pdf',
+                cancel: false
+            });
         }
     };
 
@@ -82,7 +95,7 @@ const PresupuestosLiquidados = () => {
             const response = await fetch('/api/Mutuas');
             if (response.ok) {
                 const data = await response.json();
-                console.log("👉 Mutuas recibidas del backend:", data);
+                console.log("👉 Mutuas recibidas del backend:", data); // Verifica que este log pinte los 5 elementos
                 setMutuas(data); 
             }
         } catch (error) {
@@ -104,9 +117,33 @@ const PresupuestosLiquidados = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    if (vistaActual === 'ficha') {
-        return <FichaPresupuestoLiquidado idPresupuesto={idSeleccionado} onCerrar={cerrarFicha} />;
-    }
+    const onExporting = (e) => {
+        if (e.format === 'pdf') {
+            const doc = new jsPDF();
+            exportDataGridToPdf({
+                jsPDFDocument: doc,
+                component: e.component,
+                indent: 5,
+            }).then(() => {
+                doc.save('PresupuestosLiquidados.pdf');
+            });
+        } else {
+            const workbook = new Workbook();
+            const worksheet = workbook.addWorksheet('Presupuestos');
+            
+            exportDataGridToExcel({
+                component: e.component,
+                worksheet: worksheet,
+                autoFilterEnabled: true,
+                selectedRowsOnly: e.selectedRowsOnly, 
+            }).then(() => {
+                workbook.xlsx.writeBuffer().then((buffer) => {
+                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'PresupuestosLiquidados.xlsx');
+                });
+            });
+            e.cancel = true; 
+        }
+    };
 
     return (
         <React.Fragment>
@@ -159,12 +196,12 @@ const PresupuestosLiquidados = () => {
                     {/* CONTENEDOR PRINCIPAL: Alterna entre Ficha y Grid calcando vuestra lógica */}
                     <div className="table-container tabla-contenedor">
                         {vistaActual === 'ficha' ? (
-                            <FichaPresupuestoLiquidado 
-                                idPresupuesto={idSeleccionado} 
-                                onCerrar={cerrarFicha} 
-                                mutuas={mutuas}
-                            />
-                        ) : (
+                        <FichaPresupuestoLiquidado 
+                            idPresupuesto={idSeleccionado} 
+                            onCerrar={cerrarFicha} 
+                            mutuas={mutuas} 
+                        />
+                    ) : (
                             <div className="grid-wrapper-centros" style={{ height: 'calc(100vh - 180px)', width: '100%' }}>
                                 <DataGrid
                                     ref={dataGridRef}
@@ -174,6 +211,7 @@ const PresupuestosLiquidados = () => {
                                     showBorders={true}
                                     columnAutoWidth={true}
                                     allowColumnResizing={true}
+                                    onExporting={onExporting}
                                     className="mz-table"
                                     height="100%"
                                     rowAlternationEnabled={true}
@@ -215,6 +253,7 @@ const PresupuestosLiquidados = () => {
                                         fixed={true}
                                         fixedPosition="right"
                                         alignment="center"
+                                        allowExporting={false}
                                         cellRender={(cellData) => (
                                             <div className="ficha-row-actions">
                                                 <i 
