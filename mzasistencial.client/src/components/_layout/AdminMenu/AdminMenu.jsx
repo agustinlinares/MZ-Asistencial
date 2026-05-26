@@ -1,4 +1,4 @@
-
+﻿
 import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -46,6 +46,12 @@ function AdminMenu(props) {
                         <NavLink to="ResumendeGastos" end>
                             <i className="ri-dashboard-fill"></i>
                             <span>{t('Resumen de Gastos')}</span>
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="Dashboard" end>
+                            <i className="ri-pie-chart-2-line"></i>
+                            <span>{t('Dashboard')}</span>
                         </NavLink>
                     </li>
 
@@ -261,4 +267,4 @@ function AdminMenu(props) {
 }
 
 
-export default AdminMenu;
+export default AdminMenu;
