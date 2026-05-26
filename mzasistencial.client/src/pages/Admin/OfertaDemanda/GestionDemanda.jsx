@@ -149,8 +149,9 @@ const GestionDemanda = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
+                    {/* HEADER */}
                     <div className="header-page">
-                        <div className="title">{t('Gestión Demandas')}</div>
+                        <div className="title">{t('Lista de Demandas')}</div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                             <div
                                 style={{ cursor: 'pointer', fontSize: 20, color: '#555', padding: '4px 8px' }}
@@ -180,6 +181,7 @@ const GestionDemanda = () => {
                         </div>
                     </div>
 
+                    {/* FILTROS */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -248,6 +250,7 @@ const GestionDemanda = () => {
                         )}
                     </div>
 
+                    {/* GRID */}
                     <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
@@ -268,7 +271,7 @@ const GestionDemanda = () => {
                                     if (e.data.tipoLinea === 'Demanda') {
                                         e.rowElement.style.background = '#dbeafe';
                                         e.rowElement.style.fontWeight = '600';
-                                    } else if (e.data.tipoLinea === 'Oferta') {
+                                    } else if (e.data.tipoLinea === 'Asignación') {
                                         e.rowElement.style.background = '#eff6ff';
                                     }
                                 }
@@ -300,31 +303,29 @@ const GestionDemanda = () => {
                                     <span style={{ color: 'transparent', userSelect: 'none', fontSize: 1 }}>&nbsp;</span>
                                 )}
                             />
-
+                            <Column dataField="especialidad" caption="Especialidad" width={160} />
+                            <Column dataField="servicio" caption="Servicio" width={150} />
                             <Column dataField="año" caption="Año" width={70} />
-                            <Column dataField="mutuaSolicitante" caption="Mutua Solicitante" width={150} />
-                            <Column dataField="mutuaOfertante" caption="Mutua Ofertante" width={150} />
-                            <Column dataField="localidad" caption="Localidad" width={110} />
-                            <Column dataField="centro" caption="Centro" width={170} />
-                            <Column dataField="especialidad" caption="Especialidad" width={140} />
-                            <Column dataField="tipoLinea" caption="Tipo Movimiento" width={110} />
-                            <Column dataField="servicio" caption="Servicio" width={140} />
-                            <Column dataField="fechaConfirmacion" caption="Fecha Confirmación" width={130} dataType="datetime" format="dd/MM/yyyy" allowHeaderFiltering={false} />
-                            <Column dataField="peticionesAsignadas" caption="Pet. Asig." width={75} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="peticionesPendientes" caption="Pet. Pend." width={75} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="ene" caption="Ene" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="feb" caption="Feb" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="mar" caption="Mar" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="abr" caption="Abr" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="may" caption="May" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="jun" caption="Jun" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="jul" caption="Jul" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="ago" caption="Ago" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="sep" caption="Sep" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="oct" caption="Oct" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="nov" caption="Nov" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="dic" caption="Dic" width={45} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
-                            <Column dataField="total" caption="Total" width={65} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
+                            <Column dataField="mutuaSolicitante" caption="Mutua Solicitante" width={160} />
+                            <Column dataField="mutuaOfertante" caption="Mutua Ofertante" width={160} />
+                            <Column dataField="centro" caption="Centro" width={180} />
+                            <Column dataField="localidad" caption="Localidad" width={120} />
+                            <Column dataField="tipoLinea" caption="Tipo Movimiento" width={120} />
+                            <Column dataField="estado" caption="Estado" width={140} />
+                            <Column dataField="demandaId" caption="Num. Pet." width={90} />
+                            <Column dataField="ene" caption="Ene" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="feb" caption="Feb" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="mar" caption="Mar" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="abr" caption="Abr" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="may" caption="May" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="jun" caption="Jun" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="jul" caption="Jul" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="ago" caption="Ago" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="sep" caption="Sep" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="oct" caption="Oct" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="nov" caption="Nov" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="dic" caption="Dic" width={50} alignment="center" allowHeaderFiltering={false} allowFiltering={false} />
+                            <Column dataField="total" caption="Total" width={70} alignment="center" fixed fixedPosition="right" allowFiltering={false} allowHeaderFiltering={false} />
                             <Column
                                 caption="Acciones"
                                 width={60}
@@ -337,6 +338,7 @@ const GestionDemanda = () => {
                                 cellRender={(cell) => (
                                     cell.data.tipoLinea === 'Demanda' ? (
                                         <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                            {/* ── Editar → navega a la ficha completa ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
                                                 title="Editar"
@@ -347,6 +349,7 @@ const GestionDemanda = () => {
                                             >
                                                 <i className="ri-edit-line"></i>
                                             </div>
+                                            {/* ── Eliminar ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
                                                 title="Eliminar"
