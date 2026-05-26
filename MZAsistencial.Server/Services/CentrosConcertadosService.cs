@@ -11,6 +11,8 @@ namespace MZAsistencial.Server.Services
         Task<bool> UpdateCentroAsync(int id, CentrosConcertadoDTO dto);
         Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId);
         Task<IEnumerable<EspecialidadesConciertoDTO>> GetEspecialidadesByCentroAsync(int centroId);
+        Task<bool> DeleteCentroAsync(int id);
+        Task ReactivarCentroAsync(int id);
     }
 
     public class CentrosConcertadosService : ICentrosConcertadosService
@@ -25,9 +27,11 @@ namespace MZAsistencial.Server.Services
         public async Task<IEnumerable<CentrosConcertadoDTO>> GetCabecerasAsync()
         {
             var query = from c in _context.CentrosConcertados
+                        
                         // Left Join con Poblaciones
                         join p in _context.AuxPoblaciones on c.PoblacionId equals p.PoblacionId into pGroup
                         from p in pGroup.DefaultIfEmpty()
+                        
                         // Left Join con Provincias (a través de la población o del centro)
                         join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId into prGroup
                         from pr in prGroup.DefaultIfEmpty()
@@ -62,10 +66,21 @@ namespace MZAsistencial.Server.Services
                             Comentarios = c.Comentarios,
                             MotivoBaja = c.MotivoBaja,
                             
-                            Mapa = c.MapaValidado.ToString()
+                            MapaValidado = c.MapaValidado,
                         };
 
             return await query.ToListAsync();
+        }
+
+        public async Task ReactivarCentroAsync(int id)
+        {
+            var centro = await _context.CentrosConcertados.FindAsync(id);
+            if (centro != null)
+            {
+                centro.FechaBaja = null;
+                _context.CentrosConcertados.Update(centro);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<CentrosConcertadoDTO> CreateCentroAsync(CentrosConcertadoDTO dto)
@@ -89,7 +104,8 @@ namespace MZAsistencial.Server.Services
                 Numero = dto.Numero,
                 NumRegistroSanitario = dto.NumRegistroSanitario,
                 Comentarios = dto.Comentarios,
-                MotivoBaja = dto.MotivoBaja
+                MotivoBaja = dto.MotivoBaja,
+                MapaValidado = dto.MapaValidado
             };
 
             _context.CentrosConcertados.Add(nuevoCentro);
@@ -128,6 +144,7 @@ namespace MZAsistencial.Server.Services
             centroExistente.NumRegistroSanitario = dto.NumRegistroSanitario;
             centroExistente.Comentarios = dto.Comentarios;
             centroExistente.MotivoBaja = dto.MotivoBaja;
+            centroExistente.MapaValidado = dto.MapaValidado;
 
             try
             {
@@ -140,6 +157,22 @@ namespace MZAsistencial.Server.Services
                 
                 throw new Exception($"Fallo SQL: {mensajeReal}"); 
             }
+        }
+
+        public async Task<bool> DeleteCentroAsync(int id)
+        {
+            var centro = await _context.CentrosConcertados.FindAsync(id);
+            
+            if (centro == null) 
+                return false;
+
+            // Ejecuta la baja lógica para mantener la integridad referencial
+            centro.FechaBaja = DateTime.Now;
+
+            _context.CentrosConcertados.Update(centro);
+            await _context.SaveChangesAsync();
+            
+            return true;
         }
 
         public async Task<IEnumerable<MutuaAsignadaDTO>> GetMutuasPorCentroAsync(int centroId)

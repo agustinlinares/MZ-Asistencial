@@ -227,6 +227,19 @@ public class ListaOfertasService : IListaOfertasService
             int? dispNov = disp != null ? disp.Noviembre - compNov : null;
             int? dispDic = disp != null ? disp.Diciembre - compDic : null;
 
+            // Clave de agrupación preconstruida
+
+            string grupoKey = $"{x.Especialidad ?? "-"} / {x.Servicio ?? "-"}";
+        //   string grupoKey = string.Join(" | ", new[]
+        //    {
+        //    $"Año: {x.Año}",
+        //    $"Mutua: {mutuaOferta ?? "-"}",
+        //    $"Centro: {x.CentroConcertado ?? cp?.Centro ?? "-"}",
+        //    $"Especialidad: {x.Especialidad ?? "-"}",
+        //    $"Servicio: {x.Servicio ?? "-"}",
+        //    $"Población: {localidad ?? "-"}"
+        //});
+
             // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO
             {
@@ -280,6 +293,7 @@ public class ListaOfertasService : IListaOfertasService
                 DispTotal = (dispEne ?? 0) + (dispFeb ?? 0) + (dispMar ?? 0) + (dispAbr ?? 0) +
                             (dispMay ?? 0) + (dispJun ?? 0) + (dispJul ?? 0) + (dispAgo ?? 0) +
                             (dispSep ?? 0) + (dispOct ?? 0) + (dispNov ?? 0) + (dispDic ?? 0),
+                GrupoKey = grupoKey,
             });
 
             // Fila DEMANDA
@@ -320,6 +334,7 @@ public class ListaOfertasService : IListaOfertasService
                 FechaConfirmacion = x.FechaConfirmacion,
                 NecesidadesServicio = x.NecesidadesServicio,
                 ContestacionNecesidades = x.NotaContestacion,
+                GrupoKey = grupoKey,
             });
         }
 
@@ -342,6 +357,8 @@ public class ListaOfertasService : IListaOfertasService
             .OrderByDescending(a => a)
             .ToListAsync();
     }
+
+    // ── Reemplaza el método GetByIdAsync completo en ListaOfertasService.cs ──
 
     public async Task<OfertaEditDTO?> GetByIdAsync(int id)
     {
@@ -368,60 +385,224 @@ public class ListaOfertasService : IListaOfertasService
                 o.Dic,
                 o.EstadoId,
                 o.NotaContestacion,
-                o.ContestacionPlazos
+                o.ContestacionPlazos,
+                o.FechaAsignacion,
+                o.FechaConfirmacion
             })
             .FirstOrDefaultAsync();
 
         if (oferta == null) return null;
 
-        // Demanda
+        // ── Demanda ──────────────────────────────────────────────────────────
         var demanda = oferta.DemandaId.HasValue
             ? await _context.Demandas
                 .Where(d => d.DemandaId == oferta.DemandaId.Value)
-                .Select(d => new { d.Ene, d.Feb, d.Mar, d.Abr, d.May, d.Jun, d.Jul, d.Ago, d.Sep, d.Oct, d.Nov, d.Dic })
+                .Select(d => new {
+                    d.Ene,
+                    d.Feb,
+                    d.Mar,
+                    d.Abr,
+                    d.May,
+                    d.Jun,
+                    d.Jul,
+                    d.Ago,
+                    d.Sep,
+                    d.Oct,
+                    d.Nov,
+                    d.Dic,
+                    d.FechaAlta,
+                    d.TipoId,
+                    d.Descripcion,
+                    d.Plazos,
+                    d.MutuaDemandaId
+                })
                 .FirstOrDefaultAsync()
             : null;
 
-        // Especialidad
+        // ── Especialidad ─────────────────────────────────────────────────────
         var especialidad = oferta.EspecialidadId.HasValue
             ? await _context.AuxEspecialidades
                 .Where(e => e.EspecialidadId == oferta.EspecialidadId.Value)
-                .Select(e => e.Especialidad)
-                .FirstOrDefaultAsync()
+                .Select(e => e.Especialidad).FirstOrDefaultAsync()
             : null;
 
-        // Servicio
+        // ── Servicio ─────────────────────────────────────────────────────────
         var servicio = oferta.ServicioId.HasValue
             ? await _context.AuxServicios
                 .Where(s => s.ServicioId == oferta.ServicioId.Value)
-                .Select(s => s.Servicio)
-                .FirstOrDefaultAsync()
+                .Select(s => s.Servicio).FirstOrDefaultAsync()
             : null;
 
-        // Estado
+        // ── Estado ───────────────────────────────────────────────────────────
         var estado = oferta.EstadoId.HasValue
             ? await _context.AuxEstadosDemanda
                 .Where(e => e.EstadoId == oferta.EstadoId.Value)
-                .Select(e => e.Estado)
-                .FirstOrDefaultAsync()
+                .Select(e => e.Estado).FirstOrDefaultAsync()
             : null;
 
-        // Centro y Mutua
+        // ── Centro propio → mutua, localidad, provincia, dirección, teléfono ─
         string? centro = null;
         string? mutuaOferta = null;
+        string? localidad = null;
+        string? provincia = null;
+        string? direccion = null;
+        string? telefono = null;
+
         if (oferta.CentroId.HasValue)
         {
             var cp = await _context.CentrosPropios
                 .Where(c => c.CentroId == oferta.CentroId.Value)
-                .Select(c => new { c.Centro, c.MutuaId })
+                .Select(c => new {
+                    c.Centro,
+                    c.MutuaId,
+                    c.PoblacionId,
+                    c.Direccion,
+                    c.Telefono
+                })
                 .FirstOrDefaultAsync();
+
             if (cp != null)
             {
                 centro = cp.Centro;
+                direccion = cp.Direccion;
+                telefono = cp.Telefono;
+
                 mutuaOferta = await _context.Mutuas
                     .Where(m => m.MutuaId == cp.MutuaId)
-                    .Select(m => m.Mutua1)
+                    .Select(m => m.Mutua1).FirstOrDefaultAsync();
+
+                if (cp.PoblacionId.HasValue)
+                {
+                    var pob = await _context.AuxPoblaciones
+                        .Where(p => p.PoblacionId == cp.PoblacionId.Value)
+                        .Select(p => new { p.Poblacion, p.ProvinciaId })
+                        .FirstOrDefaultAsync();
+
+                    if (pob != null)
+                    {
+                        localidad = pob.Poblacion;
+                        provincia = await _context.AuxProvincias
+                            .Where(p => p.ProvinciaId == pob.ProvinciaId)
+                            .Select(p => p.Provincia).FirstOrDefaultAsync();
+                    }
+                }
+            }
+            else
+            {
+                // Intentar como centro concertado
+                var cc = await _context.CentrosConcertados
+                    .Where(c => c.CentroId == oferta.CentroId.Value)
+                    .Select(c => new {
+                        c.Centro,
+                        c.PoblacionId,
+                        c.Direccion,
+                        c.Telefono
+                    })
                     .FirstOrDefaultAsync();
+
+                if (cc != null)
+                {
+                    centro = cc.Centro;
+                    direccion = cc.Direccion;
+                    telefono = cc.Telefono;
+
+                    if (cc.PoblacionId.HasValue)
+                    {
+                        var pob = await _context.AuxPoblaciones
+                            .Where(p => p.PoblacionId == cc.PoblacionId.Value)
+                            .Select(p => new { p.Poblacion, p.ProvinciaId })
+                            .FirstOrDefaultAsync();
+
+                        if (pob != null)
+                        {
+                            localidad = pob.Poblacion;
+                            provincia = await _context.AuxProvincias
+                                .Where(p => p.ProvinciaId == pob.ProvinciaId)
+                                .Select(p => p.Provincia).FirstOrDefaultAsync();
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Subsolicitudes (solo para demandas individuales TipoId=2) ────────
+        var subSolicitudes = new List<SubSolicitudDTO>();
+
+        if (oferta.DemandaId.HasValue && demanda?.TipoId == 2)
+        {
+            var subs = await _context.DemandasSubSols
+                .Where(s => s.DemandaId == oferta.DemandaId.Value)
+                .ToListAsync();
+
+            foreach (var sub in subs)
+            {
+                // Centro de la subsolicitud
+                string? subCentro = null;
+                string? subMutua = null;
+
+                if (sub.CentroId.HasValue)
+                {
+                    var cpSub = await _context.CentrosPropios
+                        .Where(c => c.CentroId == sub.CentroId.Value)
+                        .Select(c => new { c.Centro, c.MutuaId })
+                        .FirstOrDefaultAsync();
+
+                    if (cpSub != null)
+                    {
+                        subCentro = cpSub.Centro;
+                        subMutua = await _context.Mutuas
+                            .Where(m => m.MutuaId == cpSub.MutuaId)
+                            .Select(m => m.Mutua1).FirstOrDefaultAsync();
+                    }
+                    else
+                    {
+                        var ccSub = await _context.CentrosConcertados
+                            .Where(c => c.CentroId == sub.CentroId.Value)
+                            .Select(c => c.Centro).FirstOrDefaultAsync();
+                        subCentro = ccSub;
+                    }
+                }
+
+                // Oferta de la subsolicitud
+                Oferta? ofertaSub = null;
+                if (sub.OfertaId.HasValue)
+                    ofertaSub = await _context.Ofertas.FindAsync(sub.OfertaId.Value);
+
+                string? subEstado = sub.EstadoId.HasValue
+                    ? await _context.AuxEstadosDemanda
+                        .Where(e => e.EstadoId == sub.EstadoId.Value)
+                        .Select(e => e.Estado).FirstOrDefaultAsync()
+                    : null;
+
+                subSolicitudes.Add(new SubSolicitudDTO
+                {
+                    SubSolId = sub.DemandasSubSolId,
+                    MutuaOfertante = subMutua,
+                    Centro = subCentro,
+                    Contestacion = ofertaSub?.NotaContestacion,
+                    ContestacionPlazos = ofertaSub?.ContestacionPlazos,
+                    FechaAsignacion = ofertaSub?.FechaAsignacion,
+                    FechaConfirmacion = ofertaSub?.FechaConfirmacion,
+                    FechaSolicitud = demanda?.FechaAlta,
+                    Ene = ofertaSub?.Ene,
+                    Feb = ofertaSub?.Feb,
+                    Mar = ofertaSub?.Mar,
+                    Abr = ofertaSub?.Abr,
+                    May = ofertaSub?.May,
+                    Jun = ofertaSub?.Jun,
+                    Jul = ofertaSub?.Jul,
+                    Ago = ofertaSub?.Ago,
+                    Sep = ofertaSub?.Sep,
+                    Oct = ofertaSub?.Oct,
+                    Nov = ofertaSub?.Nov,
+                    Dic = ofertaSub?.Dic,
+                    Total = (ofertaSub?.Ene ?? 0) + (ofertaSub?.Feb ?? 0) + (ofertaSub?.Mar ?? 0) +
+                            (ofertaSub?.Abr ?? 0) + (ofertaSub?.May ?? 0) + (ofertaSub?.Jun ?? 0) +
+                            (ofertaSub?.Jul ?? 0) + (ofertaSub?.Ago ?? 0) + (ofertaSub?.Sep ?? 0) +
+                            (ofertaSub?.Oct ?? 0) + (ofertaSub?.Nov ?? 0) + (ofertaSub?.Dic ?? 0),
+                    EstadoId = sub.EstadoId,
+                    Estado = subEstado,
+                });
             }
         }
 
@@ -448,11 +629,21 @@ public class ListaOfertasService : IListaOfertasService
             EstadoId = oferta.EstadoId,
             NotaContestacion = oferta.NotaContestacion,
             ContestacionPlazos = oferta.ContestacionPlazos,
+            FechaAsignacion = oferta.FechaAsignacion,
+            FechaConfirmacion = oferta.FechaConfirmacion,
+            FechaSolicitud = demanda?.FechaAlta,
             MutuaOferta = mutuaOferta,
             Centro = centro,
             Especialidad = especialidad,
             Servicio = servicio,
             Estado = estado,
+            Localidad = localidad,
+            Provincia = provincia,
+            DireccionCentro = direccion,
+            Telefono = telefono,
+            TipoId = demanda?.TipoId,
+            Descripcion = demanda?.Descripcion,
+            Plazos = demanda?.Plazos,
             DemandaEne = demanda?.Ene,
             DemandaFeb = demanda?.Feb,
             DemandaMar = demanda?.Mar,
@@ -465,6 +656,7 @@ public class ListaOfertasService : IListaOfertasService
             DemandaOct = demanda?.Oct,
             DemandaNov = demanda?.Nov,
             DemandaDic = demanda?.Dic,
+            SubSolicitudes = subSolicitudes,
         };
     }
 

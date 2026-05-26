@@ -2,6 +2,8 @@
 import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
+import FichaOferta from "../pages/Admin/OfertaDemanda/FichaOferta";
+import FichaDemanda from "../pages/Admin/OfertaDemanda/FichaDemanda";
  
 const MapaPage = lazy(() => import("@pages/Admin/Centros/MapaPage"));
  
@@ -102,10 +104,12 @@ const AppRoutes = () => {
  
                         <Route path="OfertaDemanda">
                             <Route path="GestionOferta" element={<GestionOferta />} />
+                            <Route path="GestionOferta/ficha/:id" element={<FichaOferta />} /> 
                             <Route path="GestionDemanda" element={<GestionDemanda />} />
                             <Route path="AcreditacionesSectoriales" element={<AcreditacionesSectoriales />} />
                             <Route path="AcreditacionesIndividuales" element={<AcreditacionesIndividuales />} />
                             <Route path="GenerarInformes" element={<GenerarInformes />} />
+                            <Route path="GestionDemanda/ficha/:id" element={<FichaDemanda />} />
                         </Route>
  
                         <Route path="GestionReserva">

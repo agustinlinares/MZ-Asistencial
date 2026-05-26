@@ -5,6 +5,17 @@ import './Acuerdos.css';
 
 const API = '/api';
 
+// ── Formateadores ─────────────────────────────────────────────────────────────
+const fmtNum = (v) =>
+    Math.round(Number(v) || 0).toLocaleString('es-ES');
+
+const fmtEur = (v) =>
+    (Number(v) || 0).toLocaleString('es-ES', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        useGrouping: true
+    }) + ' €';
+
 const Acuerdos = () => {
     const { t } = useTranslation();
 
@@ -63,6 +74,11 @@ const Acuerdos = () => {
             .then(res => res.json()).then(setDatosTipoServicioDemanda).catch(console.error);
     }, [mutuaSeleccionada, anoSeleccionado]);
 
+    // ── Estilos pie de tabla ──────────────────────────────────────────────────
+    const tfootTr = { fontWeight: 700, background: '#f0f4ff', borderTop: '2px solid #1a5fa8' };
+    const tdTot = { textAlign: 'right', padding: '8px 6px' };
+    const tdLbl = { padding: '8px 12px' };
+
     return (
         <div className="ficha-container-inline">
             <div className="ficha-inline-content">
@@ -96,7 +112,7 @@ const Acuerdos = () => {
 
                 <div className="ficha-tab-content">
 
-                    {/* SECCION MUTUA */}
+                    {/* ── SECCION MUTUA ──────────────────────────────────────── */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionMutua(!seccionMutua)}>
                             <span>Acuerdos Bilaterales o Multilaterales Mutua</span>
@@ -108,35 +124,49 @@ const Acuerdos = () => {
                                     <button className={`ficha-tab ${tabMutua === 'oferta' ? 'active' : ''}`} onClick={() => setTabMutua('oferta')}>Oferta</button>
                                     <button className={`ficha-tab ${tabMutua === 'demanda' ? 'active' : ''}`} onClick={() => setTabMutua('demanda')}>Demanda</button>
                                 </div>
-                                <table className="acuerdos-tabla">
-                                    <thead>
-                                        <tr>
-                                            <th>Num Mutua</th>
-                                            <th>Mutua {tabMutua === 'oferta' ? 'Demandante' : 'Ofertante'}</th>
-                                            <th>Num Servicios</th>
-                                            <th>Contraprestación Económica</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda).length === 0 ? (
-                                            <tr><td colSpan={4} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
-                                        ) : (
-                                            (tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda).map((row, i) => (
-                                                <tr key={i}>
-                                                    <td>{row.numMutua}</td>
-                                                    <td>{row.mutuaNombre}</td>
-                                                    <td>{row.numServicios}</td>
-                                                    <td>{row.contraprestacionEconomica}</td>
+                                {(() => {
+                                    const datos = tabMutua === 'oferta' ? datosMutuaOferta : datosMutuaDemanda;
+                                    const totalNum = datos.reduce((s, r) => s + (Number(r.numServicios) || 0), 0);
+                                    const totalEur = datos.reduce((s, r) => s + (Number(r.contraprestacionEconomica) || 0), 0);
+                                    return (
+                                        <table className="acuerdos-tabla">
+                                            <thead>
+                                                <tr>
+                                                    <th>Num Mutua</th>
+                                                    <th>Mutua {tabMutua === 'oferta' ? 'Demandante' : 'Ofertante'}</th>
+                                                    <th style={{ textAlign: 'right' }}>Num Servicios</th>
+                                                    <th style={{ textAlign: 'right' }}>Contraprestación Económica</th>
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody>
+                                                {datos.length === 0 ? (
+                                                    <tr><td colSpan={4} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                                ) : datos.map((row, i) => (
+                                                    <tr key={i}>
+                                                        <td>{row.numMutua}</td>
+                                                        <td>{row.mutuaNombre}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtNum(row.numServicios)}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtEur(row.contraprestacionEconomica)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            {datos.length > 0 && (
+                                                <tfoot>
+                                                    <tr style={tfootTr}>
+                                                        <td colSpan={2} style={tdLbl}>TOTAL</td>
+                                                        <td style={tdTot}>{fmtNum(totalNum)}</td>
+                                                        <td style={tdTot}>{fmtEur(totalEur)}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            )}
+                                        </table>
+                                    );
+                                })()}
                             </div>
                         )}
                     </div>
 
-                    {/* SECCION PROVINCIA */}
+                    {/* ── SECCION PROVINCIA ──────────────────────────────────── */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionProvincia(!seccionProvincia)}>
                             <span>Acuerdos Bilaterales o Multilaterales Provincia</span>
@@ -148,39 +178,59 @@ const Acuerdos = () => {
                                     <button className={`ficha-tab ${tabProvincia === 'oferta' ? 'active' : ''}`} onClick={() => setTabProvincia('oferta')}>Oferta</button>
                                     <button className={`ficha-tab ${tabProvincia === 'demanda' ? 'active' : ''}`} onClick={() => setTabProvincia('demanda')}>Demanda</button>
                                 </div>
-                                <table className="acuerdos-tabla">
-                                    <thead>
-                                        <tr>
-                                            <th>Num Provincia</th>
-                                            <th>Provincia</th>
-                                            <th>Num Servicios</th>
-                                            <th>Contraprestación Económica</th>
-                                            {tabProvincia === 'demanda' && <th>Num Servicios Terceros</th>}
-                                            {tabProvincia === 'demanda' && <th>Contraprestación Económica Terceros</th>}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).length === 0 ? (
-                                            <tr><td colSpan={tabProvincia === 'oferta' ? 4 : 6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
-                                        ) : (
-                                            (tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda).map((row, i) => (
-                                                <tr key={i}>
-                                                    <td>{row.numProvincia}</td>
-                                                    <td>{row.provincia}</td>
-                                                    <td>{row.numServicios}</td>
-                                                    <td>{row.contraprestacionEconomica}</td>
-                                                    {tabProvincia === 'demanda' && <td>{row.numServiciosTerceros}</td>}
-                                                    {tabProvincia === 'demanda' && <td>{row.contraprestacionEconomicaTerceros}</td>}
+                                {(() => {
+                                    const datos = tabProvincia === 'oferta' ? datosProvinciaOferta : datosProvinciaDemanda;
+                                    const isDem = tabProvincia === 'demanda';
+                                    const totalNum = datos.reduce((s, r) => s + (Number(r.numServicios) || 0), 0);
+                                    const totalEur = datos.reduce((s, r) => s + (Number(r.contraprestacionEconomica) || 0), 0);
+                                    const totalNumT = datos.reduce((s, r) => s + (Number(r.numServiciosTerceros) || 0), 0);
+                                    const totalEurT = datos.reduce((s, r) => s + (Number(r.contraprestacionEconomicaTerceros) || 0), 0);
+                                    const cols = isDem ? 6 : 4;
+                                    return (
+                                        <table className="acuerdos-tabla">
+                                            <thead>
+                                                <tr>
+                                                    <th>Num Provincia</th>
+                                                    <th>Provincia</th>
+                                                    <th style={{ textAlign: 'right' }}>Num Servicios</th>
+                                                    <th style={{ textAlign: 'right' }}>Contraprestación Económica</th>
+                                                    {isDem && <th style={{ textAlign: 'right' }}>Num Servicios Terceros</th>}
+                                                    {isDem && <th style={{ textAlign: 'right' }}>Contraprestación Económica Terceros</th>}
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            </thead>
+                                            <tbody>
+                                                {datos.length === 0 ? (
+                                                    <tr><td colSpan={cols} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                                ) : datos.map((row, i) => (
+                                                    <tr key={i}>
+                                                        <td>{row.numProvincia}</td>
+                                                        <td>{row.provincia}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtNum(row.numServicios)}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtEur(row.contraprestacionEconomica)}</td>
+                                                        {isDem && <td style={{ textAlign: 'right' }}>{fmtNum(row.numServiciosTerceros)}</td>}
+                                                        {isDem && <td style={{ textAlign: 'right' }}>{fmtEur(row.contraprestacionEconomicaTerceros)}</td>}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            {datos.length > 0 && (
+                                                <tfoot>
+                                                    <tr style={tfootTr}>
+                                                        <td colSpan={2} style={tdLbl}>TOTAL</td>
+                                                        <td style={tdTot}>{fmtNum(totalNum)}</td>
+                                                        <td style={tdTot}>{fmtEur(totalEur)}</td>
+                                                        {isDem && <td style={tdTot}>{fmtNum(totalNumT)}</td>}
+                                                        {isDem && <td style={tdTot}>{fmtEur(totalEurT)}</td>}
+                                                    </tr>
+                                                </tfoot>
+                                            )}
+                                        </table>
+                                    );
+                                })()}
                             </div>
                         )}
                     </div>
 
-                    {/* SECCION TIPO SERVICIO */}
+                    {/* ── SECCION TIPO SERVICIO ──────────────────────────────── */}
                     <div className="acuerdos-seccion">
                         <div className="acuerdos-seccion-header" onClick={() => setSeccionTipoServicio(!seccionTipoServicio)}>
                             <span>Acuerdos Bilaterales o Multilaterales Tipo de Servicio</span>
@@ -194,47 +244,46 @@ const Acuerdos = () => {
                                 </div>
                                 {(() => {
                                     const datos = tabTipoServicio === 'oferta' ? datosTipoServicioOferta : datosTipoServicioDemanda;
-                                    const totalNumServicios = datos.reduce((s, r) => s + (r.numServicios || 0), 0);
-                                    const totalContraprestacion = datos.reduce((s, r) => s + (r.contraprestacionEconomica || 0), 0);
-                                    const totalNumServiciosTerceros = datos.reduce((s, r) => s + (r.numServiciosTerceros || 0), 0);
-                                    const totalContraprestacionTerceros = datos.reduce((s, r) => s + (r.contraprestacionEconomicaTerceros || 0), 0);
-
+                                    const isDem = tabTipoServicio === 'demanda';
+                                    const totalNum = datos.reduce((s, r) => s + (Number(r.numServicios) || 0), 0);
+                                    const totalEur = datos.reduce((s, r) => s + (Number(r.contraprestacionEconomica) || 0), 0);
+                                    const totalNumT = datos.reduce((s, r) => s + (Number(r.numServiciosTerceros) || 0), 0);
+                                    const totalEurT = datos.reduce((s, r) => s + (Number(r.contraprestacionEconomicaTerceros) || 0), 0);
+                                    const cols = isDem ? 6 : 4;
                                     return (
                                         <table className="acuerdos-tabla">
                                             <thead>
                                                 <tr>
                                                     <th>Tipo de Servicio</th>
                                                     <th>Tipo Servicio</th>
-                                                    <th>Num Servicios</th>
-                                                    <th>Contraprestación Económica</th>
-                                                    {tabTipoServicio === 'demanda' && <th>Num Servicios Terceros</th>}
-                                                    {tabTipoServicio === 'demanda' && <th>Contraprestación Económica Terceros</th>}
+                                                    <th style={{ textAlign: 'right' }}>Num Servicios</th>
+                                                    <th style={{ textAlign: 'right' }}>Contraprestación Económica</th>
+                                                    {isDem && <th style={{ textAlign: 'right' }}>Num Servicios Terceros</th>}
+                                                    {isDem && <th style={{ textAlign: 'right' }}>Contraprestación Económica Terceros</th>}
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {datos.length === 0 ? (
-                                                    <tr><td colSpan={tabTipoServicio === 'oferta' ? 4 : 6} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
-                                                ) : (
-                                                    datos.map((row, i) => (
-                                                        <tr key={i}>
-                                                            <td>{row.tipoServicio}</td>
-                                                            <td>{row.tipoServicioNombre}</td>
-                                                            <td style={{ textAlign: 'right' }}>{row.numServicios}</td>
-                                                            <td style={{ textAlign: 'right' }}>{(row.contraprestacionEconomica || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
-                                                            {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right' }}>{row.numServiciosTerceros}</td>}
-                                                            {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right' }}>{(row.contraprestacionEconomicaTerceros || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>}
-                                                        </tr>
-                                                    ))
-                                                )}
+                                                    <tr><td colSpan={cols} style={{ textAlign: 'center', color: '#999', padding: 16 }}>Sin datos para mostrar</td></tr>
+                                                ) : datos.map((row, i) => (
+                                                    <tr key={i}>
+                                                        <td>{row.tipoServicio}</td>
+                                                        <td>{row.tipoServicioNombre}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtNum(row.numServicios)}</td>
+                                                        <td style={{ textAlign: 'right' }}>{fmtEur(row.contraprestacionEconomica)}</td>
+                                                        {isDem && <td style={{ textAlign: 'right' }}>{fmtNum(row.numServiciosTerceros)}</td>}
+                                                        {isDem && <td style={{ textAlign: 'right' }}>{fmtEur(row.contraprestacionEconomicaTerceros)}</td>}
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                             {datos.length > 0 && (
                                                 <tfoot>
-                                                    <tr style={{ fontWeight: 700, background: '#f0f4ff', borderTop: '2px solid #1a5fa8' }}>
-                                                        <td colSpan={2} style={{ padding: '8px 12px' }}>TOTAL</td>
-                                                        <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalNumServicios}</td>
-                                                        <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalContraprestacion.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
-                                                        {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalNumServiciosTerceros}</td>}
-                                                        {tabTipoServicio === 'demanda' && <td style={{ textAlign: 'right', padding: '8px 6px' }}>{totalContraprestacionTerceros.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>}
+                                                    <tr style={tfootTr}>
+                                                        <td colSpan={2} style={tdLbl}>TOTAL</td>
+                                                        <td style={tdTot}>{fmtNum(totalNum)}</td>
+                                                        <td style={tdTot}>{fmtEur(totalEur)}</td>
+                                                        {isDem && <td style={tdTot}>{fmtNum(totalNumT)}</td>}
+                                                        {isDem && <td style={tdTot}>{fmtEur(totalEurT)}</td>}
                                                     </tr>
                                                 </tfoot>
                                             )}

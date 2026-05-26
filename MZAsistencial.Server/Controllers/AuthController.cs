@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MZAsistencial.Server.Data;
@@ -49,12 +49,12 @@ namespace MZAsistencial.Server.Controllers
 
             // Obtener el año del ejercicio activo (sin FechaCierre)
             // Si no hay ejercicio abierto, usar el año actual
-            var ejercicioActivo = await _context.Ejercicios
-                .Where(e => e.FechaCierre == null)
-                .OrderByDescending(e => e.Año)
-                .FirstOrDefaultAsync();
+            // var ejercicioActivo = await _context.Ejercicios
+            //     .Where(e => e.FechaCierre == null)
+            //     .OrderByDescending(e => e.Año)
+            //     .FirstOrDefaultAsync();
 
-            var anio = ejercicioActivo?.Año ?? DateTime.Now.Year;
+            var anio = DateTime.Now.Year;
 
             var token = GenerarToken(usuario);
 

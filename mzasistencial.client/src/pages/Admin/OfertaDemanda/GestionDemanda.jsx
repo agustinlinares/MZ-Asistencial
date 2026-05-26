@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
@@ -19,11 +20,10 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-const MESES_LABEL = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 const GestionDemanda = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const dataGridRef = useRef(null);
     const buscarRef = useRef(null);
     const menuRef = useRef(null);
@@ -33,7 +33,6 @@ const GestionDemanda = () => {
     const [estadoSeleccionado, setEstadoSeleccionado] = useState(null);
     const [filtrosExpandidos, setFiltrosExpandidos] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
-    const [demandaEditando, setDemandaEditando] = useState(null);
 
     const [fechaSolicitudDesde, setFechaSolicitudDesde] = useState(null);
     const [fechaSolicitudHasta, setFechaSolicitudHasta] = useState(null);
@@ -145,44 +144,12 @@ const GestionDemanda = () => {
         setNecesidadesServicio(''); setContestacionNecesidades(''); setDemandaId('');
     };
 
-    const handleGuardarEdicion = async () => {
-        if (demandaEditando.estadoId === 8) {
-            const temp = { ...demandaEditando };
-            setDemandaEditando(null);
-            const ok = await dxConfirm(
-                '¿Seguro que desea rechazar esta demanda? Todas las subsolicitudes quedarán rechazadas.',
-                'Confirmar rechazo'
-            );
-            if (!ok) { setDemandaEditando(temp); return; }
-            Object.assign(demandaEditando, temp);
-        }
-
-        fetch(`${API}/ListaDemandas/${demandaEditando.demandaId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estadoId: demandaEditando.estadoId }),
-        })
-            .then(res => {
-                if (res.ok) {
-                    notify('Demanda guardada correctamente', 'success', 2000);
-                    setDemandaEditando(null);
-                    buscarRef.current();
-                } else {
-                    notify('Error al guardar la demanda', 'error', 3000);
-                }
-            })
-            .catch(err => console.error('Error:', err));
-    };
-
-    const totalDemanda = demandaEditando ? MESES.reduce((s, m) => s + (demandaEditando[m] || 0), 0) : 0;
-    const totalAsignacion = demandaEditando ? MESES.reduce((s, m) => s + (demandaEditando[`oferta${m.charAt(0).toUpperCase() + m.slice(1)}`] || 0), 0) : 0;
-    const totalDiferencia = totalAsignacion - totalDemanda;
-
     return (
         <React.Fragment>
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
+                    {/* HEADER */}
                     <div className="header-page">
                         <div className="title">{t('Lista de Demandas')}</div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -214,6 +181,7 @@ const GestionDemanda = () => {
                         </div>
                     </div>
 
+                    {/* FILTROS */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -282,6 +250,7 @@ const GestionDemanda = () => {
                         )}
                     </div>
 
+                    {/* GRID */}
                     <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
@@ -357,16 +326,18 @@ const GestionDemanda = () => {
                                 cellRender={(cell) => (
                                     cell.data.tipoLinea === 'Demanda' ? (
                                         <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                            {/* ── Editar → navega a la ficha completa ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
                                                 title="Editar"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setDemandaEditando({ ...cell.data });
+                                                    navigate(`/admin/OfertaDemanda/GestionDemanda/ficha/${cell.data.demandaId}`);
                                                 }}
                                             >
                                                 <i className="ri-edit-line"></i>
                                             </div>
+                                            {/* ── Eliminar ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
                                                 title="Eliminar"
@@ -374,7 +345,7 @@ const GestionDemanda = () => {
                                                     e.stopPropagation();
                                                     const ok = await dxConfirm('¿Seguro que desea eliminar esta demanda?', 'Confirmar eliminación');
                                                     if (ok) {
-                                                        fetch(`${API}/ListaDemanda/${cell.data.demandaId}`, { method: 'DELETE' })
+                                                        fetch(`${API}/ListaDemandas/${cell.data.demandaId}`, { method: 'DELETE' })
                                                             .then(res => {
                                                                 if (res.ok) {
                                                                     notify('Demanda eliminada correctamente', 'success', 2000);
@@ -395,116 +366,6 @@ const GestionDemanda = () => {
                             />
                         </DataGrid>
                     </div>
-
-                    {/* MODAL EDICION */}
-                    {demandaEditando && (
-                        <div style={{
-                            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                        }}>
-                            <div style={{
-                                background: '#fff', borderRadius: 8, width: 820,
-                                maxHeight: '90vh', overflow: 'auto',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-                            }}>
-                                <div className="ficha-modal-header">
-                                    <span className="ficha-modal-title">Ficha Gestión Demanda</span>
-                                    <div className="ficha-header-btns">
-                                        <button className="ficha-btn-primary" onClick={handleGuardarEdicion}>Guardar</button>
-                                        <button className="ficha-btn-secondary" onClick={() => setDemandaEditando(null)}>Salir</button>
-                                    </div>
-                                </div>
-
-                                <div style={{ padding: 20 }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20 }}>
-                                        <div className="ficha-field">
-                                            <label>Mutua Solicitante</label>
-                                            <input type="text" readOnly value={demandaEditando.mutuaSolicitante || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Mutua Ofertante</label>
-                                            <input type="text" readOnly value={demandaEditando.mutuaOfertante || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Centro</label>
-                                            <input type="text" readOnly value={demandaEditando.centro || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Especialidad</label>
-                                            <input type="text" readOnly value={demandaEditando.especialidad || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Servicio</label>
-                                            <input type="text" readOnly value={demandaEditando.servicio || ''} style={{ background: '#f5f5f5' }} />
-                                        </div>
-                                        <div className="ficha-field">
-                                            <label>Estado</label>
-                                            <select
-                                                value={demandaEditando.estadoId || ''}
-                                                onChange={e => setDemandaEditando(prev => ({ ...prev, estadoId: parseInt(e.target.value) }))}
-                                            >
-                                                {estados.filter(e => e.estadoId !== null).map(e => (
-                                                    <option key={e.estadoId} value={e.estadoId}>{e.estado}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                                            <thead>
-                                                <tr style={{ background: '#1a5fa8', color: '#fff' }}>
-                                                    <th style={{ padding: '8px 12px', textAlign: 'left', width: 160 }}></th>
-                                                    {MESES_LABEL.map(m => (
-                                                        <th key={m} style={{ padding: '8px 6px', textAlign: 'center', width: 55 }}>{m}</th>
-                                                    ))}
-                                                    <th style={{ padding: '8px 6px', textAlign: 'center', width: 60 }}>Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr style={{ background: '#dbeafe' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#1a5fa8' }}>DEMANDA TOTAL</td>
-                                                    {MESES.map(m => (
-                                                        <td key={m} style={{ padding: '8px 6px', textAlign: 'center', color: '#1a5fa8', fontWeight: 600 }}>
-                                                            {demandaEditando[m] || 0}
-                                                        </td>
-                                                    ))}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: '#1a5fa8' }}>{totalDemanda}</td>
-                                                </tr>
-                                                <tr style={{ background: '#eff6ff' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#555' }}>ASIGNACION TOTAL</td>
-                                                    {MESES.map(m => {
-                                                        const key = `oferta${m.charAt(0).toUpperCase() + m.slice(1)}`;
-                                                        return (
-                                                            <td key={m} style={{ padding: '8px 6px', textAlign: 'center', color: '#555' }}>
-                                                                {demandaEditando[key] || 0}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: '#555' }}>{totalAsignacion}</td>
-                                                </tr>
-                                                <tr style={{ background: '#f0fdf4' }}>
-                                                    <td style={{ padding: '8px 12px', fontWeight: 700, color: '#2e7d32' }}>DIFERENCIA</td>
-                                                    {MESES.map(m => {
-                                                        const keyO = `oferta${m.charAt(0).toUpperCase() + m.slice(1)}`;
-                                                        const diff = (demandaEditando[keyO] || 0) - (demandaEditando[m] || 0);
-                                                        return (
-                                                            <td key={m} style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 600, color: diff < 0 ? '#c62828' : '#2e7d32' }}>
-                                                                {diff}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                    <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: totalDiferencia < 0 ? '#c62828' : '#2e7d32' }}>
-                                                        {totalDiferencia}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                 </div>
             </div>

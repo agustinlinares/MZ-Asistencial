@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MZAsistencial.Server.Helpers;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
@@ -62,7 +63,32 @@ namespace MZAsistencial.Server.Controllers
             if (archivo == null || archivo.Length == 0)
                 return BadRequest(new { message = "Debe adjuntar un fichero." });
 
+            var (isValid, error) = await FileValidator.ValidateAsync(archivo);
+            if (!isValid)
+                return BadRequest(new { message = error });
+
             var result = await _service.CreateAsync(descripcion, fecha, areaId, archivo, usuarioId);
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromForm] string? descripcion,
+            [FromForm] DateTime? fecha,
+            [FromForm] int? areaId,
+            IFormFile? archivo,
+            [FromQuery] int usuarioId)
+        {
+            if (archivo != null && archivo.Length > 0)
+            {
+                var (isValid, error) = await FileValidator.ValidateAsync(archivo);
+                if (!isValid)
+                    return BadRequest(new { message = error });
+            }
+
+            var result = await _service.UpdateAsync(id, descripcion, fecha, areaId, archivo, usuarioId);
+            if (result == null) return NotFound(new { message = "Fichero no encontrado." });
             return Ok(result);
         }
 

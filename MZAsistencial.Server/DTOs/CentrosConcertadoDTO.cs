@@ -25,7 +25,7 @@ namespace MZAsistencial.Server.DTOs
         public string? Latitud { get; set; }
         public string? Longitud { get; set; }
         
-        public string? Mapa { get; set; }
+        public bool? MapaValidado { get; set; }
         public string? Numero { get; set; }
         public long? NumRegistroSanitario { get; set; } 
         public string? Comentarios { get; set; }

@@ -43,6 +43,8 @@ const Ficheros = () => {
 
     // Popup crear fichero
     const [popupVisible, setPopupVisible] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [form, setForm] = useState({ descripcion: '', fecha: '', areaId: '', autor: '' });
     const [archivo, setArchivo] = useState(null);
     const [archivoNombre, setArchivoNombre] = useState('');
@@ -116,35 +118,51 @@ const Ficheros = () => {
         }
     };
 
-    // Crear fichero
-    const handleCrearFichero = async () => {
-        if (!archivo) { notify(t('Debes seleccionar un fichero.'), 'warning', 3000); return; }
+    // Crear / Editar fichero
+    const handleGuardar = async () => {
+        if (!editMode && !archivo) { notify(t('Debes seleccionar un fichero.'), 'warning', 3000); return; }
         setCargando(true);
         try {
             const formData = new FormData();
             if (form.descripcion) formData.append('descripcion', form.descripcion);
-            if (form.fecha) formData.append('fecha', form.fecha);
-            if (form.areaId) formData.append('areaId', form.areaId);
-            formData.append('archivo', archivo);
+            if (form.fecha)       formData.append('fecha', form.fecha);
+            if (form.areaId)      formData.append('areaId', form.areaId);
+            if (archivo)          formData.append('archivo', archivo);
 
             const token = AuthService.getToken();
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const resp = await fetch(`/api/Ficheros?usuarioId=${usuarioId}`, {
-                method: 'POST', headers, body: formData,
-            });
+
+            const url    = editMode ? `/api/Ficheros/${editId}?usuarioId=${usuarioId}` : `/api/Ficheros?usuarioId=${usuarioId}`;
+            const method = editMode ? 'PUT' : 'POST';
+
+            const resp = await fetch(url, { method, headers, body: formData });
             if (resp.ok) {
-                notify(t('Fichero creado correctamente.'), 'success', 3000);
+                notify(t(editMode ? 'Fichero actualizado correctamente.' : 'Fichero creado correctamente.'), 'success', 3000);
                 cerrarPopup();
                 await cargarFicheros();
             } else {
                 const err = await resp.json().catch(() => ({}));
-                notify(err.message || t('Error al crear el fichero.'), 'error', 3000);
+                notify(err.message || t('Error al guardar el fichero.'), 'error', 3000);
             }
-        } catch (error) {
-            notify(t('Error al crear el fichero.'), 'error', 3000);
+        } catch {
+            notify(t('Error al guardar el fichero.'), 'error', 3000);
         } finally {
             setCargando(false);
         }
+    };
+
+    const abrirEdicion = (row) => {
+        setEditMode(true);
+        setEditId(row.ficheroId);
+        setForm({
+            descripcion: row.descripcion || '',
+            fecha: row.fecha ? row.fecha.substring(0, 10) : '',
+            areaId: row.areaId ?? '',
+            autor: usuarioNombre,
+        });
+        setArchivo(null);
+        setArchivoNombre(row.nombreFichero || '');
+        setPopupVisible(true);
     };
 
     // Eliminar
@@ -181,6 +199,8 @@ const Ficheros = () => {
 
     const cerrarPopup = () => {
         setPopupVisible(false);
+        setEditMode(false);
+        setEditId(null);
         setForm({ descripcion: '', fecha: '', areaId: '', autor: '' });
         setArchivo(null);
         setArchivoNombre('');
@@ -210,7 +230,7 @@ const Ficheros = () => {
                 <button
                     className="fich-btn fich-btn-edit"
                     title="Editar"
-                    onClick={(e) => { e.stopPropagation(); /* editar futuro */ }}
+                    onClick={(e) => { e.stopPropagation(); abrirEdicion(row); }}
                 >
                     <i className="ri-edit-line" />
                 </button>
@@ -354,9 +374,9 @@ const Ficheros = () => {
                     <div className="fich-popup">
                         {/* Título */}
                         <div className="fich-popup-title">
-                            <span>Ficha Fichero</span>
+                            <span>{editMode ? 'Editar Fichero' : 'Ficha Fichero'}</span>
                             <div className="fich-popup-title-btns">
-                                <button className="fich-popup-btn-accept" onClick={handleCrearFichero} disabled={cargando}>
+                                <button className="fich-popup-btn-accept" onClick={handleGuardar} disabled={cargando}>
                                     <i className="ri-check-line" /> {cargando ? 'Subiendo...' : 'Aceptar'}
                                 </button>
                                 <button className="fich-popup-btn-cancel" onClick={cerrarPopup}>
