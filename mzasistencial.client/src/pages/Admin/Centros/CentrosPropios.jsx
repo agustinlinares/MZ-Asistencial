@@ -20,7 +20,7 @@ const API_URL = "/api/CentrosPropios";
 // ✅ Helper: obtener usuario de sesión
 const getUsuarioSesion = () => {
     try {
-        const raw = sessionStorage.getItem('user');
+        const raw = localStorage.getItem('UsuarioActual');
         return raw ? JSON.parse(raw) : null;
     } catch {
         return null;
@@ -280,7 +280,7 @@ const CentrosPropios = () => {
                             <Column dataField="centro" caption="Centro" width={250} />
                             <Column dataField="cp" caption="C.P." width={80} />
                             <Column dataField="provincia" caption="Provincia" width={150} />
-                            <Column dataField="poblacionId" caption="Población" width={150} />
+                            <Column dataField={admin ? "poblacionId" : "poblacion"} caption="Población" width={150} />
                             <Column dataField="telefono" caption="Teléfono" width={130} />
                             <Column dataField="latitud" caption="Mapa" width={90} alignment="center" cellRender={MapaCell} />
                             {/* ✅ Solo admin ve la columna Desactivado */}
