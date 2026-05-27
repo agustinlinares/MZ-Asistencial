@@ -51,6 +51,16 @@ const Ejercicios = () => {
         setMenuAbierto(false);
     };
 
+    const exportSelectedToExcel = () => {
+        const context = dataGridRef.current.instance();
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet('Lista Ejercicios');
+        exportDataGridToExcel({ component: context, worksheet, autoFilterEnabled: true, selectedRowsOnly: true })
+            .then(() => workbook.xlsx.writeBuffer()
+                .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'ListaEjercicios.xlsx')));
+        setMenuAbierto(false);
+    };
+
     const exportToPdf = () => {
         const doc = new jsPDF('l', 'mm', 'a4');
         const context = dataGridRef.current.instance();
@@ -64,27 +74,31 @@ const Ejercicios = () => {
             <div className="finca-inline-content">
 
                 {/* HEADER */}
-                <div className="finca-modal-header">
-                    <span className="finca-modal-title">{t('EJERCICIOS')}</span>
-                    <div className="acciones-container" ref={menuRef} style={{ marginTop: '20px' }}>
-                        <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)} style={{ marginLeft: '20px', fontSize: '15px' }}>
-                            <i className="ri-settings-3-line"></i>
-                            {t('Exportar')}
-                        </div>
-                        {menuAbierto && (
-                            <div className="acciones-menu">
-                                <div className="acciones-item" onClick={exportToExcel}>
-                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
-                                    {t('Exportar a Excel')}
-                                </div>
-                                <div className="acciones-item" onClick={exportToPdf}>
-                                    <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
-                                    {t('Exportar a PDF')}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+        <div className="finca-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px' }}>
+            <span className="finca-modal-title">{t('Ejercicios')}</span>
+            <div className="acciones-container" ref={menuRef}>
+                <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
+                    <i className="ri-settings-3-line"></i>
+                    {t('Acciones')}
                 </div>
+                {menuAbierto && (
+                    <div className="acciones-menu">
+                        <div className="acciones-item" onClick={exportToExcel}>
+                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                            {t('Exportar todo a Excel')}
+                        </div>
+                        <div className="acciones-item" onClick={exportSelectedToExcel}>
+                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                            {t('Exportar seleccionadas (Excel)')}
+                        </div>
+                        <div className="acciones-item" onClick={exportToPdf}>
+                            <i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i>
+                            {t('Exportar todo a PDF')}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
 
                 {/* TABLA */}
                 <div className="finca-tab-content" style={{ padding: '16px' }}>
@@ -118,13 +132,11 @@ const Ejercicios = () => {
                         <Toolbar>
                             <Item name="groupPanel" />
                             <Item name="columnChooserButton" />
-                            <Item name="exportButton" />
                         </Toolbar>
 
                         <Column dataField="año" caption="Año" width={300} alignment="center" cssClass="dx-cell-large" />
                         <Column dataField="fechaApertura" caption="Fecha de Apertura" dataType="date" format="dd/MM/yyyy" width={600} alignment="center" cssClass="dx-cell-large" />
                         <Column dataField="fechaCierre" caption="Fecha de Cierre" dataType="date" format="dd/MM/yyyy" width={600} alignment="center" cssClass="dx-cell-large" />
-
                     </DataGrid>
                 </div>
             </div>
