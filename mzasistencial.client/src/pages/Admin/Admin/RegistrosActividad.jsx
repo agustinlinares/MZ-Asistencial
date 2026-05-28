@@ -91,11 +91,6 @@ const RegistrosActividad = () => {
 
                                 {menuAbierto && (
                                     <div className="acciones-menu">
-                                        <div className="acciones-menu-header">
-                                            <span>{t('Cerrar opciones')}</span>
-                                            <i className="ri-close-line" onClick={() => setMenuAbierto(false)} />
-                                        </div>
-
                                         <div className="acciones-item" onClick={() => {
                                             setMenuAbierto(false);
                                             const instance = dataGridRef.current?.instance();
@@ -106,15 +101,15 @@ const RegistrosActividad = () => {
                                                 .then(() => wb.xlsx.writeBuffer())
                                                 .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'registros_actividad.xlsx'));
                                         }}>
-                                            <i className="ri-file-excel-2-line"></i>
-                                            {t('Exportar Excel')}
+                                            <i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i>
+                                            {t('Exportar a Excel')}
                                         </div>
                                         
                                         <div className="acciones-item" onClick={() => {
                                             setMenuAbierto(false);
                                             dataGridRef.current?.instance()?.refresh();
                                         }}>
-                                            <i className="ri-refresh-line"></i>
+                                            <i className="ri-refresh-line" style={{ color: '#1976d2' }}></i>
                                             {t('Actualizar Datos')}
                                         </div>
                                     </div>
