@@ -85,7 +85,7 @@ const FichaPresupuestoLiquidado = ({ idPresupuesto, onCerrar, mutuas }) => {
                         <div className="col-md-6 mb-4">
                             <label className="form-label font-weight-bold text-primary">Mutua</label>
                             <SelectBox 
-                                dataSource={mutuas} 
+                                dataSource={mutuas}
                                 valueExpr="numeroId" 
                                 displayExpr="mutua"
                                 value={form.mutuaId} 

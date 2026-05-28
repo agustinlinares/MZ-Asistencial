@@ -291,6 +291,18 @@ const GestionDemanda = () => {
                                 <Item name="groupPanel" />
                             </Toolbar>
 
+                            <Column
+                                dataField="grupoKey"
+                                caption="Especialidad / Servicio"
+                                groupIndex={0}
+                                defaultSortOrder="asc"
+                                visible={false}
+                                allowFiltering={false}
+                                allowHeaderFiltering={false}
+                                groupCellRender={() => (
+                                    <span style={{ color: 'transparent', userSelect: 'none', fontSize: 1 }}>&nbsp;</span>
+                                )}
+                            />
                             <Column dataField="especialidad" caption="Especialidad" width={160} />
                             <Column dataField="servicio" caption="Servicio" width={150} />
                             <Column dataField="año" caption="Año" width={70} />

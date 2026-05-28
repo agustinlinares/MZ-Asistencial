@@ -229,16 +229,15 @@ public class ListaOfertasService : IListaOfertasService
 
             // Clave de agrupación preconstruida
 
-            string grupoKey = $"{x.Especialidad ?? "-"} / {x.Servicio ?? "-"}";
-        //   string grupoKey = string.Join(" | ", new[]
-        //    {
-        //    $"Año: {x.Año}",
-        //    $"Mutua: {mutuaOferta ?? "-"}",
-        //    $"Centro: {x.CentroConcertado ?? cp?.Centro ?? "-"}",
-        //    $"Especialidad: {x.Especialidad ?? "-"}",
-        //    $"Servicio: {x.Servicio ?? "-"}",
-        //    $"Población: {localidad ?? "-"}"
-        //});
+            string grupoKey = string.Join(" | ", new[]
+             {
+                $"Año: {x.Año}",
+                $"Mutua: {mutuaOferta ?? "-"}",
+                $"Centro: {x.CentroConcertado ?? cp?.Centro ?? "-"}",
+                $"Especialidad: {x.Especialidad ?? "-"}",
+                $"Servicio: {x.Servicio ?? "-"}",
+                $"Población: {localidad ?? "-"}"
+            });
 
             // Fila ASIGNACIÓN
             result.Add(new ListaOfertasDTO
