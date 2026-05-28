@@ -149,7 +149,6 @@ const GestionOferta = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    {/* HEADER */}
                     <div className="header-page">
                         <div className="title">{t('Lista de Ofertas')}</div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -181,7 +180,6 @@ const GestionOferta = () => {
                         </div>
                     </div>
 
-                    {/* PANEL FILTROS */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -250,7 +248,6 @@ const GestionOferta = () => {
                         )}
                     </div>
 
-                    {/* GRID */}
                     <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}
@@ -291,6 +288,7 @@ const GestionOferta = () => {
                                 <Item name="groupPanel" />
                             </Toolbar>
 
+                            {/* grupoKey — texto invisible para el usuario */}
                             <Column
                                 dataField="grupoKey"
                                 caption="Especialidad / Servicio"
@@ -300,7 +298,9 @@ const GestionOferta = () => {
                                 allowFiltering={false}
                                 allowHeaderFiltering={false}
                                 groupCellRender={() => (
-                                    <span style={{ color: 'transparent', userSelect: 'none', fontSize: 1 }}>&nbsp;</span>
+                                    <span style={{ color: 'transparent', userSelect: 'none', fontSize: 1 }}>
+                                        &nbsp;
+                                    </span>
                                 )}
                             />
 
@@ -339,7 +339,6 @@ const GestionOferta = () => {
                                 cellRender={(cell) => (
                                     cell.data.tipoLinea === 'Asignación' ? (
                                         <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                                            {/* ── Editar → navega a la ficha completa ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#2f5da8', fontSize: 18 }}
                                                 title="Editar"
@@ -350,7 +349,6 @@ const GestionOferta = () => {
                                             >
                                                 <i className="ri-edit-line"></i>
                                             </div>
-                                            {/* ── Eliminar ── */}
                                             <div
                                                 style={{ cursor: 'pointer', color: '#c62828', fontSize: 18 }}
                                                 title="Eliminar"
