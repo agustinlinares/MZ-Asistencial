@@ -232,23 +232,8 @@ const Dashboard = () => {
 
                 {!loading && !error && data && (
                     <>
-                        {/* TABLAS COMPARATIVAS */}
+                        {/* GRÁFICOS DE TARTA — ahora arriba */}
                         <div className="db-section-title">
-                            <i className="ri-table-line"></i> Comparativa Presupuesto / Liquidación
-                        </div>
-                        <div className="db-tablas">
-                            {bloques.map(b => (
-                                <TablaBloque
-                                    key={b.key}
-                                    titulo={b.titulo}
-                                    icono={b.icono}
-                                    filas={b.filas}
-                                />
-                            ))}
-                        </div>
-
-                        {/* GRÁFICOS DE TARTA */}
-                        <div className="db-section-title" style={{ marginTop: 32 }}>
                             <i className="ri-pie-chart-line"></i> Distribución por Bloque
                         </div>
                         <div className="db-graficos">
@@ -259,6 +244,21 @@ const Dashboard = () => {
                                     icono={b.icono}
                                     datosPresupuesto={b.pieI}
                                     datosLiquidacion={b.pieL}
+                                />
+                            ))}
+                        </div>
+
+                        {/* TABLAS COMPARATIVAS — ahora abajo */}
+                        <div className="db-section-title" style={{ marginTop: 32 }}>
+                            <i className="ri-table-line"></i> Comparativa Presupuesto / Liquidación
+                        </div>
+                        <div className="db-tablas">
+                            {bloques.map(b => (
+                                <TablaBloque
+                                    key={b.key}
+                                    titulo={b.titulo}
+                                    icono={b.icono}
+                                    filas={b.filas}
                                 />
                             ))}
                         </div>

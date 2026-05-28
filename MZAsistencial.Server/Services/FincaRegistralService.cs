@@ -8,10 +8,12 @@ namespace MZAsistencial.Server.Services
     public class FincaRegistralService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public FincaRegistralService(MZAsistencialContext context)
+        public FincaRegistralService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         private string FixEncoding(string? value)
@@ -124,56 +126,72 @@ namespace MZAsistencial.Server.Services
 
         public async Task<FincaRegistralDTO?> ActualizarFinca(int id, FincaRegistralDTO dto)
         {
-            var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
-            if (finca == null) return null;
+            try
+            {
+                var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
+                if (finca == null) return null;
 
-            finca.CentroId = dto.Centro_id != 0 ? dto.Centro_id : null;
-            finca.Localizador = dto.Localizador;
-            finca.NombreVia = dto.Direccion;
-            finca.Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null;
-            finca.Coste = dto.Coste.HasValue ? (double?)dto.Coste : null;
-            finca.Fadqoarr = dto.F_Alquiler;
-            finca.Finscreg = dto.F_Inscripcion;
-            finca.FechaBaja = dto.F_Baja;
-            finca.ReferenciaCatastral = dto.Referencia_Catastral;
-            finca.Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion;
-            finca.TipoFinca = dto.TipoFinca;
-            finca.Titinmueble = dto.Titularidad;
-            finca.OtrosDatos = dto.OtrosDatos;
-            finca.DireccionElectronica = dto.DireccionGoogle;
+                finca.CentroId = dto.Centro_id != 0 ? dto.Centro_id : null;
+                finca.Localizador = dto.Localizador;
+                finca.NombreVia = dto.Direccion;
+                finca.Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null;
+                finca.Coste = dto.Coste.HasValue ? (double?)dto.Coste : null;
+                finca.Fadqoarr = dto.F_Alquiler;
+                finca.Finscreg = dto.F_Inscripcion;
+                finca.FechaBaja = dto.F_Baja;
+                finca.ReferenciaCatastral = dto.Referencia_Catastral;
+                finca.Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion;
+                finca.TipoFinca = dto.TipoFinca;
+                finca.Titinmueble = dto.Titularidad;
+                finca.OtrosDatos = dto.OtrosDatos;
+                finca.DireccionElectronica = dto.DireccionGoogle;
 
-            finca.FechaModificacion = DateTime.UtcNow;
+                finca.FechaModificacion = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
-            return await ObtenerFincaPorId(id);
+                await _context.SaveChangesAsync();
+                return await ObtenerFincaPorId(id);
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - ActualizarFinca");
+                throw;
+            }
         }
 
         public async Task<FincaRegistralDTO?> CrearFinca(FincaRegistralDTO dto)
         {
-            var finca = new FincasRegistrale
+            try
             {
-                CentroId = dto.Centro_id != 0 ? dto.Centro_id : null,
-                Localizador = dto.Localizador,
-                NombreVia = dto.Direccion,
-                Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null,
-                Coste = dto.Coste.HasValue ? (double?)dto.Coste : null,
-                Fadqoarr = dto.F_Alquiler,
-                ReferenciaCatastral = dto.Referencia_Catastral,
-                Finscreg = dto.F_Inscripcion,
-                FechaBaja = dto.F_Baja,
-                Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion,
-                TipoFinca = dto.TipoFinca,
-                Titinmueble = dto.Titularidad,
-                OtrosDatos = dto.OtrosDatos,
-                DireccionElectronica = dto.DireccionGoogle,
-                FechaAlta = DateTime.UtcNow,
-                FechaModificacion = DateTime.UtcNow
-            };
+                var finca = new FincasRegistrale
+                {
+                    CentroId = dto.Centro_id != 0 ? dto.Centro_id : null,
+                    Localizador = dto.Localizador,
+                    NombreVia = dto.Direccion,
+                    Superficie = dto.Superficie.HasValue ? (double?)dto.Superficie : null,
+                    Coste = dto.Coste.HasValue ? (double?)dto.Coste : null,
+                    Fadqoarr = dto.F_Alquiler,
+                    ReferenciaCatastral = dto.Referencia_Catastral,
+                    Finscreg = dto.F_Inscripcion,
+                    FechaBaja = dto.F_Baja,
+                    Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion,
+                    TipoFinca = dto.TipoFinca,
+                    Titinmueble = dto.Titularidad,
+                    OtrosDatos = dto.OtrosDatos,
+                    DireccionElectronica = dto.DireccionGoogle,
+                    FechaAlta = DateTime.UtcNow,
+                    FechaModificacion = DateTime.UtcNow
+                };
 
-            _context.FincasRegistrales.Add(finca);
-            await _context.SaveChangesAsync();
+                _context.FincasRegistrales.Add(finca);
+                await _context.SaveChangesAsync();
 
-            return await ObtenerFincaPorId(finca.FincaId);
+                return await ObtenerFincaPorId(finca.FincaId);
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - CrearFinca");
+                throw;
+            }
         }
 
         public async Task<List<FincaCosteDTO>> ObtenerCostesFinca(int fincaId)
@@ -186,48 +204,80 @@ namespace MZAsistencial.Server.Services
 
         public async Task<FincaCosteDTO> CrearCoste(FincaCosteDTO dto)
         {
-            var entity = new FincasRegistralesCostesPorAño
+            try
             {
-                FincaId = dto.FincaId,
-                Localizador = dto.Localizador,
-                Anio = dto.Anio,
-                Coste = dto.Coste
-            };
-            _context.FincasRegistralesCostesPorAños.Add(entity);
-            await _context.SaveChangesAsync();
-            dto.Id = entity.Id;
-            return dto;
+                var entity = new FincasRegistralesCostesPorAño
+                {
+                    FincaId = dto.FincaId,
+                    Localizador = dto.Localizador,
+                    Anio = dto.Anio,
+                    Coste = dto.Coste
+                };
+                _context.FincasRegistralesCostesPorAños.Add(entity);
+                await _context.SaveChangesAsync();
+                dto.Id = entity.Id;
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - CrearCoste");
+                throw;
+            }
         }
 
         public async Task<FincaCosteDTO?> ActualizarCoste(int id, FincaCosteDTO dto)
         {
-            var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
-            if (entity == null) return null;
-            entity.Localizador = dto.Localizador;
-            entity.Anio = dto.Anio;
-            entity.Coste = dto.Coste;
-            await _context.SaveChangesAsync();
-            dto.Id = id;
-            return dto;
+            try
+            {
+                var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
+                if (entity == null) return null;
+                entity.Localizador = dto.Localizador;
+                entity.Anio = dto.Anio;
+                entity.Coste = dto.Coste;
+                await _context.SaveChangesAsync();
+                dto.Id = id;
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - ActualizarCoste");
+                throw;
+            }
         }
 
         public async Task<bool> EliminarCoste(int id)
         {
-            var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
-            if (entity == null) return false;
-            _context.FincasRegistralesCostesPorAños.Remove(entity);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                var entity = await _context.FincasRegistralesCostesPorAños.FirstOrDefaultAsync(c => c.Id == id);
+                if (entity == null) return false;
+                _context.FincasRegistralesCostesPorAños.Remove(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - EliminarCoste");
+                throw;
+            }
         }
 
         public async Task<bool> EliminarFinca(int id)
         {
-            var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
-            if (finca == null) return false;
+            try
+            {
+                var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
+                if (finca == null) return false;
 
-            _context.FincasRegistrales.Remove(finca);
-            await _context.SaveChangesAsync();
-            return true;
+                _context.FincasRegistrales.Remove(finca);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Fincas - EliminarFinca");
+                throw;
+            }
         }
 
         public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId, int? anio)
