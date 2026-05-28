@@ -22,6 +22,7 @@ public class ListaDemandasDTO
     public string? ContestacionNecesidades { get; set; }
     public int? PeticionesAsignadas { get; set; }
     public int? PeticionesPendientes { get; set; }
+    public string? GrupoKey { get; set; }
     public int? Ene { get; set; }
     public int? Feb { get; set; }
     public int? Mar { get; set; }
