@@ -69,18 +69,10 @@ namespace MZAsistencial.Server.Services
 
         public async Task<IEnumerable<int>> GetAñosAsync()
         {
-            var años = await _context.Ejercicios
+            return await _context.Ejercicios
                 .OrderByDescending(e => e.Año)
                 .Select(e => e.Año)
                 .ToListAsync();
-
-            if (años.Count == 0)
-            {
-                var actual = DateTime.Now.Year;
-                años = Enumerable.Range(actual - 5, 7).OrderByDescending(a => a).ToList();
-            }
-
-            return años;
         }
 
         public async Task<FicheroGeneradoDTO> CreateAsync(int mutuaIntId, int año, int tipoCentroId, int usuarioId)
