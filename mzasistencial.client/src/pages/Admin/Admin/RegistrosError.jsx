@@ -63,6 +63,30 @@ const RegistrosError = () => {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
+    const handleResolver = async (errorId) => {
+        try {
+            const token = AuthService.getToken();
+            const res = await fetch(`/api/RegistroErrores/${errorId}/estado`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                },
+                body: JSON.stringify(3) // 3 = Resuelto
+            });
+            
+            if (res.ok) {
+                notify(t('Error marcado como resuelto'), 'success', 2000);
+                dataGridRef.current?.instance()?.refresh();
+            } else {
+                notify(t('No se pudo actualizar el estado'), 'error', 3000);
+            }
+        } catch (error) {
+            console.error('Error actualizando estado:', error);
+            notify(t('Error de conexión'), 'error', 3000);
+        }
+    };
+
     const onExporting = (e) => {
         e.component.beginUpdate();
         const workbook = new Workbook();
@@ -171,6 +195,29 @@ const RegistrosError = () => {
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
                                 <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
+                                
+                                <Column
+                                    caption={t('Acciones')}
+                                    width={100}
+                                    fixed={true}
+                                    fixedPosition="right"
+                                    alignment="center"
+                                    cellRender={(cell) => (
+                                        <div className="ficha-row-actions" style={{ display: 'flex', justifyContent: 'center' }}>
+                                            {cell.data.estado !== 'Resuelto' && (
+                                                <i 
+                                                    className="ri-check-double-line" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleResolver(cell.data.errorId);
+                                                    }}
+                                                    title={t('Marcar como Resuelto')}
+                                                    style={{ color: '#2e7d32', cursor: 'pointer', fontSize: '18px' }}
+                                                />
+                                            )}
+                                        </div>
+                                    )}
+                                />
                             </DataGrid>
                         </div>
                     </div>
