@@ -12,16 +12,10 @@ public interface ICitacionesService
 {
     Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter);
     Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter);
-    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo);
     Task<int> SeedDataAsync(int mutuaId);
-    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId);
-    Task<CitacionDocumentacion?> GetDocumentoByIdAsync(int docId);
-    Task<bool> UploadDocumentoAsync(int citacionId, string nombreArchivo, string rutaFisica, int mutuaId, int usuarioId);
-    Task<List<RegistroActividad>> GetHistorialAsync(int citacionId);
-    Task<bool> UpdateEstadoMasivoAsync(List<int> citacionIds, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<bool> UpdateRechazoMasivoAsync(List<int> citacionIds, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto);
 }
 
 public class CitacionFilter
@@ -79,136 +73,91 @@ public class CitacionesService : ICitacionesService
 
     private async Task<List<CitacionDTO>> ApplyFiltersAndSelect(IQueryable<VwCitacione> query, CitacionFilter filter)
     {
-        // First we filter the base citations as requested
-        if (filter.Anio.HasValue) query = query.Where(c => c.Año == filter.Anio);
-        if (filter.CitacionId.HasValue) query = query.Where(c => c.CitacionId == filter.CitacionId);
-        if (filter.DemandaId.HasValue) query = query.Where(c => c.Id == filter.DemandaId);
-        if (!string.IsNullOrEmpty(filter.Necesidad)) query = query.Where(c => c.Necesidad.Contains(filter.Necesidad));
+        // 1. Join con Demandas para cálculos de consumo
+        var joinedQuery = from c in query
+                          join d in _context.Demandas on c.Id equals d.DemandaId into demandGroup
+                          from d in demandGroup.DefaultIfEmpty()
+                          select new { c, d };
 
-        // We fetch the citations in memory (or minimal projection) to compute the complex grouping because 
-        // full dynamic grouping with left joins on Views in EF can throw translation exceptions.
-        var baseCitations = await query.ToListAsync();
-        if (!baseCitations.Any()) return new List<CitacionDTO>();
-
-        var demandaIds = baseCitations.Select(c => c.Id).Distinct().ToList();
+        // 2. Filtros básicos
+        if (filter.Anio.HasValue)
+            joinedQuery = joinedQuery.Where(x => x.c.Año == filter.Anio);
         
-        // Fetch related Demands
-        var demandas = await _context.Demandas.Where(d => demandaIds.Contains(d.DemandaId)).ToDictionaryAsync(d => d.DemandaId);
+        if (filter.CitacionId.HasValue)
+            joinedQuery = joinedQuery.Where(x => x.c.CitacionId == filter.CitacionId);
 
-        // Fetch all Citations for these Demands to calculate accurate Consumption
-        // State 6 = Rechazada. We do not count them as consumption.
-        var siblingCitations = await _context.Citaciones
-            .Where(c => c.DemandaId != null && demandaIds.Contains(c.DemandaId.Value) && c.EstadoId != 6)
-            .ToListAsync();
+        if (filter.DemandaId.HasValue)
+            joinedQuery = joinedQuery.Where(x => x.c.Id == filter.DemandaId);
 
-        var consumptionMap = siblingCitations
-            .GroupBy(c => c.DemandaId)
-            .ToDictionary(g => g.Key, g => new {
-                Ene = g.Sum(x => x.Ene ?? 0),
-                Feb = g.Sum(x => x.Feb ?? 0),
-                Mar = g.Sum(x => x.Mar ?? 0),
-                Abr = g.Sum(x => x.Abr ?? 0),
-                May = g.Sum(x => x.May ?? 0),
-                Jun = g.Sum(x => x.Jun ?? 0),
-                Jul = g.Sum(x => x.Jul ?? 0),
-                Ago = g.Sum(x => x.Ago ?? 0),
-                Sep = g.Sum(x => x.Sep ?? 0),
-                Oct = g.Sum(x => x.Oct ?? 0),
-                Nov = g.Sum(x => x.Nov ?? 0),
-                Dic = g.Sum(x => x.Diciembre ?? 0)
-            });
+        if (!string.IsNullOrEmpty(filter.Necesidad))
+            joinedQuery = joinedQuery.Where(x => x.c.Necesidad.Contains(filter.Necesidad));
 
-        var results = new List<CitacionDTO>();
-        var now = DateTime.Now;
-
-        foreach (var c in baseCitations)
+        // 3. Lógica de Estados (incluyendo virtuales)
+        if (!string.IsNullOrEmpty(filter.Estado) && filter.Estado != "Todas")
         {
-            var d = c.Id.HasValue && demandas.ContainsKey(c.Id.Value) ? demandas[c.Id.Value] : null;
-            var cons = c.Id.HasValue && consumptionMap.ContainsKey(c.Id.Value) ? consumptionMap[c.Id.Value] : null;
-
-            bool isDesierta = c.FechaRespuestaCitacion == null && c.FechaAltaSolicitud <= now.AddHours(-96);
-            bool isCaducada = c.FechaRespuestaCitacion == null && d != null && d.FechaAlta <= now.AddMonths(-1);
-            
-            bool isPendienteConsumir = false;
-            bool isConsumido = false;
-
-            if (d != null)
+            var now = DateTime.Now;
+            switch (filter.Estado)
             {
-                var dTotal = (d.Ene ?? 0) + (d.Feb ?? 0) + (d.Mar ?? 0) + (d.Abr ?? 0) + (d.May ?? 0) + (d.Jun ?? 0) + 
-                             (d.Jul ?? 0) + (d.Ago ?? 0) + (d.Sep ?? 0) + (d.Oct ?? 0) + (d.Nov ?? 0) + (d.Dic ?? 0);
-                
-                var cTotal = cons != null ? (cons.Ene + cons.Feb + cons.Mar + cons.Abr + cons.May + cons.Jun + 
-                                             cons.Jul + cons.Ago + cons.Sep + cons.Oct + cons.Nov + cons.Dic) : 0;
-                
-                // For Pendiente Consumir: The demand has more remaining capacity in any month
-                isPendienteConsumir = (d.Ene ?? 0) > (cons?.Ene ?? 0) || (d.Feb ?? 0) > (cons?.Feb ?? 0) || 
-                                      (d.Mar ?? 0) > (cons?.Mar ?? 0) || (d.Abr ?? 0) > (cons?.Abr ?? 0) ||
-                                      (d.May ?? 0) > (cons?.May ?? 0) || (d.Jun ?? 0) > (cons?.Jun ?? 0) ||
-                                      (d.Jul ?? 0) > (cons?.Jul ?? 0) || (d.Ago ?? 0) > (cons?.Ago ?? 0) ||
-                                      (d.Sep ?? 0) > (cons?.Sep ?? 0) || (d.Oct ?? 0) > (cons?.Oct ?? 0) ||
-                                      (d.Nov ?? 0) > (cons?.Nov ?? 0) || (d.Dic ?? 0) > (cons?.Dic ?? 0);
-
-                // For Consumido: The consumption equals or exceeds the demand in all months where demand existed
-                // Simplified: total consumed >= total demand and no month is pending.
-                isConsumido = !isPendienteConsumir && dTotal > 0 && cTotal >= dTotal;
+                case "Desierta":
+                    joinedQuery = joinedQuery.Where(x => x.c.FechaRespuestaCitacion == null && 
+                                                      x.c.FechaAltaSolicitud <= now.AddHours(-96));
+                    break;
+                case "Caducadas":
+                    joinedQuery = joinedQuery.Where(x => x.c.FechaRespuestaCitacion == null && 
+                                                      x.c.FechaAltaSolicitud <= now.AddMonths(-1));
+                    break;
+                case "Pendiente Consumir":
+                    // Demanda > Citación en algún mes (simplificado a Total para este ejemplo)
+                    joinedQuery = joinedQuery.Where(x => x.d != null && 
+                        ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
+                         (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)) > (x.c.Total ?? 0));
+                    break;
+                case "Consumidas":
+                    joinedQuery = joinedQuery.Where(x => x.d != null && 
+                        (x.c.Total ?? 0) >= ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
+                                             (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)));
+                    break;
+                default:
+                    joinedQuery = joinedQuery.Where(x => x.c.Estado == filter.Estado);
+                    break;
             }
-
-            // Apply Derived State Filters
-            if (!string.IsNullOrEmpty(filter.Estado) && filter.Estado != "Todas")
-            {
-                if (filter.Estado == "Desierta" && !isDesierta) continue;
-                if (filter.Estado == "Caducadas" && !isCaducada) continue;
-                if (filter.Estado == "Pendiente Consumir" && !isPendienteConsumir) continue;
-                if (filter.Estado == "Consumidas" && !isConsumido) continue;
-                if (filter.Estado != "Desierta" && filter.Estado != "Caducadas" && 
-                    filter.Estado != "Pendiente Consumir" && filter.Estado != "Consumidas" &&
-                    c.Estado != filter.Estado) 
-                {
-                    continue;
-                }
-            }
-
-            results.Add(new CitacionDTO
-            {
-                CitacionId = c.CitacionId,
-                DemandaId = c.Id,
-                Anio = c.Año,
-                MutuaOfertante = c.MutuaOfertante,
-                MutuaSolicitante = c.MutuaSolicitante,
-                Centro = c.Centro,
-                Especialidad = c.Especialidad,
-                Servicio = c.Servicio,
-                // Assigning derived states for UI
-                Estado = isDesierta ? "Desierta" : (isCaducada ? "Caducada" : c.Estado),
-                Ene = c.Ene, Feb = c.Feb, Mar = c.Mar, Abr = c.Abr, May = c.May, Jun = c.Jun,
-                Jul = c.Jul, Ago = c.Ago, Sep = c.Sep, Oct = c.Oct, Nov = c.Nov, Diciembre = c.Diciembre,
-                Total = c.Total,
-                FechaAltaSolicitud = c.FechaAltaSolicitud,
-                EstadoId = c.EstadoId,
-                MutuaOfertanteId = c.MutuaOfertanteId,
-                MutuaDemandanteId = c.MutuaDemandanteId,
-                Necesidad = c.Necesidad,
-                Provincia = c.Provincia,
-                Localidad = c.Localidad,
-                Direccion = c.DireccionGis,
-                Telefono = c.Telefono,
-                Contestacion = c.Contestacion,
-                FechaContestacion = c.FechaRespuestaCitacion,
-                DemandaEne = d?.Ene ?? 0, DemandaFeb = d?.Feb ?? 0, DemandaMar = d?.Mar ?? 0, DemandaAbr = d?.Abr ?? 0,
-                DemandaMay = d?.May ?? 0, DemandaJun = d?.Jun ?? 0, DemandaJul = d?.Jul ?? 0, DemandaAgo = d?.Ago ?? 0,
-                DemandaSep = d?.Sep ?? 0, DemandaOct = d?.Oct ?? 0, DemandaNov = d?.Nov ?? 0, DemandaDic = d?.Dic ?? 0,
-                DemandaTotal = d != null ? ((d.Ene ?? 0) + (d.Feb ?? 0) + (d.Mar ?? 0) + (d.Abr ?? 0) + (d.May ?? 0) + (d.Jun ?? 0) + (d.Jul ?? 0) + (d.Ago ?? 0) + (d.Sep ?? 0) + (d.Oct ?? 0) + (d.Nov ?? 0) + (d.Dic ?? 0)) : 0,
-                ConsumoEne = cons?.Ene ?? 0, ConsumoFeb = cons?.Feb ?? 0, ConsumoMar = cons?.Mar ?? 0, ConsumoAbr = cons?.Abr ?? 0,
-                ConsumoMay = cons?.May ?? 0, ConsumoJun = cons?.Jun ?? 0, ConsumoJul = cons?.Jul ?? 0, ConsumoAgo = cons?.Ago ?? 0,
-                ConsumoSep = cons?.Sep ?? 0, ConsumoOct = cons?.Oct ?? 0, ConsumoNov = cons?.Nov ?? 0, ConsumoDic = cons?.Dic ?? 0,
-                ConsumoTotal = cons != null ? (cons.Ene + cons.Feb + cons.Mar + cons.Abr + cons.May + cons.Jun + cons.Jul + cons.Ago + cons.Sep + cons.Oct + cons.Nov + cons.Dic) : 0
-            });
         }
 
-        return results.OrderByDescending(r => r.FechaAltaSolicitud).ToList();
+        return await joinedQuery
+            .OrderByDescending(x => x.c.FechaAltaSolicitud)
+            .Select(x => new CitacionDTO
+            {
+                CitacionId = x.c.CitacionId,
+                DemandaId = x.c.Id,
+                Anio = x.c.Año,
+                MutuaOfertante = x.c.MutuaOfertante,
+                MutuaSolicitante = x.c.MutuaSolicitante,
+                Centro = x.c.Centro,
+                Especialidad = x.c.Especialidad,
+                Servicio = x.c.Servicio,
+                Estado = x.c.Estado,
+                Ene = x.c.Ene,
+                Feb = x.c.Feb,
+                Mar = x.c.Mar,
+                Abr = x.c.Abr,
+                May = x.c.May,
+                Jun = x.c.Jun,
+                Jul = x.c.Jul,
+                Ago = x.c.Ago,
+                Sep = x.c.Sep,
+                Oct = x.c.Oct,
+                Nov = x.c.Nov,
+                Diciembre = x.c.Diciembre,
+                Total = x.c.Total,
+                FechaAltaSolicitud = x.c.FechaAltaSolicitud,
+                EstadoId = x.c.EstadoId,
+                MutuaOfertanteId = x.c.MutuaOfertanteId,
+                MutuaDemandanteId = x.c.MutuaDemandanteId
+            })
+            .ToListAsync();
     }
 
-    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null)
+    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion)
     {
         try
         {
@@ -220,7 +169,6 @@ public class CitacionesService : ICitacionesService
             citacion.FechaRespuestaCitacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            await RegistrarActividadAsync(citacionId, $"Estado cambiado a {(estadoId == 2 ? "Concedida" : "Modificada")}. Contestación: {contestacion}", 1);
             return true;
         }
         catch (Exception ex)
@@ -230,7 +178,7 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo)
     {
         try
         {
@@ -243,7 +191,6 @@ public class CitacionesService : ICitacionesService
             citacion.FechaRespuestaCitacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            await RegistrarActividadAsync(citacionId, $"Citación Rechazada. Motivo: {motivo}", 1);
             return true;
         }
         catch (Exception ex)
@@ -252,41 +199,7 @@ public class CitacionesService : ICitacionesService
             throw;
         }
     }
-
-    public async Task<bool> UpdateEstadoMasivoAsync(List<int> citacionIds, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null)
-    {
-        try
-        {
-            foreach (var id in citacionIds)
-            {
-                await UpdateEstadoAsync(id, estadoId, contestacion, user);
-            }
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
-            throw;
-        }
-    }
-
-    public async Task<bool> UpdateRechazoMasivoAsync(List<int> citacionIds, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
-    {
-        try
-        {
-            foreach (var id in citacionIds)
-            {
-                await UpdateRechazoAsync(id, motivo, user);
-            }
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
-            throw;
-        }
-    }
-    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
+    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto)
     {
         try
         {
@@ -384,89 +297,6 @@ public class CitacionesService : ICitacionesService
         {
             await _registroErroresService.LogErrorAsync(ex, "Citaciones");
             throw;
-        }
-    }
-
-    public async Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId)
-    {
-        try
-        {
-            return await _context.CitacionDocumentacions
-                .Where(d => d.CitacionId == citacionId)
-                .OrderByDescending(d => d.FechaAlta)
-                .ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
-            throw;
-        }
-    }
-
-    public async Task<CitacionDocumentacion?> GetDocumentoByIdAsync(int docId)
-    {
-        return await _context.CitacionDocumentacions.FindAsync(docId);
-    }
-
-    public async Task<bool> UploadDocumentoAsync(int citacionId, string nombreArchivo, string rutaFisica, int mutuaId, int usuarioId)
-    {
-        try
-        {
-            var doc = new CitacionDocumentacion
-            {
-                CitacionId = citacionId,
-                Nombre = nombreArchivo,
-                NombreFisicoServidor = rutaFisica,
-                MutuaId = mutuaId,
-                UsuarioAlta = usuarioId,
-                FechaAlta = DateTime.Now
-            };
-
-            _context.CitacionDocumentacions.Add(doc);
-            await _context.SaveChangesAsync();
-            await RegistrarActividadAsync(citacionId, $"Documento subido: {nombreArchivo}", usuarioId);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
-            throw;
-        }
-    }
-
-    public async Task<List<RegistroActividad>> GetHistorialAsync(int citacionId)
-    {
-        try
-        {
-            return await _context.RegistroActividads
-                .Where(r => r.Accion != null && r.Accion.Contains($"Citación {citacionId} -"))
-                .OrderByDescending(r => r.Fecha)
-                .ToListAsync();
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
-            throw;
-        }
-    }
-
-    private async Task RegistrarActividadAsync(int citacionId, string accion, int usuarioId)
-    {
-        try
-        {
-            var registro = new RegistroActividad
-            {
-                UsuarioId = usuarioId,
-                Fecha = DateTime.Now,
-                Accion = $"Citación {citacionId} - {accion}",
-                Sql = "N/A"
-            };
-            _context.RegistroActividads.Add(registro);
-            await _context.SaveChangesAsync();
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
         }
     }
 }

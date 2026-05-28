@@ -10,6 +10,5 @@ namespace MZAsistencial.Server.Services
         Task LogErrorAsync(Exception ex, string modulo, int? usuarioId = null);
         Task LogErrorStringAsync(string descripcion, string modulo, int? usuarioId = null);
         IQueryable<RegistroErrorDTO> ObtenerListadoErroresQuery();
-        Task<bool> UpdateEstadoAsync(int errorId, int nuevoEstadoId);
     }
 }
