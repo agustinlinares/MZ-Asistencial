@@ -63,6 +63,7 @@ const RegistrosError = () => {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
+<<<<<<< HEAD
     const handleResolver = async (errorId) => {
         try {
             const token = AuthService.getToken();
@@ -87,6 +88,8 @@ const RegistrosError = () => {
         }
     };
 
+=======
+>>>>>>> c430d49 (feat: implementar registro de errores en modulos desarrollados y frontend)
     const onExporting = (e) => {
         e.component.beginUpdate();
         const workbook = new Workbook();
@@ -195,6 +198,7 @@ const RegistrosError = () => {
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
                                 <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
+<<<<<<< HEAD
                                 
                                 <Column
                                     caption={t('Acciones')}
@@ -218,6 +222,8 @@ const RegistrosError = () => {
                                         </div>
                                     )}
                                 />
+=======
+>>>>>>> c430d49 (feat: implementar registro de errores en modulos desarrollados y frontend)
                             </DataGrid>
                         </div>
                     </div>
