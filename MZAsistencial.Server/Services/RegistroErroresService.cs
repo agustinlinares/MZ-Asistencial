@@ -76,10 +76,20 @@ namespace MZAsistencial.Server.Services
                             Descripcion = r.Descripcion,
                             Estado = r.EstadoId == 1 ? "Abierto" : 
                                      r.EstadoId == 2 ? "En curso" : 
-                                     r.EstadoId == 3 ? "Cerrado" : "Abierto"
+                                     r.EstadoId == 3 ? "Resuelto" : "Abierto"
                         };
 
             return query;
+        }
+
+        public async Task<bool> UpdateEstadoAsync(int errorId, int nuevoEstadoId)
+        {
+            var registro = await _context.RegistroErrores.FindAsync(errorId);
+            if (registro == null) return false;
+
+            registro.EstadoId = nuevoEstadoId;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
