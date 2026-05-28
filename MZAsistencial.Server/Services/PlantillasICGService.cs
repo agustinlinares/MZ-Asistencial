@@ -157,22 +157,4 @@ public class PlantillasICGService
             throw;
         }
     }
-
-    public async Task<bool> EliminarPlantillaAsync(int id)
-    {
-        try
-        {
-            var informe = await _context.InformesIcgs.FirstOrDefaultAsync(i => i.InformeId == id);
-            if (informe == null) return false;
-
-            _context.InformesIcgs.Remove(informe);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG - EliminarPlantillaAsync");
-            throw;
-        }
-    }
 }
