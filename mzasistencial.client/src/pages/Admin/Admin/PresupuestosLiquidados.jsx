@@ -95,7 +95,6 @@ const PresupuestosLiquidados = () => {
             const response = await fetch('/api/Mutuas');
             if (response.ok) {
                 const data = await response.json();
-                console.log("👉 Mutuas recibidas del backend:", data); // Verifica que este log pinte los 5 elementos
                 setMutuas(data); 
             }
         } catch (error) {
