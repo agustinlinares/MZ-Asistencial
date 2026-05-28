@@ -5,68 +5,57 @@ using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace MZAsistencial.Server.Services
 {
     public class RegistroErroresService : IRegistroErroresService
     {
         private readonly MZAsistencialContext _context;
-        private readonly IMemoryCache _cache;
 
-        public RegistroErroresService(MZAsistencialContext context, IMemoryCache cache)
+        public RegistroErroresService(MZAsistencialContext context)
         {
             _context = context;
-            _cache = cache;
         }
 
         public async Task LogErrorAsync(Exception ex, string modulo, int? usuarioId = null)
         {
-            await LogInternalAsync(ex.Message, usuarioId, ex.StackTrace, modulo);
+            string descripcion = $"[{modulo}] {ex.Message}";
+            await LogInternalAsync(descripcion, usuarioId, ex.StackTrace);
         }
 
-        public async Task LogErrorStringAsync(string descripcion, string modulo, int? usuarioId = null, string? stackTrace = null)
+        public async Task LogErrorStringAsync(string descripcion, string modulo, int? usuarioId = null)
         {
-            await LogInternalAsync(descripcion, usuarioId, stackTrace, modulo);
+            string msg = $"[{modulo}] {descripcion}";
+            await LogInternalAsync(msg, usuarioId, null);
         }
 
-        private async Task LogInternalAsync(string descripcion, int? usuarioId, string? stackTrace, string modulo)
+        private async Task LogInternalAsync(string descripcion, int? usuarioId, string? stackTrace)
         {
             try
             {
+                // Limitar tamaño para no exceder columnas si fuera necesario (asumiendo varchar(max) pero por precaución)
                 if (descripcion.Length > 2000) descripcion = descripcion.Substring(0, 2000);
                 
-                // Identificador único para este error
-                string cacheKey = $"Error_{modulo}_{usuarioId}_{descripcion.GetHashCode()}";
+                string ficheroLogName = stackTrace == null 
+                    ? $"LOG_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt" 
+                    : $"C:\\Ficheros\\Errores\\LOG_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt";
 
-                // Mira a la velocidad de la RAM si esta llave ya existe
-                if (_cache.TryGetValue(cacheKey, out _))
-                {
-                    // El hilo 2 entra por aquí y muere.
-                    return;
-                }
-
-                // El hilo 1 llega aquí y bloquea la puerta durante 5 segundos
-                _cache.Set(cacheKey, true, TimeSpan.FromSeconds(5));
-                
                 var registro = new RegistroErrore
                 {
                     UsuarioId = usuarioId,
                     FechaError = DateTime.Now,
                     Descripcion = descripcion,
-                    NombreModulo = modulo, 
-                    EstadoId = 1,
-                    Comentarios = stackTrace 
+                    FicheroLog = ficheroLogName,
+                    EstadoId = 1, // 1 = Abierto
+                    Comentarios = stackTrace // Guardamos el stack trace en comentarios por si acaso
                 };
 
                 _context.RegistroErrores.Add(registro);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"ERROR CRÍTICO AL GUARDAR LOG: {ex.Message}");
-                if (ex.InnerException != null) 
-                    Console.WriteLine($"DETALLE SQL: {ex.InnerException.Message}");
+                // Fallback silencioso: no interrumpir flujo si falla el log
             }
         }
 
@@ -83,30 +72,14 @@ namespace MZAsistencial.Server.Services
                             Usuario = subU.Usuario1,
                             Mutua = subU.MutuaId == null ? "ADMINISTRADOR" : subM.Mutua1,
                             FechaError = r.FechaError,
-                            Modulo = r.NombreModulo,
+                            FicheroLog = r.FicheroLog,
                             Descripcion = r.Descripcion,
                             Estado = r.EstadoId == 1 ? "Abierto" : 
-                                    r.EstadoId == 2 ? "En curso" : 
-                                    r.EstadoId == 3 ? "Resuelto" : "Abierto"
+                                     r.EstadoId == 2 ? "En curso" : 
+                                     r.EstadoId == 3 ? "Cerrado" : "Abierto"
                         };
 
             return query;
-        }
-
-        public async Task<bool> UpdateEstadoAsync(int errorId, int nuevoEstadoId)
-        {
-            var registro = await _context.RegistroErrores.FindAsync(errorId);
-            if (registro == null) return false;
-
-            registro.EstadoId = nuevoEstadoId;
-            
-            if (nuevoEstadoId == 3)
-            {
-                registro.FechaResolucion = DateTime.Now;
-            }
-
-            await _context.SaveChangesAsync();
-            return true;
         }
     }
 }

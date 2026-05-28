@@ -27,32 +27,5 @@ namespace MZAsistencial.Server.Controllers
             var query = _registroErroresService.ObtenerListadoErroresQuery();
             return Ok(await DataSourceLoader.LoadAsync(query, loadOptions));
         }
-
-        [HttpPut("{id}/estado")]
-        public async Task<IActionResult> UpdateEstado(int id, [FromBody] int nuevoEstadoId)
-        {
-            var result = await _registroErroresService.UpdateEstadoAsync(id, nuevoEstadoId);
-            if (!result) return NotFound();
-            return Ok();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RegistrarErrorFront([FromBody] CrearRegistroErrorDTO request)
-        {
-            try
-            {
-                await _registroErroresService.LogErrorStringAsync(
-                    request.Descripcion, 
-                    request.Modulo, 
-                    request.UsuarioId, 
-                    request.DetalleError
-                );
-                return Ok();
-            }
-            catch
-            {
-                return Ok(); 
-            }
-        }
     }
 }

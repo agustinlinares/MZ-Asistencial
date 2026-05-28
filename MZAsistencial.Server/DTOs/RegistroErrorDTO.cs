@@ -9,5 +9,4 @@ public class RegistroErrorDTO
     public string? FicheroLog { get; set; }
     public string? Descripcion { get; set; }
     public string? Estado { get; set; }
-    public string? Modulo { get; set; }
 }
