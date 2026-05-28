@@ -25,7 +25,7 @@ public class ListaDemandasService : IListaDemandasService
                         on (int?)d.DemandaId equals (int?)o.DemandaId into ofJoin
                     from o in ofJoin.DefaultIfEmpty()
                     join cc in _context.CentrosConcertados
-                        on (int?)o.CentroId equals (int?)cc.CentroId into ccJoin
+                        on (o == null ? (int?)null : (int?)o.CentroId) equals (int?)cc.CentroId into ccJoin
                     from cc in ccJoin.DefaultIfEmpty()
                     join e in _context.AuxEspecialidades
                         on (int?)d.EspecialidadId equals (int?)e.EspecialidadId into espJoin
@@ -149,7 +149,16 @@ public class ListaDemandasService : IListaDemandasService
                 mutuasDict.TryGetValue(cp.MutuaId, out mutuaOferta);
 
             string? centro = x.CentroConcertado ?? cp?.Centro;
-
+            string grupoKey = string.Join(" | ", new[]
+ {
+    $"Año: {x.Año}",
+    $"Mutua: {mutuaOferta ?? "-"}",
+    $"Centro: {centro ?? "-"}",
+    $"Especialidad: {x.Especialidad ?? "-"}",
+    $"Servicio: {x.Servicio ?? "-"}",
+    $"Población: {x.Localidad ?? "-"}",
+    $"Demanda: {x.DemandaId}"  
+});
             // Fila DEMANDA
             result.Add(new ListaDemandasDTO
             {
@@ -188,17 +197,14 @@ public class ListaDemandasService : IListaDemandasService
                         (x.DemandaJul ?? 0) + (x.DemandaAgo ?? 0) + (x.DemandaSep ?? 0) +
                         (x.DemandaOct ?? 0) + (x.DemandaNov ?? 0) + (x.DemandaDic ?? 0),
                 OfertaId = x.OfertaId,
+                GrupoKey = grupoKey,
             });
 
-            // Clave de agrupación preconstruida
-
-            string grupoKey = $"{x.Especialidad ?? "-"} / {x.Servicio ?? "-"}";
-
-            // Fila ASIGNACION
+            // Fila OFERTA
             result.Add(new ListaDemandasDTO
             {
                 RowKey = $"{x.DemandaId}_A",
-                TipoLinea = "Asignación",
+                TipoLinea = "Oferta",
                 DemandaId = x.DemandaId,
                 Año = x.Año,
                 MutuaSolicitante = x.MutuaSolicitante,
@@ -232,6 +238,7 @@ public class ListaDemandasService : IListaDemandasService
                         (x.OfertaJul ?? 0) + (x.OfertaAgo ?? 0) + (x.OfertaSep ?? 0) +
                         (x.OfertaOct ?? 0) + (x.OfertaNov ?? 0) + (x.OfertaDic ?? 0),
                 OfertaId = x.OfertaId,
+                GrupoKey = grupoKey,
             });
         }
 
@@ -328,7 +335,6 @@ public class ListaDemandasService : IListaDemandasService
         return true;
     }
 
-    // ── UpdateAsync para DemandaUpdateDTO (desde FichaDemanda) ───────────────
     public async Task<bool> UpdateAsync(int id, DemandaUpdateDTO dto)
     {
         var demanda = await _context.Demandas.FindAsync(id);
@@ -345,7 +351,6 @@ public class ListaDemandasService : IListaDemandasService
         return true;
     }
 
-    // ── GetByIdAsync ─────────────────────────────────────────────────────────
     public async Task<DemandaEditDTO?> GetByIdAsync(int id)
     {
         var demanda = await _context.Demandas
@@ -395,7 +400,6 @@ public class ListaDemandasService : IListaDemandasService
             }
         }
 
-        // Oferta confirmada — fechas y meses OFERTA OFRECIDA
         DateTime? fechaConfirmacion = null;
         DateTime? fechaAsignacion = null;
         var ofertaConfirmada = await _context.Ofertas
@@ -408,7 +412,6 @@ public class ListaDemandasService : IListaDemandasService
             fechaAsignacion = ofertaConfirmada.FechaAsignacion;
         }
 
-        // ── Mutua ofertante y centro desde la oferta confirmada ──────────────
         string? mutuaOfertante = null;
         string? centroDemanda = null;
         string? direccionCentro = null;
@@ -445,7 +448,6 @@ public class ListaDemandasService : IListaDemandasService
             }
         }
 
-        // ── Subsolicitudes ───────────────────────────────────────────────────
         var subSolicitudes = new List<SubSolicitudDemandaDTO>();
         var subs = await _context.DemandasSubSols
             .Where(s => s.DemandaId == id)
@@ -517,7 +519,6 @@ public class ListaDemandasService : IListaDemandasService
             });
         }
 
-        // ── Documentos ───────────────────────────────────────────────────────
         var docsRaw = await _context.DemandasDocumentacions
             .Where(d => d.DemandaId == id)
             .ToListAsync();
