@@ -4,6 +4,7 @@ import './Centros.css';
 import '../../../styles/FichaGlobal.css';
 import { saveAs } from 'file-saver-es';
 import { jsPDF } from 'jspdf';
+import { useNavigate } from 'react-router-dom';
 import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -57,6 +58,7 @@ const authHeaders = () => {
 const CentrosConcertados = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const navigate = useNavigate();
     
     // Estados simplificados para el patrón Master/Detail inline
     const [centros, setCentros] = useState([]);
@@ -298,33 +300,34 @@ const CentrosConcertados = () => {
                                     <Column dataField="fechaBaja" caption={t('Fecha Baja')} dataType="date" width={110} defaultSortOrder="asc" 
                                     defaultSortIndex={0}/>
                                     <Column 
-                                        dataField="mapaValidado" caption="Mapa" 
-                                        width={80} 
-                                        alignment="center"
-                                        cellRender={(cellData) => {
-                                            const isValidado = cellData.value === true;
-                                            
-                                            const esBaja = cellData.data.fechaBaja;
-                                            
-                                            if (isValidado) {
-                                                return (
-                                                    <i 
-                                                        className="ri-map-pin-2-fill" 
-                                                        style={{ color: esBaja ? '#ffffff' : '#2e7d32', fontSize: '18px' }} 
-                                                        title="Ubicación validada"
-                                                    ></i>
-                                                );
-                                            } else {
-                                                return (
-                                                    <i 
-                                                        className="ri-close-circle-line" 
-                                                        style={{ color: esBaja ? 'rgba(255, 255, 255, 0.5)' : '#d32f2f', fontSize: '18px' }} 
-                                                        title="Falta validación del mapa"
-                                                    ></i>
-                                                );
-                                            }
-                                        }} 
-                                    />
+                                    dataField="mapaValidado" 
+                                    caption="Mapa" 
+                                    width={80} 
+                                    alignment="center"
+                                    cellRender={(cellData) => {
+                                        const isValidado = cellData.value === true;
+                                        const esBaja = cellData.data.fechaBaja;
+                                        
+                                        return (
+                                            <i 
+                                                className={isValidado ? "ri-map-pin-2-fill" : "ri-close-circle-line"} 
+                                                style={{ 
+                                                    color: esBaja ? (isValidado ? '#ffffff' : 'rgba(255, 255, 255, 0.5)') : (isValidado ? '#2e7d32' : '#d32f2f'), 
+                                                    fontSize: '18px', 
+                                                    cursor: 'pointer' 
+                                                }} 
+                                                title={isValidado ? "Editar ubicación" : "Añadir ubicación"}
+                                                onClick={() => navigate(`/admin/centros/concertados/${cellData.data.centro_id}/mapa-edicion`, { 
+                                                    state: { 
+                                                        datosFila: cellData.data,
+                                                        apiEndpoint: `/api/CentrosConcertados/${cellData.data.centro_id}`,
+                                                        tituloFicha: `Centro Concertado | ${cellData.data.centro || 'Editar Ubicación'}`
+                                                    } 
+                                                })}
+                                            ></i>
+                                        );
+                                    }} 
+                                />
                                     <Column
                                         caption={t('Acciones')}
                                         width={100}

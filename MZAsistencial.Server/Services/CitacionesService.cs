@@ -31,26 +31,44 @@ public class CitacionFilter
 public class CitacionesService : ICitacionesService
 {
     private readonly MZAsistencialContext _context;
+    private readonly IRegistroErroresService _registroErroresService;
 
-    public CitacionesService(MZAsistencialContext context)
+    public CitacionesService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
     {
         _context = context;
+        _registroErroresService = registroErroresService;
     }
 
     public async Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter)
     {
-        var query = _context.VwCitaciones
-            .Where(c => c.MutuaDemandanteId == mutuaId);
+        try
+        {
+            var query = _context.VwCitaciones
+                .Where(c => c.MutuaDemandanteId == mutuaId);
 
-        return await ApplyFiltersAndSelect(query, filter);
+            return await ApplyFiltersAndSelect(query, filter);
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
 
     public async Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter)
     {
-        var query = _context.VwCitaciones
-            .Where(c => c.MutuaOfertanteId == mutuaId);
+        try
+        {
+            var query = _context.VwCitaciones
+                .Where(c => c.MutuaOfertanteId == mutuaId);
 
-        return await ApplyFiltersAndSelect(query, filter);
+            return await ApplyFiltersAndSelect(query, filter);
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
 
     private async Task<List<CitacionDTO>> ApplyFiltersAndSelect(IQueryable<VwCitacione> query, CitacionFilter filter)
@@ -141,112 +159,144 @@ public class CitacionesService : ICitacionesService
 
     public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion)
     {
-        var citacion = await _context.Citaciones.FindAsync(citacionId);
-        if (citacion == null) return false;
+        try
+        {
+            var citacion = await _context.Citaciones.FindAsync(citacionId);
+            if (citacion == null) return false;
 
-        citacion.EstadoId = estadoId;
-        citacion.Contestacion = contestacion;
-        citacion.FechaRespuestaCitacion = DateTime.Now;
+            citacion.EstadoId = estadoId;
+            citacion.Contestacion = contestacion;
+            citacion.FechaRespuestaCitacion = DateTime.Now;
 
-        await _context.SaveChangesAsync();
-        return true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
 
     public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo)
     {
-        var citacion = await _context.Citaciones.FindAsync(citacionId);
-        if (citacion == null) return false;
+        try
+        {
+            var citacion = await _context.Citaciones.FindAsync(citacionId);
+            if (citacion == null) return false;
 
-        citacion.EstadoId = 6; // Hardcoded state 6 for Rechazo as per legacy logic
-        citacion.MotivoRechazo = motivo;
-        citacion.FechaRechazo = DateTime.Now;
-        citacion.FechaRespuestaCitacion = DateTime.Now;
+            citacion.EstadoId = 6; // Hardcoded state 6 for Rechazo as per legacy logic
+            citacion.MotivoRechazo = motivo;
+            citacion.FechaRechazo = DateTime.Now;
+            citacion.FechaRespuestaCitacion = DateTime.Now;
 
-        await _context.SaveChangesAsync();
-        return true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
     public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto)
     {
-        // Validación de existencia de la mutua
-        var mutuaExiste = await _context.Mutuas.AnyAsync(m => m.MutuaId == mutuaId);
-        if (!mutuaExiste) return false;
-
-        var citacion = new Citacione
+        try
         {
-            Año = dto.Anio ?? DateTime.Now.Year,
-            MutuaDemandante = mutuaId,
-            MutaOferta = dto.MutuaOfertanteId ?? 0,
-            CentroId = dto.CentroId ?? 0,
-            Necesidad = dto.Necesidad,
-            EstadoId = 1, // Pendiente
-            FechaAltaSolicitud = DateTime.Now,
-            FechaAlta = DateTime.Now,
-            UsuarioAltaId = 1 // Default admin
-        };
+            // Validación de existencia de la mutua
+            var mutuaExiste = await _context.Mutuas.AnyAsync(m => m.MutuaId == mutuaId);
+            if (!mutuaExiste) return false;
 
-        _context.Citaciones.Add(citacion);
-        await _context.SaveChangesAsync();
-        return true;
+            var citacion = new Citacione
+            {
+                Año = dto.Anio ?? DateTime.Now.Year,
+                MutuaDemandante = mutuaId,
+                MutaOferta = dto.MutuaOfertanteId ?? 0,
+                CentroId = dto.CentroId ?? 0,
+                Necesidad = dto.Necesidad,
+                EstadoId = 1, // Pendiente
+                FechaAltaSolicitud = DateTime.Now,
+                FechaAlta = DateTime.Now,
+                UsuarioAltaId = 1 // Default admin
+            };
+
+            _context.Citaciones.Add(citacion);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
 
     public async Task<int> SeedDataAsync(int mutuaId)
     {
-        // 1. Crear una Demanda base
-        var demanda = new Demanda
+        try
         {
-            Año = 2026,
-            MutuaDemandaId = mutuaId,
-            Ene = 10, Feb = 10, Mar = 10, Abr = 10, May = 10, Jun = 10,
-            Jul = 10, Ago = 10, Sep = 10, Oct = 10, Nov = 10, Dic = 10,
-            EstadoId = 1,
-            FechaAlta = DateTime.Now.AddDays(-10),
-            Descripcion = "Demanda de prueba para Seed",
-            UsuarioAltaId = 1
-        };
-        _context.Demandas.Add(demanda);
-        await _context.SaveChangesAsync();
-
-        // 2. Crear Citaciones vinculadas
-        var citaciones = new List<Citacione>
-        {
-            // Caso 1: Pendiente de conceder
-            new Citacione {
-                DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
-                Ene = 2, Feb = 2, Mar = 2, Total = 6, EstadoId = 1,
-                FechaAltaSolicitud = DateTime.Now.AddDays(-2),
-                Necesidad = "Urgencia dental"
-            },
-            // Caso 2: Consumida (igual a demanda)
-            new Citacione {
-                DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
+            // 1. Crear una Demanda base
+            var demanda = new Demanda
+            {
+                Año = 2026,
+                MutuaDemandaId = mutuaId,
                 Ene = 10, Feb = 10, Mar = 10, Abr = 10, May = 10, Jun = 10,
-                Jul = 10, Ago = 10, Sep = 10, Oct = 10, Nov = 10, Diciembre = 10, 
-                Total = 120, EstadoId = 2,
-                FechaAltaSolicitud = DateTime.Now.AddDays(-30),
-                FechaRespuestaCitacion = DateTime.Now.AddDays(-29),
-                Necesidad = "Consumo total de reserva"
-            },
-            // Caso 3: Desierta (antigua sin respuesta)
-            new Citacione {
-                DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 3,
-                Ene = 1, Feb = 1, Total = 2, EstadoId = 1,
-                FechaAltaSolicitud = DateTime.Now.AddDays(-5), // > 96h
-                Necesidad = "Solicitud olvidada"
-            },
-            // Caso 4: Rechazada
-            new Citacione {
-                DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
-                Ene = 5, Total = 5, EstadoId = 6,
-                FechaAltaSolicitud = DateTime.Now.AddDays(-1),
-                FechaRespuestaCitacion = DateTime.Now.AddHours(-2),
-                MotivoRechazo = "Falta de personal en el centro",
-                Necesidad = "Consulta traumatología"
-            }
-        };
+                Jul = 10, Ago = 10, Sep = 10, Oct = 10, Nov = 10, Dic = 10,
+                EstadoId = 1,
+                FechaAlta = DateTime.Now.AddDays(-10),
+                Descripcion = "Demanda de prueba para Seed",
+                UsuarioAltaId = 1
+            };
+            _context.Demandas.Add(demanda);
+            await _context.SaveChangesAsync();
 
-        _context.Citaciones.AddRange(citaciones);
-        await _context.SaveChangesAsync();
+            // 2. Crear Citaciones vinculadas
+            var citaciones = new List<Citacione>
+            {
+                // Caso 1: Pendiente de conceder
+                new Citacione {
+                    DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
+                    Ene = 2, Feb = 2, Mar = 2, Total = 6, EstadoId = 1,
+                    FechaAltaSolicitud = DateTime.Now.AddDays(-2),
+                    Necesidad = "Urgencia dental"
+                },
+                // Caso 2: Consumida (igual a demanda)
+                new Citacione {
+                    DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
+                    Ene = 10, Feb = 10, Mar = 10, Abr = 10, May = 10, Jun = 10,
+                    Jul = 10, Ago = 10, Sep = 10, Oct = 10, Nov = 10, Diciembre = 10, 
+                    Total = 120, EstadoId = 2,
+                    FechaAltaSolicitud = DateTime.Now.AddDays(-30),
+                    FechaRespuestaCitacion = DateTime.Now.AddDays(-29),
+                    Necesidad = "Consumo total de reserva"
+                },
+                // Caso 3: Desierta (antigua sin respuesta)
+                new Citacione {
+                    DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 3,
+                    Ene = 1, Feb = 1, Total = 2, EstadoId = 1,
+                    FechaAltaSolicitud = DateTime.Now.AddDays(-5), // > 96h
+                    Necesidad = "Solicitud olvidada"
+                },
+                // Caso 4: Rechazada
+                new Citacione {
+                    DemandaId = demanda.DemandaId, Año = 2026, MutuaDemandante = mutuaId, MutaOferta = 2,
+                    Ene = 5, Total = 5, EstadoId = 6,
+                    FechaAltaSolicitud = DateTime.Now.AddDays(-1),
+                    FechaRespuestaCitacion = DateTime.Now.AddHours(-2),
+                    MotivoRechazo = "Falta de personal en el centro",
+                    Necesidad = "Consulta traumatología"
+                }
+            };
 
-        return citaciones.Count;
+            _context.Citaciones.AddRange(citaciones);
+            await _context.SaveChangesAsync();
+
+            return citaciones.Count;
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Citaciones");
+            throw;
+        }
     }
 }

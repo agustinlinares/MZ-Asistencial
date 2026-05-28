@@ -8,31 +8,49 @@ namespace MZAsistencial.Server.Services
     public class Icg06DatosPlantillaService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public Icg06DatosPlantillaService(MZAsistencialContext context)
+        public Icg06DatosPlantillaService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         public async Task<Icg06DatosPlantillaDTO?> GetByCentroYAñoAsync(int centroId, int año)
         {
-            var entity = await _context.Icg06s
-                .FirstOrDefaultAsync(x => x.CentroId == centroId && x.Año == año);
+            try
+            {
+                var entity = await _context.Icg06s
+                    .FirstOrDefaultAsync(x => x.CentroId == centroId && x.Año == año);
 
-            if (entity is null) return null;
+                if (entity is null) return null;
 
-            return MapToDTO(entity);
+                return MapToDTO(entity);
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG (Datos) - GetByCentroYAñoAsync");
+                throw;
+            }
         }
 
         public async Task<bool> UpdateAsync(int idIcg, Icg06DatosPlantillaDTO dto)
         {
-            var entity = await _context.Icg06s.FindAsync(idIcg);
-            if (entity is null) return false;
+            try
+            {
+                var entity = await _context.Icg06s.FindAsync(idIcg);
+                if (entity is null) return false;
 
-            MapToEntity(dto, entity);
-            entity.FechaModificacion = DateTime.Now;
-            await _context.SaveChangesAsync();
-            return true;
+                MapToEntity(dto, entity);
+                entity.FechaModificacion = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG (Datos) - UpdateAsync");
+                throw;
+            }
         }
 
         // ─── Entity → DTO ────────────────────────────────────────────────────

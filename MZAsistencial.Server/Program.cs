@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MZAsistencial.Server.Data;
@@ -75,6 +75,7 @@ builder.Services.AddScoped<PlantillasICGService>();
 builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 builder.Services.AddScoped<IPresupuestosLiquidadosService, PresupuestosLiquidadosService>();
 builder.Services.AddScoped<IFicherosService, FicherosService>();
+builder.Services.AddScoped<IExportarAccessService, ExportarAccessService>();
 
 // -- Servicios ICG06
 builder.Services.AddScoped<Icg06HosService>();
@@ -98,6 +99,7 @@ builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
 builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
+builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 
 // -- Pipeline
 var app = builder.Build();

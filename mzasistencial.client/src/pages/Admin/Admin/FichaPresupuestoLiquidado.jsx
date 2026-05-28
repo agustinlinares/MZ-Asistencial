@@ -1,9 +1,7 @@
-// src/pages/Admin/FichaPresupuestoLiquidado.jsx
-
 import React, { useEffect, useState } from 'react';
 import { NumberBox } from 'devextreme-react/number-box';
 import { SelectBox } from 'devextreme-react/select-box';
-import { custom } from 'devextreme/ui/dialog'; // Para usar los avisos nativos del proyecto si es necesario
+import { custom } from 'devextreme/ui/dialog';
 import { presupuestosLiquidadosService } from '@services/admin/presupuestosLiquidadosService';
 
 const estadoInicial = {
@@ -47,7 +45,6 @@ const FichaPresupuestoLiquidado = ({ idPresupuesto, onCerrar, mutuas }) => {
             }
             onCerrar(); 
         } catch (error) {
-            // ── Novedad: Captura el error 400 de duplicados del backend ──
             const alertResult = custom({
                 title: "Error al guardar",
                 messageHtml: error.message || "No se pudo procesar la solicitud.",

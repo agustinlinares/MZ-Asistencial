@@ -57,7 +57,6 @@ button:active {
     z-index: 2;
 }
 
-
 body {
   margin: 0;
   display: flex;
@@ -781,4 +780,23 @@ Fichas
     flex: 1 !important;
     height: 100% !important;
     min-height: 0 !important;
+}
+
+/* 
+Sobreescritura global devextreme (Ventanas de confirmación).
+*/
+.dx-dialog .dx-popup-bottom .dx-button-normal {
+    background-color: #e8e8e8 !important;
+    border: none !important;
+}
+.dx-dialog .dx-popup-bottom .dx-button-normal .dx-button-text {
+    color: #333 !important;
+}
+
+.dx-dialog .dx-popup-bottom .dx-button-default {
+    background-color: var(--main-color) !important; 
+    border: none !important;
+}
+.dx-dialog .dx-popup-bottom .dx-button-default .dx-button-text {
+    color: #fff !important;
 }

@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import DataGrid, {
     Column, Paging, SearchPanel, FilterRow, HeaderFilter,
     Selection, GroupPanel, Grouping, ColumnChooser, Export, Toolbar, Item,
-    Editing, RequiredRule,
+    Editing, RequiredRule, Scrolling, Pager,
 } from "devextreme-react/data-grid";
 import { Button } from "devextreme-react/button";
 import SelectBox from "devextreme-react/select-box";
