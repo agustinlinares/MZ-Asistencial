@@ -1,17 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import DataGrid, { Column, Scrolling } from "devextreme-react/data-grid";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import '../../../styles/FichaGlobal.css';
 import AuthService from "../../../services/auth/AuthService";
-
-// Configuración de iconos de Leaflet para Vite
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+import { MapaUbicador } from '../../../components/MapaUbicador';
 import notify from 'devextreme/ui/notify';
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 import { useNavigate } from 'react-router-dom';
@@ -21,160 +12,9 @@ import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_export
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 
-const TILE_OSM = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const TILE_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-const ATTR_OSM = '&copy; OpenStreetMap';
-const ATTR_SAT = 'Tiles &copy; Esri';
 const authHeaders = () => {
     const token = AuthService.getToken();
     return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
-};
-
-/* ── HELPERS LEAFLET ───────────────────────────────────────────── */
-const MapClickHandler = ({ onMapClick }) => {
-    useMapEvents({ click: e => onMapClick(e.latlng.lat, e.latlng.lng) });
-    return null;
-};
-
-const FlyTo = ({ lat, lng }) => {
-    const map = useMap();
-    useEffect(() => {
-        const la = parseFloat(lat);
-        const lo = parseFloat(lng);
-        if (!isNaN(la) && !isNaN(lo)) map.flyTo([la, lo], 15);
-    }, [lat, lng, map]);
-    return null;
-};
-
-/* ── PESTAÑA MAPA ──────────────────────────────────────────────── */
-const TabMapa = ({ form, onChange }) => {
-    const [vistaTab, setVistaTab] = useState('mapa');
-    const [flyKey, setFlyKey] = useState(0);
-    const [buscando, setBuscando] = useState(false);
-    const navigate = useNavigate();
-
-    const parsedLat = parseFloat(form.latitud);
-    const parsedLng = parseFloat(form.longitud);
-    const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
-
-    // De texto a coordenadas (Buscador)
-    const handleBuscarDireccion = async () => {
-        if (!form.direccion?.trim()) return;
-        
-        setBuscando(true);
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.direccion)}`);
-            const data = await response.json();
-
-            if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat).toFixed(6);
-                const lon = parseFloat(data[0].lon).toFixed(6);
-                
-                onChange('latitud', lat);
-                onChange('longitud', lon);
-                
-                // Formateamos la dirección para que no sea una parrafada gigante
-                const direccionLimpia = data[0].display_name.split(',').slice(0, 3).join(',').trim();
-                onChange('direccion', direccionLimpia); 
-
-                setFlyKey(k => k + 1); 
-            } else {
-                alert("No se ha encontrado esa dirección en el mapa. Prueba a detallar la calle y la ciudad.");
-            }
-        } catch (error) {
-            console.error("Error buscando dirección:", error);
-        } finally {
-            setBuscando(false);
-        }
-    };
-
-    // De Coordenadas a Texto (Geocodificación Inversa al hacer clic)
-    const obtenerDireccionPorCoordenadas = async (lat, lon) => {
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-            const data = await response.json();
-            
-            if (data && data.display_name) {
-                // Cogemos las 3 primeras partes de la dirección (suele ser: Calle, Barrio, Ciudad)
-                const direccionLimpia = data.display_name.split(',').slice(0, 3).join(',').trim();
-                onChange('direccion', direccionLimpia);
-            } else {
-                onChange('direccion', `Coordenadas: ${lat}, ${lon}`);
-            }
-        } catch (error) {
-            console.error("Error al obtener la calle por coordenadas:", error);
-        }
-    };
-
-    // Al hacer clic en el mapa, guardamos lat/lon y pedimos la calle
-    const handleMapClick = async (la, lo) => {
-        const latStr = la.toFixed(6);
-        const lonStr = lo.toFixed(6);
-        
-        onChange('latitud', latStr);
-        onChange('longitud', lonStr);
-        
-        // Llamamos a la API para traducir el clic a texto
-        await obtenerDireccionPorCoordenadas(la, lo);
-    };
-
-    const defaultCenter = tieneCoords ? [parsedLat, parsedLng] : [40.416775, -3.70379];
-
-    return (
-        <div className="ficha-tab-mapa">
-            <div className="ficha-grid" style={{ marginBottom: 15 }}>
-                <div className="ficha-field span2">
-                    <label>Buscador de Dirección</label>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <input 
-                            type="text" 
-                            value={form.direccion || ''} 
-                            onChange={e => onChange('direccion', e.target.value)} 
-                            placeholder="Escribe aquí y dale a buscar, o haz clic directamente en el mapa..."
-                            onKeyDown={e => e.key === 'Enter' && handleBuscarDireccion()}
-                        />
-                        <button 
-                            className="ficha-btn-secondary" 
-                            onClick={handleBuscarDireccion} 
-                            disabled={buscando}
-                        >
-                            {buscando ? '⏳...' : '🔍 Buscar y Situar'}
-                        </button>
-                    </div>
-                </div>
-                
-                <div className="ficha-field">
-                    <label>Latitud</label>
-                    <input type="text" value={form.latitud || ''} readOnly className="readonly" />
-                </div>
-                <div className="ficha-field">
-                    <label>Longitud</label>
-                    <input type="text" value={form.longitud || ''} readOnly className="readonly" />
-                </div>
-            </div>
-
-            <div className="mapa-view-tabs">
-                <button className={`mapa-view-tab ${vistaTab === 'mapa' ? 'active' : ''}`} onClick={() => setVistaTab('mapa')}>Mapa</button>
-                <button className={`mapa-view-tab ${vistaTab === 'satelite' ? 'active' : ''}`} onClick={() => setVistaTab('satelite')}>Satélite</button>
-            </div>
-
-            <div className="mapa-container" style={{ height: 400 }}>
-                <MapContainer center={defaultCenter} zoom={tieneCoords ? 16 : 6} style={{ height: '100%', width: '100%' }}>
-                    <TileLayer key={vistaTab} url={vistaTab === 'satelite' ? TILE_SAT : TILE_OSM} attribution={vistaTab === 'satelite' ? ATTR_SAT : ATTR_OSM} />
-                    <MapClickHandler onMapClick={handleMapClick} />
-                    {tieneCoords && (
-                        <>
-                            <Marker position={[parsedLat, parsedLng]} />
-                            <FlyTo key={flyKey} lat={form.latitud} lng={form.longitud} />
-                        </>
-                    )}
-                </MapContainer>
-            </div>
-            <p className="mapa-hint" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-                📍 Escribe la dirección y dale a Buscar, o haz clic en el mapa para situar la marca y obtener la calle automáticamente.
-            </p>
-        </div>
-    );
 };
 
 /* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
@@ -812,7 +652,12 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                         </TabDataGrid>
                     )}
 
-                    {activeTab === 'mapa' && <TabMapa form={form} onChange={handleChange} />}
+                    {activeTab === 'mapa' && (
+                        <MapaUbicador 
+                            form={form} 
+                            onChange={handleChange} 
+                        />
+                    )}
                 </div>
             </div>
         </div>
