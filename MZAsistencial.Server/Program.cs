@@ -5,7 +5,6 @@ using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Services.ICG06;
 using System.Text;
-using MZAsistencial.Server.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,7 +76,6 @@ builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 builder.Services.AddScoped<IPresupuestosLiquidadosService, PresupuestosLiquidadosService>();
 builder.Services.AddScoped<IFicherosService, FicherosService>();
 builder.Services.AddScoped<IExportarAccessService, ExportarAccessService>();
-builder.Services.AddScoped<ITarifasService, TarifasService>();
 
 // -- Servicios ICG06
 builder.Services.AddScoped<Icg06HosService>();
@@ -105,8 +103,6 @@ builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 
 // -- Pipeline
 var app = builder.Build();
-
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
