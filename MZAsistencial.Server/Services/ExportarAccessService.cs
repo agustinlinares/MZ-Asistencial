@@ -69,20 +69,10 @@ namespace MZAsistencial.Server.Services
 
         public async Task<IEnumerable<int>> GetAñosAsync()
         {
-            var hoy = DateTime.Today;
-            var años = await _context.Ejercicios
-                .Where(e => e.FechaApertura <= hoy && (e.FechaCierre == null || e.FechaCierre >= hoy))
+            return await _context.Ejercicios
                 .OrderByDescending(e => e.Año)
                 .Select(e => e.Año)
                 .ToListAsync();
-
-            if (años.Count == 0)
-            {
-                var actual = DateTime.Now.Year;
-                años = Enumerable.Range(actual - 5, 7).OrderByDescending(a => a).ToList();
-            }
-
-            return años;
         }
 
         public async Task<FicheroGeneradoDTO> CreateAsync(int mutuaIntId, int año, int tipoCentroId, int usuarioId)
@@ -143,18 +133,6 @@ namespace MZAsistencial.Server.Services
             if (fg == null) return false;
 
             var nombre = fg.FicheroGenerado;
-
-            if (!string.IsNullOrEmpty(fg.FicheroGenerado))
-            {
-                var basePath = _configuration["AccdbPaths:Base"] ?? @"C:\MZFiles\AccdbFicheros";
-                var filePath = Path.IsPathRooted(fg.FicheroGenerado)
-                    ? fg.FicheroGenerado
-                    : Path.Combine(basePath, fg.FicheroGenerado);
-
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-            }
-
             _context.FicherosGenerados.Remove(fg);
             _context.RegistroActividads.Add(new RegistroActividad
             {
@@ -165,28 +143,6 @@ namespace MZAsistencial.Server.Services
 
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        public async Task LogAccesoAsync(int usuarioId)
-        {
-            _context.RegistroActividads.Add(new RegistroActividad
-            {
-                UsuarioId = usuarioId,
-                Fecha     = DateTime.Now,
-                Accion    = "Acceso a menú Admin. Submenú Exportar a Access.",
-            });
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task LogExportacionExcelAsync(int usuarioId)
-        {
-            _context.RegistroActividads.Add(new RegistroActividad
-            {
-                UsuarioId = usuarioId,
-                Fecha     = DateTime.Now,
-                Accion    = "Ficha ListaFicherosGenerados. Exportación a Excel.",
-            });
-            await _context.SaveChangesAsync();
         }
 
         public async Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id)

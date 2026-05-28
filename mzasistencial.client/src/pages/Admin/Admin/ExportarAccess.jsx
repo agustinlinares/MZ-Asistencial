@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import './Admin.css';
 import { saveAs } from 'file-saver-es';
@@ -42,36 +42,21 @@ const ExportarAccess = () => {
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
 
-    const [ficheros, setFicheros]         = useState([]);
-    const [mutuas, setMutuas]             = useState([]);
-    const [años, setAños]                 = useState([]);
-    const [menuAbierto, setMenuAbierto]   = useState(false);
+    const [ficheros, setFicheros]     = useState([]);
+    const [mutuas, setMutuas]         = useState([]);
+    const [años, setAños]             = useState([]);
+    const [menuAbierto, setMenuAbierto] = useState(false);
 
-    // Filtros de cabecera
-    const [filtroMutua, setFiltroMutua]   = useState('');
-    const [filtroAño, setFiltroAño]       = useState('');
-
-    // Popup nuevo
     const [popupVisible, setPopupVisible] = useState(false);
     const [form, setForm]   = useState({ mutuaId: '', año: '', tipoCentroId: '' });
     const [cargando, setCargando] = useState(false);
 
-    // Modal eliminar
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [rowToDelete, setRowToDelete]       = useState(null);
 
-    const userData  = AuthService.getUserData();
-    const esAdmin   = userData?.perfilId === 1;
-    const usuarioId = userData?.usuarioId || 0;
-
-    // Datos filtrados para el grid
-    const ficherosFiltrados = useMemo(() => {
-        return ficheros.filter(f => {
-            const mutOk = !filtroMutua || String(f.mutuaId) === String(filtroMutua);
-            const añoOk = !filtroAño  || String(f.año)     === String(filtroAño);
-            return mutOk && añoOk;
-        });
-    }, [ficheros, filtroMutua, filtroAño]);
+    const userData    = AuthService.getUserData();
+    const esAdmin     = userData?.perfilId === 1;
+    const usuarioId   = userData?.usuarioId || 0;
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -86,9 +71,9 @@ const ExportarAccess = () => {
         const cargarDatos = async () => {
             try {
                 const [resFich, resMut, resAños] = await Promise.all([
-                    fetch(`/api/ExportarAccess?usuarioId=${usuarioId}`, { headers: authHeaders() }),
+                    fetch('/api/ExportarAccess', { headers: authHeaders() }),
                     fetch('/api/ExportarAccess/mutuas', { headers: authHeaders() }),
-                    fetch('/api/ExportarAccess/años',   { headers: authHeaders() }),
+                    fetch('/api/ExportarAccess/años', { headers: authHeaders() }),
                 ]);
                 if (resFich.ok)  setFicheros(await resFich.json());
                 if (resMut.ok)   setMutuas(await resMut.json());
@@ -135,8 +120,8 @@ const ExportarAccess = () => {
                 'Content-Type': 'application/json',
             };
             const body = JSON.stringify({
-                mutuaId:      parseInt(form.mutuaId, 10),
-                año:          parseInt(form.año, 10),
+                mutuaId:     parseInt(form.mutuaId, 10),
+                año:         parseInt(form.año, 10),
                 tipoCentroId: parseInt(form.tipoCentroId, 10),
             });
             const resp = await fetch(`/api/ExportarAccess?usuarioId=${usuarioId}`, {
@@ -155,25 +140,6 @@ const ExportarAccess = () => {
         } finally {
             setCargando(false);
         }
-    };
-
-    const exportarExcel = async () => {
-        setMenuAbierto(false);
-        const instance = dataGridRef.current?.instance();
-        if (!instance) return;
-        const wb = new Workbook();
-        const ws = wb.addWorksheet('FicherosGenerados');
-        exportDataGrid({ component: instance, worksheet: ws, autoFilterEnabled: true })
-            .then(() => wb.xlsx.writeBuffer())
-            .then(buffer => saveAs(
-                new Blob([buffer], { type: 'application/octet-stream' }),
-                'ficheros_generados.xlsx'
-            ));
-        // Registrar actividad de exportación
-        fetch(`/api/ExportarAccess/log-excel?usuarioId=${usuarioId}`, {
-            method: 'POST',
-            headers: authHeaders(),
-        }).catch(() => {});
     };
 
     const pedirConfirmacionEliminar = (row) => {
@@ -245,8 +211,8 @@ const ExportarAccess = () => {
 
     const onExporting = (e) => {
         e.component.beginUpdate();
-        const workbook  = new Workbook();
-        const worksheet = workbook.addWorksheet('FicherosGenerados');
+        const workbook   = new Workbook();
+        const worksheet  = workbook.addWorksheet('FicherosGenerados');
         exportDataGrid({ component: e.component, worksheet, autoFilterEnabled: true })
             .then(() => workbook.xlsx.writeBuffer())
             .then(buffer => saveAs(
@@ -287,7 +253,19 @@ const ExportarAccess = () => {
                                         </div>
                                     )}
 
-                                    <div className="fich-menu-item" onClick={exportarExcel}>
+                                    <div className="fich-menu-item" onClick={() => {
+                                        setMenuAbierto(false);
+                                        const instance = dataGridRef.current?.instance();
+                                        if (!instance) return;
+                                        const wb = new Workbook();
+                                        const ws = wb.addWorksheet('FicherosGenerados');
+                                        exportDataGrid({ component: instance, worksheet: ws, autoFilterEnabled: true })
+                                            .then(() => wb.xlsx.writeBuffer())
+                                            .then(buffer => saveAs(
+                                                new Blob([buffer], { type: 'application/octet-stream' }),
+                                                'ficheros_generados.xlsx'
+                                            ));
+                                    }}>
                                         <i className="ri-file-excel-2-line" /> Exportar a Excel
                                     </div>
 
@@ -308,53 +286,11 @@ const ExportarAccess = () => {
                     </div>
                 </div>
 
-                {/* ── Filtros Mutua + Año ───────────────────────────────── */}
-                <div className="exportar-filtros">
-                    <div className="exportar-filtro-field">
-                        <label>Mutua</label>
-                        <select
-                            className="fich-select"
-                            value={filtroMutua}
-                            onChange={e => setFiltroMutua(e.target.value)}
-                        >
-                            <option value="">Todas</option>
-                            {mutuas.map(m => (
-                                <option key={m.mutuaId} value={m.numeroMutua}>
-                                    {m.numeroMutua} — {m.nombre}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="exportar-filtro-field">
-                        <label>Año</label>
-                        <select
-                            className="fich-select"
-                            value={filtroAño}
-                            onChange={e => setFiltroAño(e.target.value)}
-                        >
-                            <option value="">Todos</option>
-                            {años.map(a => (
-                                <option key={a} value={a}>{a}</option>
-                            ))}
-                        </select>
-                    </div>
-                    {(filtroMutua || filtroAño) && (
-                        <button
-                            className="fich-btn fich-btn-edit"
-                            style={{ alignSelf: 'flex-end' }}
-                            onClick={() => { setFiltroMutua(''); setFiltroAño(''); }}
-                            title="Limpiar filtros"
-                        >
-                            <i className="ri-filter-off-line" /> Limpiar
-                        </button>
-                    )}
-                </div>
-
                 {/* ── DataGrid ─────────────────────────────────────────── */}
                 <div className="ficheros-grid-wrap">
                     <DataGrid
                         ref={dataGridRef}
-                        dataSource={ficherosFiltrados}
+                        dataSource={ficheros}
                         keyExpr="ficheroGeneradoId"
                         showBorders={true}
                         columnAutoWidth={true}
@@ -389,7 +325,7 @@ const ExportarAccess = () => {
                         <FilterPanel visible />
                         <ColumnFixing enabled />
 
-                        <Column dataField="numeroMutua"  caption="Nº"               width={70}  alignment="center" />
+                        <Column dataField="numeroMutua"  caption="Nº"               width={70} alignment="center" />
                         <Column dataField="nombreMutua"  caption="Mutua"             minWidth={160} />
                         <Column
                             dataField="nombreFichero"
@@ -405,7 +341,7 @@ const ExportarAccess = () => {
                             format="dd/MM/yyyy"
                             width={110}
                         />
-                        <Column dataField="horaAlta"     caption="Hora Alta"         width={90}  alignment="center" />
+                        <Column dataField="horaAlta"     caption="Hora Alta"         width={90} alignment="center" />
                         <Column dataField="estado"       caption="Estado"            width={110} />
                         <Column dataField="tipoCentro"   caption="Tipo"              width={110} />
                         <Column

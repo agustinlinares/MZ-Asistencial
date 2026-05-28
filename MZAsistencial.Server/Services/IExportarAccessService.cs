@@ -11,7 +11,5 @@ namespace MZAsistencial.Server.Services
         Task<FicheroGeneradoDTO> CreateAsync(int mutuaIntId, int año, int tipoCentroId, int usuarioId);
         Task<bool> DeleteAsync(int id, int usuarioId);
         Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id);
-        Task LogAccesoAsync(int usuarioId);
-        Task LogExportacionExcelAsync(int usuarioId);
     }
 }
