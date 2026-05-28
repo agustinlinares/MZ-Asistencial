@@ -501,4 +501,15 @@
     font-size: 14px;
     color: #1e293b;
     line-height: 1.5;
+}
+
+/* ── ExportarAccess: link de fichero descargable ─────── */
+.fichero-link {
+    color: #1a5fa8;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 13px;
+}
+.fichero-link:hover {
+    color: #1348a0;
 }

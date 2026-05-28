@@ -75,6 +75,7 @@ builder.Services.AddScoped<PlantillasICGService>();
 builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 builder.Services.AddScoped<IPresupuestosLiquidadosService, PresupuestosLiquidadosService>();
 builder.Services.AddScoped<IFicherosService, FicherosService>();
+builder.Services.AddScoped<IExportarAccessService, ExportarAccessService>();
 
 // -- Servicios ICG06
 builder.Services.AddScoped<Icg06HosService>();
