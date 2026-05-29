@@ -52,7 +52,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
     const [form,        setForm]        = useState({});
-    const [cargando,    setCargando]    = useState(true);
     const [registrosICG, setRegistrosICG] = useState([]);
     const [tabActiva,   setTabActiva]   = useState("general");
     const [guardando,   setGuardando]   = useState(false);
@@ -60,7 +59,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(null);
-    const [anioCat,     setAnioCat]     = useState(null);
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -142,7 +140,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     MapaValidado:            c.mapaValidado           ?? c.MapaValidado           ?? false,
                 });
             })
-            .catch(() => { setCargando(false); });
+            .catch(() => { /* silently handled */ });
 
     }, [cliente, onClose]);
 
@@ -161,14 +159,11 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                         DireccionGoogle: direccion || f.DireccionGoogle,
                         MapaValidado:    mapaValidado === true ? true : f.MapaValidado,
                     }));
-                } catch {}
+                } catch { /* silently handled */ }
             }
         };
 
-        // Al montar: por si ya hay datos (caso remount)
         leerMapaRetorno();
-
-        // Al recuperar foco: cuando se vuelve desde MapaPage con navigate(-1)
         window.addEventListener('focus', leerMapaRetorno);
         return () => window.removeEventListener('focus', leerMapaRetorno);
     }, []);
@@ -191,7 +186,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId || !anioEsp) return;
         fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
-        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
     };
 
@@ -209,7 +204,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
                 .then(r => r.ok ? r.text() : null)
                 .then(loc => { if (loc) setForm(f => ({ ...f, Localizador: loc.replace(/"/g, '') })); })
-                .catch(() => { setCargando(false); });
+                .catch(() => { /* silently handled */ });
         }
     }, [form.Mutua, form.CentroId]);
 
@@ -260,7 +255,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 mapaValidado:           form.MapaValidado ?? false,
                 usuarioId:              JSON.parse(localStorage.getItem('UsuarioActual') || '{}')?.usuarioId ?? null,
             };
-            console.log('dataToSave:', JSON.stringify(dataToSave));
             onSave(dataToSave);
         } catch (err) {
             alert('Error: ' + err.message);
@@ -466,16 +460,26 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
 
                     {/* REGISTRO ICG */}
                     {tabActiva === "registroICG" && (
-                        <div className="ficha-tab-inner">
-                            <DataGrid dataSource={registrosICG} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" onExporting={e => onExportingGrid(e, "RegistroICG")} className="mz-table" height={450}>
-                                <Scrolling mode="standard" /><Paging defaultPageSize={10} />
+                        <div className="ficha-tab-inner" style={{ width: '100%', boxSizing: 'border-box' }}>
+                            <DataGrid
+                                dataSource={registrosICG}
+                                showBorders
+                                rowAlternationEnabled
+                                noDataText="Sin datos para mostrar"
+                                onExporting={e => onExportingGrid(e, "RegistroICG")}
+                                className="mz-table"
+                                width="100%"
+                                height="auto"
+                            >
+                                <Scrolling mode="standard" />
+                                <Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" /><Export enabled />
-                                <Column dataField="ano"                caption="Año"                  width={80} />
-                                <Column dataField="mutua"              caption="Mutua"                width={220} />
-                                <Column dataField="centro"             caption="Centro"               width={220} />
-                                <Column dataField="fechaModificacion"  caption="Fecha Actualización"  width={180} dataType="date" format="dd/MM/yyyy" />
-                                <Column dataField="usuarioModificacionId" caption="Usuario"           width={100} />
+                                <Column dataField="ano"                   caption="Año"                 width={80} />
+                                <Column dataField="mutua"                 caption="Mutua"               minWidth={220} />
+                                <Column dataField="centro"                caption="Centro"              minWidth={220} />
+                                <Column dataField="fechaModificacion"     caption="Fecha Actualización" width={180} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="usuarioModificacionId" caption="Usuario"             width={100} />
                             </DataGrid>
                         </div>
                     )}

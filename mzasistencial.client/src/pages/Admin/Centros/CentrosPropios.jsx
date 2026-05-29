@@ -4,7 +4,6 @@ import './Centros.css';
 import '../../../styles/FichaGlobal.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
@@ -65,17 +64,20 @@ const CentrosPropios = () => {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [validando, setValidando] = useState(false);
     const [msg, setMsg] = useState(null);
-    const navigate = useNavigate();
     const menuRef = useRef(null);
     const admin = esAdmin();
 
-    useEffect(() => {
+    const cargarDatos = () => {
         const user = getUsuarioSesion();
         const perfilId = user?.perfilId ?? '';
         fetch(`${API_URL}?perfilId=${perfilId}`)
             .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
             .then(data => setCentros(data))
             .catch(err => console.error('Error cargando centros:', err));
+    };
+
+    useEffect(() => {
+        cargarDatos();
     }, []);
 
     useEffect(() => {
@@ -275,8 +277,8 @@ const CentrosPropios = () => {
                             <ColumnFixing enabled={true} />
                             <Column dataField="localizador" caption="Localizador" width={130} />
                             <Column dataField="centroId" caption="No" width={80} />
-                            <Column dataField="mutuaId" caption="Mutua" width={90} />
-                            <Column dataField="codigoMz" caption="Centro ID" width={110} />
+                            <Column dataField={admin ? "mutuaId" : "nombreMutua"} caption="Mutua" width={150} />
+                            {admin && <Column dataField="codigoMz" caption="Centro ID" width={110} />}
                             <Column dataField="centro" caption="Centro" width={250} />
                             <Column dataField="cp" caption="C.P." width={80} />
                             <Column dataField="provincia" caption="Provincia" width={150} />
