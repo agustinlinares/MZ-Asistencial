@@ -11,10 +11,10 @@ namespace MZAsistencial.Server.DTOs
         public string Centro { get; set; } = string.Empty;
         public string Poblacion { get; set; } = string.Empty;
         public string Provincia { get; set; } = string.Empty;
-        public string AsistenciaSanitaria { get; set; } = string.Empty;
-        public string IncapacidadTemp { get; set; } = string.Empty;
+        public decimal AsistenciaSanitaria { get; set; }
+        public decimal IncapacidadTemp { get; set; }
         public decimal Gastos { get; set; }
-        public string Articulo25 { get; set; } = string.Empty;
+        public decimal Articulo25 { get; set; }
         public decimal Total { get; set; }
         public bool Confirmar { get; set; }
     }
