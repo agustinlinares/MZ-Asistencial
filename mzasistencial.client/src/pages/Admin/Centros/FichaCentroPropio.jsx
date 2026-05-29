@@ -48,6 +48,10 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const navigate = useNavigate();
     const modalRef = useRef(null);
 
+    // ── Perfil del usuario actual ─────────────────────────────────────────────
+    const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+    const esAdmin = user?.perfilId === 1;
+
     const [MUTUOS,      setMUTUOS]      = useState([]);
     const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
@@ -141,8 +145,15 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 });
             })
             .catch(() => { /* silently handled */ });
-
     }, [cliente, onClose]);
+
+    // ── Autocalcular Tipo de Centro según actividades ─────────────────────────
+    // Regla: si Hospitalaria OR Ambulatoria OR Rehabilitación → Hospitales y Ambulatorios
+    useEffect(() => {
+        if (Object.keys(form).length === 0) return;
+        const esHospitalario = form.ActividadHospitalaria || form.ActividadAmbulatoria || form.ActividadRehabilitacion;
+        setForm(f => ({ ...f, TipoCentroRadio: esHospitalario ? "hospitalarios" : "noSanitario" }));
+    }, [form.ActividadHospitalaria, form.ActividadAmbulatoria, form.ActividadRehabilitacion]); // eslint-disable-line
 
     // ── Leer coordenadas al volver de MapaPage ────────────────────────────────
     useEffect(() => {
@@ -162,7 +173,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 } catch { /* silently handled */ }
             }
         };
-
         leerMapaRetorno();
         window.addEventListener('focus', leerMapaRetorno);
         return () => window.removeEventListener('focus', leerMapaRetorno);
@@ -249,6 +259,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 prevencion:             form.ActividadPrevencion,
                 otrasActividades:       form.ActividadOtras,
                 administracion:         form.ActividadAdmon,
+                tipoCentro:             form.TipoCentroRadio === "hospitalarios" ? 0 : 1,
                 fautocom:               form.Autorizacion || null,
                 fpufuncio:              form.PuestaFuncionamiento || null,
                 fcalisuf:               form.Calificacion || null,
@@ -411,22 +422,65 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-building-line"></i> {t('Tipo de Centro')}</p>
                                 <div className="ficha-radio-group">
-                                    <label><input type="radio" name="tipoCentro" value="noSanitario" checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />{t('Centro NO Sanitario')}</label>
-                                    <label><input type="radio" name="tipoCentro" value="hospitalarios" checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />{t('Hospitales y Ambulatorios')}</label>
+                                    {/* Siempre bloqueado — autocalculado según actividades */}
+                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
+                                        <input type="radio" name="tipoCentro" value="noSanitario"
+                                            checked={form.TipoCentroRadio === "noSanitario"}
+                                            onChange={() => {}} disabled
+                                        />
+                                        {t('Centro NO Sanitario')}
+                                    </label>
+                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
+                                        <input type="radio" name="tipoCentro" value="hospitalarios"
+                                            checked={form.TipoCentroRadio === "hospitalarios"}
+                                            onChange={() => {}} disabled
+                                        />
+                                        {t('Hospitales y Ambulatorios')}
+                                    </label>
                                 </div>
+                                <p style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
+                                    <i className="ri-information-line"></i> {t('El tipo de centro se calcula automáticamente según las actividades seleccionadas.')}
+                                </p>
                             </div>
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-list-check-2"></i> {t('Actividades del Centro')}</p>
                                 <p className="ficha-section-sub">{t('Selecciona las actividades que se realizan en este centro:')}</p>
                                 <div className="ficha-checkbox-grid">
-                                    <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> {t('Asistencia sanitaria Hospitalaria')}</label>
-                                    <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> {t('Asistencia sanitaria ambulatoria')}</label>
-                                    <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> {t('Solamente rehabilitación')}</label>
-                                    <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> {t('Control administrativo de IT')}</label>
-                                    <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> {t('Prevención R.L seguridad social')}</label>
-                                    <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> {t('Otras Actividades')}</label>
-                                    <label className="span2"><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> {t('Administración general de la Mutua')}</label>
+                                    {/* Solo admin puede modificar actividades */}
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} disabled={!esAdmin} />
+                                        {t('Asistencia sanitaria Hospitalaria')}
+                                    </label>
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} disabled={!esAdmin} />
+                                        {t('Asistencia sanitaria ambulatoria')}
+                                    </label>
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} disabled={!esAdmin} />
+                                        {t('Solamente rehabilitación')}
+                                    </label>
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} disabled={!esAdmin} />
+                                        {t('Control administrativo de IT')}
+                                    </label>
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} disabled={!esAdmin} />
+                                        {t('Prevención R.L seguridad social')}
+                                    </label>
+                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} disabled={!esAdmin} />
+                                        {t('Otras Actividades')}
+                                    </label>
+                                    <label className="span2" style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
+                                        <input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} disabled={!esAdmin} />
+                                        {t('Administración general de la Mutua')}
+                                    </label>
                                 </div>
+                                {!esAdmin && (
+                                    <p style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
+                                        <i className="ri-lock-line"></i> {t('Las actividades solo pueden ser modificadas por un administrador.')}
+                                    </p>
+                                )}
                             </div>
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-close-circle-line"></i> {t('Estado y Baja')}</p>
