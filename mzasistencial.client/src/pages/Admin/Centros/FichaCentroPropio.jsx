@@ -48,10 +48,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const navigate = useNavigate();
     const modalRef = useRef(null);
 
-    // ── Perfil del usuario actual ─────────────────────────────────────────────
-    const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
-    const esAdmin = user?.perfilId === 1;
-
     const [MUTUOS,      setMUTUOS]      = useState([]);
     const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
@@ -63,7 +59,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(null);
-    const [anioCat,     setAnioCat]     = useState(null); // ── Estado independiente para Catálogo
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -146,14 +141,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 });
             })
             .catch(() => { /* silently handled */ });
-    }, [cliente, onClose]);
 
-    // ── Autocalcular Tipo de Centro según actividades ─────────────────────────
-    useEffect(() => {
-        if (Object.keys(form).length === 0) return;
-        const esHospitalario = form.ActividadHospitalaria || form.ActividadAmbulatoria || form.ActividadRehabilitacion;
-        setForm(f => ({ ...f, TipoCentroRadio: esHospitalario ? "hospitalarios" : "noSanitario" }));
-    }, [form.ActividadHospitalaria, form.ActividadAmbulatoria, form.ActividadRehabilitacion]); // eslint-disable-line
+    }, [cliente, onClose]);
 
     // ── Leer coordenadas al volver de MapaPage ────────────────────────────────
     useEffect(() => {
@@ -173,6 +162,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 } catch { /* silently handled */ }
             }
         };
+
         leerMapaRetorno();
         window.addEventListener('focus', leerMapaRetorno);
         return () => window.removeEventListener('focus', leerMapaRetorno);
@@ -196,17 +186,11 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId || !anioEsp) return;
         fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
-    };
-
-    // ── Catálogo: carga independiente con anioCat ─────────────────────────────
-    const cargarCatalogo = () => {
-        if (!form.CentroId || !anioCat) return;
-        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
     };
 
     useEffect(() => { cargarEspecialidades(); }, [form.CentroId, anioEsp]); // eslint-disable-line
-    useEffect(() => { cargarCatalogo(); }, [form.CentroId, anioCat]); // eslint-disable-line
 
     useEffect(() => {
         if (form.CentroId) {
@@ -265,7 +249,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                 prevencion:             form.ActividadPrevencion,
                 otrasActividades:       form.ActividadOtras,
                 administracion:         form.ActividadAdmon,
-                tipoCentro:             form.TipoCentroRadio === "hospitalarios" ? 0 : 1,
                 fautocom:               form.Autorizacion || null,
                 fpufuncio:              form.PuestaFuncionamiento || null,
                 fcalisuf:               form.Calificacion || null,
@@ -392,7 +375,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <div className="ficha-input-suffix">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
                                     <button className="finca-btn-secondary" title="Abrir mapa" style={{ padding: '0 10px' }}
-                                        onClick={() => navigate('/admin/Centros/MapaPage', { state: { centroId: form.CentroId, latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
+                                        onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
                                         <i className="ri-map-pin-line"></i>
                                     </button>
                                 </div>
@@ -428,63 +411,22 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-building-line"></i> {t('Tipo de Centro')}</p>
                                 <div className="ficha-radio-group">
-                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
-                                        <input type="radio" name="tipoCentro" value="noSanitario"
-                                            checked={form.TipoCentroRadio === "noSanitario"}
-                                            onChange={() => {}} disabled
-                                        />
-                                        {t('Centro NO Sanitario')}
-                                    </label>
-                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
-                                        <input type="radio" name="tipoCentro" value="hospitalarios"
-                                            checked={form.TipoCentroRadio === "hospitalarios"}
-                                            onChange={() => {}} disabled
-                                        />
-                                        {t('Hospitales y Ambulatorios')}
-                                    </label>
+                                    <label><input type="radio" name="tipoCentro" value="noSanitario" checked={form.TipoCentroRadio === "noSanitario"} onChange={set("TipoCentroRadio")} />{t('Centro NO Sanitario')}</label>
+                                    <label><input type="radio" name="tipoCentro" value="hospitalarios" checked={form.TipoCentroRadio === "hospitalarios"} onChange={set("TipoCentroRadio")} />{t('Hospitales y Ambulatorios')}</label>
                                 </div>
-                                <p style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
-                                    <i className="ri-information-line"></i> {t('El tipo de centro se calcula automáticamente según las actividades seleccionadas.')}
-                                </p>
                             </div>
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-list-check-2"></i> {t('Actividades del Centro')}</p>
                                 <p className="ficha-section-sub">{t('Selecciona las actividades que se realizan en este centro:')}</p>
                                 <div className="ficha-checkbox-grid">
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} disabled={!esAdmin} />
-                                        {t('Asistencia sanitaria Hospitalaria')}
-                                    </label>
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} disabled={!esAdmin} />
-                                        {t('Asistencia sanitaria ambulatoria')}
-                                    </label>
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} disabled={!esAdmin} />
-                                        {t('Solamente rehabilitación')}
-                                    </label>
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} disabled={!esAdmin} />
-                                        {t('Control administrativo de IT')}
-                                    </label>
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} disabled={!esAdmin} />
-                                        {t('Prevención R.L seguridad social')}
-                                    </label>
-                                    <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} disabled={!esAdmin} />
-                                        {t('Otras Actividades')}
-                                    </label>
-                                    <label className="span2" style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
-                                        <input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} disabled={!esAdmin} />
-                                        {t('Administración general de la Mutua')}
-                                    </label>
+                                    <label><input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} /> {t('Asistencia sanitaria Hospitalaria')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadAmbulatoria || false} onChange={set("ActividadAmbulatoria")} /> {t('Asistencia sanitaria ambulatoria')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadRehabilitacion || false} onChange={set("ActividadRehabilitacion")} /> {t('Solamente rehabilitación')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadControlIT || false} onChange={set("ActividadControlIT")} /> {t('Control administrativo de IT')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadPrevencion || false} onChange={set("ActividadPrevencion")} /> {t('Prevención R.L seguridad social')}</label>
+                                    <label><input type="checkbox" checked={form.ActividadOtras || false} onChange={set("ActividadOtras")} /> {t('Otras Actividades')}</label>
+                                    <label className="span2"><input type="checkbox" checked={form.ActividadAdmon || false} onChange={set("ActividadAdmon")} /> {t('Administración general de la Mutua')}</label>
                                 </div>
-                                {!esAdmin && (
-                                    <p style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
-                                        <i className="ri-lock-line"></i> {t('Las actividades solo pueden ser modificadas por un administrador.')}
-                                    </p>
-                                )}
                             </div>
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-close-circle-line"></i> {t('Estado y Baja')}</p>
@@ -578,12 +520,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     <span>La edición de disponibilidad está <strong>bloqueada</strong>. El período de bloqueo activo no permite realizar modificaciones.</span>
                                 </div>
                             )}
-                            {!esAdmin && (
-                                <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
-                                    <i className="ri-lock-line" />
-                                    <span>La edición de especialidades es gestionada por el administrador del centro.</span>
-                                </div>
-                            )}
                             <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 15 }}>
                                 <div className="ficha-field" style={{ minWidth: 220 }}>
                                     <label>Centro</label>
@@ -644,11 +580,10 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                                     <td style={tdS('center')}>{row.disponibilidad}</td>
                                                     {MESES.map(mes => (
                                                         <td key={mes} style={{ ...tdS('center'), padding: '2px 3px' }}>
-                                                            <input type="text" inputMode="numeric" pattern="[0-9]*"
-                                                                disabled={bloqueado || !esAdmin}
-                                                                value={String(edit[mes] ?? 0)}
+                                                            <input type="number" min={0} disabled={bloqueado}
+                                                                value={edit[mes] ?? 0}
                                                                 onChange={e => setMes(mes, e.target.value)}
-                                                                style={{ width: 48, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px', fontSize: 11, color: '#333', background: (bloqueado || !esAdmin) ? '#f5f5f5' : '#fff' }}
+                                                                style={{ width: 48, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px', fontSize: 11, background: bloqueado ? '#f5f5f5' : '#fff' }}
                                                             />
                                                         </td>
                                                     ))}
@@ -659,78 +594,51 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </tbody>
                                 </table>
                             </div>
-                            {esAdmin && (
-                                <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
-                                    <button className="ficha-btn-primary"
-                                        disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
-                                        style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
-                                        onClick={handleActualizarDisponibilidad}>
-                                        {guardandoEsp ? 'Guardando…' : 'Actualizar'}
-                                    </button>
-                                    <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>
-                                        Cancelar
-                                    </button>
-                                    <span style={{ fontSize: 11, color: '#888', paddingTop: 6 }}>
-                                        {Object.keys(editandoEsp).length > 0
-                                            ? `${Object.keys(editandoEsp).length} fila(s) modificada(s) — pulsa Actualizar para guardar`
-                                            : 'Edita los valores de los meses directamente en la tabla'}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
+                                <button className="ficha-btn-primary"
+                                    disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
+                                    style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
+                                    onClick={handleActualizarDisponibilidad}>
+                                    {guardandoEsp ? 'Guardando…' : 'Actualizar'}
+                                </button>
+                                <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>
+                                    Cancelar
+                                </button>
+                                <span style={{ fontSize: 11, color: '#888', paddingTop: 6 }}>
+                                    {Object.keys(editandoEsp).length > 0
+                                        ? `${Object.keys(editandoEsp).length} fila(s) modificada(s) — pulsa Actualizar para guardar`
+                                        : 'Edita los valores de los meses directamente en la tabla'}
+                                </span>
+                            </div>
                         </div>
                     )}
 
                     {/* CATÁLOGO */}
                     {tabActiva === "catalogo" && (
                         <div className="ficha-tab-inner">
-                            {/* Bloqueado para usuario final */}
-                            {!esAdmin && (
-                                <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
-                                    <i className="ri-lock-line" />
-                                    <span>El catálogo de servicios es gestionado por el administrador del centro.</span>
-                                </div>
-                            )}
                             <div className="ficha-grid ficha-grid--5" style={{ marginBottom: 15 }}>
-                                <div className="ficha-field">
-                                    <label>Localizador</label>
-                                    <input type="text" value={form.Localizador || ""} readOnly className="readonly" />
-                                </div>
+                                <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
                                 <div className="ficha-field">
                                     <label>Mutua</label>
-                                    <select value={form.Mutua || ""} disabled={!esAdmin} onChange={set("Mutua")}>
+                                    <select value={form.Mutua || ""} onChange={set("Mutua")}>
                                         <option value="">— Seleccionar —</option>
                                         {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                     </select>
                                 </div>
-                                <div className="ficha-field">
-                                    <label>Centro</label>
-                                    <input type="text" value={form.Centro || ""} readOnly className="readonly" />
-                                </div>
+                                <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
                                 <div className="ficha-field">
                                     <label>Especialidad</label>
-                                    <select disabled={!esAdmin}>
-                                        <option value="">— Seleccionar —</option>
-                                        {ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}
-                                    </select>
+                                    <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
                                 </div>
                                 <div className="ficha-field">
                                     <label>Año</label>
-                                    <select
-                                        value={anioCat || ''}
-                                        disabled={!esAdmin}
-                                        onChange={e => setAnioCat(e.target.value ? Number(e.target.value) : null)}
-                                    >
+                                    <select value={anioEsp || ''} onChange={e => setAnioEsp(e.target.value ? Number(e.target.value) : null)}>
                                         <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
                             </div>
-                            {!anioCat && esAdmin && (
-                                <p style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
-                                    <i className="ri-information-line"></i> Selecciona un año para ver el catálogo.
-                                </p>
-                            )}
-                            <DataGrid dataSource={anioCat ? catalogo : []} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" width="100%" height="auto">
+                            <DataGrid dataSource={catalogo} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" height={380}>
                                 <Scrolling mode="standard" /><Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" />
