@@ -148,7 +148,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     }, [cliente, onClose]);
 
     // ── Autocalcular Tipo de Centro según actividades ─────────────────────────
-    // Regla: si Hospitalaria OR Ambulatoria OR Rehabilitación → Hospitales y Ambulatorios
     useEffect(() => {
         if (Object.keys(form).length === 0) return;
         const esHospitalario = form.ActividadHospitalaria || form.ActividadAmbulatoria || form.ActividadRehabilitacion;
@@ -422,7 +421,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-building-line"></i> {t('Tipo de Centro')}</p>
                                 <div className="ficha-radio-group">
-                                    {/* Siempre bloqueado — autocalculado según actividades */}
                                     <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
                                         <input type="radio" name="tipoCentro" value="noSanitario"
                                             checked={form.TipoCentroRadio === "noSanitario"}
@@ -446,7 +444,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <p className="ficha-section-title"><i className="ri-list-check-2"></i> {t('Actividades del Centro')}</p>
                                 <p className="ficha-section-sub">{t('Selecciona las actividades que se realizan en este centro:')}</p>
                                 <div className="ficha-checkbox-grid">
-                                    {/* Solo admin puede modificar actividades */}
                                     <label style={{ opacity: esAdmin ? 1 : 0.6, cursor: esAdmin ? 'pointer' : 'not-allowed' }}>
                                         <input type="checkbox" checked={form.ActividadHospitalaria || false} onChange={set("ActividadHospitalaria")} disabled={!esAdmin} />
                                         {t('Asistencia sanitaria Hospitalaria')}
@@ -574,6 +571,12 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     <span>La edición de disponibilidad está <strong>bloqueada</strong>. El período de bloqueo activo no permite realizar modificaciones.</span>
                                 </div>
                             )}
+                            {!esAdmin && (
+                                <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
+                                    <i className="ri-lock-line" />
+                                    <span>La edición de especialidades es gestionada por el administrador del centro.</span>
+                                </div>
+                            )}
                             <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 15 }}>
                                 <div className="ficha-field" style={{ minWidth: 220 }}>
                                     <label>Centro</label>
@@ -634,10 +637,11 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                                     <td style={tdS('center')}>{row.disponibilidad}</td>
                                                     {MESES.map(mes => (
                                                         <td key={mes} style={{ ...tdS('center'), padding: '2px 3px' }}>
-                                                            <input type="number" min={0} disabled={bloqueado}
-                                                                value={edit[mes] ?? 0}
+                                                            <input type="text" inputMode="numeric" pattern="[0-9]*"
+                                                                disabled={bloqueado || !esAdmin}
+                                                                value={String(edit[mes] ?? 0)}
                                                                 onChange={e => setMes(mes, e.target.value)}
-                                                                style={{ width: 48, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px', fontSize: 11, background: bloqueado ? '#f5f5f5' : '#fff' }}
+                                                                style={{ width: 48, textAlign: 'center', border: '1px solid #ccc', borderRadius: 3, padding: '2px 4px', fontSize: 11, color: '#333', background: (bloqueado || !esAdmin) ? '#f5f5f5' : '#fff' }}
                                                             />
                                                         </td>
                                                     ))}
@@ -648,22 +652,24 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
-                                <button className="ficha-btn-primary"
-                                    disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
-                                    style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
-                                    onClick={handleActualizarDisponibilidad}>
-                                    {guardandoEsp ? 'Guardando…' : 'Actualizar'}
-                                </button>
-                                <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>
-                                    Cancelar
-                                </button>
-                                <span style={{ fontSize: 11, color: '#888', paddingTop: 6 }}>
-                                    {Object.keys(editandoEsp).length > 0
-                                        ? `${Object.keys(editandoEsp).length} fila(s) modificada(s) — pulsa Actualizar para guardar`
-                                        : 'Edita los valores de los meses directamente en la tabla'}
-                                </span>
-                            </div>
+                            {esAdmin && (
+                                <div className="ficha-header-btns" style={{ marginTop: 15, justifyContent: 'flex-start', gap: 10 }}>
+                                    <button className="ficha-btn-primary"
+                                        disabled={bloqueado || guardandoEsp || Object.keys(editandoEsp).length === 0}
+                                        style={{ opacity: (bloqueado || Object.keys(editandoEsp).length === 0) ? 0.5 : 1 }}
+                                        onClick={handleActualizarDisponibilidad}>
+                                        {guardandoEsp ? 'Guardando…' : 'Actualizar'}
+                                    </button>
+                                    <button className="ficha-btn-secondary" onClick={() => { setEditandoEsp({}); setMsgEsp(null); }}>
+                                        Cancelar
+                                    </button>
+                                    <span style={{ fontSize: 11, color: '#888', paddingTop: 6 }}>
+                                        {Object.keys(editandoEsp).length > 0
+                                            ? `${Object.keys(editandoEsp).length} fila(s) modificada(s) — pulsa Actualizar para guardar`
+                                            : 'Edita los valores de los meses directamente en la tabla'}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
 
