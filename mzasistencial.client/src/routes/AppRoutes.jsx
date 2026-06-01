@@ -4,6 +4,7 @@ import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
 import FichaOferta from "../pages/Admin/OfertaDemanda/FichaOferta";
 import FichaDemanda from "../pages/Admin/OfertaDemanda/FichaDemanda";
+import FichaOfertaDetalle from "../pages/Admin/OfertaDemanda/FichaOfertaDetalle";
  
 const MapaPage = lazy(() => import("@pages/Admin/Centros/MapaPage"));
  
@@ -112,6 +113,7 @@ const AppRoutes = () => {
                             <Route path="AcreditacionesIndividuales" element={<AcreditacionesIndividuales />} />
                             <Route path="GenerarInformes" element={<GenerarInformes />} />
                             <Route path="GestionDemanda/ficha/:id" element={<FichaDemanda />} />
+                            <Route path="GestionOferta/detalle/:id" element={<FichaOfertaDetalle />} />
                         </Route>
  
                         <Route path="GestionReserva">

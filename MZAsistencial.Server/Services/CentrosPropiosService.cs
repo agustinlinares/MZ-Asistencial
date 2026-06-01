@@ -22,6 +22,11 @@ namespace MZAsistencial.Server.Services
                 query = query.Where(x => x.Desactivado != true);
 
             var centros = await query.ToListAsync();
+            var mutuaIds = centros.Select(c => c.MutuaId).Distinct().ToList();
+            var mutuas = await _context.Mutuas
+                .Where(m => mutuaIds.Contains(m.MutuaId))
+                .Select(m => new { m.MutuaId, m.Mutua1 })
+                .ToListAsync();
 
             var poblacionIds = centros
                 .Where(c => c.PoblacionId.HasValue)
@@ -55,6 +60,7 @@ namespace MZAsistencial.Server.Services
                     Localizador            = c.Localizador,
                     CentroId               = c.CentroId,
                     MutuaId                = c.MutuaId,
+                    NombreMutua            = mutuas.FirstOrDefault(m => m.MutuaId == c.MutuaId)?.Mutua1,
                     Centro                 = c.Centro,
                     Cp                     = c.Cp,
                     PoblacionId            = c.PoblacionId,

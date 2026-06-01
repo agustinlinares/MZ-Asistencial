@@ -5,6 +5,7 @@
         public string?   Localizador          { get; set; }
         public int       CentroId             { get; set; }
         public int       MutuaId              { get; set; }
+        public string?   NombreMutua          { get; set; }
         public string?   Centro               { get; set; }
         public string?   Cp                   { get; set; }
         public int?      PoblacionId          { get; set; }
