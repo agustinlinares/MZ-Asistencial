@@ -489,6 +489,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     rowAlternationEnabled={true}
                                     noDataText="Sin datos para mostrar"
                                     className="mz-table"
+                                    columnAutoWidth={false}
+                                    width="100%"    
                                     height={400}
                                 >
                                     <Scrolling mode="standard" />
@@ -498,19 +500,19 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     <HeaderFilter visible={true} />
                                     <Sorting mode="multiple" />
                                     <Export enabled={true} />
-                                    <Column dataField="localizador" caption="Localizador" width={180} />
-                                    <Column dataField="centro" caption="Centro" width={200} />
-                                    <Column dataField="cp" caption="C.P" width={80} />
-                                    <Column dataField="poblacion" caption="Población" width={130} />
-                                    <Column dataField="provincia" caption="Provincia" width={130} />
-                                    <Column dataField="telefono" caption="Teléfono" width={120} />
-                                    <Column dataField="contacto" caption="Contacto" width={130} />
-                                    <Column dataField="email" caption="Email" width={160} />
+                                    <Column dataField="localizador" caption="Localizador" width="11%" />
+                                    <Column dataField="centro" caption="Centro" width="17%" />
+                                    <Column dataField="cp" caption="C.P" width="7%" />
+                                    <Column dataField="poblacion" caption="Población" width="11%" />
+                                    <Column dataField="provincia" caption="Provincia" width="11%" />
+                                    <Column dataField="telefono" caption="Teléfono" width="10%" />
+                                    <Column dataField="contacto" caption="Contacto" width="12%" />
+                                    <Column dataField="email" caption="Email" width="14%" />
                                     
                                     {/* Columna Mapa — abre el MapaModal */}
                                     <Column
                                         caption="Mapa"
-                                        width={80}
+                                        width="6%"
                                         alignment="center"
                                         cellRender={(cell) => {
                                             const { latitud, longitud, centro } = cell.data;
@@ -531,7 +533,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                         }}
                                     />
 
-                                    <Column dataField="validado" caption="Validado" width={90} alignment="center" />
+                                    <Column dataField="validado" caption="Validado" width="11%" alignment="center" />
                                 </DataGrid>
                             </div>
                     )}
@@ -557,6 +559,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -565,18 +569,18 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <FilterRow visible={true} />
                                 <HeaderFilter visible={true} />
                                 <Sorting mode="multiple" />
-                                <Column dataField="codMutua" caption="Cód. Mutua" width={150} alignment="left"/>
-                                <Column dataField="codCentro" caption="Cód. Centro" width={180} alignment="center"/>
-                                <Column dataField="centro" caption="Centro" width={200} />
-                                <Column dataField="cifNif" caption="CIF/NIF" width={120} />
-                                <Column dataField="cp" caption="C.P" width={80} />
-                                <Column dataField="poblacion" caption="Población" width={130} />
-                                <Column dataField="provincia" caption="Provincia" width={130} />
-                                <Column dataField="contacto" caption="Contacto" width={150} />
-                                <Column dataField="email" caption="Email" width={160} />
+                                <Column dataField="codMutua" caption="Cód. Mutua" width="12%" alignment="left"/>
+                                <Column dataField="codCentro" caption="Cód. Centro" width="14%" alignment="center"/>
+                                <Column dataField="centro" caption="Centro" width="15%" />
+                                <Column dataField="cifNif" caption="CIF/NIF" width="8%" />
+                                <Column dataField="cp" caption="C.P" width="7%" />
+                                <Column dataField="poblacion" caption="Población" width="11%" />
+                                <Column dataField="provincia" caption="Provincia" width="11%" />
+                                <Column dataField="contacto" caption="Contacto" width="12%" />
+                                <Column dataField="email" caption="Email" width="15%" />
                                 <Column
                                     caption="Mapa"
-                                    width={80}
+                                    width="6%"
                                     alignment="center"
                                     cellRender={(cell) => {
                                         const { latitud, longitud, centro } = cell.data;
@@ -592,7 +596,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                         );
                                     }}
                                 />
-                                <Column dataField="autorizado" caption="Autorizado" width={100} alignment="center"/>
+                                <Column dataField="autorizado" caption="Autorizado" width="14%" alignment="center"/>
                             </DataGrid>
                         </div>
                     )}
@@ -606,6 +610,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -616,10 +622,10 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <Sorting mode="multiple" />
                                 <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
                                 <Grouping autoExpandAll={false} />
-                                <Column dataField="ano" caption="Año" width={80} />
-                                <Column dataField="servicio" caption="Servicio" width={300} />
-                                <Column dataField="especialidad" caption="Especialidad" width={200} />
-                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                <Column dataField="ano" caption="Año" width="10%" />
+                                <Column dataField="servicio" caption="Servicio" width="40%" />
+                                <Column dataField="especialidad" caption="Especialidad" width="30%" />
+                                <Column dataField="cantidad" caption="Cantidad" width="20%" />
                             </DataGrid>
                         </div>
                     )}
@@ -633,6 +639,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -643,10 +651,10 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <Sorting mode="multiple" />
                                 <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
                                 <Grouping autoExpandAll={false} />
-                                <Column dataField="ano" caption="Año" width={80} />
-                                <Column dataField="servicio" caption="Servicio" width={300} />
-                                <Column dataField="especialidad" caption="Especialidad" width={200} />
-                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                <Column dataField="ano" caption="Año" width="10%" />
+                                <Column dataField="servicio" caption="Servicio" width="40%" />
+                                <Column dataField="especialidad" caption="Especialidad" width="30%" />
+                                <Column dataField="cantidad" caption="Cantidad" width="20%" />
                             </DataGrid>
                         </div>
                     )}

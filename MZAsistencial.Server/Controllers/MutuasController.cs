@@ -18,13 +18,22 @@ public class MutuasController : ControllerBase
     }
 
     // GET: api/mutuas
-    // Devuelve la lista de mutuas con los campos del DTO
+    // Devuelve la lista de mutuas filtrada por perfil del usuario
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MutuaDTO>>> GetMutuas()
+    public async Task<ActionResult<IEnumerable<MutuaDTO>>> GetMutuas([FromQuery] int? perfilId, [FromQuery] int? mutuaId)
     {
-        var mutuas = await _context.Mutuas
+        var query  = _context.Mutuas
             .Include(m => m.PoblacionNavigation)
                 .ThenInclude(p => p.Provincia) 
+            .AsQueryable();
+
+        // Si no es perfil 1 ni perfil 4 filtramos por su mutua
+        if (perfilId != 1 && perfilId != 4 && mutuaId.HasValue)
+        {
+            query = query.Where(m => m.MutuaId == mutuaId.Value);
+        }
+
+        var mutuas = await query
             .Select(m => new MutuaDTO
             {
                 NumeroId    = m.MutuaId,
@@ -113,7 +122,7 @@ public class MutuasController : ControllerBase
             await _context.SaveChangesAsync();
 
             // 2. Generamos NumeroMutua automáticamente
-            mutua.NumeroMutua = $"M{mutua.MutuaId:D2}";
+            mutua.NumeroMutua = $"{mutua.MutuaId:D3}";
 
             // 3. Guardamos de nuevo
             await _context.SaveChangesAsync();
