@@ -63,6 +63,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(null);
+    const [anioCat,     setAnioCat]     = useState(null); // ── Estado independiente para Catálogo
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -195,11 +196,17 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         if (!form.CentroId || !anioEsp) return;
         fetch(`/api/CentrosPropiosEspecialidades?centroId=${form.CentroId}&anio=${anioEsp}`)
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
-        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioEsp}`)
+    };
+
+    // ── Catálogo: carga independiente con anioCat ─────────────────────────────
+    const cargarCatalogo = () => {
+        if (!form.CentroId || !anioCat) return;
+        fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
             .then(r => r.ok ? r.json() : []).then(setCatalogo).catch(() => setCatalogo([]));
     };
 
     useEffect(() => { cargarEspecialidades(); }, [form.CentroId, anioEsp]); // eslint-disable-line
+    useEffect(() => { cargarCatalogo(); }, [form.CentroId, anioCat]); // eslint-disable-line
 
     useEffect(() => {
         if (form.CentroId) {
@@ -676,29 +683,54 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {/* CATÁLOGO */}
                     {tabActiva === "catalogo" && (
                         <div className="ficha-tab-inner">
+                            {/* Bloqueado para usuario final */}
+                            {!esAdmin && (
+                                <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
+                                    <i className="ri-lock-line" />
+                                    <span>El catálogo de servicios es gestionado por el administrador del centro.</span>
+                                </div>
+                            )}
                             <div className="ficha-grid ficha-grid--5" style={{ marginBottom: 15 }}>
-                                <div className="ficha-field"><label>Localizador</label><input type="text" value={form.Localizador || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Localizador</label>
+                                    <input type="text" value={form.Localizador || ""} readOnly className="readonly" />
+                                </div>
                                 <div className="ficha-field">
                                     <label>Mutua</label>
-                                    <select value={form.Mutua || ""} onChange={set("Mutua")}>
+                                    <select value={form.Mutua || ""} disabled={!esAdmin} onChange={set("Mutua")}>
                                         <option value="">— Seleccionar —</option>
                                         {MUTUOS.map(m => <option key={m.numeroId} value={m.numeroId}>{m.numeroId} - {m.mutua}</option>)}
                                     </select>
                                 </div>
-                                <div className="ficha-field"><label>Centro</label><input type="text" value={form.Centro || ""} readOnly className="readonly" /></div>
+                                <div className="ficha-field">
+                                    <label>Centro</label>
+                                    <input type="text" value={form.Centro || ""} readOnly className="readonly" />
+                                </div>
                                 <div className="ficha-field">
                                     <label>Especialidad</label>
-                                    <select><option value="">— Seleccionar —</option>{ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}</select>
+                                    <select disabled={!esAdmin}>
+                                        <option value="">— Seleccionar —</option>
+                                        {ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}
+                                    </select>
                                 </div>
                                 <div className="ficha-field">
                                     <label>Año</label>
-                                    <select value={anioEsp || ''} onChange={e => setAnioEsp(e.target.value ? Number(e.target.value) : null)}>
+                                    <select
+                                        value={anioCat || ''}
+                                        disabled={!esAdmin}
+                                        onChange={e => setAnioCat(e.target.value ? Number(e.target.value) : null)}
+                                    >
                                         <option value=''>-- Seleccionar --</option>
                                         {ANOS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
                             </div>
-                            <DataGrid dataSource={catalogo} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" height={380}>
+                            {!anioCat && esAdmin && (
+                                <p style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
+                                    <i className="ri-information-line"></i> Selecciona un año para ver el catálogo.
+                                </p>
+                            )}
+                            <DataGrid dataSource={anioCat ? catalogo : []} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" width="100%" height="auto">
                                 <Scrolling mode="standard" /><Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" />
