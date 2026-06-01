@@ -22,6 +22,8 @@ import notify from 'devextreme/ui/notify';
 import { custom } from 'devextreme/ui/dialog';
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const onExporting = (e) => {
     if (e.format === 'pdf') {
         const doc = new jsPDF();
@@ -60,7 +62,8 @@ const CentrosConcertados = () => {
     const dataGridRef = useRef(null);
     const navigate = useNavigate();
     
-    // Estados simplificados para el patrón Master/Detail inline
+    const logError = useLogError("Centros Concertados");
+
     const [centros, setCentros] = useState([]);
     const [selectedCentro, setSelectedCentro] = useState(null);
     const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
@@ -88,10 +91,11 @@ const CentrosConcertados = () => {
                 const datos = await respuesta.json();
                 setCentros(datos);
             } else {
-                console.error("Error en la respuesta del servidor:", respuesta.status);
-                }
+                throw new Error(`Código de estado: ${respuesta.status}`);
+            }
         } catch (error) {
             console.error("Error conectando con la API:", error);
+            logError("Fallo al cargar el listado", error);
         }
     };
 
@@ -103,16 +107,17 @@ const CentrosConcertados = () => {
 
             if (response.ok) {
                 notify(t('Centro dado de baja correctamente'), 'success', 3000);
-                
                 cargarDatos();
-                
             } else {
                 const errorData = await response.json();
                 notify(`${t('Error al dar de baja')}: ${errorData.message}`, 'error', 4000);
+                throw new Error(errorData.message || 'Error desconocido al dar de baja');
             }
         } catch (error) {
             console.error("Error de red al borrar:", error);
             notify(t('Hubo un error de conexión al intentar dar de baja'), 'error', 4000);
+            
+            logError("Fallo al borrar", error);
         }
     };
 
@@ -125,14 +130,14 @@ const CentrosConcertados = () => {
 
             if (response.ok) {
                 notify('Centro reactivado correctamente', 'success', 3000);
-                
                 cargarDatos(); 
-                
             } else {
                 notify('Error al intentar reactivar el centro', 'error', 3000);
+                throw new Error(`Error en reactivación. Estado: ${response.status}`);
             }
         } catch (error) {
             console.error("Error de red al reactivar:", error);
+            logError(`Fallo al reactivar el centro con ID ${id}`, error, "CentrosConcertados");
         }
     };
 

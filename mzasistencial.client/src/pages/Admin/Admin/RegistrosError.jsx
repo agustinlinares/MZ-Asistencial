@@ -37,7 +37,6 @@ const RegistrosError = () => {
     const menuRef = useRef(null);
     const [menuAbierto, setMenuAbierto] = useState(false);
 
-    // Creamos el CustomStore para conexión nativa DevExtreme <-> .NET
     const dataSource = React.useMemo(() => {
         return createStore({
             key: 'errorId',
@@ -193,7 +192,7 @@ const RegistrosError = () => {
                                     sortOrder="desc"
                                 />
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
-                                <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
+                                <Column dataField="modulo" caption={t('Módulo')} width={150} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
                                 
                                 <Column
