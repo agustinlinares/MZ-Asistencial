@@ -35,5 +35,24 @@ namespace MZAsistencial.Server.Controllers
             if (!result) return NotFound();
             return Ok();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RegistrarErrorFront([FromBody] CrearRegistroErrorDTO request)
+        {
+            try
+            {
+                await _registroErroresService.LogErrorStringAsync(
+                    request.Descripcion, 
+                    request.Modulo, 
+                    request.UsuarioId, 
+                    request.DetalleError
+                );
+                return Ok();
+            }
+            catch
+            {
+                return Ok(); 
+            }
+        }
     }
 }
