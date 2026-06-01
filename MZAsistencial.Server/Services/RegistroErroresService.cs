@@ -5,16 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MZAsistencial.Server.Services
 {
     public class RegistroErroresService : IRegistroErroresService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IMemoryCache _cache;
 
-        public RegistroErroresService(MZAsistencialContext context)
+        public RegistroErroresService(MZAsistencialContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task LogErrorAsync(Exception ex, string modulo, int? usuarioId = null)
@@ -32,6 +35,19 @@ namespace MZAsistencial.Server.Services
             try
             {
                 if (descripcion.Length > 2000) descripcion = descripcion.Substring(0, 2000);
+                
+                // Identificador único para este error
+                string cacheKey = $"Error_{modulo}_{usuarioId}_{descripcion.GetHashCode()}";
+
+                // Mira a la velocidad de la RAM si esta llave ya existe
+                if (_cache.TryGetValue(cacheKey, out _))
+                {
+                    // El hilo 2 entra por aquí y muere.
+                    return;
+                }
+
+                // El hilo 1 llega aquí y bloquea la puerta durante 5 segundos
+                _cache.Set(cacheKey, true, TimeSpan.FromSeconds(5));
                 
                 var registro = new RegistroErrore
                 {

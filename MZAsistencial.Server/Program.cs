@@ -112,6 +112,7 @@ try
     builder.Services.AddScoped<Icg06ValidarService>();
     builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
     builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
+    builder.Services.AddMemoryCache();
 
     // -- Pipeline
     var app = builder.Build();
