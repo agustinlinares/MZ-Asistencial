@@ -266,8 +266,8 @@ const camposOtrasAmb = [
 const camposAsProHos = camposOtrasHos;
 
 const camposAsPro = [
-    { key: "actidesde",                    label: "Activo desde" },
-    { key: "actihasta",                    label: "Activo hasta" },
+    { key: "actidesde",                    label: "Activo desde", type: "date" },
+    { key: "actihasta",                    label: "Activo hasta",  type: "date" },
     { key: "pacen25km",                    label: "PA centro ≤25km" },
     { key: "pacen50km",                    label: "PA centro ≤50km" },
     { key: "pacen50km1",                   label: "PA centro >50km" },
@@ -631,6 +631,9 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
                         {type === "text" ? (
                             <textarea style={{ ...st.fieldInput, minHeight: 60, resize: esAdmin ? "vertical" : "none", padding: "6px 8px", background: esAdmin ? "#fff" : "#f5f5f5" }}
                                 value={datos[key] ?? ""} onChange={e => esAdmin && handleChange(key, e.target.value)} readOnly={!esAdmin} placeholder="Escriba aquí..." />
+                        ) : type === "date" ? (
+                            <input style={{ ...st.fieldInput, background: esAdmin ? "#fff" : "#f5f5f5" }}
+                                type="date" value={datos[key] ? datos[key].substring(0, 10) : ""} onChange={e => esAdmin && handleChange(key, e.target.value || null)} readOnly={!esAdmin} />
                         ) : (
                             <input style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222", background: esAdmin ? "#fff" : "#f5f5f5" }}
                                 type="number" value={datos[key] ?? ""} onChange={e => esAdmin && handleChange(key, e.target.value)} readOnly={!esAdmin} placeholder="0" />
