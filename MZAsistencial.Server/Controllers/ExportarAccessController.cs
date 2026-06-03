@@ -15,10 +15,19 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int usuarioId = 0)
         {
+            if (usuarioId > 0)
+                await _service.LogAccesoAsync(usuarioId);
             var data = await _service.GetAllAsync();
             return Ok(data);
+        }
+
+        [HttpPost("log-excel")]
+        public async Task<IActionResult> LogExcel([FromQuery] int usuarioId)
+        {
+            await _service.LogExportacionExcelAsync(usuarioId);
+            return Ok();
         }
 
         [HttpGet("mutuas")]
