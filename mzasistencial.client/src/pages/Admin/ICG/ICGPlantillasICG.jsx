@@ -244,8 +244,16 @@ const ICGPlantillasICG = () => {
 
         const dialogResult = await dialog.show();
         if (dialogResult) {
-            notify(t("Informe eliminado (Simulación)"), "success", 2000);
-            // Aquí llamarías a PlantillasICGService.eliminarPlantilla(row.data.Id)
+            try {
+                setCargando(true);
+                await PlantillasICGService.eliminarPlantilla(row.data.Id);
+                notify(t("Informe eliminado correctamente"), "success", 2000);
+                cargarGrid();
+            } catch (error) {
+                notify(error.message, "error", 4000);
+            } finally {
+                setCargando(false);
+            }
         }
     };
 

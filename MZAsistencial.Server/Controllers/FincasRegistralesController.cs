@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
@@ -5,6 +6,7 @@ using System.Collections.Generic;
 
 namespace MZAsistencial.Server.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FincasRegistralesController : ControllerBase
@@ -35,7 +37,7 @@ namespace MZAsistencial.Server.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<FincaRegistralDTO>> Update(int id, FincaRegistralDTO fincaDto)
         {
-            var result = await _service.ActualizarFinca(id, fincaDto);
+            var result = await _service.ActualizarFinca(id, fincaDto, User);
             if (result == null)
                 return NotFound();
             return Ok(result);
@@ -44,7 +46,7 @@ namespace MZAsistencial.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var ok = await _service.EliminarFinca(id);
+            var ok = await _service.EliminarFinca(id, User);
             if (!ok) return NotFound();
             return Ok();
         }

@@ -1,10 +1,14 @@
 const BASE_URL = '/api/PlantillasICG';
 
 const authHeaders = () => {
-    // Si necesitas usar tokens, lo añadirías aquí
+    const userStr = localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const token = user?.token || localStorage.getItem('token') || sessionStorage.getItem('token');
+
     return {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
 };
 
@@ -52,10 +56,16 @@ const PlantillasICGService = {
 
     // Subir un fichero (Ficha Doc. Adjunto)
     subirPlantilla: async (formData) => {
+        const userStr = localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        const token = user?.token || localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
         // FormData permite mandar el fichero físico y los datos en multipart/form-data
         const response = await fetch(`${BASE_URL}/subir`, {
             method: 'POST',
             body: formData,
+            headers: headers
             // fetch configura automáticamente el boundary de multipart/form-data al mandar formData
         });
 
@@ -81,6 +91,19 @@ const PlantillasICGService = {
     getDatosIniciales: async () => {
         const response = await fetch(`${BASE_URL}/iniciales`, { headers: authHeaders() });
         if (!response.ok) throw new Error('Error al cargar datos iniciales');
+        return await response.json();
+    },
+
+    // Eliminar un informe
+    eliminarPlantilla: async (id) => {
+        const response = await fetch(`${BASE_URL}/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error || 'Error al eliminar la plantilla');
+        }
         return await response.json();
     }
 };

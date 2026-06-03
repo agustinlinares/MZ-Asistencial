@@ -82,6 +82,7 @@ namespace MZAsistencial.Server.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub,  usuario.UsuarioId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Name, usuario.Usuario1 ?? ""),
                 new Claim("perfilId",                   usuario.PerfilId?.ToString() ?? ""),
+                new Claim("mutuaId",                    usuario.MutuaId?.ToString() ?? ""),
                 new Claim(JwtRegisteredClaimNames.Jti,  Guid.NewGuid().ToString())
             };
 

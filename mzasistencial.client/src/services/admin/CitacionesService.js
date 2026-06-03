@@ -1,5 +1,17 @@
 const API_URL = '/api';
 
+const authHeaders = () => {
+    const userStr = localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const token = user?.token || localStorage.getItem('token') || sessionStorage.getItem('token');
+
+    return {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+};
+
 const CitacionesService = {
     getSolicitadas: async (mutuaId, filters = {}) => {
         try {
@@ -7,7 +19,9 @@ const CitacionesService = {
                 Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
             );
             const params = new URLSearchParams(cleanFilters).toString();
-            const response = await fetch(`${API_URL}/citaciones/solicitadas/${mutuaId}?${params}`);
+            const response = await fetch(`${API_URL}/citaciones/solicitadas/${mutuaId}?${params}`, {
+                headers: authHeaders()
+            });
             if (!response.ok) throw new Error('Error al obtener citaciones solicitadas');
             return await response.json();
         } catch (error) {
@@ -22,7 +36,9 @@ const CitacionesService = {
                 Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
             );
             const params = new URLSearchParams(cleanFilters).toString();
-            const response = await fetch(`${API_URL}/citaciones/recibidas/${mutuaId}?${params}`);
+            const response = await fetch(`${API_URL}/citaciones/recibidas/${mutuaId}?${params}`, {
+                headers: authHeaders()
+            });
             if (!response.ok) throw new Error('Error al obtener citaciones recibidas');
             return await response.json();
         } catch (error) {
@@ -34,7 +50,8 @@ const CitacionesService = {
     updateEstado: async (citacionId, estadoId, contestacion) => {
         try {
             const response = await fetch(`${API_URL}/citaciones/${citacionId}/estado?estadoId=${estadoId}&contestacion=${contestacion}`, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: authHeaders()
             });
             if (!response.ok) throw new Error('Error al actualizar estado de citación');
             return true;
@@ -47,7 +64,8 @@ const CitacionesService = {
     updateRechazo: async (citacionId, motivo) => {
         try {
             const response = await fetch(`${API_URL}/citaciones/${citacionId}/rechazar?motivo=${motivo}`, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: authHeaders()
             });
             if (!response.ok) throw new Error('Error al rechazar citación');
             return true;
@@ -61,7 +79,7 @@ const CitacionesService = {
         try {
             const response = await fetch(`${API_URL}/citaciones/${mutuaId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders(),
                 body: JSON.stringify(data)
             });
             if (!response.ok) throw new Error('Error al crear solicitud de citación');

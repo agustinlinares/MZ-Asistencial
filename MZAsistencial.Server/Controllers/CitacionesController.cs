@@ -1,11 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CitacionesController : ControllerBase
@@ -37,8 +40,8 @@ public class CitacionesController : ControllerBase
     public async Task<IActionResult> UpdateEstado(int id, [FromQuery] int estadoId, [FromQuery] string contestacion)
     {
         if (estadoId <= 0) return BadRequest(new { error = "El estado no es válido" });
-        var result = await _service.UpdateEstadoAsync(id, estadoId, contestacion);
-        if (!result) return NotFound(new { error = $"No se encontró la citación con ID {id}" });
+        var result = await _service.UpdateEstadoAsync(id, estadoId, contestacion, User);
+        if (!result) return NotFound(new { error = $"No se encontró la citación con ID {id} o no tiene permisos." });
         return Ok(new { success = true });
     }
 
@@ -48,8 +51,8 @@ public class CitacionesController : ControllerBase
         if (string.IsNullOrWhiteSpace(motivo))
             return BadRequest(new { error = "Debe indicar un motivo para el rechazo" });
 
-        var result = await _service.UpdateRechazoAsync(id, motivo);
-        if (!result) return NotFound(new { error = $"No se encontró la citación con ID {id}" });
+        var result = await _service.UpdateRechazoAsync(id, motivo, User);
+        if (!result) return NotFound(new { error = $"No se encontró la citación con ID {id} o no tiene permisos." });
         return Ok(new { success = true });
     }
 
@@ -67,8 +70,8 @@ public class CitacionesController : ControllerBase
             return BadRequest(new { errores });
         }
 
-        var result = await _service.CreateSolicitudAsync(mutuaId, dto);
-        if (!result) return NotFound(new { error = "La mutua indicada no existe" });
+        var result = await _service.CreateSolicitudAsync(mutuaId, dto, User);
+        if (!result) return NotFound(new { error = "La mutua indicada no existe o no tiene permisos para solicitar." });
         return Ok(new { success = true });
     }
 

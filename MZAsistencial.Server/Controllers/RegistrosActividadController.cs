@@ -25,6 +25,9 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRegistrosActividad(DataSourceLoadOptions loadOptions)
         {
+            var perfilId = User.FindFirst("perfilId")?.Value;
+            if (perfilId != "1") return Forbid();
+
             var query = _registrosActividadService.ObtenerListadoRegistrosQuery();
             return Ok(await DataSourceLoader.LoadAsync(query, loadOptions));
         }
@@ -32,6 +35,12 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet("ultimo/{usuarioId}")]
         public async Task<ActionResult<IEnumerable<RegistroActividad>>> GetUltimoRegistro(int usuarioId)
         {
+            var perfilId = User.FindFirst("perfilId")?.Value;
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            
+            if (perfilId != "1" && currentUserId != usuarioId.ToString()) 
+                return Forbid();
+
             var registros = await _registrosActividadService.ObtenerUltimoRegistro(usuarioId);
             return Ok(registros);
         }

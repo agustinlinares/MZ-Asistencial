@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace MZAsistencial.Server.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PlantillasICGController : ControllerBase
@@ -76,6 +78,22 @@ public class PlantillasICGController : ControllerBase
         {
             var procesados = await _service.ProcesarPlantillasAsync();
             return Ok(new { Message = $"Se han procesado {procesados} plantillas correctamente." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
+    // DELETE /api/PlantillasICG/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePlantilla(int id)
+    {
+        try
+        {
+            var result = await _service.EliminarPlantillaAsync(id);
+            if (!result) return NotFound();
+            return Ok(new { Message = "Informe eliminado correctamente." });
         }
         catch (Exception ex)
         {
