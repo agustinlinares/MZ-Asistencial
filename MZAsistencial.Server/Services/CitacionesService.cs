@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
@@ -12,10 +13,10 @@ public interface ICitacionesService
 {
     Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter);
     Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter);
-    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo);
+    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, ClaimsPrincipal user);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, ClaimsPrincipal user);
     Task<int> SeedDataAsync(int mutuaId);
-    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto);
+    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, ClaimsPrincipal user);
 }
 
 public class CitacionFilter
@@ -157,12 +158,17 @@ public class CitacionesService : ICitacionesService
             .ToListAsync();
     }
 
-    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion)
+    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, ClaimsPrincipal user)
     {
         try
         {
             var citacion = await _context.Citaciones.FindAsync(citacionId);
             if (citacion == null) return false;
+
+            var perfilId = user?.FindFirst("perfilId")?.Value;
+            var mutuaId = user?.FindFirst("mutuaId")?.Value;
+            if (perfilId != "1" && mutuaId != citacion.MutaOferta.ToString())
+                throw new UnauthorizedAccessException("No tiene permisos para modificar esta citación.");
 
             citacion.EstadoId = estadoId;
             citacion.Contestacion = contestacion;
@@ -178,12 +184,17 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, ClaimsPrincipal user)
     {
         try
         {
             var citacion = await _context.Citaciones.FindAsync(citacionId);
             if (citacion == null) return false;
+
+            var perfilId = user?.FindFirst("perfilId")?.Value;
+            var mutuaId = user?.FindFirst("mutuaId")?.Value;
+            if (perfilId != "1" && mutuaId != citacion.MutaOferta.ToString())
+                throw new UnauthorizedAccessException("No tiene permisos para rechazar esta citación.");
 
             citacion.EstadoId = 6; // Hardcoded state 6 for Rechazo as per legacy logic
             citacion.MotivoRechazo = motivo;
@@ -199,10 +210,15 @@ public class CitacionesService : ICitacionesService
             throw;
         }
     }
-    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto)
+    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, ClaimsPrincipal user)
     {
         try
         {
+            var perfilId = user?.FindFirst("perfilId")?.Value;
+            var userMutuaId = user?.FindFirst("mutuaId")?.Value;
+            if (perfilId != "1" && userMutuaId != mutuaId.ToString())
+                throw new UnauthorizedAccessException("No tiene permisos para solicitar citaciones para otra mutua.");
+
             // Validación de existencia de la mutua
             var mutuaExiste = await _context.Mutuas.AnyAsync(m => m.MutuaId == mutuaId);
             if (!mutuaExiste) return false;
