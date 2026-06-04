@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +12,10 @@ public interface ICitacionesService
 {
     Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter);
     Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter);
-    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo);
+    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
-    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto);
+    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
 }
 
 public class CitacionFilter
@@ -157,7 +157,7 @@ public class CitacionesService : ICitacionesService
             .ToListAsync();
     }
 
-    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion)
+    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
@@ -178,7 +178,7 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
@@ -199,7 +199,7 @@ public class CitacionesService : ICitacionesService
             throw;
         }
     }
-    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto)
+    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {

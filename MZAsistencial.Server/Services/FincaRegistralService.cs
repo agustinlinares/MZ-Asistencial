@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -124,7 +124,7 @@ namespace MZAsistencial.Server.Services
             };
         }
 
-        public async Task<FincaRegistralDTO?> ActualizarFinca(int id, FincaRegistralDTO dto)
+        public async Task<FincaRegistralDTO?> ActualizarFinca(int id, FincaRegistralDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             try
             {
@@ -262,7 +262,7 @@ namespace MZAsistencial.Server.Services
             }
         }
 
-        public async Task<bool> EliminarFinca(int id)
+        public async Task<bool> EliminarFinca(int id, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             try
             {
