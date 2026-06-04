@@ -392,7 +392,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 <div className="ficha-input-suffix">
                                     <input type="text" value={form.VerificarDireccionGoogle || ""} onChange={set("VerificarDireccionGoogle")} />
                                     <button className="finca-btn-secondary" title="Abrir mapa" style={{ padding: '0 10px' }}
-                                        onClick={() => navigate('/admin/Centros/MapaPage', { state: { latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
+                                        onClick={() => navigate('/admin/Centros/MapaPage', { state: { centroId: form.CentroId, latitud: form.Latitud, longitud: form.Longitud, direccion: form.DireccionGoogle } })}>
                                         <i className="ri-map-pin-line"></i>
                                     </button>
                                 </div>
