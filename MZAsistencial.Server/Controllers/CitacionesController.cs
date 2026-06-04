@@ -81,4 +81,59 @@ public class CitacionesController : ControllerBase
         var count = await _service.SeedDataAsync(mutuaId);
         return Ok(new { message = $"{count} citaciones creadas para la mutua {mutuaId}" });
     }
+
+    [HttpGet("{id:int}/documentos")]
+    public async Task<IActionResult> GetDocumentos(int id)
+    {
+        var docs = await _service.GetDocumentosAsync(id);
+        return Ok(docs);
+    }
+
+    [HttpGet("{id:int}/documentos/{docId:int}")]
+    public async Task<IActionResult> DownloadDocumento(int id, int docId)
+    {
+        var doc = await _service.GetDocumentoByIdAsync(docId);
+        if (doc == null || doc.CitacionId != id)
+            return NotFound(new { error = "Documento no encontrado" });
+
+        // Simulate returning a file. In a real scenario we read from doc.NombreFisicoServidor
+        // We will just generate a dummy text file with the name.
+        var content = System.Text.Encoding.UTF8.GetBytes($"Contenido simulado del archivo {doc.Nombre}");
+        return File(content, "application/octet-stream", doc.Nombre);
+    }
+
+    [HttpPost("{id:int}/documentos")]
+    public async Task<IActionResult> UploadDocumento(int id, [FromForm] List<Microsoft.AspNetCore.Http.IFormFile> files)
+    {
+        if (files == null || files.Count == 0)
+            return BadRequest(new { error = "No se ha subido ningún archivo válido" });
+
+        var mutuaIdClaim = User.Claims.FirstOrDefault(c => c.Type == "MutuaId")?.Value;
+        var usuarioIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+        
+        int mutuaId = string.IsNullOrEmpty(mutuaIdClaim) ? 1 : int.Parse(mutuaIdClaim);
+        int usuarioId = string.IsNullOrEmpty(usuarioIdClaim) ? 1 : int.Parse(usuarioIdClaim);
+
+        var uploadedFiles = new List<string>();
+
+        foreach (var file in files)
+        {
+            if (file.Length > 0)
+            {
+                // Simulated file saving for demonstration.
+                string rutaFisica = $"/uploads/citaciones/{id}/{file.FileName}";
+                await _service.UploadDocumentoAsync(id, file.FileName, rutaFisica, mutuaId, usuarioId);
+                uploadedFiles.Add(file.FileName);
+            }
+        }
+
+        return Ok(new { success = true, filenames = uploadedFiles });
+    }
+
+    [HttpGet("{id:int}/historial")]
+    public async Task<IActionResult> GetHistorial(int id)
+    {
+        var historial = await _service.GetHistorialAsync(id);
+        return Ok(historial);
+    }
 }

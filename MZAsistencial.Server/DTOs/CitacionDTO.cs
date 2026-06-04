@@ -105,4 +105,52 @@ public class CitacionDTO
     [Required(ErrorMessage = "La necesidad es obligatoria")]
     [StringLength(500, ErrorMessage = "La necesidad no puede superar los 500 caracteres")]
     public string? Necesidad { get; set; }
+
+    [JsonPropertyName("Provincia")]
+    public string? Provincia { get; set; }
+
+    [JsonPropertyName("Localidad")]
+    public string? Localidad { get; set; }
+
+    [JsonPropertyName("Direccion")]
+    public string? Direccion { get; set; }
+
+    [JsonPropertyName("Telefono")]
+    public string? Telefono { get; set; }
+
+    [JsonPropertyName("Contestacion")]
+    public string? Contestacion { get; set; }
+
+    [JsonPropertyName("FechaContestacion")]
+    public DateTime? FechaContestacion { get; set; }
+
+    // Campos de la Demanda para la fila "RESERVA"
+    [JsonPropertyName("DemandaEne")] public int? DemandaEne { get; set; }
+    [JsonPropertyName("DemandaFeb")] public int? DemandaFeb { get; set; }
+    [JsonPropertyName("DemandaMar")] public int? DemandaMar { get; set; }
+    [JsonPropertyName("DemandaAbr")] public int? DemandaAbr { get; set; }
+    [JsonPropertyName("DemandaMay")] public int? DemandaMay { get; set; }
+    [JsonPropertyName("DemandaJun")] public int? DemandaJun { get; set; }
+    [JsonPropertyName("DemandaJul")] public int? DemandaJul { get; set; }
+    [JsonPropertyName("DemandaAgo")] public int? DemandaAgo { get; set; }
+    [JsonPropertyName("DemandaSep")] public int? DemandaSep { get; set; }
+    [JsonPropertyName("DemandaOct")] public int? DemandaOct { get; set; }
+    [JsonPropertyName("DemandaNov")] public int? DemandaNov { get; set; }
+    [JsonPropertyName("DemandaDic")] public int? DemandaDic { get; set; }
+    [JsonPropertyName("DemandaTotal")] public int? DemandaTotal { get; set; }
+
+    // Campos del Consumo (por ahora a 0)
+    [JsonPropertyName("ConsumoEne")] public int? ConsumoEne { get; set; }
+    [JsonPropertyName("ConsumoFeb")] public int? ConsumoFeb { get; set; }
+    [JsonPropertyName("ConsumoMar")] public int? ConsumoMar { get; set; }
+    [JsonPropertyName("ConsumoAbr")] public int? ConsumoAbr { get; set; }
+    [JsonPropertyName("ConsumoMay")] public int? ConsumoMay { get; set; }
+    [JsonPropertyName("ConsumoJun")] public int? ConsumoJun { get; set; }
+    [JsonPropertyName("ConsumoJul")] public int? ConsumoJul { get; set; }
+    [JsonPropertyName("ConsumoAgo")] public int? ConsumoAgo { get; set; }
+    [JsonPropertyName("ConsumoSep")] public int? ConsumoSep { get; set; }
+    [JsonPropertyName("ConsumoOct")] public int? ConsumoOct { get; set; }
+    [JsonPropertyName("ConsumoNov")] public int? ConsumoNov { get; set; }
+    [JsonPropertyName("ConsumoDic")] public int? ConsumoDic { get; set; }
+    [JsonPropertyName("ConsumoTotal")] public int? ConsumoTotal { get; set; }
 }
