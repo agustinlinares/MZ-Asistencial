@@ -5,7 +5,6 @@ using MZAsistencial.Server.Services;
 using System.Threading.Tasks;
 using DevExtreme.AspNet.Data;
 using MZAsistencial.Server.Models;
-using DevExtreme.AspNet.Data;
 
 namespace MZAsistencial.Server.Controllers
 {

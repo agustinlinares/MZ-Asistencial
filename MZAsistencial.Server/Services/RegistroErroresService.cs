@@ -47,7 +47,7 @@ namespace MZAsistencial.Server.Services
                     Descripcion = descripcion,
                     FicheroLog = ficheroLogName,
                     EstadoId = 1, // 1 = Abierto
-                    Comentarios = stackTrace // Guardamos el stack trace en comentarios por si acaso
+                    Comentarios = stackTrace ?? "Sin detalles adicionales"
                 };
 
                 _context.RegistroErrores.Add(registro);

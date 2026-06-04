@@ -6,5 +6,6 @@ namespace MZAsistencial.Server.DTOs
         public string Modulo { get; set; } = "React Client";
         public int? UsuarioId { get; set; }
         public string? DetalleError { get; set; }
+        public string? Comentarios { get; set; }
     }
 }
