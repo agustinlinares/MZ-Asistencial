@@ -3,6 +3,9 @@ import '../../../styles/FichaGlobal.css';
 import notify from 'devextreme/ui/notify';
 import './FichaMutua.css';
 import MapaModal from '../../Admin/Centros/MapaModal'; // La ruta a MapaModal.jsx
+import { Workbook } from 'exceljs';
+import { saveAs } from 'file-saver-es';
+import { exportDataGrid } from 'devextreme/excel_exporter';
 import DataGrid, {
     Column,
     Paging,
@@ -67,6 +70,34 @@ const FichaMutua = ({ mutua, onClose }) => {
     // Estados para especialidades
     const [especialidadesPropios, setEspecialidadesPropios] = useState([]);
     const [especialidadesConciertos, setEspecialidadesConciertos] = useState([]);
+
+    // Función para exportar a Excel cualquier DataGrid
+    const exportarExcel = (gridRef, nombreArchivo) => {
+        const grid = gridRef.current?.instance();
+        if (!grid) return;
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet(nombreArchivo);
+        exportDataGrid({ component: grid, worksheet, autoFilterEnabled: true })
+            .then(() => workbook.xlsx.writeBuffer())
+            .then(buffer => saveAs(new Blob([buffer]), `${nombreArchivo}.xlsx`));
+    };
+
+    // Función para exportar a PDF cualquier DataGrid
+    const exportarPDF = (gridRef, nombreArchivo) => {
+        const grid = gridRef.current?.instance();
+        if (!grid) return;
+        import('devextreme/pdf_exporter').then(({ exportDataGrid: exportPDF }) => {
+            import('jspdf').then(({ jsPDF }) => {
+                const doc = new jsPDF({ orientation: 'landscape' });
+                exportPDF({ jsPDFDocument: doc, component: grid, indent: 5 })
+                    .then(() => doc.save(`${nombreArchivo}.pdf`));
+            });
+        });
+    };      
+
+    // Refs para los DataGrids de las pestañas
+    const centrosPropiosGridRef = useRef(null);
+    const conciertosGridRef = useRef(null);
 
     // Igual que FichaFinca: foco al abrir y cerrar con Escape
     useEffect(() => {
@@ -483,7 +514,20 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     />
                                 )}
 
+                                {/* Botones exportar */}
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '8px' }}>
+                                    <button className="ficha-btn-secondary" onClick={() => exportarExcel(centrosPropiosGridRef, 'CentrosPropios')}>
+                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32', marginRight: 4 }}></i>
+                                        Exportar a Excel
+                                    </button>
+                                    <button className="ficha-btn-secondary" onClick={() => exportarPDF(centrosPropiosGridRef, 'CentrosPropios')}>
+                                        <i className="ri-file-pdf-line" style={{ color: '#c62828', marginRight: 4 }}></i>
+                                        Exportar a PDF
+                                    </button>
+                                </div>
+
                                 <DataGrid
+                                    ref={centrosPropiosGridRef}  /* Ref de los botones*/
                                     dataSource={centrosPropios} // Conectar con el endpoint
                                     showBorders={true}
                                     rowAlternationEnabled={true}
@@ -499,7 +543,6 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     <FilterRow visible={true} />
                                     <HeaderFilter visible={true} />
                                     <Sorting mode="multiple" />
-                                    <Export enabled={true} />
                                     <Column dataField="localizador" caption="Localizador" width="11%" />
                                     <Column dataField="centro" caption="Centro" width="17%" />
                                     <Column dataField="cp" caption="C.P" width="7%" />
@@ -553,7 +596,20 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 />
                             )}
 
+                            {/* Botones exportar */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '8px' }}>
+                                <button className="ficha-btn-secondary" onClick={() => exportarExcel(conciertosGridRef, 'Conciertos')}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32', marginRight: 4 }}></i>
+                                    Exportar a Excel
+                                </button>
+                                <button className="ficha-btn-secondary" onClick={() => exportarPDF(conciertosGridRef, 'Conciertos')}>
+                                    <i className="ri-file-pdf-line" style={{ color: '#c62828', marginRight: 4 }}></i>
+                                    Exportar a PDF
+                                </button>
+                            </div>
+
                             <DataGrid
+                                ref={conciertosGridRef}  /* Ref de los botones*/
                                 dataSource={conciertos} // TODO: fetch /api/conciertos?mutuaId={mutua.numeroId}
                                 showBorders={true}
                                 rowAlternationEnabled={true}
