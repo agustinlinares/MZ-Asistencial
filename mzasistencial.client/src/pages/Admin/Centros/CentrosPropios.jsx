@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { Workbook } from 'exceljs';
 import './Centros.css';
 import '../../../styles/FichaGlobal.css';
@@ -76,7 +76,7 @@ const CentrosPropios = () => {
         const perfilId = user?.perfilId ?? '';
         fetch(`${API_URL}?perfilId=${perfilId}`)
             .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
-            .then(data => setCentros(data))
+            .then(data => setCentros(admin ? data : data.filter(c => !c.desactivado)))
             .catch(err => console.error('Error cargando centros:', err));
     };
 
@@ -263,6 +263,12 @@ const CentrosPropios = () => {
                             wordWrapEnabled={false}
                             noDataText={t('Sin datos para mostrar')}
                             onRowDblClick={(e) => setSelectedCentro(e.data)}
+                onRowPrepared={(e) => {
+                    if (e.rowType === 'data' && e.data.desactivado) {
+                        e.rowElement.style.backgroundColor = '#fde8e8';
+                        e.rowElement.style.color = '#a94442';
+                    }
+                }}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={20} />

@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import CitacionesService from "../../../services/admin/CitacionesService";
 import AuthService from "../../../services/auth/AuthService";
 import NuevaSolicitud from "./NuevaSolicitud";
+import FichaCitacion from "./FichaCitacion";
 
 const SolicitarCitacion = () => {
     const { t } = useTranslation();
@@ -26,6 +27,10 @@ const SolicitarCitacion = () => {
     const menuRef = useRef(null);
 
     const logError = useLogError("Solicitar citación");
+    
+    // Ficha Citacion State
+    const [showFicha, setShowFicha] = useState(false);
+    const [citacionSeleccionada, setCitacionSeleccionada] = useState(null);
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -144,6 +149,11 @@ const SolicitarCitacion = () => {
         };
     };
 
+    const handleRowDblClick = (e) => {
+        setCitacionSeleccionada(e.data);
+        setShowFicha(true);
+    };
+
     return (
         <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
             <div className="file-box">
@@ -230,6 +240,14 @@ const SolicitarCitacion = () => {
                     </div>
                 </div>
 
+                <FichaCitacion 
+                    visible={showFicha}
+                    onHiding={() => setShowFicha(false)}
+                    citacion={citacionSeleccionada}
+                    modo="solicitud"
+                    onSave={cargarDatos}
+                />
+
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                     <DataGrid
                         ref={dataGridRef}
@@ -244,6 +262,7 @@ const SolicitarCitacion = () => {
                         showColumnLines={true}
                         wordWrapEnabled={false}
                         height="100%"
+                        onRowDblClick={handleRowDblClick}
                     >
                         <Toolbar>
                             <Item location="after" name="searchPanel" />

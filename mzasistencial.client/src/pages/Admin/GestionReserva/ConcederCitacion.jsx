@@ -13,6 +13,8 @@ import { useTranslation } from "react-i18next";
 import CitacionesService from "../../../services/admin/CitacionesService";
 import AuthService from "../../../services/auth/AuthService";
 import notify from 'devextreme/ui/notify';
+import FichaCitacion from "./FichaCitacion";
+import { custom } from 'devextreme/ui/dialog';
 
 import { useLogError } from '../../../hooks/useLogError';
 
@@ -25,6 +27,10 @@ const ConcederCitacion = () => {
     const menuRef = useRef(null);
 
     const logError = useLogError("Conceder citación");
+    // Ficha Citacion State
+    const [showFicha, setShowFicha] = useState(false);
+    const [citacionSeleccionada, setCitacionSeleccionada] = useState(null);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -112,16 +118,69 @@ const ConcederCitacion = () => {
     };
 
     const handleLimpiarFiltros = () => {
-        const initial = {
+        setFiltros({
             vista: 'Desagrupada',
             anio: new Date().getFullYear(),
             estado: 'Todas',
             demandaId: '',
             citacionId: '',
             necesidad: ''
-        };
-        setFiltros(initial);
-        cargarDatos(initial);
+        });
+        cargarDatos();
+    };
+
+    const handleSelectionChanged = (e) => {
+        setSelectedRowKeys(e.selectedRowKeys);
+    };
+
+    const handleConcederLote = async () => {
+        if (selectedRowKeys.length === 0) return;
+        
+        let dialog = custom({
+            title: "Conceder en lote",
+            messageHtml: "<b>Contestación genérica para estas citaciones:</b><br/><textarea id='bulkContestacion' style='width:100%; height:80px; margin-top:10px;'></textarea>",
+            buttons: [
+                { text: "Conceder", onClick: () => document.getElementById('bulkContestacion').value },
+                { text: "Cancelar", onClick: () => null }
+            ]
+        });
+
+        const result = await dialog.show();
+        if (result) {
+            try {
+                await CitacionesService.updateEstadoLote(selectedRowKeys, 2, result);
+                notify(t('Citaciones concedidas correctamente'), 'success', 2000);
+                setSelectedRowKeys([]);
+                cargarDatos();
+            } catch (err) {
+                notify(t('Error al conceder'), 'error', 2000);
+            }
+        }
+    };
+
+    const handleRechazarLote = async () => {
+        if (selectedRowKeys.length === 0) return;
+        
+        let dialog = custom({
+            title: "Rechazar en lote",
+            messageHtml: "<b>Motivo de rechazo para estas citaciones:</b><br/><textarea id='bulkMotivo' style='width:100%; height:80px; margin-top:10px;'></textarea>",
+            buttons: [
+                { text: "Rechazar", onClick: () => document.getElementById('bulkMotivo').value },
+                { text: "Cancelar", onClick: () => null }
+            ]
+        });
+
+        const result = await dialog.show();
+        if (result) {
+            try {
+                await CitacionesService.updateRechazoLote(selectedRowKeys, result);
+                notify(t('Citaciones rechazadas correctamente'), 'success', 2000);
+                setSelectedRowKeys([]);
+                cargarDatos();
+            } catch (err) {
+                notify(t('Error al rechazar'), 'error', 2000);
+            }
+        }
     };
 
     const handleExportarExcel = () => {
@@ -165,6 +224,11 @@ const ConcederCitacion = () => {
             fontSize: '11px', fontWeight: 'bold',
             textTransform: 'uppercase'
         };
+    };
+
+    const handleRowDblClick = (e) => {
+        setCitacionSeleccionada(e.data);
+        setShowFicha(true);
     };
 
     return (
@@ -241,6 +305,14 @@ const ConcederCitacion = () => {
                     </div>
                 </div>
 
+                <FichaCitacion 
+                    visible={showFicha}
+                    onHiding={() => setShowFicha(false)}
+                    citacion={citacionSeleccionada}
+                    modo="concesion"
+                    onSave={cargarDatos}
+                />
+
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                     <DataGrid
                         ref={dataGridRef}
@@ -255,8 +327,23 @@ const ConcederCitacion = () => {
                         showColumnLines={true}
                         wordWrapEnabled={false}
                         height="100%"
+                        onRowDblClick={handleRowDblClick}
+                        selectedRowKeys={selectedRowKeys}
+                        onSelectionChanged={handleSelectionChanged}
                     >
                         <Toolbar>
+                            <Item location="before">
+                                {selectedRowKeys.length > 1 && (
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button className="btn-guardar" onClick={handleConcederLote}>
+                                            <i className="ri-check-line"></i> {t('Conceder Seleccionadas')} ({selectedRowKeys.length})
+                                        </button>
+                                        <button className="btn-cancelar" onClick={handleRechazarLote} style={{ backgroundColor: '#c62828', color: 'white', border: 'none' }}>
+                                            <i className="ri-close-line"></i> {t('Rechazar Seleccionadas')} ({selectedRowKeys.length})
+                                        </button>
+                                    </div>
+                                )}
+                            </Item>
                             <Item location="after" name="searchPanel" />
                             <Item location="after" name="columnChooserButton" />
                             <Item location="after">
@@ -272,7 +359,7 @@ const ConcederCitacion = () => {
                         <SearchPanel visible width={240} placeholder={t('buscar')} />
                         <FilterRow visible={true} />
                         <HeaderFilter visible />
-                        <Selection mode="single" />
+                        <Selection mode="multiple" showCheckBoxesMode="always" />
                         <ColumnChooser enabled mode="select" />
                         <Sorting mode="multiple" />
                         <ColumnFixing enabled />

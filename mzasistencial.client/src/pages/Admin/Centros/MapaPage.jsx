@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLogError } from '../../../hooks/useLogError';
 
@@ -56,7 +56,16 @@ const MapaPage = () => {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // ✅ Usa sessionStorage para pasar datos de vuelta a FichaCentroPropio
-    const handleAceptar = () => {
+    const handleAceptar = async () => {
+        if (s.centroId && lat && lng) {
+            try {
+                await fetch("/api/CentrosPropios/" + s.centroId + "/coordenadas", {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitud: lat, longitud: lng }),
+                });
+            } catch { /* silently handled */ }
+        }
         sessionStorage.setItem('mapaRetorno', JSON.stringify({
             latitud: lat,
             longitud: lng,

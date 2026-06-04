@@ -765,6 +765,23 @@
 .ficha-row-actions .edit-icon { color: #1a5fa8; }
 .ficha-row-actions .delete-icon { color: #e53e3e; }
 
+.ficha-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    color: #1a5fa8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.ficha-link-btn:hover {
+    text-decoration: underline;
+}
+
 /* ── DATAGRID TOTALS HIGHLIGHT ─────────────────────────────────── */
 .col-total-highlight {
     background-color: #f8fafc !important;
