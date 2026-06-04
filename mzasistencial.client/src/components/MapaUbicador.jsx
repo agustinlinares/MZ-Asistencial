@@ -7,6 +7,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { useLogError } from '../../../hooks/useLogError';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ 
@@ -49,11 +50,16 @@ export const MapaUbicador = ({ form, onChange }) => {
     const parsedLng = parseFloat(form.longitud);
     const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
+    const logError = useLogError("Mapa Ubicador");
+
     const handleBuscarDireccion = async () => {
         if (!form.direccion?.trim()) return;
         setBuscando(true);
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(form.direccion)}`);
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
             const data = await response.json();
 
             if (data && data.length > 0) {
@@ -71,6 +77,7 @@ export const MapaUbicador = ({ form, onChange }) => {
             }
         } catch (error) {
             console.error("Error buscando dirección:", error);
+            logError("Fallo al buscar dirección en el mapa", error);
         } finally {
             setBuscando(false);
         }
@@ -79,6 +86,9 @@ export const MapaUbicador = ({ form, onChange }) => {
     const obtenerDireccionPorCoordenadas = async (lat, lon) => {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
             const data = await response.json();
             if (data && data.display_name) {
                 const direccionLimpia = data.display_name.split(',').slice(0, 3).join(',').trim();
@@ -88,6 +98,7 @@ export const MapaUbicador = ({ form, onChange }) => {
             }
         } catch (error) {
             console.error("Error al obtener la calle por coordenadas:", error);
+            logError("Fallo al obtener dirección inversa por coordenadas", error);
         }
     };
 

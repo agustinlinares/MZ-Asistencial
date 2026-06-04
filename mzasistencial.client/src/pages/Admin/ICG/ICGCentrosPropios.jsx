@@ -12,6 +12,7 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { Button } from "devextreme-react/button";
 import SelectBox from "devextreme-react/select-box";
+import { useLogError } from '../../../hooks/useLogError';
 
 const API_CENTROS      = "/api/CentrosPropios";
 const API_ESPECIALIDAD = "/api/Icg06Especialidad";
@@ -492,6 +493,8 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
     const [error,   setError]   = useState(null);
     const [msg,     setMsg]     = useState(null);
 
+    const logError = useLogError("IGC Centros Propios - TabEspecialidades");
+
     const mostrarMsg = (ok, text) => {
         setMsg({ ok, text });
         setTimeout(() => setMsg(null), 3500);
@@ -519,7 +522,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad añadida.");
             cargar();
-        } catch { mostrarMsg(false, "Error al añadir la especialidad."); }
+        } catch { 
+            logError("Error al añadir especialidad", err);
+            mostrarMsg(false, "Error al añadir la especialidad."); 
+        }
     };
 
     const onRowUpdating = async (e) => {
@@ -532,7 +538,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad actualizada.");
             cargar();
-        } catch { mostrarMsg(false, "Error al actualizar la especialidad."); }
+        } catch { 
+            logError("Error al actualizar especialidad", err);
+            mostrarMsg(false, "Error al actualizar la especialidad."); 
+        }
     };
 
     const onRowRemoving = async (e) => {
@@ -542,7 +551,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad eliminada.");
             cargar();
-        } catch { mostrarMsg(false, "Error al eliminar la especialidad."); }
+        } catch { 
+            logError("Error al eliminar especialidad", err);
+            mostrarMsg(false, "Error al eliminar la especialidad."); 
+        }
     };
 
     if (loading) return <div style={st.loading}>Cargando especialidades…</div>;
@@ -581,6 +593,8 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
     const [saving,  setSaving]  = useState(false);
     const [msg,     setMsg]     = useState(null);
 
+    const logError = useLogError("IGC Centros Propios - TabContent ICG");
+
     useEffect(() => {
         setLoading(true); setMsg(null); setDatos(null);
         fetch(`/api/${apiName}?centroId=${centroId}&a%C3%B1o=${año}`)
@@ -605,6 +619,7 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
             setMsg({ ok: true, text: "Guardado correctamente." });
             setTimeout(() => setMsg(null), 3500);
         } catch {
+            logError(`Fallo al guardar en /api/${apiName}/${datos.idIcg ?? datos.id}`, err);
             setMsg({ ok: false, text: "Error al guardar." });
         } finally { setSaving(false); }
         return saving;
@@ -654,6 +669,8 @@ const FichaICG06 = ({ centro, año, onBack }) => {
     const [msgValidar,     setMsgValidar]     = useState(null);
     const [guardando,      setGuardando]      = useState(false);
 
+    const logError = useLogError("IGC Centros Propios - Ficha ICG06");
+
     const tabContentRef = useRef(null);
 
     const tab          = TABS.find(t => t.key === tabActiva);
@@ -689,6 +706,7 @@ const FichaICG06 = ({ centro, año, onBack }) => {
             setMsgValidar({ ok: true, text: nuevoEstado === 1 ? 'ICG validado correctamente.' : 'ICG desvalidado correctamente.' });
             setTimeout(() => setMsgValidar(null), 3500);
         } catch {
+            logError(`Error al cambiar estado de validación (ICG ID: ${idIcg})`, err);
             setMsgValidar({ ok: false, text: 'Error al cambiar el estado de validación.' });
         } finally {
             setValidando(false);
@@ -702,6 +720,10 @@ const FichaICG06 = ({ centro, año, onBack }) => {
         setGuardando(true);
         try {
             await tabContentRef.current.guardar();
+        } catch (error) {
+        logError(`Fallo en el guardado centralizado para la pestaña: ${tabActiva}`, error);
+        
+        console.error("Error en handleGuardar:", error);
         } finally {
             setGuardando(false);
         }
@@ -849,6 +871,7 @@ const ICGCentrosPropios = () => {
             await cargarIcgData();
             setCentroSeleccionado(centro);
         } catch {
+            logError(`Error al crear registro ICG para Centro: ${centro?.centroId}`, err);
             alert('Error al crear el registro ICG06.');
         } finally {
             setCreando(false);

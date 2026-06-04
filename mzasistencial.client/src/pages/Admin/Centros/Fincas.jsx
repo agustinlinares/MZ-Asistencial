@@ -33,6 +33,7 @@ import DataGrid, {
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
+import { useLogError } from '../../../hooks/useLogError';
 
 const onExporting = (e) => {
     e.component.beginUpdate();
@@ -65,12 +66,15 @@ const Fincas = () => {
     const YEARS = ["2022", "2023", "2024", "2025", "2026"];
     const menuRef = useRef(null);
 
+    const logError = useLogError("Fincas");
+
     useEffect(() => {
         const fetchFincas = async () => {
             try {
                 const fincasData = await FincasService.getAll(anio);
                 setFincas(fincasData);
             } catch (error) {
+                logError("Fallo al cargar el listado de fincas", error);
                 console.error('Error fetching fincas:', error);
             }
         };
@@ -85,15 +89,18 @@ const Fincas = () => {
                     const data = await respuesta.json();
                     // ✅ Mapear al formato { id, nombre } que usa FichaFinca
                     setCentros(data.map(c => ({ id: c.centroId, nombre: c.centro })));
+                } else {
+                    logError(`Fallo al cargar centros para perfil: ${perfilId}. Status: ${respuesta.status}`);
                 }
             } catch (error) {
+                logError("Fallo de red al cargar centros", error);
                 console.error('Error al cargar centros:', error);
             }
         };
 
         fetchFincas();
         fetchCentros();
-    }, [anio]);
+    }, [anio, logError]);
 
     // Cerrar menú al hacer click fuera
     useEffect(() => {
@@ -110,6 +117,7 @@ const Fincas = () => {
         try {
             setFincas(await FincasService.getAll(anio));
         } catch (error) {
+            logError("Fallo al recargar el listado de fincas", error);
             console.error('Error al recargar fincas:', error);
         }
     };
@@ -121,6 +129,7 @@ const Fincas = () => {
             setSelectedFinca(null);
             await recargarFincas();
         } catch (error) {
+            logError(`Fallo al guardar finca con ID: ${data?.id || 'Nuevo'}`, error);
             console.error('Error al guardar finca:', error);
             notify(`Error al guardar: ${error.message}`, 'error', 3000);
         }
@@ -134,6 +143,7 @@ const Fincas = () => {
             notify('Finca eliminada correctamente', 'success', 2000);
             await recargarFincas();
         } catch (error) {
+            logError(`Fallo al eliminar la finca con ID: ${id}`, error);
             console.error('Error al eliminar finca:', error);
             notify('Error al eliminar la finca', 'error', 3000);
         }

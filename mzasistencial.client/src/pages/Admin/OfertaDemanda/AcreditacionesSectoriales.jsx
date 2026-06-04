@@ -3,6 +3,7 @@ import { Workbook } from 'exceljs';
 import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
+import { useLogError } from '../../../hooks/useLogError';
 import AuthService from "../../../services/auth/AuthService";
 import DataGrid, {
     Column,
@@ -52,6 +53,8 @@ const AcreditacionesSectoriales = () => {
     const [acreditaciones, setAcreditaciones] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
 
+    const logError = useLogError("Acreditaciones sectoriales");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -73,9 +76,11 @@ const AcreditacionesSectoriales = () => {
                     const datos = await respuesta.json();
                     setAcreditaciones(datos);
                 } else {
+                    logError(`Fallo al cargar acreditaciones sectoriales. Estado: ${respuesta.status}`);
                     console.error('Error cargando acreditaciones sectoriales:', respuesta.status);
                 }
             } catch (error) {
+                logError("Error crítico de conexión al cargar acreditaciones sectoriales", error);
                 console.error('Error conectando con la API:', error);
             }
         };
@@ -191,6 +196,7 @@ const AcreditacionesSectoriales = () => {
             });
 
             if (!respuesta.ok) {
+                logError(`Fichero ${id} no encontrado en el servidor para descarga. Estado: ${respuesta.status}`);
                 console.error('Fichero no encontrado en el servidor.');
                 return;
             }
@@ -205,6 +211,7 @@ const AcreditacionesSectoriales = () => {
             const blob = await respuesta.blob();
             saveAs(blob, nombreFichero);
         } catch (error) {
+            logError(`Error al descargar el fichero ID: ${id}`, error);
             console.error('Error descargando el fichero:', error);
         }
     };

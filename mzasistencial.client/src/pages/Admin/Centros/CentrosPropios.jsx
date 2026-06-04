@@ -14,6 +14,8 @@ import DataGrid, {
     Scrolling, Sorting, ColumnFixing, Pager, Toolbar, Item
 } from "devextreme-react/data-grid";
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const API_URL = "/api/CentrosPropios";
 
 // ✅ Helper: obtener usuario de sesión
@@ -66,6 +68,8 @@ const CentrosPropios = () => {
     const [msg, setMsg] = useState(null);
     const menuRef = useRef(null);
     const admin = esAdmin();
+
+    const logError = useLogError("Centros propios");
 
     const cargarDatos = () => {
         const user = getUsuarioSesion();
@@ -148,9 +152,11 @@ const CentrosPropios = () => {
             setMsg({ ok: true, text: `Registros validados correctamente.` });
             cargarDatos();
         } else {
+            logError(`Fallo al validar lote de centros: ${ids.join(', ')}. Estado: ${res.status}`);
             setMsg({ ok: false, text: 'Error al validar los registros.' });
         }
-        } catch {
+        } catch (error) {
+            logError("Fallo de conexión al validar centros", error);
             setMsg({ ok: false, text: 'Error de conexión al validar.' });
         } finally {
             setValidando(false);
@@ -168,9 +174,11 @@ const CentrosPropios = () => {
             if (res.ok) {
                 setSelectedCentro(null);
                 cargarDatos();
+            } else {
+                logError(`Fallo al ${data.centroId ? 'actualizar' : 'crear'} centro. Status: ${res.status}`);
             }
         } catch {
-            // silently handled
+            logError(`Fallo al persistir centro: ${data.centroId || 'Nuevo'}`, error);
         }
     };
 

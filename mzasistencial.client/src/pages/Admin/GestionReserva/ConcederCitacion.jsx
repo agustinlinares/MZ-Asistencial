@@ -14,6 +14,8 @@ import CitacionesService from "../../../services/admin/CitacionesService";
 import AuthService from "../../../services/auth/AuthService";
 import notify from 'devextreme/ui/notify';
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const ConcederCitacion = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
@@ -21,6 +23,8 @@ const ConcederCitacion = () => {
     const [loading, setLoading] = useState(true);
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
+
+    const logError = useLogError("Conceder citación");
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -71,6 +75,7 @@ const ConcederCitacion = () => {
             const data = await CitacionesService.getRecibidas(mid, apiFilters);
             setCitaciones(data);
         } catch (error) {
+            logError("Fallo al cargar el listado de citaciones recibidas", error);
             console.error("Error cargando citaciones:", error);
         } finally {
             setLoading(false);
@@ -83,6 +88,7 @@ const ConcederCitacion = () => {
             notify(t('Citación concedida correctamente'), 'success', 2000);
             cargarDatos();
         } catch {
+            logError(`Fallo al conceder la citación ID: ${citacion.CitacionId}`, error);
             notify(t('Error al conceder la citación'), 'error', 2000);
         }
     };
@@ -95,6 +101,7 @@ const ConcederCitacion = () => {
             notify(t('Citación rechazada'), 'warning', 2000);
             cargarDatos();
         } catch {
+            logError(`Fallo al rechazar la citación ID: ${citacion.CitacionId}`, error);
             notify(t('Error al rechazar la citación'), 'error', 2000);
         }
     };

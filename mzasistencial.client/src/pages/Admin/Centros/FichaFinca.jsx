@@ -16,6 +16,8 @@ import notify from 'devextreme/ui/notify';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const TIPOS_FINCA = ['SÓTANO', 'PLANTA BAJA', 'PISO', 'LOCAL', 'GARAJE', 'TRASTERO'];
 
 const TITULARIDADES = [
@@ -68,6 +70,8 @@ const TabMapa = ({ form, onChange }) => {
     const parsedLng = parseFloat(form.longitud);
     const tieneCoords = !isNaN(parsedLat) && !isNaN(parsedLng);
 
+    const logError = useLogError("Ficha finca");
+
     const handleMapClick = (la, lo) => {
         onChange('latitud', String(la.toFixed(6)));
         onChange('longitud', String(lo.toFixed(6)));
@@ -90,6 +94,7 @@ const TabMapa = ({ form, onChange }) => {
                 setFlyKey(k => k + 1);
             }
         } catch (error) {
+            logError("Fallo al consultar geolocalización en Nominatim", error);
             console.error("Error buscando dirección:", error);
         } finally {
             setBuscando(false);
@@ -179,13 +184,14 @@ const TabCostes = ({ fincaId }) => {
             try {
                 setCostes(await FincasService.getCostes(fincaId));
             } catch (error) {
+                logError(`Fallo al cargar costes para Finca ID: ${fincaId}`, error);
                 console.error(error);
             } finally {
                 setCargando(false);
             }
         };
         cargar();
-    }, [fincaId]);
+    }, [fincaId, logError]);
 
     const handleGuardar = async (coste) => {
         try {
@@ -199,6 +205,7 @@ const TabCostes = ({ fincaId }) => {
             setNuevaFila(null);
             notify(t('Coste guardado correctamente'), 'success', 2000);
         } catch (error) {
+            logError(`Fallo al ${coste.Id ? "editar" : "crear"} coste en Finca ID: ${fincaId}`, error);
             notify(error.message, 'error', 3000);
         }
     };
@@ -210,6 +217,7 @@ const TabCostes = ({ fincaId }) => {
                 setCostes(prev => prev.filter(c => c.Id !== id));
                 notify(t('Coste eliminado'), 'info', 2000);
             } catch (error) {
+                logError(`Fallo al eliminar coste ID: ${id} en Finca: ${fincaId}`, error);
                 notify(error.message, 'error', 3000);
             } finally {
                 setConfirmarEliminar(null);

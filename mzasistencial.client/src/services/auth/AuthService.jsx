@@ -1,4 +1,8 @@
-﻿const AuthService = {
+﻿import { useLogError } from '../../hooks/useLogError';
+
+const logError = useLogError("AuthService");
+
+const AuthService = {
     setUserData: (data) => {
         localStorage.setItem('UsuarioActual', JSON.stringify(data));
     },
@@ -32,6 +36,7 @@
             const payload = JSON.parse(atob(token.split('.')[1]));
             return payload.exp * 1000 > Date.now();
         } catch {
+            logError("Fallo al validar el token de sesión", err);
             return false;
         }
     },

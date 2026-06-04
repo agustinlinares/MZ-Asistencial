@@ -30,12 +30,16 @@ import notify from 'devextreme/ui/notify';
 
 import { createStore } from 'devextreme-aspnet-data-nojquery';
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const RegistrosError = () => {
     UseProtectedRoute();
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [menuAbierto, setMenuAbierto] = useState(false);
+
+    const logError = useLogError("Gestión de errores");
 
     // Creamos el CustomStore para conexión nativa DevExtreme <-> .NET
     const dataSource = React.useMemo(() => {
@@ -79,10 +83,11 @@ const RegistrosError = () => {
                 notify(t('Error marcado como resuelto'), 'success', 2000);
                 dataGridRef.current?.instance()?.refresh();
             } else {
+                logError(`Error del servidor al intentar resolver el error ID: ${errorId}`);
                 notify(t('No se pudo actualizar el estado'), 'error', 3000);
             }
         } catch (error) {
-            console.error('Error actualizando estado:', error);
+            logError(`Fallo crítico de conexión al intentar resolver el error ID: ${errorId}`, error);
             notify(t('Error de conexión'), 'error', 3000);
         }
     };

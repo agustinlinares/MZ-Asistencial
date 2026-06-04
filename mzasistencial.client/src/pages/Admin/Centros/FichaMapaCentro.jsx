@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapaUbicador } from '../../../components/MapaUbicador'; 
 import AuthService from "../../../services/auth/AuthService";
 import notify from 'devextreme/ui/notify';
+import { useLogError } from '../../../hooks/useLogError';
 
 const authHeaders = () => {
     const token = AuthService.getToken();
@@ -23,6 +24,8 @@ const FichaMapaCentro = () => {
 
     const [form, setForm] = useState({ latitud: '', longitud: '', direccion: '' });
     const [cargando, setCargando] = useState(true);
+
+    const logError = useLogError("Ficha mapa centro");
 
     useEffect(() => {
         if (datosFila && apiEndpoint) {
@@ -63,11 +66,14 @@ const FichaMapaCentro = () => {
                 navigate(-1);
             } else {
                 const errorText = await response.text();
+                logError(`Fallo al guardar mapa para Centro ID: ${id}. Respuesta: ${errorText}`);
                 console.error("Rechazado por el servidor:", errorText);
                 notify('Error al guardar. Revisa la consola.', 'error', 4000);
             }
         } catch (error) {
+            logError(`Fallo crítico de conexión al guardar mapa para Centro ID: ${id}`, error);
             console.error("Error guardando:", error);
+            notify('Error de conexión al guardar la ubicación', 'error', 4000);
         }
     };
 

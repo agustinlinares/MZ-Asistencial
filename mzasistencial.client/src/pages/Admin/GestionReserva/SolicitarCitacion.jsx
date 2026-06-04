@@ -9,6 +9,8 @@ import DataGrid, {
     ColumnFixing, Pager, Toolbar, Item, Summary, TotalItem, Grouping, GroupPanel
 } from "devextreme-react/data-grid";
 
+import { useLogError } from '../../../hooks/useLogError';
+
 import { useTranslation } from "react-i18next";
 import CitacionesService from "../../../services/admin/CitacionesService";
 import AuthService from "../../../services/auth/AuthService";
@@ -22,6 +24,8 @@ const SolicitarCitacion = () => {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [showNuevaSolicitud, setShowNuevaSolicitud] = useState(false);
     const menuRef = useRef(null);
+
+    const logError = useLogError("Solicitar citación");
 
     // Filtros
     const [filtros, setFiltros] = useState({
@@ -72,6 +76,7 @@ const SolicitarCitacion = () => {
             const data = await CitacionesService.getSolicitadas(mid, apiFilters);
             setCitaciones(data);
         } catch (error) {
+            logError(`Fallo al cargar citaciones solicitadas (Mutua: ${mid || 'N/A'}, Filtros: ${JSON.stringify(f)})`, error);
             console.error("Error cargando citaciones:", error);
         } finally {
             setLoading(false);

@@ -6,6 +6,8 @@ import { Workbook } from "exceljs";
 import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
 
+import { useLogError } from '../../../hooks/useLogError';
+
 import '../../../styles/FichaGlobal.css';
 
 const VIAS         = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
@@ -68,6 +70,8 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
     const [msgEsp,       setMsgEsp]       = useState(null);
+
+    const logError = useLogError("Ficha centro propio");
 
     useEffect(() => {
         modalRef.current?.focus();
@@ -170,13 +174,15 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                         DireccionGoogle: direccion || f.DireccionGoogle,
                         MapaValidado:    mapaValidado === true ? true : f.MapaValidado,
                     }));
-                } catch { /* silently handled */ }
+                } catch (err) { 
+                    logError("Fallo al recuperar/parsear datos del mapa desde sessionStorage", err);
+                 }
             }
         };
         leerMapaRetorno();
         window.addEventListener('focus', leerMapaRetorno);
         return () => window.removeEventListener('focus', leerMapaRetorno);
-    }, []);
+    }, [logError]);
 
     useEffect(() => {
         if (form.CentroId) {
@@ -274,6 +280,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             };
             onSave(dataToSave);
         } catch (err) {
+            logError("Fallo al persistir la ficha del centro propio", err);
             alert('Error: ' + err.message);
         } finally {
             setGuardando(false);
@@ -299,6 +306,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             setMsgEsp({ ok: true, text: 'Disponibilidad actualizada correctamente.' });
             cargarEspecialidades();
         } catch (err) {
+            logError(`Fallo al actualizar disponibilidad de especialidades para centro`, err);
             setMsgEsp({ ok: false, text: err.message || 'Error al guardar.' });
         } finally {
             setGuardandoEsp(false);
