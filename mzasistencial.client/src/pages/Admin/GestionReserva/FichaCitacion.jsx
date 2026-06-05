@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Popup, Position, ToolbarItem } from 'devextreme-react/popup';
 import { DataGrid, Column, Paging, Toolbar, Item } from 'devextreme-react/data-grid';
 import { TextBox, TextArea, RadioGroup, FileUploader, ProgressBar } from 'devextreme-react';
 import { useTranslation } from 'react-i18next';
@@ -14,15 +13,16 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     const [conceder, setConceder] = useState(null);
     const [contestacion, setContestacion] = useState(citacion?.Contestacion || '');
     
-    // Tabla de mensualidades
     const [mensualidades, setMensualidades] = useState([]);
+    const [citacionMeses, setCitacionMeses] = useState({
+        Ene: 0, Feb: 0, Mar: 0, Abr: 0, May: 0, Jun: 0, Jul: 0, Ago: 0, Sep: 0, Oct: 0, Nov: 0, Dic: 0
+    });
 
     useEffect(() => {
         if (visible && citacion) {
             setContestacion(citacion.Contestacion || '');
             setConceder(null);
             
-            // Construir los datos para la tabla de mensualidades
             setMensualidades([
                 {
                     tipo: 'RESERVA',
@@ -37,15 +37,14 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                     May: citacion.ConsumoMay, Jun: citacion.ConsumoJun, Jul: citacion.ConsumoJul, Ago: citacion.ConsumoAgo,
                     Sep: citacion.ConsumoSep, Oct: citacion.ConsumoOct, Nov: citacion.ConsumoNov, Dic: citacion.ConsumoDic,
                     Total: citacion.ConsumoTotal
-                },
-                {
-                    tipo: 'CITACION',
-                    Ene: citacion.Ene, Feb: citacion.Feb, Mar: citacion.Mar, Abr: citacion.Abr,
-                    May: citacion.May, Jun: citacion.Jun, Jul: citacion.Jul, Ago: citacion.Ago,
-                    Sep: citacion.Sep, Oct: citacion.Oct, Nov: citacion.Nov, Dic: citacion.Diciembre,
-                    Total: citacion.Total
                 }
             ]);
+
+            setCitacionMeses({
+                Ene: citacion.Ene || 0, Feb: citacion.Feb || 0, Mar: citacion.Mar || 0, Abr: citacion.Abr || 0,
+                May: citacion.May || 0, Jun: citacion.Jun || 0, Jul: citacion.Jul || 0, Ago: citacion.Ago || 0,
+                Sep: citacion.Sep || 0, Oct: citacion.Oct || 0, Nov: citacion.Nov || 0, Dic: citacion.Diciembre || 0
+            });
 
             cargarDocumentos(citacion.CitacionId);
             cargarHistorial(citacion.CitacionId);
@@ -125,7 +124,12 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
 
         try {
             if (conceder === true) {
-                await CitacionesService.updateEstado(citacion.CitacionId, 2, contestacion); // 2 = Concedida
+                // Aquí deberíamos pasar los meses si el backend lo soporta, o actualizar la citación
+                const payload = {
+                    ...citacionMeses,
+                    Diciembre: citacionMeses.Dic
+                };
+                await CitacionesService.updateEstado(citacion.CitacionId, 2, contestacion, payload); // 2 = Concedida
                 notify(t('Citación concedida'), 'success', 2000);
             } else {
                 await CitacionesService.updateRechazo(citacion.CitacionId, contestacion);
@@ -137,6 +141,15 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
         } catch {
             notify(t('Error al guardar'), 'error', 2000);
         }
+    };
+
+    const handleMesChange = (mes, value) => {
+        const val = parseInt(value, 10) || 0;
+        setCitacionMeses(prev => ({ ...prev, [mes]: val }));
+    };
+
+    const calcularTotalCitacion = () => {
+        return Object.values(citacionMeses).reduce((acc, val) => acc + (parseInt(val, 10) || 0), 0);
     };
 
     if (!citacion) return null;
@@ -155,31 +168,36 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     }
 
     return (
-        <Popup
-            visible={visible}
-            onHiding={onHiding}
-            dragEnabled={false}
-            hideOnOutsideClick={true}
-            showCloseButton={true}
-            showTitle={true}
-            title={modo === 'concesion' ? t('Gestión de Concesión') : t('Detalle de Solicitud')}
-            width="85vw"
-            height="90vh"
-            wrapperAttr={{ class: 'ficha-global-popup' }}
-        >
-            <Position at="center" my="center" />
-            {/* Header buttons */}
-            <ToolbarItem location="after" options={{ icon: 'print', text: t('Imprimir Ficha'), onClick: handleImprimir, stylingMode: 'text' }} />
-            {modo === 'concesion' && isPendiente && (
-                <ToolbarItem location="after" options={{ icon: 'close', text: t('Rechazar cita'), onClick: handleRechazar, stylingMode: 'text', elementAttr: { style: 'color: #c62828;' } }} />
-            )}
-            {modo === 'concesion' && isPendiente && (
-                <ToolbarItem location="after" options={{ icon: 'save', text: t('Guardar'), onClick: handleGuardarConcesion, stylingMode: 'contained', type: 'default' }} />
-            )}
-            <ToolbarItem location="after" options={{ icon: 'revert', text: t('Salir'), onClick: onHiding, stylingMode: 'text' }} />
+        <div className="ficha-container-inline" role="region" aria-label={t('Ficha Citación')}>
+            <div className="ficha-inline-content" tabIndex={-1}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">
+                        <i className="ri-file-text-line"></i> {modo === 'concesion' ? t('Gestión de Concesión') : t('Detalle de Solicitud')} | {citacion.CitacionId}
+                    </span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-secondary" onClick={handleImprimir}>
+                            <i className="ri-printer-line"></i> {t('Imprimir Ficha')}
+                        </button>
+                        
+                        {(modo === 'solicitud' || (modo === 'concesion' && isPendiente)) && (
+                            <button className="ficha-btn-secondary" style={{ color: '#c62828', borderColor: '#c62828' }} onClick={handleRechazar}>
+                                <i className="ri-close-line"></i> {t('Rechazar cita')}
+                            </button>
+                        )}
 
-            <div className="ficha-content-premium" style={{ padding: '15px 25px', overflowY: 'auto', height: 'calc(100% - 40px)' }}>
-                <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
+                        {modo === 'concesion' && isPendiente && (
+                            <button className="ficha-btn-primary" onClick={handleGuardarConcesion}>
+                                <i className="ri-save-line"></i> {t('Guardar')}
+                            </button>
+                        )}
+                        <button className="ficha-btn-secondary" onClick={onHiding}>
+                            <i className="ri-close-line"></i> {t('Salir')}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="ficha-content-premium" style={{ padding: '15px 25px', overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
                     <div className="form-group">
                         <label>{t('ID Citación')}</label>
                         <TextBox readOnly value={citacion.CitacionId?.toString()} />
@@ -293,39 +311,73 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                     </div>
                 )}
                 {modo === 'solicitud' && citacion.Contestacion && (
-                     <div className="form-group" style={{ marginBottom: '20px' }}>
-                         <label>{t('Contestación recibida:')}</label>
-                         <TextArea readOnly height={80} value={citacion.Contestacion} />
-                     </div>
+                    <div style={{ backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #ddd' }}>
+                        <div style={{ marginBottom: '15px' }}>
+                            <span style={{ fontWeight: 'bold', marginRight: '10px' }}>{t('¿Solicitud Aceptada?')}</span>
+                            <span>{citacion.EstadoId === 2 ? 'Sí' : 'No'}</span>
+                        </div>
+                        <div className="form-group">
+                            <label>{t('Contestación a las Necesidades para la citación:')}</label>
+                            <TextArea readOnly height={80} value={citacion.Contestacion} />
+                        </div>
+                    </div>
                 )}
 
-                <div style={{ marginBottom: '30px' }}>
-                    <DataGrid
-                        dataSource={mensualidades}
-                        showBorders={true}
-                        showRowLines={true}
-                        showColumnLines={true}
-                        rowAlternationEnabled={true}
-                    >
-                        <Column dataField="tipo" caption="" width={120} />
-                        <Column dataField="Ene" caption="Enero" alignment="center" />
-                        <Column dataField="Feb" caption="Febrero" alignment="center" />
-                        <Column dataField="Mar" caption="Marzo" alignment="center" />
-                        <Column dataField="Abr" caption="Abril" alignment="center" />
-                        <Column dataField="May" caption="Mayo" alignment="center" />
-                        <Column dataField="Jun" caption="Junio" alignment="center" />
-                        <Column dataField="Jul" caption="Julio" alignment="center" />
-                        <Column dataField="Ago" caption="Agosto" alignment="center" />
-                        <Column dataField="Sep" caption="Septiembre" alignment="center" />
-                        <Column dataField="Oct" caption="Octubre" alignment="center" />
-                        <Column dataField="Nov" caption="Noviembre" alignment="center" />
-                        <Column dataField="Dic" caption="Diciembre" alignment="center" />
-                        <Column dataField="Total" caption="Total" alignment="center" cssClass="font-weight-bold" />
-                    </DataGrid>
+                <div style={{ marginBottom: '30px', overflowX: 'auto' }}>
+                    <table className="tabla-mensualidades">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>{t('Enero')}</th><th>{t('Febrero')}</th><th>{t('Marzo')}</th><th>{t('Abril')}</th>
+                                <th>{t('Mayo')}</th><th>{t('Junio')}</th><th>{t('Julio')}</th><th>{t('Agosto')}</th>
+                                <th>{t('Septiembre')}</th><th>{t('Octubre')}</th><th>{t('Noviembre')}</th><th>{t('Diciembre')}</th>
+                                <th>{t('Total')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {mensualidades.map((row, idx) => (
+                                <tr key={idx}>
+                                    <td className="row-header">{row.tipo}</td>
+                                    <td><TextBox readOnly value={row.Ene?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Feb?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Mar?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Abr?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.May?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Jun?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Jul?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Ago?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Sep?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Oct?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Nov?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Dic?.toString() || '0'} className="mes-input" /></td>
+                                    <td><TextBox readOnly value={row.Total?.toString() || '0'} className="mes-input total-input" /></td>
+                                </tr>
+                            ))}
+                            <tr>
+                                <td className="row-header">CITACION</td>
+                                {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'].map(mes => (
+                                    <td key={mes}>
+                                        <TextBox 
+                                            readOnly={!(modo === 'concesion' && isPendiente && conceder === true)}
+                                            value={citacionMeses[mes]?.toString()} 
+                                            onValueChanged={(e) => handleMesChange(mes, e.value)}
+                                            className="mes-input citacion-input" 
+                                        />
+                                    </td>
+                                ))}
+                                <td>
+                                    <TextBox readOnly value={calcularTotalCitacion().toString()} className="mes-input total-input" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div>
-                    <h5 style={{ borderBottom: '2px solid #1976d2', paddingBottom: '5px', marginBottom: '15px' }}>{t('Documentación anexa')}</h5>
+                <div style={{ marginTop: '20px' }}>
+                    <div className="premium-tab">
+                        {t('Documentación anexa')}
+                    </div>
+                    <div className="premium-tab-container">
                     <DataGrid
                         dataSource={documentos}
                         showBorders={true}
@@ -354,9 +406,13 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                         </div>
                     )}
                 </div>
+                </div>
 
-                <div>
-                    <h5 style={{ borderBottom: '2px solid #1976d2', paddingBottom: '5px', marginBottom: '15px' }}>{t('Historial de Cambios')}</h5>
+                <div style={{ marginTop: '20px' }}>
+                    <div className="premium-tab" style={{ background: 'linear-gradient(135deg, #475569 0%, #334155 100%)' }}>
+                        {t('Historial de Cambios')}
+                    </div>
+                    <div className="premium-tab-container" style={{ borderTop: '3px solid #334155' }}>
                     <DataGrid
                         dataSource={historial}
                         showBorders={true}
@@ -368,9 +424,11 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                         <Column dataField="UsuarioId" caption={t('Usuario')} width={100} />
                         <Column dataField="Accion" caption={t('Acción')} />
                     </DataGrid>
+                    </div>
+                </div>
                 </div>
             </div>
-        </Popup>
+        </div>
     );
 };
 

@@ -47,12 +47,16 @@ const CitacionesService = {
         }
     },
 
-    updateEstado: async (citacionId, estadoId, contestacion) => {
+    updateEstado: async (citacionId, estadoId, contestacion, payload = null) => {
         try {
-            const response = await fetch(`${API_URL}/citaciones/${citacionId}/estado?estadoId=${estadoId}&contestacion=${contestacion}`, {
+            const options = {
                 method: 'PUT',
                 headers: authHeaders()
-            });
+            };
+            if (payload) {
+                options.body = JSON.stringify(payload);
+            }
+            const response = await fetch(`${API_URL}/citaciones/${citacionId}/estado?estadoId=${estadoId}&contestacion=${contestacion}`, options);
             if (!response.ok) throw new Error('Error al actualizar estado de citación');
             return true;
         } catch (error) {

@@ -152,8 +152,10 @@ const SolicitarCitacion = () => {
     return (
         <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
             <div className="file-box">
-                <div className="header-page">
-                    <div className="title">{t('GESTIÓN SOLICITUD DE CITACIÓN')}</div>
+                {!showFicha && (
+                    <>
+                        <div className="header-page">
+                            <div className="title">{t('GESTIÓN SOLICITUD DE CITACIÓN')}</div>
                     <div className="header-actions-side">
                         <div className="acciones-container" ref={menuRef}>
                             <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
@@ -234,17 +236,20 @@ const SolicitarCitacion = () => {
                         </div>
                     </div>
                 </div>
+                </>
+                )}
 
-                <FichaCitacion 
-                    visible={showFicha}
-                    onHiding={() => setShowFicha(false)}
-                    citacion={citacionSeleccionada}
-                    modo="solicitud"
-                    onSave={cargarDatos}
-                />
-
-                <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
-                    <DataGrid
+                <div className="table-container" style={{ padding: showFicha ? '0' : '0 20px 20px 20px', height: showFicha ? 'calc(100vh - 60px)' : 'auto' }}>
+                    {showFicha ? (
+                        <FichaCitacion 
+                            visible={showFicha}
+                            onHiding={() => setShowFicha(false)}
+                            citacion={citacionSeleccionada}
+                            modo="solicitud"
+                            onSave={cargarDatos}
+                        />
+                    ) : (
+                        <DataGrid
                         ref={dataGridRef}
                         dataSource={citaciones}
                         keyExpr="CitacionId"
@@ -313,6 +318,7 @@ const SolicitarCitacion = () => {
                             <TotalItem column="Total" summaryType="sum" displayFormat="Total: {0}" />
                         </Summary>
                     </DataGrid>
+                    )}
                 </div>
             </div>
         </div>
