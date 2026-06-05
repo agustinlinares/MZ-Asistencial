@@ -21,6 +21,14 @@ namespace MZAsistencial.Server.Controllers
             return Ok(data);
         }
 
+        [HttpGet("informe-disponibilidad")]
+        public async Task<IActionResult> GetInformeDisponibilidad([FromQuery] int año)
+        {
+            if (año <= 0) return BadRequest(new { message = "El año es obligatorio." });
+            var data = await _service.GetInformeDisponibilidadAsync(año);
+            return Ok(data);
+        }
+
         [HttpPost("seed-test")]
         public async Task<IActionResult> SeedTest()
         {

@@ -7,5 +7,6 @@ namespace MZAsistencial.Server.Services
         Task<IEnumerable<AcreditacionSectorialDTO>> GetAllAsync(int? mutuaId = null);
         Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id);
         Task<(int? ficheroId, string message)> CreateTestRecordAsync();
+        Task<IEnumerable<InformeDisponibilidadDTO>> GetInformeDisponibilidadAsync(int año);
     }
 }
