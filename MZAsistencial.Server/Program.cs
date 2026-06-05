@@ -5,7 +5,6 @@ using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Services.ICG06;
 using System.Text;
-using MZAsistencial.Server.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,8 +103,6 @@ builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 
 // -- Pipeline
 var app = builder.Build();
-
-app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

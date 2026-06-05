@@ -7,5 +7,6 @@ namespace MZAsistencial.Server.Services
         Task<IEnumerable<AcreditacionIndividualDTO>> GetAllAsync();
         Task<int> GetMaxAñoAsync();
         Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id);
+        Task LogAccesoAsync(int usuarioId);
     }
 }

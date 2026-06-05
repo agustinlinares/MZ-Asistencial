@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -157,22 +157,20 @@ public class PlantillasICGService
             throw;
         }
     }
-
     public async Task<bool> EliminarPlantillaAsync(int id)
     {
         try
         {
-            var informe = await _context.InformesIcgs.FirstOrDefaultAsync(i => i.InformeId == id);
-            if (informe == null) return false;
-
-            _context.InformesIcgs.Remove(informe);
+            var plantilla = await _context.InformesIcgs.FindAsync(id);
+            if (plantilla == null) return false;
+            _context.InformesIcgs.Remove(plantilla);
             await _context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
         {
-            await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG - EliminarPlantillaAsync");
-            throw;
+            await _registroErroresService.LogErrorAsync(ex, "PlantillasICG - EliminarPlantillaAsync");
+            return false;
         }
     }
 }

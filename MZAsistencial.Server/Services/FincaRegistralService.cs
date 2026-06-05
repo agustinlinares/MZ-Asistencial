@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
-using System.Security.Claims;
 
 namespace MZAsistencial.Server.Services
 {
@@ -45,7 +44,7 @@ namespace MZAsistencial.Server.Services
                                    f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
                                    f.Utilizacion, f.Superficie, f.Coste, f.Fadqoarr, f.ReferenciaCatastral,
                                    f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
-                                   f.Latitud, f.Longitud, f.FechaAlta, f.FechaModificacion,
+                                   f.FechaAlta, f.FechaModificacion,
                                    CentroNombre = c != null ? c.Centro : null,
                                    CentroValidado = c != null && c.Validado == true
                                })
@@ -72,8 +71,6 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
-                Latitud = x.Latitud,
-                Longitud = x.Longitud,
                 CentroValidado = x.CentroValidado,
                 FechaAlta = x.FechaAlta,
                 FechaModificacion = x.FechaModificacion
@@ -92,7 +89,7 @@ namespace MZAsistencial.Server.Services
                     x.fi.FincaId, x.fi.CentroId, x.fi.Localizador, x.fi.NombreVia, x.fi.Numero, x.fi.Piso, x.fi.Puerta,
                     x.fi.Utilizacion, x.fi.Superficie, x.fi.Coste, x.fi.Fadqoarr, x.fi.ReferenciaCatastral,
                     x.fi.Finscreg, x.fi.FechaBaja, x.fi.TipoFinca, x.fi.Titinmueble, x.fi.OtrosDatos, x.fi.DireccionElectronica,
-                    x.fi.Latitud, x.fi.Longitud, x.fi.FechaAlta, x.fi.FechaModificacion,
+                    x.fi.FechaAlta, x.fi.FechaModificacion,
                     CentroNombre = c != null ? c.Centro : null,
                     CentroValidado = c != null && c.Validado == true
                 })
@@ -121,28 +118,18 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
-                Latitud = x.Latitud,
-                Longitud = x.Longitud,
                 CentroValidado = x.CentroValidado,
                 FechaAlta = x.FechaAlta,
                 FechaModificacion = x.FechaModificacion
             };
         }
 
-        public async Task<FincaRegistralDTO?> ActualizarFinca(int id, FincaRegistralDTO dto, ClaimsPrincipal user)
+        public async Task<FincaRegistralDTO?> ActualizarFinca(int id, FincaRegistralDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             try
             {
                 var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
                 if (finca == null) return null;
-
-                var centro = finca.CentroId.HasValue ? await _context.CentrosPropios.FirstOrDefaultAsync(c => c.CentroId == finca.CentroId) : null;
-                if (centro != null && centro.Validado == true)
-                {
-                    var perfilId = user?.FindFirst("perfilId")?.Value;
-                    if (perfilId != "1")
-                        throw new UnauthorizedAccessException("No tiene permisos para modificar una finca de un centro validado.");
-                }
 
                 finca.CentroId = dto.Centro_id != 0 ? dto.Centro_id : null;
                 finca.Localizador = dto.Localizador;
@@ -158,8 +145,6 @@ namespace MZAsistencial.Server.Services
                 finca.Titinmueble = dto.Titularidad;
                 finca.OtrosDatos = dto.OtrosDatos;
                 finca.DireccionElectronica = dto.DireccionGoogle;
-                finca.Latitud = dto.Latitud;
-                finca.Longitud = dto.Longitud;
 
                 finca.FechaModificacion = DateTime.UtcNow;
 
@@ -193,8 +178,6 @@ namespace MZAsistencial.Server.Services
                     Titinmueble = dto.Titularidad,
                     OtrosDatos = dto.OtrosDatos,
                     DireccionElectronica = dto.DireccionGoogle,
-                    Latitud = dto.Latitud,
-                    Longitud = dto.Longitud,
                     FechaAlta = DateTime.UtcNow,
                     FechaModificacion = DateTime.UtcNow
                 };
@@ -279,20 +262,12 @@ namespace MZAsistencial.Server.Services
             }
         }
 
-        public async Task<bool> EliminarFinca(int id, ClaimsPrincipal user)
+        public async Task<bool> EliminarFinca(int id, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             try
             {
                 var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
                 if (finca == null) return false;
-
-                var centro = finca.CentroId.HasValue ? await _context.CentrosPropios.FirstOrDefaultAsync(c => c.CentroId == finca.CentroId) : null;
-                if (centro != null && centro.Validado == true)
-                {
-                    var perfilId = user?.FindFirst("perfilId")?.Value;
-                    if (perfilId != "1")
-                        throw new UnauthorizedAccessException("No tiene permisos para eliminar una finca de un centro validado.");
-                }
 
                 _context.FincasRegistrales.Remove(finca);
                 await _context.SaveChangesAsync();
@@ -325,7 +300,7 @@ namespace MZAsistencial.Server.Services
                                CosteAnual = cost != null ? cost.Coste : (double?)null,
                                f.Fadqoarr, f.ReferenciaCatastral,
                                f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
-                               f.Latitud, f.Longitud, f.FechaAlta, f.FechaModificacion,
+                               f.FechaAlta, f.FechaModificacion,
                                CentroNombre = c != null ? c.Centro : null,
                                CentroValidado = c != null && c.Validado == true
                            }).ToListAsync();
@@ -351,8 +326,6 @@ namespace MZAsistencial.Server.Services
                 Titularidad = FixEncoding(x.Titinmueble),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
-                Latitud = x.Latitud,
-                Longitud = x.Longitud,
                 CentroValidado = x.CentroValidado,
                 FechaAlta = x.FechaAlta,
                 FechaModificacion = x.FechaModificacion

@@ -287,5 +287,16 @@ namespace MZAsistencial.Server.Services
             });
             await _context.SaveChangesAsync();
         }
+    public async Task<bool> UpdateCoordenadasAsync(int id, string? latitud, string? longitud)
+    {
+        var centro = await _context.CentrosPropios.FindAsync(id);
+        if (centro == null) return false;
+        centro.Latitud   = latitud;
+        centro.Longitud  = longitud;
+        centro.MapaValidado = true;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     }
 }

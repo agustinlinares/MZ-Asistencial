@@ -24,9 +24,6 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRegistroErrores(DataSourceLoadOptions loadOptions)
         {
-            var perfilId = User.FindFirst("perfilId")?.Value;
-            if (perfilId != "1") return Forbid();
-
             var query = _registroErroresService.ObtenerListadoErroresQuery();
             return Ok(await DataSourceLoader.LoadAsync(query, loadOptions));
         }
@@ -34,23 +31,8 @@ namespace MZAsistencial.Server.Controllers
         [HttpPut("{id}/estado")]
         public async Task<IActionResult> UpdateEstado(int id, [FromBody] int nuevoEstadoId)
         {
-            var perfilId = User.FindFirst("perfilId")?.Value;
-            if (perfilId != "1") return Forbid();
-
             var result = await _registroErroresService.UpdateEstadoAsync(id, nuevoEstadoId);
             if (!result) return NotFound();
-            return Ok();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RegistrarError([FromBody] CrearRegistroErrorDTO dto)
-        {
-            var msg = $"{dto.Descripcion}";
-            if (!string.IsNullOrWhiteSpace(dto.DetalleError))
-            {
-                msg += $"\n{dto.DetalleError}";
-            }
-            await _registroErroresService.LogErrorStringAsync(msg, dto.Modulo, dto.UsuarioId);
             return Ok();
         }
     }
