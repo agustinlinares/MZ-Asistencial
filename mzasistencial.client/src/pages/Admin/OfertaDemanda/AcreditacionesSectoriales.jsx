@@ -52,6 +52,10 @@ const AcreditacionesSectoriales = () => {
     const [acreditaciones, setAcreditaciones] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
 
+    const userData = AuthService.getUserData();
+    const esAdmin  = userData?.perfilId === 1;
+    const mutuaId  = userData?.mutuaId || null;
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -65,7 +69,10 @@ const AcreditacionesSectoriales = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                const respuesta = await fetch('/api/AcreditacionesSectoriales', {
+                const url = !esAdmin && mutuaId
+                    ? `/api/AcreditacionesSectoriales?mutuaId=${mutuaId}`
+                    : '/api/AcreditacionesSectoriales';
+                const respuesta = await fetch(url, {
                     method: 'GET',
                     headers: authHeaders(),
                 });
@@ -236,34 +243,38 @@ const AcreditacionesSectoriales = () => {
                                             {t('Imprimir')}
                                         </div>
 
-                                        <div className="acciones-item" onClick={() => {
-                                            setMenuAbierto(false);
-                                            const instance = dataGridRef.current?.instance();
-                                            if (!instance) return;
-                                            const wb = new Workbook();
-                                            const ws = wb.addWorksheet('Acreditaciones');
-                                            exportDataGrid({ component: instance, worksheet: ws, autoFilterEnabled: true })
-                                                .then(() => wb.xlsx.writeBuffer())
-                                                .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'acreditaciones_sectoriales.xlsx'));
-                                        }}>
-                                            <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Individuales (Excel)')}
-                                        </div>
+                                        {esAdmin && (
+                                            <>
+                                                <div className="acciones-item" onClick={() => {
+                                                    setMenuAbierto(false);
+                                                    const instance = dataGridRef.current?.instance();
+                                                    if (!instance) return;
+                                                    const wb = new Workbook();
+                                                    const ws = wb.addWorksheet('Acreditaciones');
+                                                    exportDataGrid({ component: instance, worksheet: ws, autoFilterEnabled: true })
+                                                        .then(() => wb.xlsx.writeBuffer())
+                                                        .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'acreditaciones_sectoriales.xlsx'));
+                                                }}>
+                                                    <i className="ri-file-excel-2-line"></i>
+                                                    {t('Informe Acr. Individuales (Excel)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(); }}>
-                                            <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Individuales (PDF)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(); }}>
+                                                    <i className="ri-file-pdf-line"></i>
+                                                    {t('Informe Acr. Individuales (PDF)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(); }}>
-                                            <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Anuales (Excel)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(); }}>
+                                                    <i className="ri-file-excel-2-line"></i>
+                                                    {t('Informe Acr. Anuales (Excel)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(); }}>
-                                            <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Anuales (PDF)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(); }}>
+                                                    <i className="ri-file-pdf-line"></i>
+                                                    {t('Informe Acr. Anuales (PDF)')}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>

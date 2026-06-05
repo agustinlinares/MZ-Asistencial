@@ -16,9 +16,14 @@ namespace MZAsistencial.Server.Services
             _configuration = configuration;
         }
 
-        public async Task<IEnumerable<AcreditacionSectorialDTO>> GetAllAsync()
+        public async Task<IEnumerable<AcreditacionSectorialDTO>> GetAllAsync(int? mutuaId = null)
         {
-            return await _context.FicherosAcreditacionesInformes
+            var query = _context.FicherosAcreditacionesInformes.AsQueryable();
+
+            if (mutuaId.HasValue)
+                query = query.Where(f => f.MutuaId == mutuaId.Value);
+
+            return await query
                 .GroupJoin(_context.Mutuas,
                     f => f.MutuaId,
                     m => m.MutuaId,
