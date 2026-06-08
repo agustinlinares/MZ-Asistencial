@@ -1,17 +1,20 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Services
 {
     public class Icg06OtrasHosService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public Icg06OtrasHosService(MZAsistencialContext context)
+        public Icg06OtrasHosService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         public async Task<Icg06OtrasHosDTO?> GetByCentroYAñoAsync(int centroId, int año)

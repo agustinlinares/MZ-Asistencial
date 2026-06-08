@@ -1,78 +1,75 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
-
 namespace MZAsistencial.Server.Services;
-
 public class Icg06EspecialidadService
 {
     private readonly MZAsistencialContext _context;
-
-    public Icg06EspecialidadService(MZAsistencialContext context)
+        private readonly IRegistroErroresService _registroErroresService;
+    public Icg06EspecialidadService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
     {
-        _context = context;
-    }
-
-    // GET: lista de especialidades de un centro y año
+            _context = context;
+            _registroErroresService = registroErroresService;
+        }
     public async Task<List<Icg06EspecialidadDTO>> GetByCentroYAñoAsync(int centroId, int año)
     {
-        return await _context.Icg06Especialidades
+        return await _context.CentrosPropiosEspecialidades
             .Where(e => e.CentroId == centroId && e.Año == año)
-            .OrderBy(e => e.Especialidad)
+            .OrderBy(e => e.EspecialidadId)
             .ThenBy(e => e.Servicio)
             .Select(e => new Icg06EspecialidadDTO
             {
-                Id           = e.Id,
-                CentroId     = e.CentroId,
-                Año          = e.Año,
-                Especialidad = e.Especialidad,
-                Servicio     = e.Servicio,
-                Cantidad     = e.Cantidad,
+                Id             = e.CentroPropioEspecialidadId,
+                CentroId       = e.CentroId,
+                Año            = e.Año,
+                EspecialidadId = e.EspecialidadId,
+                Servicio       = e.Servicio,
+                Cantidad       = e.Cantidad,
+                ImporteConIva  = e.ImporteConIva,
+                FechaAlta      = e.FechaAlta,
+                Disponibilidad = e.Disponibilidad,
             })
             .ToListAsync();
     }
-
-    // POST: crear nueva especialidad
     public async Task<Icg06EspecialidadDTO> CreateAsync(Icg06EspecialidadDTO dto)
     {
-        var entity = new Icg06Especialidad
+        var entity = new CentrosPropiosEspecialidade
         {
-            CentroId     = dto.CentroId,
-            Año          = dto.Año,
-            Especialidad = dto.Especialidad,
-            Servicio     = dto.Servicio,
-            Cantidad     = dto.Cantidad,
+            CentroId       = dto.CentroId,
+            Año            = dto.Año,
+            EspecialidadId = dto.EspecialidadId,
+            Servicio       = dto.Servicio ?? "",
+            Cantidad       = dto.Cantidad,
+            ImporteConIva  = dto.ImporteConIva,
+            FechaAlta      = dto.FechaAlta ?? DateTime.Now,
+            Disponibilidad = dto.Disponibilidad,
+            FechaModificacion = DateTime.Now,
         };
-
-        _context.Icg06Especialidades.Add(entity);
+        _context.CentrosPropiosEspecialidades.Add(entity);
         await _context.SaveChangesAsync();
-
-        dto.Id = entity.Id;
+        dto.Id = entity.CentroPropioEspecialidadId;
         return dto;
     }
-
-    // PUT: actualizar especialidad existente
     public async Task<bool> UpdateAsync(int id, Icg06EspecialidadDTO dto)
     {
-        var entity = await _context.Icg06Especialidades.FindAsync(id);
+        var entity = await _context.CentrosPropiosEspecialidades.FindAsync(id);
         if (entity == null) return false;
-
-        entity.Especialidad = dto.Especialidad;
-        entity.Servicio     = dto.Servicio;
-        entity.Cantidad     = dto.Cantidad;
-
+        entity.EspecialidadId    = dto.EspecialidadId;
+        entity.Servicio          = dto.Servicio ?? entity.Servicio;
+        entity.Cantidad          = dto.Cantidad;
+        entity.ImporteConIva     = dto.ImporteConIva;
+        entity.Disponibilidad    = dto.Disponibilidad;
+        entity.FechaModificacion = DateTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }
-
-    // DELETE: eliminar especialidad
     public async Task<bool> DeleteAsync(int id)
     {
-        var entity = await _context.Icg06Especialidades.FindAsync(id);
+        var entity = await _context.CentrosPropiosEspecialidades.FindAsync(id);
         if (entity == null) return false;
-
-        _context.Icg06Especialidades.Remove(entity);
+        _context.CentrosPropiosEspecialidades.Remove(entity);
         await _context.SaveChangesAsync();
         return true;
     }

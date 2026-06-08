@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Data;
 
 namespace MZAsistencial.Server.Services;
@@ -6,11 +7,13 @@ namespace MZAsistencial.Server.Services;
 public class Icg06ValidarService
 {
     private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-    public Icg06ValidarService(MZAsistencialContext context)
+    public Icg06ValidarService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
     {
-        _context = context;
-    }
+            _context = context;
+            _registroErroresService = registroErroresService;
+        }
 
     // Obtiene el estado actual de Validado para un registro ICG06
     public async Task<int?> GetValidadoAsync(int idIcg)

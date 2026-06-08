@@ -1,17 +1,21 @@
-﻿using MZAsistencial.Server.Data;
+﻿using System.Globalization;
+using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Services
 {
     public class Icg06AsProService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public Icg06AsProService(MZAsistencialContext context)
+        public Icg06AsProService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         public async Task<Icg06AsProDTO?> GetByCentroYAñoAsync(int centroId, int año)
@@ -49,7 +53,7 @@ namespace MZAsistencial.Server.Services
             Actihasta = e.Actihasta,
 
             // Fila 1 — En el centro
-            SesrehabtrmutCentro = e.Sesrehabtrmut != null ? decimal.TryParse(e.Sesrehabtrmut, out var s) ? s : null : null,
+            SesrehabtrmutCentro = e.Sesrehabtrmut != null ? decimal.TryParse(e.Sesrehabtrmut, NumberStyles.Any, CultureInfo.InvariantCulture, out var s) ? s : null : null,
             ConsEnftrmutCentro  = e.ConsEnftrmut,
             PradtrmutRm         = e.PradtrmutRm,
             PradtrmutEco        = e.PradtrmutEco,
@@ -112,7 +116,7 @@ namespace MZAsistencial.Server.Services
             e.Actihasta = dto.Actihasta;
 
             // Fila 1 — En el centro
-            e.Sesrehabtrmut = dto.SesrehabtrmutCentro?.ToString();
+            e.Sesrehabtrmut = dto.SesrehabtrmutCentro?.ToString(CultureInfo.InvariantCulture);
             e.ConsEnftrmut  = dto.ConsEnftrmutCentro;
             e.PradtrmutRm   = dto.PradtrmutRm;
             e.PradtrmutEco  = dto.PradtrmutEco;

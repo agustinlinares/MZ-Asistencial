@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
-using MZAsistencial.Server.Services.ICG06;
+
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
