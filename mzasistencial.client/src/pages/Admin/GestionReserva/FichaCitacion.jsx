@@ -132,10 +132,6 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                 await CitacionesService.updateEstado(citacion.CitacionId, 2, contestacion, payload); // 2 = Concedida
                 notify(t('Citación concedida'), 'success', 2000);
             } else {
-                if (!contestacion || !contestacion.trim()) {
-                    notify(t('Debe indicar el motivo del rechazo en la contestación'), 'error', 2000);
-                    return;
-                }
                 await CitacionesService.updateRechazo(citacion.CitacionId, contestacion);
                 notify(t('Citación rechazada'), 'warning', 2000);
             }
@@ -184,7 +180,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                             <i className="ri-printer-line"></i> {t('Imprimir Ficha')}
                         </button>
                         
-                        {isConfirmada && (
+                        {(isPendiente || isConfirmada) && (
                             <button className="ficha-btn-secondary" style={{ color: '#c62828', borderColor: '#c62828' }} onClick={handleRechazar}>
                                 <i className="ri-close-line"></i> {t('Rechazar cita')}
                             </button>

@@ -185,12 +185,8 @@ const TablaCitaciones = ({
 
         const result = await dialog.show();
         if (result !== null) {
-            if (!result || !result.trim()) {
-                notify(t('El motivo de rechazo es obligatorio'), 'error', 2000);
-                return;
-            }
             try {
-                await CitacionesService.updateRechazoLote(selectedRowKeys, result.trim());
+                await CitacionesService.updateRechazoLote(selectedRowKeys, result);
                 notify(t('Citaciones rechazadas correctamente'), 'success', 2000);
                 setSelectedRowKeys([]);
                 cargarDatos();
@@ -455,7 +451,7 @@ const TablaCitaciones = ({
                                                 {isPendiente && (
                                                     <i className="ri-checkbox-circle-line edit-icon" title={t('Conceder')} style={{ color: '#2e7d32', cursor: 'pointer', marginRight: '8px' }} onClick={() => handleConceder(cell.data)} />
                                                 )}
-                                                {isConfirmada && (
+                                                {(isPendiente || isConfirmada) && (
                                                     <i className="ri-close-circle-line delete-icon" title={t('Rechazar')} style={{ color: '#c62828', cursor: 'pointer' }} onClick={() => handleRechazar(cell.data)} />
                                                 )}
                                             </div>
