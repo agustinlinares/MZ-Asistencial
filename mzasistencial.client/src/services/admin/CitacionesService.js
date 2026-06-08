@@ -1,3 +1,5 @@
+import { createStore } from 'devextreme-aspnet-data-nojquery';
+
 const API_URL = '/api';
 
 const authHeaders = () => {
@@ -45,6 +47,34 @@ const CitacionesService = {
             console.error(error);
             throw error;
         }
+    },
+
+    createSolicitadasStore: (mutuaId, filters = {}) => {
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        );
+        return createStore({
+            key: 'CitacionId',
+            loadUrl: `${API_URL}/citaciones/solicitadas/${mutuaId}`,
+            loadParams: cleanFilters,
+            onBeforeSend: (method, ajaxOptions) => {
+                ajaxOptions.headers = authHeaders();
+            }
+        });
+    },
+
+    createRecibidasStore: (mutuaId, filters = {}) => {
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        );
+        return createStore({
+            key: 'CitacionId',
+            loadUrl: `${API_URL}/citaciones/recibidas/${mutuaId}`,
+            loadParams: cleanFilters,
+            onBeforeSend: (method, ajaxOptions) => {
+                ajaxOptions.headers = authHeaders();
+            }
+        });
     },
 
     updateEstado: async (citacionId, estadoId, contestacion, payload = null) => {

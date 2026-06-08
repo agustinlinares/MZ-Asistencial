@@ -155,6 +155,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     if (!citacion) return null;
 
     const isPendiente = citacion.EstadoId === 1;
+    const isConfirmada = citacion.EstadoId === 2;
 
     // Calcular SLA (96 horas)
     let hoursLeft = 0;
@@ -179,7 +180,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                             <i className="ri-printer-line"></i> {t('Imprimir Ficha')}
                         </button>
                         
-                        {(modo === 'solicitud' || (modo === 'concesion' && isPendiente)) && (
+                        {(isPendiente || isConfirmada) && (
                             <button className="ficha-btn-secondary" style={{ color: '#c62828', borderColor: '#c62828' }} onClick={handleRechazar}>
                                 <i className="ri-close-line"></i> {t('Rechazar cita')}
                             </button>
