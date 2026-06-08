@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ public class PlantillasICGService
         _registroErroresService = registroErroresService;
     }
 
-    public async Task<List<PlantillasICGDTO>> GetInformesAsync(string? mutua, int? anio)
+    public async Task<List<PlantillasICGDTO>> GetInformesAsync(int? mutuaId, int? anio)
     {
         try
         {
@@ -53,9 +53,9 @@ public class PlantillasICGService
                 FechaAlta = i.FechaModificacion
             }).ToList();
 
-            if (!string.IsNullOrEmpty(mutua))
+            if (mutuaId.HasValue)
             {
-                dtos = dtos.Where(d => d.Mutua != null && d.Mutua.Contains(mutua, StringComparison.OrdinalIgnoreCase)).ToList();
+                dtos = dtos.Where(d => d.Mutua != null && mutuas.ContainsKey(mutuaId.Value) && d.Mutua.Equals(mutuas[mutuaId.Value], StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             return dtos;
@@ -67,12 +67,12 @@ public class PlantillasICGService
         }
     }
 
-    public async Task<byte[]> GenerarPlantillaAsync(string? mutua, int? anio, string tipo, string formato)
+    public async Task<byte[]> GenerarPlantillaAsync(int? mutuaId, int? anio, string tipo, string formato)
     {
         try
         {
             // Mock generation. In a real scenario, this would query DB, build CSV/XML bytes.
-            var content = $"Plantilla Tipo: {tipo}, Año: {anio}, Mutua: {mutua}\nCol1,Col2,Col3\nVal1,Val2,Val3";
+            var content = $"Plantilla Tipo: {tipo}, Año: {anio}, MutuaId: {mutuaId}\nCol1,Col2,Col3\nVal1,Val2,Val3";
             if (formato.ToUpper() == "XML")
             {
                 content = $"<xml><tipo>{tipo}</tipo><anio>{anio}</anio></xml>";
@@ -84,6 +84,7 @@ public class PlantillasICGService
                 Informe = $"Plantilla_{tipo}_{anio}.{formato.ToLower()}",
                 ResultadoInforme = "Generado Correctamente",
                 Año = anio,
+                MutuaId = mutuaId,
                 TipoIcg = tipo,
                 FechaModificacion = DateTime.Now,
                 EstadoInformeId = 1 // 1: Por ejemplo, "Generado"
@@ -100,7 +101,7 @@ public class PlantillasICGService
         }
     }
 
-    public async Task<PlantillasICGDTO> SubirPlantillaAsync(IFormFile fichero, string? mutua, int? anio, string tipoICG)
+    public async Task<PlantillasICGDTO> SubirPlantillaAsync(IFormFile fichero, int? mutuaId, int? anio, string tipoICG)
     {
         try
         {
@@ -110,6 +111,7 @@ public class PlantillasICGService
                 Informe = fichero.FileName,
                 ResultadoInforme = "Subido con éxito",
                 Año = anio,
+                MutuaId = mutuaId,
                 TipoIcg = tipoICG,
                 FechaModificacion = DateTime.Now,
                 EstadoInformeId = 2 // 2: "Pendiente de procesar"
@@ -154,6 +156,29 @@ public class PlantillasICGService
         catch (Exception ex)
         {
             await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG - ProcesarPlantillasAsync");
+            throw;
+        }
+    }
+
+    public async Task<object> GetDatosInicialesAsync()
+    {
+        try
+        {
+            var mutuas = await _context.Mutuas
+                .Select(m => new { id = m.MutuaId, nombre = m.Mutua1 })
+                .OrderBy(m => m.nombre)
+                .ToListAsync();
+
+            var anioActual = DateTime.Now.Year;
+            var anios = Enumerable.Range(2022, (anioActual - 2022) + 1).Select(a => a.ToString()).ToList();
+            var tipos = new List<string> { "ICG06", "ICG07", "FINCAS", "CENTROS CONCERTADOS", "CONCIERTOS" };
+            var plantillas = new List<string> { "CSV", "XML" };
+
+            return new { mutuas, anios, tipos, plantillas };
+        }
+        catch (Exception ex)
+        {
+            await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG - GetDatosInicialesAsync");
             throw;
         }
     }
