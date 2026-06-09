@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers;
@@ -21,18 +22,18 @@ public class CitacionesController : ControllerBase
     }
 
     [HttpGet("solicitadas/{mutuaId:int}")]
-    public async Task<ActionResult<List<CitacionDTO>>> GetSolicitadas(int mutuaId, [FromQuery] CitacionFilter filter)
+    public async Task<IActionResult> GetSolicitadas(int mutuaId, DataSourceLoadOptions loadOptions, [FromQuery] CitacionFilter filter)
     {
         if (mutuaId <= 0) return BadRequest(new { error = "El ID de mutua debe ser un número positivo" });
-        var result = await _service.GetSolicitadasAsync(mutuaId, filter);
+        var result = await _service.GetSolicitadasAsync(mutuaId, filter, loadOptions);
         return Ok(result);
     }
 
     [HttpGet("recibidas/{mutuaId:int}")]
-    public async Task<ActionResult<List<CitacionDTO>>> GetRecibidas(int mutuaId, [FromQuery] CitacionFilter filter)
+    public async Task<IActionResult> GetRecibidas(int mutuaId, DataSourceLoadOptions loadOptions, [FromQuery] CitacionFilter filter)
     {
         if (mutuaId <= 0) return BadRequest(new { error = "El ID de mutua debe ser un número positivo" });
-        var result = await _service.GetRecibidasAsync(mutuaId, filter);
+        var result = await _service.GetRecibidasAsync(mutuaId, filter, loadOptions);
         return Ok(result);
     }
 
