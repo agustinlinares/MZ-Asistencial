@@ -70,7 +70,8 @@ const CentrosPropios = () => {
     const cargarDatos = () => {
         const user = getUsuarioSesion();
         const perfilId = user?.perfilId ?? '';
-        fetch(`${API_URL}?perfilId=${perfilId}`)
+        const mutuaId = user?.mutuaId ?? '';
+        fetch(`${API_URL}?perfilId=${perfilId}&mutuaId=${mutuaId}`)
             .then(res => { if (!res.ok) throw new Error('Error ' + res.status); return res.json(); })
             .then(data => setCentros(admin ? data : data.filter(c => !c.desactivado)))
             .catch(err => console.error('Error cargando centros:', err));
