@@ -14,12 +14,14 @@ namespace MZAsistencial.Server.Services
             _context = context;
         }
 
-        public async Task<List<CentrosPropiosDTO>> GetAllAsync(int? perfilId = null)
+        public async Task<List<CentrosPropiosDTO>> GetAllAsync(int? perfilId = null, int? mutuaId = null)
         {
             var query = _context.CentrosPropios.AsQueryable();
 
             if (perfilId == null || (perfilId != 1 && perfilId != 4))
                 query = query.Where(x => x.Desactivado != true);
+            if (perfilId == 2 && mutuaId.HasValue)
+                query = query.Where(x => x.MutuaId == mutuaId.Value);
 
             var centros = await query.ToListAsync();
             var mutuaIds = centros.Select(c => c.MutuaId).Distinct().ToList();

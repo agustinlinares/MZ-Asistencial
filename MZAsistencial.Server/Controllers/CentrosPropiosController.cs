@@ -13,9 +13,9 @@ namespace MZAsistencial.Server.Controllers
             _service = service;
         }
         [HttpGet]
-        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId)
+        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId, [FromQuery] int? mutuaId)
         {
-            var result = await _service.GetAllAsync(perfilId);
+            var result = await _service.GetAllAsync(perfilId, mutuaId);
             return Ok(result);
         }
         [HttpGet("{id:int}")]
