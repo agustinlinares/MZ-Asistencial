@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,7 +55,8 @@ public class PlantillasICGService
 
             if (mutuaId.HasValue)
             {
-                dtos = dtos.Where(d => d.Mutua != null && mutuas.ContainsKey(mutuaId.Value) && d.Mutua.Equals(mutuas[mutuaId.Value], StringComparison.OrdinalIgnoreCase)).ToList();
+                var mutuaNombre = await _context.Mutuas.Where(m => m.MutuaId == mutuaId.Value).Select(m => m.Mutua1).FirstOrDefaultAsync();
+                if (!string.IsNullOrEmpty(mutuaNombre)) dtos = dtos.Where(d => d.Mutua == mutuaNombre).ToList();
             }
 
             return dtos;
@@ -84,7 +85,6 @@ public class PlantillasICGService
                 Informe = $"Plantilla_{tipo}_{anio}.{formato.ToLower()}",
                 ResultadoInforme = "Generado Correctamente",
                 Año = anio,
-                MutuaId = mutuaId,
                 TipoIcg = tipo,
                 FechaModificacion = DateTime.Now,
                 EstadoInformeId = 1 // 1: Por ejemplo, "Generado"
@@ -111,7 +111,6 @@ public class PlantillasICGService
                 Informe = fichero.FileName,
                 ResultadoInforme = "Subido con éxito",
                 Año = anio,
-                MutuaId = mutuaId,
                 TipoIcg = tipoICG,
                 FechaModificacion = DateTime.Now,
                 EstadoInformeId = 2 // 2: "Pendiente de procesar"
@@ -159,28 +158,11 @@ public class PlantillasICGService
             throw;
         }
     }
-
     public async Task<object> GetDatosInicialesAsync()
     {
-        try
-        {
-            var mutuas = await _context.Mutuas
-                .Select(m => new { id = m.MutuaId, nombre = m.Mutua1 })
-                .OrderBy(m => m.nombre)
-                .ToListAsync();
-
-            var anioActual = DateTime.Now.Year;
-            var anios = Enumerable.Range(2022, (anioActual - 2022) + 1).Select(a => a.ToString()).ToList();
-            var tipos = new List<string> { "ICG06", "ICG07", "FINCAS", "CENTROS CONCERTADOS", "CONCIERTOS" };
-            var plantillas = new List<string> { "CSV", "XML" };
-
-            return new { mutuas, anios, tipos, plantillas };
-        }
-        catch (Exception ex)
-        {
-            await _registroErroresService.LogErrorAsync(ex, "Plantillas ICG - GetDatosInicialesAsync");
-            throw;
-        }
+        var mutuas = await _context.Mutuas.Select(m => new { m.MutuaId, m.Mutua1 }).ToListAsync();
+        var estados = await _context.AuxEstadosInformesIcgs.Select(e => new { e.EstadoInformeId, e.EstadoInforme }).ToListAsync();
+        return new { mutuas, estados };
     }
     public async Task<bool> EliminarPlantillaAsync(int id)
     {
