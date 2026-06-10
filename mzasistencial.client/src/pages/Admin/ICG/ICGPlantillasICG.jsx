@@ -40,8 +40,6 @@ const PLANTILLAS = ["CSV", "XML"];
 const YEARS = ["2022", "2023", "2024", "2025", "2026"];
 const MUTUAS = ["Mutua Universal", "Asepeyo", "Fremap", "Ibermutua", "MC Mutual"]; // Mocked options for Mutuas if needed, should ideally come from an endpoint
 
-const logError = useLogError("Plantillas ICG - getUserInfo");
-
 // Utility para sacar info del usuario actual
 const getUserInfo = () => {
     try {
@@ -53,7 +51,6 @@ const getUserInfo = () => {
             isAdmin
         };
     } catch {
-        logError("Error crítico al recuperar la sesión del usuario", err);
         return { nombre: 'Usuario', mutua: '', isAdmin: false };
     }
 };

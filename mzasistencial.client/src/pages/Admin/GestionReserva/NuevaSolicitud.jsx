@@ -8,6 +8,7 @@ import { useLogError } from '../../../hooks/useLogError';
 
 const NuevaSolicitud = ({ visible, onHiding, onSave, mutuaId }) => {
     const { t } = useTranslation();
+    const logError = useLogError("Nueva solicitud");
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         anio: new Date().getFullYear(),

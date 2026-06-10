@@ -522,7 +522,7 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad añadida.");
             cargar();
-        } catch { 
+        } catch (err) { 
             logError("Error al añadir especialidad", err);
             mostrarMsg(false, "Error al añadir la especialidad."); 
         }
@@ -538,7 +538,7 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad actualizada.");
             cargar();
-        } catch { 
+        } catch (err) { 
             logError("Error al actualizar especialidad", err);
             mostrarMsg(false, "Error al actualizar la especialidad."); 
         }
@@ -551,7 +551,7 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad eliminada.");
             cargar();
-        } catch { 
+        } catch (err) { 
             logError("Error al eliminar especialidad", err);
             mostrarMsg(false, "Error al eliminar la especialidad."); 
         }
@@ -618,7 +618,7 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
             if (!res.ok) throw new Error();
             setMsg({ ok: true, text: "Guardado correctamente." });
             setTimeout(() => setMsg(null), 3500);
-        } catch {
+        } catch (err) {
             logError(`Fallo al guardar en /api/${apiName}/${datos.idIcg ?? datos.id}`, err);
             setMsg({ ok: false, text: "Error al guardar." });
         } finally { setSaving(false); }
@@ -705,7 +705,7 @@ const FichaICG06 = ({ centro, año, onBack }) => {
             setValidado(nuevoEstado);
             setMsgValidar({ ok: true, text: nuevoEstado === 1 ? 'ICG validado correctamente.' : 'ICG desvalidado correctamente.' });
             setTimeout(() => setMsgValidar(null), 3500);
-        } catch {
+        } catch (err) {
             logError(`Error al cambiar estado de validación (ICG ID: ${idIcg})`, err);
             setMsgValidar({ ok: false, text: 'Error al cambiar el estado de validación.' });
         } finally {
@@ -870,7 +870,7 @@ const ICGCentrosPropios = () => {
             if (!res.ok) throw new Error();
             await cargarIcgData();
             setCentroSeleccionado(centro);
-        } catch {
+        } catch (err) {
             logError(`Error al crear registro ICG para Centro: ${centro?.centroId}`, err);
             alert('Error al crear el registro ICG06.');
         } finally {

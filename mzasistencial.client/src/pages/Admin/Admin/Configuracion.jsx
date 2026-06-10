@@ -30,7 +30,10 @@ const Configuracion = () => {
             .then(data => {
                 if (data) { setForm(data); setOriginal(data); }
             })
-            .catch(() => setMsg({ ok: false, text: 'Error al cargar la configuracion.' }))
+            .catch(err => {
+                logError("Error al cargar la configuración", err); 
+                setMsg({ ok: false, text: 'Error al cargar la configuracion.' });
+            })
             .finally(() => setCargando(false));
     }, []);
 
