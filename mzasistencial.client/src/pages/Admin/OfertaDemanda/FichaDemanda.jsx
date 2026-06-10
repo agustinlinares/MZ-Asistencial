@@ -63,8 +63,6 @@ const FichaIndividual = ({ datos, onAnular, onRechazar, onSalir }) => {
     const [selectedId, setSelectedId] = useState(null);
     const activeId = yaConfirmada ? getId(confirmadaBD) : selectedId;
 
-    const subsVisibles = activeId ? subs.filter(s => getId(s) === activeId) : subs;
-
     const fileInputRef = useRef(null);
 
     const [isAnularModalOpen, setIsAnularModalOpen] = useState(false);
@@ -209,7 +207,8 @@ const FichaIndividual = ({ datos, onAnular, onRechazar, onSalir }) => {
 
                 <div style={{ border: '1px solid #ccc', borderTop: 'none', marginBottom: 30 }}>
                     <DataGrid
-                        dataSource={subsVisibles}
+                        /* 🛠️ SOLUCIÓN: Cambiado de subsVisibles a subs para mostrar siempre todo */
+                        dataSource={subs}
                         keyExpr={d => getId(d)}
                         className="mz-table"
                         rowAlternationEnabled={true}

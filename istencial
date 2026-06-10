@@ -1,0 +1,43 @@
+[33ma709d22[m fix: corregir bugs ICG06 services detectados en revisión VB migration
+[33mdb44bf0[m feat(citaciones): refactor consumo engine, fix derived states, add bulk actions & SLA drawer
+[33mbb166a3[m Fix: Unificar contexto y servicio a MutuasPresupuestos para resolver conflicto con Dashboard
+[33m0108493[m Merge branch 'development': resolución de conflictos en Program y CSS
+[33m386f078[m feat: backend y frontend para Presupuestos Liquidados
+[33mf6829da[m Lógica de ficheros en administración implementada correctamente
+[33m12e6ab3[m feat(ui,backend): Estandarización de tablas, Descuadres y Registro de Actividad
+[33m636a390[m Ofertas y Demandas: doble fila, modal edición, lógica rechazo. Acuerdos: secciones con tabs y totales
+[33mc738bea[m Pestañas CentrosPropios, Conciertos y Especialidades, validaciones y registro actividad
+[33m85da642[m Actualizaciones GestionOferta
+[33mbf39352[m fix(FincasRegistrales): corregir mapeo tabla CostesPorAño y columna Año en contexto EF
+[33m5de4089[m fix(ICG06): corregir HasNoKey a HasKey en entidad Icg06 para permitir guardado, botón Guardar centralizado en header
+[33m2cba8d8[m Lógica de acreditaciones individuales terminada
+[33m50aedb0[m feat(citaciones): modulo gestion reserva completo con validaciones
+[33ma3163e2[m Merge branch 'development' of https://mzprojectgit.mercanza.es/josemanuel.leal/mz-asistencial into development
+[33md8e49d9[m feat(ICG06): implementar pestaña Especialidades/Servicios con CRUD completo
+[33mfb59c5a[m Mejorando estilos de la parte de subir plantillas
+[33meb45979[m fix: resolver conflicto merge en MZAsistencialContext - eliminar mapeos AÃ±o corruptos
+[33md72cce5[m fix: eliminar bloque foreach que mapeaba Año a Anio incorrectamente en MZAsistencialContext
+[33me8daf0d[m fix: mapeo columna Año en Oferta, Demanda e ICG07
+[33ma70f5c2[m Avances interfaz
+[33ma22e01a[m Merge branch 'development' of https://mzprojectgit.mercanza.es/josemanuel.leal/mz-asistencial into development
+[33md5779d3[m Ficha Centro: Mapeo de campos, fix eñes y nuevas columnas de comentarios
+[33m56a929b[m Pulliendo funcionalidades de la parte de acerditeaciones sectoriales
+[33m8300bfe[m Merge branch 'development' of https://mzprojectgit.mercanza.es/josemanuel.leal/mz-asistencial into development
+[33m07e5c17[m Fix: Global data loading issues and database mapping standardization. Corrected Año to Anio mapping and handled nullable booleans in CentrosPropios.
+[33m4c8d5b9[m Solucionar conflicto de ramas
+[33md87968f[m Actualizaciones
+[33m40f8b34[m Mejora de estilos en las plantillas
+[33m5e5b6ff[m Mejoras visuales Mutuas y FichaMutua, POST mutua, eliminar mutua
+[33mfd32c72[m fix: resolve login mapping error and sync controller signatures
+[33me5454e3[m feat(fincas): optimize UI, fix encoding issues and add sample data for daily
+[33mdeffdd6[m fix: MapaValidado y DireccionGIS persisten en BD - HasKey CentroId en contexto EF
+[33m8ecc370[m Solucionando conflictos de desarrollo
+[33m3a7f117[m Conectar ICG Conciertos a datos reales y completar su vista.
+[33m93c5c8c[m Merge con gitlab development
+[33m7ef29c5[m Corregidos controller, context y modelo
+[33m7b57319[m feat: ICG06 - Backend completo (Controllers, Services, DTOs, Model) y frontend ICGCentrosPropios con ficha completa de 16 pestañas
+[33m803e8e2[m Backend AcuerdosBI - endpoints Mutua, Provincia y TipoServicio
+[33md561042[m Agregado MZAsistencialContext
+[33m7c2b4d3[m Eliminada cadena de conexión hardcodeada del MZAsistencialContext
+[33m2d91946[m feat: añadir módulo CentrosPropios - DTO, Service, Controller
+[33m81da02f[m Añadidos controladores Descuadres, InformesAcuerdos y AuxInformesAcuerdos

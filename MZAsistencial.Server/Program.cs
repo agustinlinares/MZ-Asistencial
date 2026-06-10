@@ -67,6 +67,19 @@ builder.Services.AddScoped<CentroPropioIcgService>();
 builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
 builder.Services.AddScoped<IMutuasService, MutuasService>();
 builder.Services.AddScoped<IListaOfertasService, ListaOfertasService>();
+builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
+builder.Services.AddScoped<IAcreditacionesSectorialesService, AcreditacionesSectorialesService>();
+builder.Services.AddScoped<IAcreditacionesIndividualesService, AcreditacionesIndividualesService>();
+builder.Services.AddScoped<IPlantillasAcuerdoService, PlantillasAcuerdoService>();
+builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<ICitacionesService, CitacionesService>();
+builder.Services.AddScoped<IPresupuestosLiquidadosService, PresupuestosLiquidadosService>();
+builder.Services.AddScoped<IFicherosService, FicherosService>();
+builder.Services.AddScoped<IExportarAccessService, ExportarAccessService>();
+builder.Services.AddScoped<PlantillasICGService>();
+builder.Services.AddScoped<ListadoPropiosIcgService>();
+builder.Services.AddScoped<Icg06CrearService>();
+builder.Services.AddScoped<Icg06ValidarService>();
 
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();
