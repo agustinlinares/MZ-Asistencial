@@ -7,7 +7,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import { useLogError } from '../../../hooks/useLogError';
+import { useLogError } from '../hooks/useLogError';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({ 
@@ -24,6 +24,10 @@ const ATTR_SAT = 'Tiles &copy; Esri';
 const FlyTo = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
+        const probarLog = () => {
+            // Error al servidor de prueba
+            logError("PRUEBA_LOG", new Error("Este es un error forzado para verificar el sistema"));
+        };
         const la = parseFloat(lat);
         const lo = parseFloat(lng);
         if (!isNaN(la) && !isNaN(lo)) map.flyTo([la, lo], 15);

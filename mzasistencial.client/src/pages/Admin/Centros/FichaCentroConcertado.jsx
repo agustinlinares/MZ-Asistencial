@@ -285,7 +285,6 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         }
         return dateStr;
     };
-    console.log("Datos que llegan de la tabla:", cliente);
 
     const [form, setForm] = useState({
         centro_id: cliente?.CentroId ?? cliente?.centro_id ?? '',
@@ -314,6 +313,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         longitud: cliente?.longitud ?? cliente?.Longitud ?? ''
     });
 
+    const esNuevo = !form.centro_id || form.centro_id === 0;
+
     const [datosMutuas, setDatosMutuas] = useState([]);
 
     const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
@@ -326,11 +327,13 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 const resProv = await fetch('/api/AuxProvincias', { headers });
                 const resProvdd = await fetch('/api/AuxProveedores', { headers }); 
                 
-                if (resProv.ok && resProvdd.ok) {
-                    const provincias = await resProv.json();
-                    const proveedores = await resProvdd.json();
-                    setOpts(prev => ({ ...prev, provincias, proveedores }));
-                }
+                if (!resProv.ok) throw new Error(`Error ${resProv.status} al cargar Provincias`);
+                if (!resProvdd.ok) throw new Error(`Error ${resProvdd.status} al cargar Proveedores`);
+
+                const provincias = await resProv.json();
+                const proveedores = await resProvdd.json();
+                setOpts(prev => ({ ...prev, provincias, proveedores }));
+
             } catch (error) {
                 logError("Fallo al cargar datos maestros (Provincias/Proveedores)", error);
                 console.error("Error cargando maestros:", error);
@@ -428,8 +431,6 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             setDatosMutuas([]);
             return;
         }
-
-        const logError = useLogError("Ficha centros concertados - Mutuas asignadas");
 
         const fetchMutuasAsignadas = async () => {
             try {
@@ -622,41 +623,58 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
                 <div className="ficha-tabs">
                     <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
-                    <button className={`ficha-tab ${activeTab === 'registroICG' ? 'active' : ''}`} onClick={() => setActiveTab('registroICG')}>Registro ICG</button>
-                    <button className={`ficha-tab ${activeTab === 'mutuasAsignadas' ? 'active' : ''}`} onClick={() => setActiveTab('mutuasAsignadas')}>Mutuas Asignadas</button>
-                    <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades / Serv.</button>
+                    
+                    {!esNuevo && (
+                        <>
+                            <button className={`ficha-tab ${activeTab === 'registroICG' ? 'active' : ''}`} onClick={() => setActiveTab('registroICG')}>Registro ICG</button>
+                            <button className={`ficha-tab ${activeTab === 'mutuasAsignadas' ? 'active' : ''}`} onClick={() => setActiveTab('mutuasAsignadas')}>Mutuas Asignadas</button>
+                            <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades / Serv.</button>
+                        </>
+                    )}
+                    
                     <button className={`ficha-tab ${activeTab === 'mapa' ? 'active' : ''}`} onClick={() => setActiveTab('mapa')}>Mapa / Ubicación</button>
                 </div>
 
                 <div className="ficha-tab-content">
-                    {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
+                    {activeTab === 'general' && (
+                        <TabGeneral 
+                            form={form} 
+                            onChange={handleChange} 
+                            errors={errors} 
+                            onGoToMap={() => setActiveTab('mapa')} 
+                            opts={opts} 
+                        />
+                    )}
                     
-                    {activeTab === 'registroICG' && (
-                        <TabDataGrid datos={registrosICG} nombreArchivo="Registro_ICG">
-                            <Column dataField="ano" caption="Año" width={100} />
-                            <Column dataField="mutua" caption="Mutua" />
-                            <Column dataField="centro" caption="Centro" />
-                            <Column dataField="fechaModificacion" caption="Fecha Act." dataType="date" width={150} />
-                            <Column dataField="usuarioModificacionId" caption="ID Usuario" width={150} />
-                        </TabDataGrid>
-                    )}
+                    {!esNuevo && (
+                        <>
+                            {activeTab === 'registroICG' && (
+                                <TabDataGrid datos={registrosICG} nombreArchivo="Registro_ICG">
+                                    <Column dataField="ano" caption="Año" width={100} />
+                                    <Column dataField="mutua" caption="Mutua" />
+                                    <Column dataField="centro" caption="Centro" />
+                                    <Column dataField="fechaModificacion" caption="Fecha Act." dataType="date" width={150} />
+                                    <Column dataField="usuarioModificacionId" caption="ID Usuario" width={150} />
+                                </TabDataGrid>
+                            )}
 
-                    {activeTab === 'mutuasAsignadas' && (
-                        <TabDataGrid datos={mutuasAsignadas} nombreArchivo="Mutuas_Asignadas">
-                            <Column dataField="mutua" caption="Mutua" />
-                            
-                            <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
-                            <Column dataField="localizador" caption="Localizador" width={150} />
-                        </TabDataGrid>
-                    )}
+                            {activeTab === 'mutuasAsignadas' && (
+                                <TabDataGrid datos={mutuasAsignadas} nombreArchivo="Mutuas_Asignadas">
+                                    <Column dataField="mutua" caption="Mutua" />
+                                    <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
+                                    <Column dataField="localizador" caption="Localizador" width={150} />
+                                </TabDataGrid>
+                            )}
 
-                    {activeTab === 'especialidades' && (
-                        <TabDataGrid datos={especialidades} nombreArchivo="Especialidades">
-                            <Column dataField="anyo" caption="Año" width={100} />
-                            <Column dataField="servicio" caption="Servicio" />
-                            <Column dataField="especialidad" caption="Especialidad" />
-                            <Column dataField="cantidad" caption="Cantidad" width={100} />
-                        </TabDataGrid>
+                            {activeTab === 'especialidades' && (
+                                <TabDataGrid datos={especialidades} nombreArchivo="Especialidades">
+                                    <Column dataField="anyo" caption="Año" width={100} />
+                                    <Column dataField="servicio" caption="Servicio" />
+                                    <Column dataField="especialidad" caption="Especialidad" />
+                                    <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                </TabDataGrid>
+                            )}
+                        </>
                     )}
 
                     {activeTab === 'mapa' && (
