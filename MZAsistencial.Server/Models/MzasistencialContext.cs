@@ -13,6 +13,8 @@ public partial class MzasistencialContext : DbContext
 
     public virtual DbSet<CentrosPropio> CentrosPropios { get; set; }
     public virtual DbSet<MutuasPresupuesto> MutuasPresupuesto { get; set; }
+    public virtual DbSet<Usuario> Usuarios { get; set; }
+    public virtual DbSet<RegistroErrore> RegistroErrores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

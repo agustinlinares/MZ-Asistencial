@@ -94,7 +94,6 @@ builder.Services.AddScoped<Icg06DatosPlantillaService>();
 builder.Services.AddScoped<Icg06EspecialidadService>();
 builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
-builder.Services.AddScoped<RegistroICGService>();
 builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();

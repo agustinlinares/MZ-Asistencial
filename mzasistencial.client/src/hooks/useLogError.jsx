@@ -25,7 +25,7 @@ export const useLogError = (moduloPorDefecto = 'React Frontend') => {
 
         const payload = {
             descripcion: contextoDelError,
-            modulo: moduloFinal, 
+            Nombre_Modulo: moduloFinal, 
             usuarioId: usuarioId,
             detalleError: detalleError,
             comentarios: stackTrace
