@@ -15,9 +15,17 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int? mutuaId = null)
         {
-            var data = await _service.GetAllAsync();
+            var data = await _service.GetAllAsync(mutuaId);
+            return Ok(data);
+        }
+
+        [HttpGet("informe-disponibilidad")]
+        public async Task<IActionResult> GetInformeDisponibilidad([FromQuery] int año)
+        {
+            if (año <= 0) return BadRequest(new { message = "El año es obligatorio." });
+            var data = await _service.GetInformeDisponibilidadAsync(año);
             return Ok(data);
         }
 

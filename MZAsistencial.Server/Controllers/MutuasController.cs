@@ -24,7 +24,7 @@ public class MutuasController : ControllerBase
     {
         var query  = _context.Mutuas
             .Include(m => m.PoblacionNavigation)
-                .ThenInclude(p => p.Provincia) 
+                .ThenInclude(p => p!.Provincia) 
             .AsQueryable();
 
         // Si no es perfil 1 ni perfil 4 filtramos por su mutua
@@ -122,10 +122,14 @@ public class MutuasController : ControllerBase
             await _context.SaveChangesAsync();
 
             // 2. Generamos NumeroMutua automáticamente
-            mutua.NumeroMutua = $"{mutua.MutuaId:D3}";
+            //mutua.NumeroMutua = $"{mutua.MutuaId:D3}";
+
+            // Ahora — el número viene del DTO directamente
+            mutua.NumeroMutua = dto.NumeroMutua;
 
             // 3. Guardamos de nuevo
             await _context.SaveChangesAsync();
+           
 
             // 4. Registramos la acción en RegistroActividad
             var registro = new RegistroActividad
@@ -162,6 +166,10 @@ public class MutuasController : ControllerBase
             if (mutua == null) return NotFound();
             if (id != dto?.NumeroId) return BadRequest();
 
+                    // 👇 Añade este log para ver qué llega
+        Console.WriteLine($"NumeroMutua recibido: '{dto.NumeroMutua}'");
+        Console.WriteLine($"NumeroMutua actual en BD: '{mutua.NumeroMutua}'");
+
             // Solo actualizamos los campos editables
             mutua.Mutua1 = dto.Mutua;
             mutua.Direccion = dto.Direccion;
@@ -174,7 +182,7 @@ public class MutuasController : ControllerBase
                 ? null
                 : dto.DireccionElectronica;
             mutua.PersonaContacto = dto.PersonaContacto;
-            //mutua.NumeroMutua = dto.NumeroMutua;
+            mutua.NumeroMutua = dto.NumeroMutua;
 
             // Guardamos cambios
             await _context.SaveChangesAsync();
@@ -245,6 +253,19 @@ public class MutuasController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+
+    //---------------------NUMERO MUTUA--------------------------------------
+    // GET: api/mutuas/comprobarNumero?numero=001&mutuaId=5
+    // Comprueba si un número de mutua ya existe
+    // mutuaId es opcional — si se pasa, excluye esa mutua de la comprobación (para edición)
+    [HttpGet("comprobarNumero")]
+    public async Task<ActionResult<bool>> ComprobarNumero([FromQuery] string numero, [FromQuery] int? mutuaId)
+    {
+        var existe = await _context.Mutuas
+            .AnyAsync(m => m.NumeroMutua == numero && (!mutuaId.HasValue || m.MutuaId != mutuaId.Value));
+        return Ok(existe);
+    }
+
 
     //---------------------PESTAÑAS--------------------------------------
     // GET: api/mutuas/5/centrosPropios

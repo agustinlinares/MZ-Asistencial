@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 
 namespace MZAsistencial.Server.Services;
@@ -6,21 +6,26 @@ namespace MZAsistencial.Server.Services;
 public class Icg06ValidarService
 {
     private readonly MZAsistencialContext _context;
+    private readonly IRegistroErroresService _registroErroresService;
 
-    public Icg06ValidarService(MZAsistencialContext context)
+    public Icg06ValidarService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
     {
         _context = context;
+        _registroErroresService = registroErroresService;
     }
 
-    // Obtiene el estado actual de Validado para un registro ICG06
+    // FIX: se comprueba primero si el registro existe antes de leer Validado,
+    //      para distinguir "no existe" de "Validado = null/0"
     public async Task<int?> GetValidadoAsync(int idIcg)
     {
-        var result = await _context.Icg06s
+        var entity = await _context.Icg06s
             .Where(e => e.IdIcg == idIcg)
-            .Select(e => e.Validado)
+            .Select(e => new { e.IdIcg, e.Validado })
             .FirstOrDefaultAsync();
 
-        return result;
+        if (entity is null) return null;   // no existe el registro
+
+        return entity.Validado;            // existe → devuelve el valor (puede ser null o 0)
     }
 
     // Cambia el estado Validado: 1 = validar, 0 = desvalidar
@@ -33,7 +38,7 @@ public class Icg06ValidarService
                 UsuarioModificacion_id = {2}
             WHERE Id_ICG = {3}";
 
-        var ahora      = DateTime.Now;
+        var ahora       = DateTime.Now;
         object usuParam = (object?)usuarioId ?? DBNull.Value;
 
         var rows = await _context.Database

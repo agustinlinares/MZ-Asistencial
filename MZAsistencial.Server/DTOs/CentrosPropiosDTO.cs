@@ -42,5 +42,7 @@
         public int?      TipoCentro           { get; set; }
         public bool?     MapaValidado         { get; set; }
         public int?      UsuarioId            { get; set; }
+        public DateOnly? FechaDesactivacion  { get; set; }
+        public int?      UsuarioDesactivacion { get; set; }
     }
 }

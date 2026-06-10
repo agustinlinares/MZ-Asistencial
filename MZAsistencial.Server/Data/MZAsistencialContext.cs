@@ -141,7 +141,6 @@ public partial class MZAsistencialContext : DbContext
     public virtual DbSet<HistoricoCentrosPropiosEspecialidade> HistoricoCentrosPropiosEspecialidades { get; set; }
 
     public virtual DbSet<Icg06> Icg06s { get; set; }
-    public virtual DbSet<Icg06Especialidad> Icg06Especialidades { get; set; }
 
     public virtual DbSet<Icg07> Icg07s { get; set; }
 

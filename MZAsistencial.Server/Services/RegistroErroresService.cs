@@ -73,7 +73,7 @@ namespace MZAsistencial.Server.Services
                             Descripcion = r.Descripcion,
                             Estado = r.EstadoId == 1 ? "Abierto" : 
                                      r.EstadoId == 2 ? "En curso" : 
-                                     r.EstadoId == 3 ? "Resuelto" : "Abierto"
+                                     r.EstadoId == 3 ? "Cerrado" : "Abierto"
                         };
 
             return query;

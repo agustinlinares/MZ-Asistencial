@@ -35,6 +35,7 @@ const AcreditacionesIndividuales = () => {
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [acreditaciones, setAcreditaciones] = useState([]);
+    const usuarioId = AuthService.getUserData()?.usuarioId || 0;
     const [menuAbierto, setMenuAbierto] = useState(false);
 
     const logError = useLogError("Acreditaciones individuales");
@@ -53,7 +54,7 @@ const AcreditacionesIndividuales = () => {
         const cargarDatos = async () => {
             try {
                 const [resDatos, resAño] = await Promise.all([
-                    fetch('/api/AcreditacionesIndividuales', { headers: authHeaders() }),
+                    fetch(`/api/AcreditacionesIndividuales?usuarioId=${usuarioId}`, { headers: authHeaders() }),
                     fetch('/api/AcreditacionesIndividuales/max-year', { headers: authHeaders() }),
                 ]);
 

@@ -1,17 +1,20 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Services
 {
     public class Icg06AreaAsistencialService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public Icg06AreaAsistencialService(MZAsistencialContext context)
+        public Icg06AreaAsistencialService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         public async Task<Icg06AreaAsistencialDTO?> GetByCentroYAñoAsync(int centroId, int año)
@@ -51,6 +54,10 @@ namespace MZAsistencial.Server.Services
             Numdcierre  = e.Numdcierre,
             Numquirof   = e.Numquirof,
             Numcamas    = e.Numcamas,
+            Hormande    = e.Hormande,
+            Hormanha    = e.Hormanha,
+            Hortardes   = e.Hortardes,
+            Hortarhas   = e.Hortarhas,
         };
 
         // ─── DTO → Entity ────────────────────────────────────────────────────
@@ -64,6 +71,10 @@ namespace MZAsistencial.Server.Services
             e.Numdcierre  = dto.Numdcierre;
             e.Numquirof   = dto.Numquirof;
             e.Numcamas    = dto.Numcamas;
+            e.Hormande    = dto.Hormande;
+            e.Hormanha    = dto.Hormanha;
+            e.Hortardes   = dto.Hortardes;
+            e.Hortarhas   = dto.Hortarhas;
         }
     }
 }

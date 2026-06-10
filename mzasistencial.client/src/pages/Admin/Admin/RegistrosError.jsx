@@ -200,29 +200,6 @@ const RegistrosError = () => {
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
                                 <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
-                                
-                                <Column
-                                    caption={t('Acciones')}
-                                    width={100}
-                                    fixed={true}
-                                    fixedPosition="right"
-                                    alignment="center"
-                                    cellRender={(cell) => (
-                                        <div className="ficha-row-actions" style={{ display: 'flex', justifyContent: 'center' }}>
-                                            {cell.data.estado !== 'Resuelto' && (
-                                                <i 
-                                                    className="ri-check-double-line" 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleResolver(cell.data.errorId);
-                                                    }}
-                                                    title={t('Marcar como Resuelto')}
-                                                    style={{ color: '#2e7d32', cursor: 'pointer', fontSize: '18px' }}
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                />
                             </DataGrid>
                         </div>
                     </div>

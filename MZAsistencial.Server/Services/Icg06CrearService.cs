@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
+using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Services;
 
@@ -19,7 +20,7 @@ public class Icg06CrearService
             .AnyAsync(e => e.CentroId == centroId && e.Año == año);
     }
 
-    // Crea un registro ICG06 vacío usando SQL directo (la entidad no tiene PK en EF)
+    // Crea un registro ICG06 vacío y registra la actividad
     public async Task<int> CrearAsync(int centroId, int año, int? usuarioId)
     {
         var sql = @"
@@ -27,13 +28,38 @@ public class Icg06CrearService
             OUTPUT INSERTED.Id_ICG
             VALUES ({0}, {1}, 0, {2}, {2}, {3}, {3})";
 
-        var ahora      = DateTime.Now;
+        var ahora       = DateTime.Now;
         object usuParam = (object?)usuarioId ?? DBNull.Value;
 
         var result = await _context.Database
             .SqlQueryRaw<int>(sql, centroId, año, ahora, usuParam)
             .ToListAsync();
 
-        return result.FirstOrDefault();
+        var nuevoId = result.FirstOrDefault();
+
+        // FIX: registro de actividad al crear, igual que el original VB
+        if (nuevoId > 0)
+        {
+            await RegistrarActividadAsync(
+                usuarioId,
+                $"INSERT ICG06 Centro {centroId} Año {año}",
+                $"INSERT INTO ICG06 (Centro_id, Año, Validado, FechaAlta, UsuarioAlta_id) VALUES ({centroId}, {año}, 0, '{ahora}', {usuarioId})"
+            );
+        }
+
+        return nuevoId;
+    }
+
+    // ─── Registro de actividad ────────────────────────────────────────────
+    private async Task RegistrarActividadAsync(int? usuarioId, string accion, string sql)
+    {
+        _context.RegistroActividads.Add(new RegistroActividad
+        {
+            UsuarioId = usuarioId,
+            Fecha     = DateTime.Now,
+            Accion    = accion,
+            Sql       = sql
+        });
+        await _context.SaveChangesAsync();
     }
 }

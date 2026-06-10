@@ -1,3 +1,5 @@
+import { createStore } from 'devextreme-aspnet-data-nojquery';
+
 const API_URL = '/api';
 
 const authHeaders = () => {
@@ -47,12 +49,44 @@ const CitacionesService = {
         }
     },
 
-    updateEstado: async (citacionId, estadoId, contestacion) => {
+    createSolicitadasStore: (mutuaId, filters = {}) => {
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        );
+        return createStore({
+            key: 'CitacionId',
+            loadUrl: `${API_URL}/citaciones/solicitadas/${mutuaId}`,
+            loadParams: cleanFilters,
+            onBeforeSend: (method, ajaxOptions) => {
+                ajaxOptions.headers = authHeaders();
+            }
+        });
+    },
+
+    createRecibidasStore: (mutuaId, filters = {}) => {
+        const cleanFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        );
+        return createStore({
+            key: 'CitacionId',
+            loadUrl: `${API_URL}/citaciones/recibidas/${mutuaId}`,
+            loadParams: cleanFilters,
+            onBeforeSend: (method, ajaxOptions) => {
+                ajaxOptions.headers = authHeaders();
+            }
+        });
+    },
+
+    updateEstado: async (citacionId, estadoId, contestacion, payload = null) => {
         try {
-            const response = await fetch(`${API_URL}/citaciones/${citacionId}/estado?estadoId=${estadoId}&contestacion=${contestacion}`, {
+            const options = {
                 method: 'PUT',
                 headers: authHeaders()
-            });
+            };
+            if (payload) {
+                options.body = JSON.stringify(payload);
+            }
+            const response = await fetch(`${API_URL}/citaciones/${citacionId}/estado?estadoId=${estadoId}&contestacion=${contestacion}`, options);
             if (!response.ok) throw new Error('Error al actualizar estado de citación');
             return true;
         } catch (error) {

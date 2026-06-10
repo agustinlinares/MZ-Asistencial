@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useReducer } from 'react'; // Cambiado useState por useReducer
+﻿import React, { useEffect, useMemo, useRef, useReducer } from 'react'; // Cambiado useState por useReducer
 import { useNavigate } from "react-router-dom";
 import { Popup } from 'devextreme-react/popup';
 import { Button } from 'devextreme-react/button';
@@ -76,7 +76,12 @@ function AdminHeader(props) {
     useEffect(() => {
         const storedUser = JSON.parse(sessionStorage.getItem('username'));
         const activeUser = AuthService.getUser();
-        dispatch({ type: 'INIT_USER', username: storedUser, usuarioActivo: activeUser });
+        const usuarioActual = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+        const nombreUsuario = usuarioActual?.usuario || storedUser || '';
+        const perfilId = usuarioActual?.perfilId;
+        const nombrePerfil = perfilId === 1 ? 'Administrador' : perfilId === 2 ? 'Usuario' : perfilId === 4 ? 'Supervisor' : 'Usuario';
+        dispatch({ type: 'INIT_USER', username: nombreUsuario, usuarioActivo: activeUser });
+        dispatch({ type: 'SET_FIELD', field: 'nombrePerfil', value: nombrePerfil });
     }, []);
 
     const destroyModal = () => {
@@ -168,13 +173,13 @@ function AdminHeader(props) {
                             {/* Usuario */}
                             <div className="filter-item">
                                 <i className="ri-user-line"></i>
-                                <span>ecua1</span>
+                                <span>{username || 'Usuario'}</span>
                             </div>
 
                             {/* Rol */}
                             <div className="filter-item">
                                 <i className="ri-user-3-line"></i>
-                                <span>Admin</span>
+                                <span>{state.nombrePerfil || 'Usuario'}</span>
                             </div>
 
                             {/* Año */}

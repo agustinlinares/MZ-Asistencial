@@ -24,7 +24,7 @@ function AdminMenu(props) {
     const [openAdmin, setOpenAdmin] = useState(false);
 
     useEffect(() => {
-        const userData = JSON.parse(sessionStorage.getItem('user'));
+        const userData = JSON.parse(localStorage.getItem('UsuarioActual') || 'null');
         if (userData) setUser(userData);
     }, []);
 
@@ -253,7 +253,7 @@ function AdminMenu(props) {
                             {user?.nombre || t('Usuario')}
                         </div>
                         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                            {user?.perfil || t('Administrador')}
+                            {user?.perfilId === 1 ? 'Administrador' : user?.perfilId === 2 ? 'Usuario' : user?.perfilId === 4 ? 'Supervisor' : t('Usuario')}
                         </div>
                     </div>
                 </div>
