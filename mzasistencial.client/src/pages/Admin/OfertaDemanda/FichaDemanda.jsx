@@ -5,9 +5,6 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 import notify from 'devextreme/ui/notify';
-import FichaRechazarOferta from './Modales/FichaRechazarOferta';
-import FichaAnulacionDemanda from './Modales/FichaAnulacionDemanda';
-import FichaDocumentosDemandaIndividual from './Modales/FichaDocumentosDemandaIndividual';
 import '../../../styles/FichaGlobal.css';
 
 const API = '/api';
@@ -155,25 +152,8 @@ const FichaAnual = ({ datos, onImprimir, onSalir }) => {
 
 // ─── Ficha Individual ─────────────────────────────────────────────────────────
 const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, onSalir }) => {
-    // Mock de auth (en un entorno real esto vendría de un Context/Redux)
-    const { perfilId = 1, mutuaId = 100 } = datos.authMock || {};
-
-    // Estados: 1 (Pendiente), 3 (Confirmada), 5 (Consumida), 6 (Rechazada), 7 (Caducada), 8 (Desierta), 9 (Anulada)
-    const estadoId = datos.estadoId || 1;
-    const isPendiente = estadoId === 1;
-    const isConfirmada = estadoId === 3;
-    const isActiva = ![5, 6, 7, 8, 9].includes(estadoId); // No es estado final
-
-    // Reglas de botones según matriz
-    const canAnular = isActiva && (perfilId === 1 || (perfilId === 2 && (estadoId === 1 || estadoId === 4) && datos.mutuaId === mutuaId));
-    const canAceptar = isPendiente;
-    const canRechazar = isConfirmada;
     const totalDemanda = MESES.reduce((s, m) => s + (datos[m] || 0), 0);
     const [subSeleccionada, setSubSeleccionada] = useState(null);
-
-    const [isRechazarVisible, setIsRechazarVisible] = useState(false);
-    const [isAnularVisible, setIsAnularVisible] = useState(false);
-    const [isDocumentoVisible, setIsDocumentoVisible] = useState(false);
 
     const handleConfirmarCita = async () => {
         if (!subSeleccionada) {
@@ -193,28 +173,22 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
                 <div className="ficha-modal-header">
                     <span className="ficha-modal-title">Ficha Gestión Demanda</span>
                     <div className="ficha-header-btns">
-                        {canAnular && (
-                            <button onClick={() => setIsAnularVisible(true)}
-                                style={{ background: '#c62828', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 16px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
-                                <i className="ri-delete-bin-line" style={{ marginRight: 6 }} />Anular
-                            </button>
-                        )}
+                        <button onClick={onAnular}
+                            style={{ background: '#c62828', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 16px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
+                            <i className="ri-delete-bin-line" style={{ marginRight: 6 }} />Anular
+                        </button>
                         <button className="ficha-btn-secondary" onClick={onImprimir}>
                             <i className="ri-printer-line" style={{ marginRight: 6 }} />Imprimir Ficha
                         </button>
-                        {canAceptar && (
-                            <button
-                                className="ficha-btn-primary"
-                                onClick={handleConfirmarCita}
-                                disabled={!subSeleccionada || subSeleccionada.estadoId === 1} // No tiene oferta
-                                style={{ opacity: (!subSeleccionada || subSeleccionada.estadoId === 1) ? 0.5 : 1 }}
-                            >
-                                Confirmar Cita
-                            </button>
-                        )}
-                        {canRechazar && (
-                            <button className="ficha-btn-secondary" onClick={() => setIsRechazarVisible(true)}>Rechazar cita</button>
-                        )}
+                        <button
+                            className="ficha-btn-primary"
+                            onClick={handleConfirmarCita}
+                            disabled={!subSeleccionada}
+                            style={{ opacity: subSeleccionada ? 1 : 0.5 }}
+                        >
+                            Confirmar Cita
+                        </button>
+                        <button className="ficha-btn-secondary" onClick={onRechazar}>Rechazar cita</button>
                         <button className="ficha-btn-secondary" onClick={onSalir}>
                             <i className="ri-close-line" style={{ marginRight: 6 }} />Salir
                         </button>
@@ -232,12 +206,6 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16, marginBottom: 24 }}>
                         <Campo label="Estado Demanda" value={datos.estado} />
-                        {datos.estadoId === 6 && (
-                            <div className="ficha-field">
-                                <label style={{ fontWeight: 700, color: '#c62828' }}>Motivo Rechazo</label>
-                                <input type="text" readOnly value={datos.motivoRechazo || ''} style={{ background: '#fce4e4', border: '1px solid #f8bbd0' }} />
-                            </div>
-                        )}
                     </div>
 
                     <div style={{ overflowX: 'auto', marginBottom: 24 }}>
@@ -285,13 +253,6 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
                                     e.rowElement.style.fontWeight = '600';
                                 }
                             }}
-                            onContentReady={(e) => {
-                                // PR-07: Preselección automática
-                                if (!subSeleccionada) {
-                                    const confirmada = e.component.getDataSource().items().find(x => x.estadoId === 3);
-                                    if (confirmada) setSubSeleccionada(confirmada);
-                                }
-                            }}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={10} />
@@ -308,19 +269,15 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
                                 allowSorting={false}
                                 allowHeaderFiltering={false}
                                 caption=""
-                                cellRender={(cell) => {
-                                    // PR-26: Ocultar acciones si no hay oferta (estado 1) o ya rechazada
-                                    if (cell.data.estadoId === 1 || cell.data.estadoId === 4) return null;
-                                    return (
-                                        <input
-                                            type="radio"
-                                            name="subSeleccionada"
-                                            checked={subSeleccionada?.subSolId === cell.data.subSolId}
-                                            onChange={() => setSubSeleccionada(cell.data)}
-                                            style={{ cursor: 'pointer', width: 16, height: 16 }}
-                                        />
-                                    );
-                                }}
+                                cellRender={(cell) => (
+                                    <input
+                                        type="radio"
+                                        name="subSeleccionada"
+                                        checked={subSeleccionada?.subSolId === cell.data.subSolId}
+                                        onChange={() => setSubSeleccionada(cell.data)}
+                                        style={{ cursor: 'pointer', width: 16, height: 16 }}
+                                    />
+                                )}
                             />
                             <Column dataField="mutuaOfertante" caption="Mutua Ofertante" minWidth={120} />
                             <Column dataField="centro" caption="Centro" minWidth={130} />
@@ -361,7 +318,7 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
 
                     {/* DOCUMENTOS */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-                        <button onClick={() => setIsDocumentoVisible(true)}
+                        <button onClick={() => notify('Funcionalidad de adjuntar pendiente de implementar', 'info', 2000)}
                             style={{ background: '#1a5fa8', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>
                             Adjuntar
                         </button>
@@ -391,45 +348,6 @@ const FichaIndividual = ({ datos, onAnular, onImprimir, onAceptar, onRechazar, o
                     </DataGrid>
                 </div>
             </div>
-
-            <FichaRechazarOferta 
-                visible={isRechazarVisible} 
-                onCerrar={() => setIsRechazarVisible(false)} 
-                onConfirmar={(motivo) => {
-                    setIsRechazarVisible(false);
-                    onRechazar(motivo);
-                }} 
-            />
-
-            <FichaAnulacionDemanda 
-                visible={isAnularVisible} 
-                onCerrar={() => setIsAnularVisible(false)} 
-                onConfirmar={() => {
-                    setIsAnularVisible(false);
-                    onAnular();
-                }} 
-            />
-
-            <FichaDocumentosDemandaIndividual 
-                visible={isDocumentoVisible} 
-                onCerrar={() => setIsDocumentoVisible(false)} 
-                onUpload={async (file) => {
-                    setIsDocumentoVisible(false);
-                    // Lógica de upload simulada o real hacia el backend
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    const res = await fetch(`${API}/ListaDemandas/${datos.demandaId}/documentos`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    if (res.ok) {
-                        notify('Documento adjuntado correctamente', 'success', 2000);
-                        // En un escenario real, recargaríamos los datos aquí
-                    } else {
-                        notify('Error al adjuntar documento', 'error', 3000);
-                    }
-                }}
-            />
         </div>
     );
 };
@@ -451,36 +369,32 @@ const FichaDemanda = () => {
             .finally(() => setCargando(false));
     }, [id]);
 
-    const cambiarEstado = async (estadoId, extraData = {}) => {
+    const cambiarEstado = async (estadoId) => {
         const res = await fetch(`${API}/ListaDemandas/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estadoId, ...extraData }),
+            body: JSON.stringify({ estadoId }),
         });
         if (res.ok) { notify('Demanda actualizada correctamente', 'success', 2000); navigate(-1); }
         else notify('Error al actualizar la demanda', 'error', 3000);
     };
 
-    const handleAnular = async () => { await cambiarEstado(9); };
+    const handleAnular = async () => { const ok = await dxConfirm('¿Seguro que desea anular esta demanda?', 'Confirmar anulación'); if (ok) await cambiarEstado(9); };
     const handleAceptar = async (sub) => {
         // Confirmar la subsolicitud seleccionada → estado 3
         if (sub?.subSolId) {
             const res = await fetch(`${API}/ListaDemandas/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estadoId: 3, subSolicitudConfirmada: sub.subSolId }),
+                body: JSON.stringify({ estadoId: 3 }),
             });
             if (res.ok) { notify('Cita confirmada correctamente', 'success', 2000); navigate(-1); }
             else notify('Error al confirmar la cita', 'error', 3000);
         }
     };
-    const handleRechazar = async (motivo) => { await cambiarEstado(6, { motivoRechazo: motivo }); };
+    const handleRechazar = async () => { const ok = await dxConfirm('¿Seguro que desea rechazar esta demanda?', 'Confirmar rechazo'); if (ok) await cambiarEstado(8); };
     const handleImprimir = () => window.print();
-    const handleSalir = async () => {
-        // Enviar actualización de fecha revisión
-        await fetch(`${API}/ListaDemandas/${id}/revision`, { method: 'POST' }).catch(() => {});
-        navigate(-1);
-    };
+    const handleSalir = () => navigate(-1);
 
     if (cargando) return <div style={{ padding: 40, textAlign: 'center', color: '#999' }}>Cargando ficha...</div>;
     if (error) return <div style={{ padding: 40, textAlign: 'center', color: '#c62828' }}>Error: {error}</div>;
