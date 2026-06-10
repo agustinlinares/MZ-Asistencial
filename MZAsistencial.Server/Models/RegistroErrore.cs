@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MZAsistencial.Server.Models;
 
@@ -22,4 +23,7 @@ public partial class RegistroErrore
     public DateTime? FechaCierre { get; set; }
 
     public string? Comentarios { get; set; }
+
+    [NotMapped]
+    public string? NombreModulo { get; set; }
 }

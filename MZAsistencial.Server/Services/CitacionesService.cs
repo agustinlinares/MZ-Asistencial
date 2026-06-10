@@ -5,17 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
+using DevExtreme.AspNet.Data;
+using DevExtreme.AspNet.Data.ResponseModel;
 
 namespace MZAsistencial.Server.Services;
 
 public interface ICitacionesService
 {
-    Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter);
-    Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter);
-    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo);
+    Task<object> GetSolicitadasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
+    Task<object> GetRecibidasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
+    Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
-    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto);
+    Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
 }
 
 public class CitacionFilter
@@ -39,14 +41,15 @@ public class CitacionesService : ICitacionesService
         _registroErroresService = registroErroresService;
     }
 
-    public async Task<List<CitacionDTO>> GetSolicitadasAsync(int mutuaId, CitacionFilter filter)
+    public async Task<object> GetSolicitadasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions)
     {
         try
         {
             var query = _context.VwCitaciones
                 .Where(c => c.MutuaDemandanteId == mutuaId);
 
-            return await ApplyFiltersAndSelect(query, filter);
+            var finalQuery = ApplyFiltersAndSelect(query, filter);
+            return await DataSourceLoader.LoadAsync(finalQuery, loadOptions);
         }
         catch (Exception ex)
         {
@@ -55,14 +58,15 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<List<CitacionDTO>> GetRecibidasAsync(int mutuaId, CitacionFilter filter)
+    public async Task<object> GetRecibidasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions)
     {
         try
         {
             var query = _context.VwCitaciones
                 .Where(c => c.MutuaOfertanteId == mutuaId);
 
-            return await ApplyFiltersAndSelect(query, filter);
+            var finalQuery = ApplyFiltersAndSelect(query, filter);
+            return await DataSourceLoader.LoadAsync(finalQuery, loadOptions);
         }
         catch (Exception ex)
         {
@@ -71,7 +75,7 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    private async Task<List<CitacionDTO>> ApplyFiltersAndSelect(IQueryable<VwCitacione> query, CitacionFilter filter)
+    private IQueryable<CitacionDTO> ApplyFiltersAndSelect(IQueryable<VwCitacione> query, CitacionFilter filter)
     {
         // 1. Join con Demandas para cálculos de consumo
         var joinedQuery = from c in query
@@ -123,8 +127,7 @@ public class CitacionesService : ICitacionesService
             }
         }
 
-        return await joinedQuery
-            .OrderByDescending(x => x.c.FechaAltaSolicitud)
+        return joinedQuery
             .Select(x => new CitacionDTO
             {
                 CitacionId = x.c.CitacionId,
@@ -153,11 +156,10 @@ public class CitacionesService : ICitacionesService
                 EstadoId = x.c.EstadoId,
                 MutuaOfertanteId = x.c.MutuaOfertanteId,
                 MutuaDemandanteId = x.c.MutuaDemandanteId
-            })
-            .ToListAsync();
+            });
     }
 
-    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion)
+    public async Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
@@ -178,7 +180,7 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
@@ -191,6 +193,10 @@ public class CitacionesService : ICitacionesService
             citacion.FechaRespuestaCitacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
+            
+            // TODO: Integrar con EmailService cuando esté disponible
+            Console.WriteLine($"[EMAIL ALERT MOCK] Enviando alerta de cancelación. Citación {citacionId} rechazada. Motivo: {motivo}");
+            
             return true;
         }
         catch (Exception ex)
@@ -199,7 +205,7 @@ public class CitacionesService : ICitacionesService
             throw;
         }
     }
-    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto)
+    public async Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {

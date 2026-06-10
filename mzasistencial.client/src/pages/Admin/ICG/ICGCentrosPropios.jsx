@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
+﻿import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
@@ -266,8 +266,8 @@ const camposOtrasAmb = [
 const camposAsProHos = camposOtrasHos;
 
 const camposAsPro = [
-    { key: "actidesde",                    label: "Activo desde" },
-    { key: "actihasta",                    label: "Activo hasta" },
+    { key: "actidesde",                    label: "Activo desde", type: "date" },
+    { key: "actihasta",                    label: "Activo hasta",  type: "date" },
     { key: "pacen25km",                    label: "PA centro ≤25km" },
     { key: "pacen50km",                    label: "PA centro ≤50km" },
     { key: "pacen50km1",                   label: "PA centro >50km" },
@@ -459,14 +459,15 @@ const st = {
     fichaHead:  { background: "#1976d2", color: "#fff", borderRadius: "6px 6px 0 0", padding: "12px 20px" },
     fichaTitle: { fontSize: 15, fontWeight: 700 },
     fichaAnio:  { fontSize: 13, opacity: 0.85, marginTop: 2 },
-    tabBar:     { display: "flex", flexWrap: "wrap", gap: 2, padding: "10px 12px 0", borderBottom: "2px solid #e0e0e0", background: "#fafafa" },
+    fichaBody:  { display: "flex", minHeight: 0 },
+    tabSidebar: { width: 210, minWidth: 180, borderRight: "1px solid #e0e0e0", background: "#fafafa", overflowY: "auto", maxHeight: "calc(100vh - 220px)" },
     tab: (a) => ({
-        padding: "7px 14px", fontSize: 12.5, cursor: "pointer", border: "none",
-        borderBottom: a ? "2px solid #1976d2" : "2px solid transparent",
-        background: "none", color: a ? "#1976d2" : "#555",
-        fontWeight: a ? 700 : 400, outline: "none", marginBottom: -2,
+        display: "block", width: "100%", padding: "10px 16px", fontSize: 13, cursor: "pointer",
+        border: "none", borderLeft: a ? "3px solid #1976d2" : "3px solid transparent",
+        background: a ? "#e3f2fd" : "none", color: a ? "#1976d2" : "#444",
+        fontWeight: a ? 700 : 400, outline: "none", textAlign: "left", boxSizing: "border-box",
     }),
-    tabContent: { padding: "16px 20px", overflowY: "auto", maxHeight: "calc(100vh - 280px)", paddingBottom: "40px" },
+    tabContent: { flex: 1, padding: "16px 20px", overflowY: "auto", maxHeight: "calc(100vh - 220px)", paddingBottom: "40px" },
     loading:    { color: "#888", padding: 20 },
     nodata:     { color: "#c00", padding: 20 },
     fieldGrid:  { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "10px 20px" },
@@ -485,7 +486,7 @@ const fmtNum = (val) =>
         : <span>{Number(val).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
 
 // ─── TabEspecialidades ────────────────────────────────────────────────────────
-const TabEspecialidades = ({ centroId, año }) => {
+const TabEspecialidades = ({ centroId, año, esAdmin }) => {
     const [rows,    setRows]    = useState([]);
     const [loading, setLoading] = useState(true);
     const [error,   setError]   = useState(null);
@@ -561,7 +562,7 @@ const TabEspecialidades = ({ centroId, año }) => {
             >
                 <FilterRow visible />
                 <Paging defaultPageSize={20} />
-                <Editing mode="row" allowAdding allowUpdating allowDeleting confirmDelete useIcons />
+                <Editing mode="row" allowAdding={esAdmin} allowUpdating={esAdmin} allowDeleting={esAdmin} confirmDelete useIcons />
                 <Toolbar><Item name="addRowButton" showText="always" /></Toolbar>
                 <Column dataField="especialidad" caption="Especialidad" minWidth={200}>
                     <RequiredRule message="La especialidad es obligatoria." />
@@ -574,7 +575,7 @@ const TabEspecialidades = ({ centroId, año }) => {
 };
 
 // ─── TabContent (genérico) — con ref para exponer guardar al padre ────────────
-const TabContent = forwardRef(({ centroId, año, tabKey, apiName }, ref) => {
+const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref) => {
     const [datos,   setDatos]   = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving,  setSaving]  = useState(false);
@@ -628,11 +629,14 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName }, ref) => {
                     <div key={key} style={type === "text" ? { ...st.field, gridColumn: "span 2" } : st.field}>
                         <span style={st.fieldLabel}>{label}</span>
                         {type === "text" ? (
-                            <textarea style={{ ...st.fieldInput, minHeight: 60, resize: "vertical", padding: "6px 8px" }}
-                                value={datos[key] ?? ""} onChange={e => handleChange(key, e.target.value)} placeholder="Escriba aquí..." />
+                            <textarea style={{ ...st.fieldInput, minHeight: 60, resize: esAdmin ? "vertical" : "none", padding: "6px 8px", background: esAdmin ? "#fff" : "#f5f5f5" }}
+                                value={datos[key] ?? ""} onChange={e => esAdmin && handleChange(key, e.target.value)} readOnly={!esAdmin} placeholder="Escriba aquí..." />
+                        ) : type === "date" ? (
+                            <input style={{ ...st.fieldInput, background: esAdmin ? "#fff" : "#f5f5f5" }}
+                                type="date" value={datos[key] ? datos[key].substring(0, 10) : ""} onChange={e => esAdmin && handleChange(key, e.target.value || null)} readOnly={!esAdmin} />
                         ) : (
-                            <input style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222" }}
-                                type="number" value={datos[key] ?? ""} onChange={e => handleChange(key, e.target.value)} placeholder="0" />
+                            <input style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222", background: esAdmin ? "#fff" : "#f5f5f5" }}
+                                type="number" value={datos[key] ?? ""} onChange={e => esAdmin && handleChange(key, e.target.value)} readOnly={!esAdmin} placeholder="0" />
                         )}
                     </div>
                 ))}
@@ -644,7 +648,6 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName }, ref) => {
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
 const FichaICG06 = ({ centro, año, onBack }) => {
     const [tabActiva,      setTabActiva]      = useState("generales");
-    const [esHospitalario, setEsHospitalario] = useState(true);
     const [validado,       setValidado]       = useState(null);
     const [idIcg,          setIdIcg]          = useState(null);
     const [validando,      setValidando]      = useState(false);
@@ -654,7 +657,6 @@ const FichaICG06 = ({ centro, año, onBack }) => {
     const tabContentRef = useRef(null);
 
     const tab          = TABS.find(t => t.key === tabActiva);
-    const tabsVisibles = TABS.filter(t => !t.hospitalario || esHospitalario);
 
     const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
     const esAdmin = user?.perfilId === 1;
@@ -764,31 +766,27 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                         )}
                     </div>
                 </div>
-                <div style={st.tabBar}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "6px 12px", background: "#f0f4f8", borderBottom: "1px solid #e0e0e0" }}>
-                        <label style={{ fontSize: 12, fontWeight: 600, color: "#1565c0", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-                            <input type="checkbox" checked={esHospitalario} onChange={e => { setEsHospitalario(e.target.checked); setTabActiva("generales"); }} />
-                            Centro Hospitalario
-                        </label>
+                <div style={st.fichaBody}>
+                    <div style={st.tabSidebar}>
+                        {TABS.map(t => (
+                            <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
+                                {t.label}
+                            </button>
+                        ))}
                     </div>
-                    {tabsVisibles.map(t => (
-                        <button key={t.key} style={st.tab(tabActiva === t.key)} onClick={() => setTabActiva(t.key)}>
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
-                <div style={st.tabContent}>
+                    <div style={st.tabContent}>
                     {tabActiva === "especialidades" ? (
-                        <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} />
+                        <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} esAdmin={esAdmin} />
                     ) : (
                         tab && (
                             <TabContent
                                 ref={tabContentRef}
                                 key={`${centro.centroId}-${año}-${tabActiva}`}
-                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api}
+                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api} esAdmin={esAdmin}
                             />
                         )
                     )}
+                </div>
                 </div>
             </div>
         </div>

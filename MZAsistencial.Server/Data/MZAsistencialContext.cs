@@ -141,7 +141,6 @@ public partial class MZAsistencialContext : DbContext
     public virtual DbSet<HistoricoCentrosPropiosEspecialidade> HistoricoCentrosPropiosEspecialidades { get; set; }
 
     public virtual DbSet<Icg06> Icg06s { get; set; }
-    public virtual DbSet<Icg06Especialidad> Icg06Especialidades { get; set; }
 
     public virtual DbSet<Icg07> Icg07s { get; set; }
 
@@ -2227,7 +2226,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
-            entity.Property(e => e.Año).HasColumnName("Año");
+            entity.Property(e => e.Año).HasColumnName("Anio");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>

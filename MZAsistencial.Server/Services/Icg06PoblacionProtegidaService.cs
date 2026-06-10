@@ -1,17 +1,20 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Services
 {
     public class Icg06PoblacionProtegidaService
     {
         private readonly MZAsistencialContext _context;
+        private readonly IRegistroErroresService _registroErroresService;
 
-        public Icg06PoblacionProtegidaService(MZAsistencialContext context)
+        public Icg06PoblacionProtegidaService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
         {
             _context = context;
+            _registroErroresService = registroErroresService;
         }
 
         public async Task<Icg06PoblacionProtegidaDTO?> GetByCentroYAñoAsync(int centroId, int año)

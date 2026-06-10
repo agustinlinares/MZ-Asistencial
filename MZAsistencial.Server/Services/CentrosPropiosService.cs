@@ -14,14 +14,21 @@ namespace MZAsistencial.Server.Services
             _context = context;
         }
 
-        public async Task<List<CentrosPropiosDTO>> GetAllAsync(int? perfilId = null)
+        public async Task<List<CentrosPropiosDTO>> GetAllAsync(int? perfilId = null, int? mutuaId = null)
         {
             var query = _context.CentrosPropios.AsQueryable();
 
             if (perfilId == null || (perfilId != 1 && perfilId != 4))
                 query = query.Where(x => x.Desactivado != true);
+            if (perfilId == 2 && mutuaId.HasValue)
+                query = query.Where(x => x.MutuaId == mutuaId.Value);
 
             var centros = await query.ToListAsync();
+            var mutuaIds = centros.Select(c => c.MutuaId).Distinct().ToList();
+            var mutuas = await _context.Mutuas
+                .Where(m => mutuaIds.Contains(m.MutuaId))
+                .Select(m => new { m.MutuaId, m.Mutua1 })
+                .ToListAsync();
 
             var poblacionIds = centros
                 .Where(c => c.PoblacionId.HasValue)
@@ -55,6 +62,7 @@ namespace MZAsistencial.Server.Services
                     Localizador            = c.Localizador,
                     CentroId               = c.CentroId,
                     MutuaId                = c.MutuaId,
+                    NombreMutua            = mutuas.FirstOrDefault(m => m.MutuaId == c.MutuaId)?.Mutua1,
                     Centro                 = c.Centro,
                     Cp                     = c.Cp,
                     PoblacionId            = c.PoblacionId,
@@ -75,6 +83,8 @@ namespace MZAsistencial.Server.Services
                     OtrosDatos             = c.OtrosDatos,
                     ServiciosEspeciales    = c.ServiciosEspeciales,
                     Desactivado            = c.Desactivado,
+                    FechaDesactivacion     = c.FechaDesactivacion,
+                    UsuarioDesactivacion   = c.UsuarioDesactivacion,
                     Traslado               = c.Traslado,
                     MotivoBaja             = c.MotivoBaja,
                     FechaBaja              = c.FechaBaja,
@@ -140,6 +150,8 @@ namespace MZAsistencial.Server.Services
                 OtrosDatos             = c.OtrosDatos,
                 ServiciosEspeciales    = c.ServiciosEspeciales,
                 Desactivado            = c.Desactivado,
+                FechaDesactivacion     = c.FechaDesactivacion,
+                UsuarioDesactivacion   = c.UsuarioDesactivacion,
                 Traslado               = c.Traslado,
                 MotivoBaja             = c.MotivoBaja,
                 FechaBaja              = c.FechaBaja,
@@ -180,7 +192,17 @@ namespace MZAsistencial.Server.Services
             centro.PersonaContacto      = dto.PersonaContacto;
             centro.OtrosDatos           = dto.OtrosDatos;
             centro.ServiciosEspeciales  = dto.ServiciosEspeciales;
-            centro.Desactivado          = dto.Desactivado;
+            centro.Desactivado = dto.Desactivado;
+            if (dto.Desactivado == true && centro.FechaDesactivacion == null)
+            {
+                centro.FechaDesactivacion   = DateOnly.FromDateTime(DateTime.Now);
+                centro.UsuarioDesactivacion = dto.UsuarioId;
+            }
+            else if (dto.Desactivado != true)
+            {
+                centro.FechaDesactivacion   = null;
+                centro.UsuarioDesactivacion = null;
+            }
             centro.Traslado             = dto.Traslado;
             centro.MotivoBaja           = dto.MotivoBaja;
             centro.FechaBaja            = dto.FechaBaja;
@@ -281,5 +303,16 @@ namespace MZAsistencial.Server.Services
             });
             await _context.SaveChangesAsync();
         }
+    public async Task<bool> UpdateCoordenadasAsync(int id, string? latitud, string? longitud)
+    {
+        var centro = await _context.CentrosPropios.FindAsync(id);
+        if (centro == null) return false;
+        centro.Latitud   = latitud;
+        centro.Longitud  = longitud;
+        centro.MapaValidado = true;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     }
 }

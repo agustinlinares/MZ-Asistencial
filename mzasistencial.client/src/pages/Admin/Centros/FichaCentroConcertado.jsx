@@ -21,16 +21,16 @@ const authHeaders = () => {
 const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => {
     
     const handleLocalizadorChange = (rawText) => {
-        let numbers = rawText.replace(/\D/g, '');
-        numbers = numbers.substring(0, 10);
+        const numbers = rawText.replace(/\D/g, '').slice(0, 10);
+    
+        const match = numbers.match(/^(\d{0,3})(\d{0,2})(\d{0,2})(\d{0,3})$/);
         
-        let formatted = '';
-        if (numbers.length > 0) formatted += numbers.substring(0, 3);
-        if (numbers.length > 3) formatted += '-' + numbers.substring(3, 5);
-        if (numbers.length > 5) formatted += '-' + numbers.substring(5, 7);
-        if (numbers.length > 7) formatted += '-' + numbers.substring(7, 10);
-        
-        onChange('ccn', formatted); 
+        if (match) {
+            const formatted = match.slice(1).filter(Boolean).join('-');
+            onChange('ccn', formatted);
+        } else {
+            onChange('ccn', '');
+        } 
     };
 
     return (

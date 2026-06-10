@@ -51,6 +51,9 @@ const AcreditacionesSectoriales = () => {
     const menuRef = useRef(null);
     const [acreditaciones, setAcreditaciones] = useState([]);
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const userData = AuthService.getUserData();
+    const esAdmin  = userData?.perfilId === 1;
+    const mutuaId  = userData?.mutuaId || null;
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -65,7 +68,10 @@ const AcreditacionesSectoriales = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
-                const respuesta = await fetch('/api/AcreditacionesSectoriales', {
+                const url = !esAdmin && mutuaId
+                    ? `/api/AcreditacionesSectoriales?mutuaId=${mutuaId}`
+                    : '/api/AcreditacionesSectoriales';
+                const respuesta = await fetch(url, {
                     method: 'GET',
                     headers: authHeaders(),
                 });
@@ -126,58 +132,114 @@ const AcreditacionesSectoriales = () => {
         abrirVentanaPDF('Lista de Acreditaciones Sectoriales', tabla);
     };
 
-    const handleIndividualesPDF = () => {
-        const filas = acreditaciones.map(row =>
-            `<tr>${COLS.map(c => `<td>${fmtVal(row, c)}</td>`).join('')}</tr>`
-        ).join('');
-        const tabla = `<table>
-            <thead><tr>${COLS.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
-            <tbody>${filas}</tbody></table>`;
-        abrirVentanaPDF('Informe de Acreditaciones Individuales', tabla);
+    const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const MESES_LABEL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    const fetchDisponibilidad = async (año) => {
+        const resp = await fetch(`/api/AcreditacionesSectoriales/informe-disponibilidad?año=${año}`, {
+            headers: authHeaders(),
+        });
+        if (!resp.ok) throw new Error('Error al cargar el informe de disponibilidad');
+        return await resp.json();
     };
 
-    const handleAnualesExcel = async () => {
-        const wb = new Workbook();
-        const años = [...new Set(acreditaciones.map(r =>
-            r.fechaAlta ? new Date(r.fechaAlta).getFullYear() : 'Sin fecha'
-        ))].sort();
+    const handleIndividualesPDF = async (año) => {
+        try {
+            const datos = await fetchDisponibilidad(año);
+            const cabeceras = ['Provincia','Localidad','Especialidad','Servicio',...MESES_LABEL,'Total'];
+            const filas = datos.map(r =>
+                `<tr>
+                    <td>${r.provincia ?? '—'}</td><td>${r.localidad ?? '—'}</td>
+                    <td>${r.especialidad ?? '—'}</td><td>${r.servicio ?? '—'}</td>
+                    <td>${r.pendienteEnero}</td><td>${r.pendienteFebrero}</td><td>${r.pendienteMarzo}</td>
+                    <td>${r.pendienteAbril}</td><td>${r.pendienteMayo}</td><td>${r.pendienteJunio}</td>
+                    <td>${r.pendienteJulio}</td><td>${r.pendienteAgosto}</td><td>${r.pendienteSeptiembre}</td>
+                    <td>${r.pendienteOctubre}</td><td>${r.pendienteNoviembre}</td><td>${r.pendienteDiciembre}</td>
+                    <td><strong>${r.pendienteTotal}</strong></td>
+                </tr>`
+            ).join('');
+            const tabla = `<table>
+                <thead><tr>${cabeceras.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                <tbody>${filas}</tbody></table>`;
+            abrirVentanaPDF(`Informe Individual de Disponibilidad ${new Date().getFullYear()}`, tabla);
+        } catch (e) { console.error(e); }
+    };
 
-        for (const año of años) {
-            const ws = wb.addWorksheet(String(año));
-            ws.columns = COLS.map(c => ({ header: c.label, key: c.field, width: 22 }));
+    const handleIndividualesExcel = async (año) => {
+        try {
+            const datos = await fetchDisponibilidad(año);
+            const wb = new Workbook();
+            const ws = wb.addWorksheet('Individual');
+            ws.columns = [
+                { header: 'Provincia',    key: 'provincia',    width: 18 },
+                { header: 'Localidad',    key: 'localidad',    width: 18 },
+                { header: 'Especialidad', key: 'especialidad', width: 20 },
+                { header: 'Servicio',     key: 'servicio',     width: 20 },
+                ...MESES_LABEL.map((m, i) => ({ header: m, key: MESES[i].toLowerCase(), width: 10 })),
+                { header: 'Total', key: 'total', width: 10 },
+            ];
             ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
             ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1A5FA8' } };
-            const filas = acreditaciones.filter(r =>
-                (r.fechaAlta ? new Date(r.fechaAlta).getFullYear() : 'Sin fecha') === año
-            );
-            filas.forEach(row => {
-                const r = {};
-                COLS.forEach(c => { r[c.field] = c.field === 'fechaAlta' ? fmtFecha(row[c.field]) : (row[c.field] ?? ''); });
-                ws.addRow(r);
-            });
-        }
-        const buffer = await wb.xlsx.writeBuffer();
-        saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'informe_acreditaciones_anuales.xlsx');
+            datos.forEach(r => ws.addRow({
+                provincia: r.provincia, localidad: r.localidad,
+                especialidad: r.especialidad, servicio: r.servicio,
+                ene: r.pendienteEnero, feb: r.pendienteFebrero, mar: r.pendienteMarzo,
+                abr: r.pendienteAbril, may: r.pendienteMayo, jun: r.pendienteJunio,
+                jul: r.pendienteJulio, ago: r.pendienteAgosto, sep: r.pendienteSeptiembre,
+                oct: r.pendienteOctubre, nov: r.pendienteNoviembre, dic: r.pendienteDiciembre,
+                total: r.pendienteTotal,
+            }));
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `informe_individual_${new Date().getFullYear()}.xlsx`);
+        } catch (e) { console.error(e); }
     };
 
-    const handleAnualesPDF = () => {
-        const años = [...new Set(acreditaciones.map(r =>
-            r.fechaAlta ? new Date(r.fechaAlta).getFullYear() : 'Sin fecha'
-        ))].sort();
+    const handleAnualesExcel = async (año) => {
+        try {
+            const datos = await fetchDisponibilidad(año);
+            // Anual: agrupar por Especialidad+Servicio sumando totales
+            const agrupado = Object.values(
+                datos.reduce((acc, r) => {
+                    const key = `${r.especialidad}||${r.servicio}`;
+                    if (!acc[key]) acc[key] = { especialidad: r.especialidad, servicio: r.servicio, total: 0 };
+                    acc[key].total += r.pendienteTotal;
+                    return acc;
+                }, {})
+            );
+            const wb = new Workbook();
+            const ws = wb.addWorksheet('Anual');
+            ws.columns = [
+                { header: 'Especialidad', key: 'especialidad', width: 22 },
+                { header: 'Servicio',     key: 'servicio',     width: 22 },
+                { header: 'Total Disponible', key: 'total',   width: 18 },
+            ];
+            ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1A5FA8' } };
+            agrupado.forEach(r => ws.addRow(r));
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), `informe_anual_${new Date().getFullYear()}.xlsx`);
+        } catch (e) { console.error(e); }
+    };
 
-        const cuerpo = años.map(año => {
-            const filas = acreditaciones
-                .filter(r => (r.fechaAlta ? new Date(r.fechaAlta).getFullYear() : 'Sin fecha') === año)
-                .map(row => `<tr>${COLS.map(c => `<td>${fmtVal(row, c)}</td>`).join('')}</tr>`)
-                .join('');
-            return `<h3>Año ${año}</h3>
-                <table>
-                    <thead><tr>${COLS.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
-                    <tbody>${filas}</tbody>
-                </table>`;
-        }).join('');
-
-        abrirVentanaPDF('Informe Anual de Acreditaciones', cuerpo);
+    const handleAnualesPDF = async (año) => {
+        try {
+            const datos = await fetchDisponibilidad(año);
+            const agrupado = Object.values(
+                datos.reduce((acc, r) => {
+                    const key = `${r.especialidad}||${r.servicio}`;
+                    if (!acc[key]) acc[key] = { especialidad: r.especialidad, servicio: r.servicio, total: 0 };
+                    acc[key].total += r.pendienteTotal;
+                    return acc;
+                }, {})
+            );
+            const filas = agrupado.map(r =>
+                `<tr><td>${r.especialidad ?? '—'}</td><td>${r.servicio ?? '—'}</td><td><strong>${r.total}</strong></td></tr>`
+            ).join('');
+            const tabla = `<table>
+                <thead><tr><th>Especialidad</th><th>Servicio</th><th>Total Disponible</th></tr></thead>
+                <tbody>${filas}</tbody></table>`;
+            abrirVentanaPDF(`Informe Anual de Disponibilidad ${new Date().getFullYear()}`, tabla);
+        } catch (e) { console.error(e); }
     };
 
     const handleRowClick = async (e) => {
@@ -236,34 +298,29 @@ const AcreditacionesSectoriales = () => {
                                             {t('Imprimir')}
                                         </div>
 
-                                        <div className="acciones-item" onClick={() => {
-                                            setMenuAbierto(false);
-                                            const instance = dataGridRef.current?.instance();
-                                            if (!instance) return;
-                                            const wb = new Workbook();
-                                            const ws = wb.addWorksheet('Acreditaciones');
-                                            exportDataGrid({ component: instance, worksheet: ws, autoFilterEnabled: true })
-                                                .then(() => wb.xlsx.writeBuffer())
-                                                .then(buffer => saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'acreditaciones_sectoriales.xlsx'));
-                                        }}>
-                                            <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Individuales (Excel)')}
-                                        </div>
+                                        {esAdmin && (
+                                            <>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesExcel(new Date().getFullYear()); }}>
+                                                    <i className="ri-file-excel-2-line"></i>
+                                                    {t('Informe Acr. Individuales (Excel)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(); }}>
-                                            <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Individuales (PDF)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleIndividualesPDF(new Date().getFullYear()); }}>
+                                                    <i className="ri-file-pdf-line"></i>
+                                                    {t('Informe Acr. Individuales (PDF)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(); }}>
-                                            <i className="ri-file-excel-2-line"></i>
-                                            {t('Informe Acr. Anuales (Excel)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesExcel(new Date().getFullYear()); }}>
+                                                    <i className="ri-file-excel-2-line"></i>
+                                                    {t('Informe Acr. Anuales (Excel)')}
+                                                </div>
 
-                                        <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(); }}>
-                                            <i className="ri-file-pdf-line"></i>
-                                            {t('Informe Acr. Anuales (PDF)')}
-                                        </div>
+                                                <div className="acciones-item" onClick={() => { setMenuAbierto(false); handleAnualesPDF(new Date().getFullYear()); }}>
+                                                    <i className="ri-file-pdf-line"></i>
+                                                    {t('Informe Acr. Anuales (PDF)')}
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -324,6 +381,7 @@ const AcreditacionesSectoriales = () => {
                     </div>
                 </div>
             </div>
+
         </React.Fragment>
     );
 };

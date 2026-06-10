@@ -34,10 +34,7 @@ import notify from "devextreme/ui/notify";
 import { custom } from 'devextreme/ui/dialog';
 import PlantillasICGService from "../../../services/admin/PlantillasICGService";
 
-const TIPOS = ["ICG06", "ICG07", "FINCAS", "CENTROS CONCERTADOS", "CONCIERTOS"];
-const PLANTILLAS = ["CSV", "XML"];
-const YEARS = ["2022", "2023", "2024", "2025", "2026"];
-const MUTUAS = ["Mutua Universal", "Asepeyo", "Fremap", "Ibermutua", "MC Mutual"]; // Mocked options for Mutuas if needed, should ideally come from an endpoint
+// Las constantes harcodeadas se han eliminado para obtenerlas de forma dinámica
 
 // Utility para sacar info del usuario actual
 const getUserInfo = () => {
@@ -78,9 +75,15 @@ const ICGPlantillasICG = () => {
     // Estado local del usuario
     const userInfo = getUserInfo();
 
+    // Datos Dinámicos
+    const [tiposLista, setTiposLista] = useState([]);
+    const [mutuasLista, setMutuasLista] = useState([]);
+    const [aniosLista, setAniosLista] = useState([]);
+    const [plantillasLista, setPlantillasLista] = useState([]);
+
     // Filtros Generales
-    const [tipo, setTipo] = useState("FINCAS");
-    const [mutua, setMutua] = useState("");
+    const [tipo, setTipo] = useState("");
+    const [mutua, setMutua] = useState(null);
     const [anio, setAnio] = useState(new Date().getFullYear().toString());
     const [plantilla, setPlantilla] = useState("CSV");
 
@@ -108,15 +111,26 @@ const ICGPlantillasICG = () => {
     useEffect(() => {
         const fetchDatosIniciales = async () => {
             try {
-                // Simulamos o llamamos al backend si existe el endpoint (ej. PlantillasICGService.getDatosIniciales)
-                // Para este caso, cargamos valores base
+                const datos = await PlantillasICGService.getDatosIniciales();
+                setTiposLista(datos.tipos || []);
+                setMutuasLista(datos.mutuas || []);
+                setAniosLista(datos.anios || []);
+                setPlantillasLista(datos.plantillas || []);
+
                 const currentAnio = new Date().getFullYear().toString();
                 setAnio(currentAnio);
                 setUploadForm(prev => ({ ...prev, anio: currentAnio }));
                 
+                if (datos.tipos && datos.tipos.length > 0) {
+                    setTipo(datos.tipos[2] || datos.tipos[0]); // Por defecto FINCAS si existe, si no el primero
+                }
+                
                 if (!userInfo.isAdmin && userInfo.mutua) {
-                    setMutua(userInfo.mutua);
-                    setUploadForm(prev => ({ ...prev, mutua: userInfo.mutua }));
+                    const mutuaMatch = datos.mutuas?.find(m => m.nombre === userInfo.mutua);
+                    if (mutuaMatch) {
+                        setMutua(mutuaMatch.id);
+                        setUploadForm(prev => ({ ...prev, mutua: mutuaMatch.id }));
+                    }
                 }
             } catch (error) {
                 console.error("Error al cargar datos iniciales:", error);
@@ -207,10 +221,10 @@ const ICGPlantillasICG = () => {
             return;
         }
 
-        try {
+            try {
             setCargando(true);
             const formData = new FormData();
-            formData.append('mutua', uploadForm.mutua);
+            if (uploadForm.mutua) formData.append('mutuaId', uploadForm.mutua);
             formData.append('anio', uploadForm.anio);
             formData.append('tipoICG', uploadForm.tipoICG);
             formData.append('fichero', uploadForm.fichero);
@@ -244,8 +258,16 @@ const ICGPlantillasICG = () => {
 
         const dialogResult = await dialog.show();
         if (dialogResult) {
-            notify(t("Informe eliminado (Simulación)"), "success", 2000);
-            // Aquí llamarías a PlantillasICGService.eliminarPlantilla(row.data.Id)
+            try {
+                setCargando(true);
+                await PlantillasICGService.eliminarPlantilla(row.data.Id);
+                notify(t("Informe eliminado correctamente"), "success", 2000);
+                cargarGrid();
+            } catch (error) {
+                notify(error.message, "error", 4000);
+            } finally {
+                setCargando(false);
+            }
         }
     };
 
@@ -287,7 +309,7 @@ const ICGPlantillasICG = () => {
                             <div className="ficha-field">
                                 <label>{t('Tipo')}</label>
                                 <SelectBox
-                                    items={TIPOS}
+                                    items={tiposLista}
                                     value={tipo}
                                     onValueChanged={(e) => setTipo(e.value)}
                                     placeholder={t("Seleccionar Tipo")}
@@ -296,8 +318,10 @@ const ICGPlantillasICG = () => {
                             <div className="ficha-field">
                                 <label>{t('Mutua')}</label>
                                 <SelectBox
-                                    items={MUTUAS}
+                                    items={mutuasLista}
                                     value={mutua}
+                                    valueExpr="id"
+                                    displayExpr="nombre"
                                     onValueChanged={(e) => setMutua(e.value)}
                                     placeholder={t("Seleccionar Mutua")}
                                     showClearButton={true}
@@ -307,7 +331,7 @@ const ICGPlantillasICG = () => {
                             <div className="ficha-field">
                                 <label>{t('Año')}</label>
                                 <SelectBox
-                                    items={YEARS}
+                                    items={aniosLista}
                                     value={anio}
                                     onValueChanged={(e) => setAnio(e.value)}
                                     placeholder={t("Seleccionar Año")}
@@ -316,7 +340,7 @@ const ICGPlantillasICG = () => {
                             <div className="ficha-field">
                                 <label>{t('Plantilla')}</label>
                                 <SelectBox
-                                    items={PLANTILLAS}
+                                    items={plantillasLista}
                                     value={plantilla}
                                     onValueChanged={(e) => setPlantilla(e.value)}
                                 />
@@ -429,13 +453,13 @@ const ICGPlantillasICG = () => {
                         <div className="ficha-field">
                             <label>{t('Tipo ICG')}</label>
                             <SelectBox
-                                items={TIPOS}
+                                items={tiposLista}
                                 value={uploadForm.tipoICG}
                                 onValueChanged={(e) => {
                                     setUploadForm(prev => {
                                         const newForm = {...prev, tipoICG: e.value};
                                         if (!isMutuaRequired(e.value)) {
-                                            newForm.mutua = ""; // Limpiamos la mutua si no hace falta
+                                            newForm.mutua = null; // Limpiamos la mutua si no hace falta
                                         }
                                         return newForm;
                                     });
@@ -446,8 +470,10 @@ const ICGPlantillasICG = () => {
                         <div className="ficha-field">
                             <label>{t('Mutua')}</label>
                             <SelectBox
-                                items={MUTUAS}
+                                items={mutuasLista}
                                 value={uploadForm.mutua}
+                                valueExpr="id"
+                                displayExpr="nombre"
                                 onValueChanged={(e) => setUploadForm({...uploadForm, mutua: e.value})}
                                 placeholder=""
                                 disabled={!isMutuaRequired(uploadForm.tipoICG) || (!userInfo.isAdmin && !!userInfo.mutua)}
@@ -459,7 +485,7 @@ const ICGPlantillasICG = () => {
                         <div className="ficha-field">
                             <label>{t('Año')}</label>
                             <SelectBox
-                                items={YEARS}
+                                items={aniosLista}
                                 value={uploadForm.anio}
                                 onValueChanged={(e) => setUploadForm({...uploadForm, anio: e.value})}
                                 placeholder=""

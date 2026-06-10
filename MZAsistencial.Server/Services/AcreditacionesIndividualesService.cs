@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Models;
 
 namespace MZAsistencial.Server.Services
 {
@@ -60,10 +61,21 @@ namespace MZAsistencial.Server.Services
                 return (null, null);
 
             var basePath = _configuration["AcreditacionesPaths:Base"]
-                ?? Path.Combine("C:\\MZFiles\\Acreditaciones");
+                ?? throw new InvalidOperationException("AcreditacionesPaths:Base no está configurado en appsettings.");
 
             var filePath = Path.Combine(basePath, registro.Fichero);
             return (filePath, registro.NombreFichero ?? registro.Fichero);
+        }
+
+        public async Task LogAccesoAsync(int usuarioId)
+        {
+            _context.RegistroActividads.Add(new RegistroActividad
+            {
+                UsuarioId = usuarioId,
+                Fecha     = DateTime.Now,
+                Accion    = "Acceso a menú Oferta / Demanda. Submenú Acreditaciones Individuales.",
+            });
+            await _context.SaveChangesAsync();
         }
     }
 }

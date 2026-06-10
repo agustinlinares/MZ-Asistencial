@@ -13,9 +13,9 @@ namespace MZAsistencial.Server.Controllers
             _service = service;
         }
         [HttpGet]
-        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId)
+        public async Task<ActionResult<List<CentrosPropiosDTO>>> GetAll([FromQuery] int? perfilId, [FromQuery] int? mutuaId)
         {
-            var result = await _service.GetAllAsync(perfilId);
+            var result = await _service.GetAllAsync(perfilId, mutuaId);
             return Ok(result);
         }
         [HttpGet("{id:int}")]
@@ -52,5 +52,18 @@ namespace MZAsistencial.Server.Controllers
             if (!result) return BadRequest();
             return Ok();
         }
+        [HttpPut("{id:int}/coordenadas")]
+        public async Task<IActionResult> UpdateCoordenadas(int id, [FromBody] CoordenadasDto dto)
+        {
+            var result = await _service.UpdateCoordenadasAsync(id, dto.Latitud, dto.Longitud);
+            if (!result) return NotFound();
+            return Ok();
+        }
+
     }
 }
+    public class CoordenadasDto
+    {
+        public string? Latitud  { get; set; }
+        public string? Longitud { get; set; }
+    }

@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using MZAsistencial.Server.Services;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs.ICG06;
 
-namespace MZAsistencial.Server.Services.ICG06;
+namespace MZAsistencial.Server.Services;
 
 public class Icg06DatosGeneralesService
 {

@@ -3,6 +3,9 @@ import '../../../styles/FichaGlobal.css';
 import notify from 'devextreme/ui/notify';
 import './FichaMutua.css';
 import MapaModal from '../../Admin/Centros/MapaModal'; // La ruta a MapaModal.jsx
+import { Workbook } from 'exceljs';
+import { saveAs } from 'file-saver-es';
+import { exportDataGrid } from 'devextreme/excel_exporter';
 import DataGrid, {
     Column,
     Paging,
@@ -67,6 +70,34 @@ const FichaMutua = ({ mutua, onClose }) => {
     // Estados para especialidades
     const [especialidadesPropios, setEspecialidadesPropios] = useState([]);
     const [especialidadesConciertos, setEspecialidadesConciertos] = useState([]);
+
+    // Función para exportar a Excel cualquier DataGrid
+    const exportarExcel = (gridRef, nombreArchivo) => {
+        const grid = gridRef.current?.instance();
+        if (!grid) return;
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet(nombreArchivo);
+        exportDataGrid({ component: grid, worksheet, autoFilterEnabled: true })
+            .then(() => workbook.xlsx.writeBuffer())
+            .then(buffer => saveAs(new Blob([buffer]), `${nombreArchivo}.xlsx`));
+    };
+
+    // Función para exportar a PDF cualquier DataGrid
+    const exportarPDF = (gridRef, nombreArchivo) => {
+        const grid = gridRef.current?.instance();
+        if (!grid) return;
+        import('devextreme/pdf_exporter').then(({ exportDataGrid: exportPDF }) => {
+            import('jspdf').then(({ jsPDF }) => {
+                const doc = new jsPDF({ orientation: 'landscape' });
+                exportPDF({ jsPDFDocument: doc, component: grid, indent: 5 })
+                    .then(() => doc.save(`${nombreArchivo}.pdf`));
+            });
+        });
+    };      
+
+    // Refs para los DataGrids de las pestañas
+    const centrosPropiosGridRef = useRef(null);
+    const conciertosGridRef = useRef(null);
 
     // Igual que FichaFinca: foco al abrir y cerrar con Escape
     useEffect(() => {
@@ -206,6 +237,7 @@ const FichaMutua = ({ mutua, onClose }) => {
         if (!form.personaContacto) newErrors.personaContacto = true;
         if (!provinciaId) newErrors.provincia = true;
         if (!form.poblacionId) newErrors.poblacion = true;
+        if (!form.numeroMutua) newErrors.numeroMutua = true;
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -220,6 +252,15 @@ const FichaMutua = ({ mutua, onClose }) => {
         );
         const usuarioId = userData.usuarioId || userData.UsuarioId || null;
 
+        // Comprobamos unicidad del número de mutua
+        const mutuaIdParam = esNuevo ? '' : `&mutuaId=${mutua.numeroId}`;
+        const checkRes = await fetch(`/api/mutuas/comprobarNumero?numero=${form.numeroMutua}${mutuaIdParam}`);
+        const yaExiste = await checkRes.json();
+        if (yaExiste) {
+            setErrors(f => ({ ...f, numeroMutua: true }));
+            notify('El número de mutua ya existe en el sistema', 'error', 3000);
+            return;
+        }
 
     
         try {
@@ -247,7 +288,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                     // Email opcional — si está vacío se envía null
                     direccionElectronica: form.direccionElectronica || null,
                     personaContacto: form.personaContacto,
-                    //numeroMutua: form.numeroMutua,
+                    numeroMutua: form.numeroMutua,
                     // Usuario de la sesión para el registro de actividad
                     usuarioId: usuarioId,
                 })
@@ -290,30 +331,36 @@ const FichaMutua = ({ mutua, onClose }) => {
                     >
                         General
                     </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
-                        onClick={() => setActiveTab("centrosPropios")}
-                    >
-                        Centros Propios
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "conciertos" ? "active" : ""}`}
-                        onClick={() => setActiveTab("conciertos")}
-                    >
-                        Conciertos
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
-                        onClick={() => setActiveTab("especialidadesPropios")}
-                    >
-                        Especialidades / Serv. (Propios)
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
-                        onClick={() => setActiveTab("especialidadesConciertos")}
-                    >
-                        Especialidades / Serv. (Conciertos)
-                    </button>
+
+                    {/* Solo mostramos el resto de pestañas si la mutua ya existe */}
+                    {!esNuevo && (
+                        <>
+                            <button
+                                className={`ficha-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
+                                onClick={() => setActiveTab("centrosPropios")}
+                            >
+                                Centros Propios
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "conciertos" ? "active" : ""}`}
+                                onClick={() => setActiveTab("conciertos")}
+                            >
+                                Conciertos
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
+                                onClick={() => setActiveTab("especialidadesPropios")}
+                            >
+                                Especialidades / Serv. (Propios)
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
+                                onClick={() => setActiveTab("especialidadesConciertos")}
+                            >
+                                Especialidades / Serv. (Conciertos)
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* CONTENIDO DE CADA PESTAÑA */}
@@ -462,7 +509,18 @@ const FichaMutua = ({ mutua, onClose }) => {
                             </div>
                             <div className="ficha-field">
                                 <label>Número de Mutua</label>
-                                <input type="text" value={esNuevo ? "Se generará automáticamente" : form.numeroMutua} disabled />
+                                {/*ahora es editable tanto en alta como en edición */}
+                                <input
+                                    type="text"
+                                    className={errors.numeroMutua ? 'error' : ''}
+                                    value={form.numeroMutua || ""}
+                                    onChange={(e) => {
+                                        set("numeroMutua")(e);
+                                        setErrors(f => ({ ...f, numeroMutua: false }));
+                                    }}
+                                    //placeholder="Ej: 001"
+                                    maxLength={3}
+                                />
                             </div>
 
                         </div>
@@ -483,12 +541,27 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     />
                                 )}
 
+                                {/* Botones exportar */}
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '8px' }}>
+                                    <button className="ficha-btn-secondary" onClick={() => exportarExcel(centrosPropiosGridRef, 'CentrosPropios')}>
+                                        <i className="ri-file-excel-2-line" style={{ color: '#2e7d32', marginRight: 4 }}></i>
+                                        Exportar a Excel
+                                    </button>
+                                    <button className="ficha-btn-secondary" onClick={() => exportarPDF(centrosPropiosGridRef, 'CentrosPropios')}>
+                                        <i className="ri-file-pdf-line" style={{ color: '#c62828', marginRight: 4 }}></i>
+                                        Exportar a PDF
+                                    </button>
+                                </div>
+
                                 <DataGrid
+                                    ref={centrosPropiosGridRef}  /* Ref de los botones*/
                                     dataSource={centrosPropios} // Conectar con el endpoint
                                     showBorders={true}
                                     rowAlternationEnabled={true}
                                     noDataText="Sin datos para mostrar"
                                     className="mz-table"
+                                    columnAutoWidth={false}
+                                    width="100%"    
                                     height={400}
                                 >
                                     <Scrolling mode="standard" />
@@ -497,20 +570,19 @@ const FichaMutua = ({ mutua, onClose }) => {
                                     <FilterRow visible={true} />
                                     <HeaderFilter visible={true} />
                                     <Sorting mode="multiple" />
-                                    <Export enabled={true} />
-                                    <Column dataField="localizador" caption="Localizador" width={180} />
-                                    <Column dataField="centro" caption="Centro" width={200} />
-                                    <Column dataField="cp" caption="C.P" width={80} />
-                                    <Column dataField="poblacion" caption="Población" width={130} />
-                                    <Column dataField="provincia" caption="Provincia" width={130} />
-                                    <Column dataField="telefono" caption="Teléfono" width={120} />
-                                    <Column dataField="contacto" caption="Contacto" width={130} />
-                                    <Column dataField="email" caption="Email" width={160} />
+                                    <Column dataField="localizador" caption="Localizador" width="11%" />
+                                    <Column dataField="centro" caption="Centro" width="17%" />
+                                    <Column dataField="cp" caption="C.P" width="7%" />
+                                    <Column dataField="poblacion" caption="Población" width="11%" />
+                                    <Column dataField="provincia" caption="Provincia" width="11%" />
+                                    <Column dataField="telefono" caption="Teléfono" width="10%" />
+                                    <Column dataField="contacto" caption="Contacto" width="12%" />
+                                    <Column dataField="email" caption="Email" width="14%" />
                                     
                                     {/* Columna Mapa — abre el MapaModal */}
                                     <Column
                                         caption="Mapa"
-                                        width={80}
+                                        width="6%"
                                         alignment="center"
                                         cellRender={(cell) => {
                                             const { latitud, longitud, centro } = cell.data;
@@ -531,7 +603,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                         }}
                                     />
 
-                                    <Column dataField="validado" caption="Validado" width={90} alignment="center" />
+                                    <Column dataField="validado" caption="Validado" width="11%" alignment="center" />
                                 </DataGrid>
                             </div>
                     )}
@@ -551,12 +623,27 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 />
                             )}
 
+                            {/* Botones exportar */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '8px' }}>
+                                <button className="ficha-btn-secondary" onClick={() => exportarExcel(conciertosGridRef, 'Conciertos')}>
+                                    <i className="ri-file-excel-2-line" style={{ color: '#2e7d32', marginRight: 4 }}></i>
+                                    Exportar a Excel
+                                </button>
+                                <button className="ficha-btn-secondary" onClick={() => exportarPDF(conciertosGridRef, 'Conciertos')}>
+                                    <i className="ri-file-pdf-line" style={{ color: '#c62828', marginRight: 4 }}></i>
+                                    Exportar a PDF
+                                </button>
+                            </div>
+
                             <DataGrid
+                                ref={conciertosGridRef}  /* Ref de los botones*/
                                 dataSource={conciertos} // TODO: fetch /api/conciertos?mutuaId={mutua.numeroId}
                                 showBorders={true}
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -565,18 +652,18 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <FilterRow visible={true} />
                                 <HeaderFilter visible={true} />
                                 <Sorting mode="multiple" />
-                                <Column dataField="codMutua" caption="Cód. Mutua" width={150} alignment="left"/>
-                                <Column dataField="codCentro" caption="Cód. Centro" width={180} alignment="center"/>
-                                <Column dataField="centro" caption="Centro" width={200} />
-                                <Column dataField="cifNif" caption="CIF/NIF" width={120} />
-                                <Column dataField="cp" caption="C.P" width={80} />
-                                <Column dataField="poblacion" caption="Población" width={130} />
-                                <Column dataField="provincia" caption="Provincia" width={130} />
-                                <Column dataField="contacto" caption="Contacto" width={150} />
-                                <Column dataField="email" caption="Email" width={160} />
+                                <Column dataField="codMutua" caption="Cód. Mutua" width="12%" alignment="left"/>
+                                <Column dataField="codCentro" caption="Cód. Centro" width="14%" alignment="center"/>
+                                <Column dataField="centro" caption="Centro" width="15%" />
+                                <Column dataField="cifNif" caption="CIF/NIF" width="8%" />
+                                <Column dataField="cp" caption="C.P" width="7%" />
+                                <Column dataField="poblacion" caption="Población" width="11%" />
+                                <Column dataField="provincia" caption="Provincia" width="11%" />
+                                <Column dataField="contacto" caption="Contacto" width="12%" />
+                                <Column dataField="email" caption="Email" width="15%" />
                                 <Column
                                     caption="Mapa"
-                                    width={80}
+                                    width="6%"
                                     alignment="center"
                                     cellRender={(cell) => {
                                         const { latitud, longitud, centro } = cell.data;
@@ -592,7 +679,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                                         );
                                     }}
                                 />
-                                <Column dataField="autorizado" caption="Autorizado" width={100} alignment="center"/>
+                                <Column dataField="autorizado" caption="Autorizado" width="14%" alignment="center"/>
                             </DataGrid>
                         </div>
                     )}
@@ -606,6 +693,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -616,10 +705,10 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <Sorting mode="multiple" />
                                 <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
                                 <Grouping autoExpandAll={false} />
-                                <Column dataField="ano" caption="Año" width={80} />
-                                <Column dataField="servicio" caption="Servicio" width={300} />
-                                <Column dataField="especialidad" caption="Especialidad" width={200} />
-                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                <Column dataField="ano" caption="Año" width="10%" />
+                                <Column dataField="servicio" caption="Servicio" width="40%" />
+                                <Column dataField="especialidad" caption="Especialidad" width="30%" />
+                                <Column dataField="cantidad" caption="Cantidad" width="20%" />
                             </DataGrid>
                         </div>
                     )}
@@ -633,6 +722,8 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 rowAlternationEnabled={true}
                                 noDataText="Sin datos para mostrar"
                                 className="mz-table"
+                                columnAutoWidth={false}
+                                width="100%"
                                 height={400}
                             >
                                 <Scrolling mode="standard" />
@@ -643,10 +734,10 @@ const FichaMutua = ({ mutua, onClose }) => {
                                 <Sorting mode="multiple" />
                                 <GroupPanel visible={true} placeholder="Arrastre una columna aquí para agrupar por dicha columna" />
                                 <Grouping autoExpandAll={false} />
-                                <Column dataField="ano" caption="Año" width={80} />
-                                <Column dataField="servicio" caption="Servicio" width={300} />
-                                <Column dataField="especialidad" caption="Especialidad" width={200} />
-                                <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                <Column dataField="ano" caption="Año" width="10%" />
+                                <Column dataField="servicio" caption="Servicio" width="40%" />
+                                <Column dataField="especialidad" caption="Especialidad" width="30%" />
+                                <Column dataField="cantidad" caption="Cantidad" width="20%" />
                             </DataGrid>
                         </div>
                     )}

@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs.ICG06;
-using MZAsistencial.Server.Services.ICG06;
+using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers.ICG06;
 

@@ -156,10 +156,10 @@ const ICGConciertos = () => {
                             <Column dataField="Centro" caption="Centro" width={180} />
                             <Column dataField="Poblacion" caption="Poblacion" width={140} />
                             <Column dataField="Provincia" caption="Provincia" width={140} />
-                            <Column dataField="AsistenciaSanitaria" caption="Asistencia Sanitar." width={160} />
-                            <Column dataField="IncapacidadTemp" caption="Incapacidad Temp." width={160} />
+                            <Column dataField="AsistenciaSanitaria" caption="Asistencia Sanitar." width={160} format="#,##0.00" />
+                            <Column dataField="IncapacidadTemp" caption="Incapacidad Temp." width={160} format="#,##0.00" />
                             <Column dataField="Gastos" caption="Gastos" width={100} format="#,##0.00" />
-                            <Column dataField="Articulo25" caption="Articulo 25" width={120} />
+                            <Column dataField="Articulo25" caption="Articulo 25" width={120} format="#,##0.00" />
                             <Column dataField="Total" caption="Total" width={110} format="#,##0.00" />
                             <Column dataField="Confirmar" caption="Confirmar" width={100} alignment="center">
                                 <Lookup

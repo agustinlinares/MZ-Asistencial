@@ -30,7 +30,7 @@ import DataGrid, {
 
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
-import { confirm as dxConfirm } from 'devextreme/ui/dialog';
+import { confirm as dxConfirm } from 'devextreme/ui/dialog'; // Para la confirmacion al eliminar
 
 import { loadMessages, locale } from 'devextreme/localization';
 
@@ -140,9 +140,22 @@ const Mutuas = () => {
     //Conectamos Backend con Frontend
     //Extraemos el fetch a una función reutilizable
     const cargarMutuas = () => {
-        fetch("/api/mutuas")
+        // Obtenemos el usuario de localStorage
+        const userData = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+        const perfilId = userData.perfilId || null;
+        const mutuaId = userData.mutuaId || null;
+
+        // Construimos la URL con los parámetros
+        const params = new URLSearchParams();
+        if (perfilId) params.append('perfilId', perfilId);
+        if (mutuaId) params.append('mutuaId', mutuaId);
+
+        fetch(`/api/mutuas?${params.toString()}`)
             .then(response => response.json())
-            .then(data => setMutuas(data))
+            .then(data => {
+                console.log("Datos recibidos:", data);
+                setMutuas(data);
+            })
             .catch(error => console.error("Error cargando mutuas:", error));
     };
 
@@ -204,33 +217,27 @@ const Mutuas = () => {
 
     //Eliminar mutua
     const handleEliminar = async (id) => {
-        const ok = await dxConfirm('¿Está seguro de que desea eliminar esta mutua?', 'Confirmar eliminación');
+        const ok = await dxConfirm(
+            '¿Está seguro de que desea eliminar esta mutua?',
+            'Confirmar baja'
+        );
         if (!ok) return;
 
-        // Usuario de sesión
-        const userData = JSON.parse(
-            localStorage.getItem('UsuarioActual') ||
-            sessionStorage.getItem('user') ||
-            '{}'
-        );
-
-        const usuarioId = userData.usuarioId || userData.UsuarioId || null;
-
         try {
-            
+            const userData = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+            const usuarioId = userData.usuarioId || userData.UsuarioId || 0;
+
             const res = await fetch(`/api/mutuas/${id}?usuarioId=${usuarioId}`, {
                 method: 'DELETE'
             });
 
             if (res.ok) {
-                notify('Mutua eliminada correctamente', 'success', 2000);
                 cargarMutuas();
             } else {
-                notify('Error al eliminar la mutua', 'error', 3000);
+                alert('Error al eliminar');
             }
         } catch (error) {
             console.error('Error al eliminar mutua:', error);
-            notify('Error de conexión al eliminar', 'error', 3000);
         }
     };
 
@@ -300,7 +307,7 @@ const Mutuas = () => {
                             onRowDblClick={(e) => setSelectedMutua(e.data)} // Al hacer doble click guarda la fila para cargar su ficha
                             //keyExpr="CodigoPersona"
                             showBorders={true}
-                            columnAutoWidth={true}
+                            columnAutoWidth={false}
                             allowColumnResizing={true}
                             onExporting={onExporting}
                             className="mz-table"
@@ -308,6 +315,14 @@ const Mutuas = () => {
                             showRowLines={true}
                             showColumnLines={true}
                             wordWrapEnabled={false}
+                            width="100%"
+                            onToolbarPreparing={(e) => {
+                                e.toolbarOptions.items.forEach(item => {
+                                    if (item.name === 'exportButton') {
+                                        item.cssClass = 'd-none';
+                                    }
+                                });
+                            }}
                         >
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
@@ -346,17 +361,18 @@ const Mutuas = () => {
 
                             {/* ── COLUMNAS ─────────────────────────────────────────────────── */}
                             
+                            {/*
+                                <Column
+                                    //dataField="id"
+                                    dataField="numeroId"
+                                    caption="Nº"
+                                    fixed={true}
+                                    fixedPosition="left"
+                                    width="5%"
+                                />
+                            */}
 
-                            <Column
-                                //dataField="id"
-                                dataField="numeroId"
-                                caption="Nº"
-                                fixed={true}
-                                fixedPosition="left"
-                                width={80}
-                            />
-
-                            <Column dataField="numeroMutua" caption="Número de Mutua" fixed={true} fixedPosition="left"width={180} />
+                            <Column dataField="numeroMutua" caption="Número de Mutua" fixed={true} fixedPosition="left"width="15%" />
 
                             <Column
                                 //dataField="mutua"
@@ -364,20 +380,23 @@ const Mutuas = () => {
                                 caption="Mutua"
                                 fixed={true}
                                 fixedPosition="left"
-                                width={150}
+                                width="12%"
                             />
 
 
-                            <Column dataField="direccion" caption="Dirección" width={250} />
-                            <Column dataField="cp" caption="C.P" width={100} />
-                            <Column dataField="poblacion" caption="Población" width={150} />
-                            <Column dataField="provincia" caption="Provincia" width={150} />
+                            <Column dataField="direccion" caption="Dirección" width="25%" />
+                            <Column dataField="cp" caption="C.P" width="7%" />
+                            <Column dataField="poblacion" caption="Población" width="15%" />
+                            <Column dataField="provincia" caption="Provincia" width="13%" />
 
 
                             <Column
                                 dataField="acciones"
                                 caption={t('Acciones')}
-                                                          alignment="center"
+                                fixed={true}
+                                fixedPosition="right"
+                                width="11%"
+                                alignment="center"
                                 cellRender={(cellData) => (
                                     <div className="ficha-row-actions">
                                         <i 
