@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 
@@ -63,6 +63,7 @@ builder.Services.AddScoped<CentroPropioIcgService>();
 builder.Services.AddScoped<IAcuerdosBIService, AcuerdosBIService>();
 builder.Services.AddScoped<IMutuasService, MutuasService>();
 builder.Services.AddScoped<IListaOfertasService, ListaOfertasService>();
+builder.Services.AddScoped<ICitacionesService, CitacionesService>();
 
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();
