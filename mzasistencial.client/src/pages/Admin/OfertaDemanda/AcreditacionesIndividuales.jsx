@@ -34,7 +34,10 @@ const AcreditacionesIndividuales = () => {
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [acreditaciones, setAcreditaciones] = useState([]);
-    const usuarioId = AuthService.getUserData()?.usuarioId || 0;
+    const userData = AuthService.getUserData();
+    const usuarioId = userData?.usuarioId || 0;
+    const esAdmin = userData?.perfilId === 1;
+    const mutuaId = userData?.mutuaId;
     const [menuAbierto, setMenuAbierto] = useState(false);
 
     useEffect(() => {
@@ -50,8 +53,9 @@ const AcreditacionesIndividuales = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
+                const mutuaParam = !esAdmin && mutuaId ? `&mutuaId=${mutuaId}` : '';
                 const [resDatos, resAño] = await Promise.all([
-                    fetch(`/api/AcreditacionesIndividuales?usuarioId=${usuarioId}`, { headers: authHeaders() }),
+                    fetch(`/api/AcreditacionesIndividuales?usuarioId=${usuarioId}${mutuaParam}`, { headers: authHeaders() }),
                     fetch('/api/AcreditacionesIndividuales/max-year', { headers: authHeaders() }),
                 ]);
 
