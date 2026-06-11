@@ -42,22 +42,23 @@ const Descuadres = () => {
                 usuarioId: u?.usuarioId ?? 0,
                 mutuaIdSesion: u?.mutuaId ?? 0,
                 anio: u?.anio ?? new Date().getFullYear(),
+                // Ahora extraemos y exponemos el perfil de forma segura
+                perfilId: u?.perfilId ?? u?.perfil_id ?? 0,
             };
         } catch {
+
             logError("Fallo al recuperar o parsear el UsuarioActual desde localStorage", err);
             return { usuarioId: 0, mutuaIdSesion: 0, anio: new Date().getFullYear() };
-        }
-    };
 
     // ── Cargar / recalcular ──────────────────────────────────────────────────
     // El backend ejecuta: borrar → recalcular → insertar → actualizar contadores
     const cargar = useCallback(async () => {
         setCargando(true);
         setError(null);
-        const { usuarioId, mutuaIdSesion, anio } = getUsuarioSesion();
+        const { usuarioId, mutuaIdSesion, anio, perfilId } = getUsuarioSesion();
         try {
             const res = await fetch(
-                `${API}/Descuadres?usuarioId=${usuarioId}&mutuaIdSesion=${mutuaIdSesion}&anio=${anio}`
+                `${API}/Descuadres?perfilId=${perfilId}&usuarioId=${usuarioId}&mutuaIdSesion=${mutuaIdSesion}&anio=${anio}`
             );
             if (!res.ok) throw new Error(`Error ${res.status}`);
             const data = await res.json();
