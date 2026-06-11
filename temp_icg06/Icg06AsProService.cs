@@ -2,6 +2,7 @@
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace MZAsistencial.Server.Services
 {
@@ -49,7 +50,7 @@ namespace MZAsistencial.Server.Services
             Actihasta = e.Actihasta,
 
             // Fila 1 — En el centro
-            SesrehabtrmutCentro = e.Sesrehabtrmut != null ? decimal.TryParse(e.Sesrehabtrmut, out var s) ? s : null : null,
+            SesrehabtrmutCentro = e.Sesrehabtrmut != null && decimal.TryParse(e.Sesrehabtrmut, NumberStyles.Any, CultureInfo.InvariantCulture, out var s) ? s : null,
             ConsEnftrmutCentro  = e.ConsEnftrmut,
             PradtrmutRm         = e.PradtrmutRm,
             PradtrmutEco        = e.PradtrmutEco,
@@ -112,7 +113,7 @@ namespace MZAsistencial.Server.Services
             e.Actihasta = dto.Actihasta;
 
             // Fila 1 — En el centro
-            e.Sesrehabtrmut = dto.SesrehabtrmutCentro?.ToString();
+            e.Sesrehabtrmut = dto.SesrehabtrmutCentro?.ToString(CultureInfo.InvariantCulture);
             e.ConsEnftrmut  = dto.ConsEnftrmutCentro;
             e.PradtrmutRm   = dto.PradtrmutRm;
             e.PradtrmutEco  = dto.PradtrmutEco;

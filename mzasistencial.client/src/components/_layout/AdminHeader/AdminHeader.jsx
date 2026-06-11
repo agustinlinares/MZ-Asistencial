@@ -55,7 +55,7 @@ function headerReducer(state, action) {
     }
 }
 
-function AdminHeader(props) {
+function AdminHeader() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const popupRefUser = useRef(null);
