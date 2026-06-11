@@ -323,7 +323,7 @@ const PlantillasAcuerdos = () => {
                                 <Item location="after" name="searchPanel" />
                                 <Item location="after" name="columnChooserButton" />
                             </Toolbar>
-                            <Editing mode="row" allowUpdating={true} allowDeleting={true} useIcons={true} />
+                            <Editing mode="row" allowUpdating={false} allowDeleting={true} useIcons={true} />
                             <Scrolling mode="standard" showScrollbar="always" />
                             <Paging defaultPageSize={25} />
                             <Pager visible={true} allowedPageSizes={true} displayMode="full" showPageSizeSelector showInfo showNavigationButtons />
@@ -358,21 +358,6 @@ const PlantillasAcuerdos = () => {
                             
                             <Column type="buttons" caption={t('Acciones')} alignment="center" width={120}>
                                 <GridButton
-                                    name="edit"
-                                    render={(cellInfo) => (
-                                        <div className="ficha-row-actions" style={{ display: 'inline-flex', marginRight: '8px' }}>
-                                            <i
-                                                className="ri-edit-line edit-icon"
-                                                title={t('Editar')}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    dataGridRef.current.instance().editRow(cellInfo.rowIndex);
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                />
-                                <GridButton
                                     name="delete"
                                     render={(cellInfo) => (
                                         <div className="ficha-row-actions" style={{ display: 'inline-flex' }}>
@@ -387,8 +372,6 @@ const PlantillasAcuerdos = () => {
                                         </div>
                                     )}
                                 />
-                                <GridButton name="save" />
-                                <GridButton name="cancel" />
                             </Column>
                         </DataGrid>
                     </div>
