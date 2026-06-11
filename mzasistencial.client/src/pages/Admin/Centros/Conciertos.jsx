@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
 import { confirm as dxConfirm } from 'devextreme/ui/dialog';
+import { useLogError } from '../../../hooks/useLogError';
 
 import DataGrid, {
     Column,
@@ -58,6 +59,8 @@ const Conciertos = () => {
     const [rows, setRows] = useState([]);
     const menuRef = useRef(null);
 
+    const logError = useLogError("Conciertos");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -79,12 +82,15 @@ const Conciertos = () => {
                 }
             } catch (err) {
                 console.error("Error loading conciertos:", err);
-                if (active) setRows([]);
+                if (active) {
+                    setRows([]);
+                    logError("Fallo al cargar el listado de conciertos", err);
+                } 
             }
         };
         loadData();
         return () => { active = false; };
-    }, []);
+    }, [logError]);
 
     return (
         <React.Fragment>

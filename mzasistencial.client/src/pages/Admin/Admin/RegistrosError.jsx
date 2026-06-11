@@ -30,12 +30,16 @@ import notify from 'devextreme/ui/notify';
 
 import { createStore } from 'devextreme-aspnet-data-nojquery';
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const RegistrosError = () => {
     UseProtectedRoute();
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [menuAbierto, setMenuAbierto] = useState(false);
+
+    const logError = useLogError("Gestión de errores");
 
     // Creamos el CustomStore para conexión nativa DevExtreme <-> .NET
     const dataSource = React.useMemo(() => {
@@ -79,10 +83,11 @@ const RegistrosError = () => {
                 notify(t('Error marcado como resuelto'), 'success', 2000);
                 dataGridRef.current?.instance()?.refresh();
             } else {
+                logError(`Error del servidor al intentar resolver el error ID: ${errorId}`);
                 notify(t('No se pudo actualizar el estado'), 'error', 3000);
             }
         } catch (error) {
-            console.error('Error actualizando estado:', error);
+            logError(`Fallo crítico de conexión al intentar resolver el error ID: ${errorId}`, error);
             notify(t('Error de conexión'), 'error', 3000);
         }
     };
@@ -195,29 +200,6 @@ const RegistrosError = () => {
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
                                 <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
-                                
-                                <Column
-                                    caption={t('Acciones')}
-                                    width={100}
-                                    fixed={true}
-                                    fixedPosition="right"
-                                    alignment="center"
-                                    cellRender={(cell) => (
-                                        <div className="ficha-row-actions" style={{ display: 'flex', justifyContent: 'center' }}>
-                                            {cell.data.estado !== 'Resuelto' && (
-                                                <i 
-                                                    className="ri-check-double-line" 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleResolver(cell.data.errorId);
-                                                    }}
-                                                    title={t('Marcar como Resuelto')}
-                                                    style={{ color: '#2e7d32', cursor: 'pointer', fontSize: '18px' }}
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                />
                             </DataGrid>
                         </div>
                     </div>

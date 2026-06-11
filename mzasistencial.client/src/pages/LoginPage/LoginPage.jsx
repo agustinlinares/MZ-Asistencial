@@ -3,6 +3,7 @@ import { Button, TextBox, LoadIndicator } from "devextreme-react";
 import { CheckBox } from 'devextreme-react/check-box';
 import { useNavigate } from "react-router-dom";
 import AuthService from '@services/auth/AuthService';
+import { useLogError } from '../../hooks/useLogError';
 
 import './LoginPage.css';
 
@@ -40,6 +41,8 @@ const LoginPage = () => {
     const [state, dispatch] = useReducer(loginReducer, initialState);
     const { username, password, toastVisible, toastMessage, showPassword, isLoading } = state;
 
+    const logError = useLogError("Página de login");
+
     const handleLogin = async () => {
         dispatch({ type: 'START_LOGIN' });
 
@@ -57,6 +60,7 @@ const LoginPage = () => {
 
             if (!res.ok) {
                 const err = await res.json();
+                logError(`Intento de login fallido para usuario: ${username}. Estado: ${res.status}`);
                 dispatch({ type: 'LOGIN_ERROR', message: err.message || 'Usuario o contraseña incorrectos.' });
                 return;
             }
@@ -66,6 +70,7 @@ const LoginPage = () => {
             dispatch({ type: 'LOGIN_SUCCESS' });
             navigate("/Admin/ResumendeGastos");
         } catch (error) {
+            logError("Fallo crítico de conexión al intentar iniciar sesión", error);
             console.error("Error en login:", error);
             dispatch({ type: 'LOGIN_ERROR', message: 'Error de conexión. Inténtelo de nuevo.' });
         }

@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
+import { useLogError } from '../../../hooks/useLogError';
 
 const API = '/api';
 
@@ -20,6 +21,8 @@ const Configuracion = () => {
     const [msg,       setMsg]       = useState(null);
     const [cargando,  setCargando]  = useState(true);
 
+    const logError = useLogError("Configuración de administración");
+
     useEffect(() => {
         setCargando(true);
         fetch(`${API}/ConfiguracionAdministracion`)
@@ -27,7 +30,10 @@ const Configuracion = () => {
             .then(data => {
                 if (data) { setForm(data); setOriginal(data); }
             })
-            .catch(() => setMsg({ ok: false, text: 'Error al cargar la configuracion.' }))
+            .catch(err => {
+                logError("Error al cargar la configuración", err); 
+                setMsg({ ok: false, text: 'Error al cargar la configuracion.' });
+            })
             .finally(() => setCargando(false));
     }, []);
 
@@ -54,7 +60,7 @@ const Configuracion = () => {
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Error al guardar');
+                throw new Error(err.error || `Error ${res.status}: Fallo al actualizar configuración`);
             }
 
             const updated = await res.json();
@@ -62,6 +68,7 @@ const Configuracion = () => {
             setOriginal(updated);
             setMsg({ ok: true, text: 'Configuracion guardada correctamente.' });
         } catch (err) {
+            logError("Fallo al guardar la configuración de administración", err);
             setMsg({ ok: false, text: err.message || 'Error al guardar.' });
         } finally {
             setGuardando(false);

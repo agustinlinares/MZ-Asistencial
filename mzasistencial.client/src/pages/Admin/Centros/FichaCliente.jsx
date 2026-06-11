@@ -6,6 +6,7 @@ import DataGrid, { Column, FilterRow, HeaderFilter, Pager, Paging, Export, Scrol
 import { Workbook } from "exceljs";
 import { saveAs } from "file-saver-es";
 import { exportDataGrid } from "devextreme/excel_exporter";
+import { useLogError } from '../../../hooks/useLogError';
 
 const MUTUOS = ["603 - ACTIVA MUTUA 2008","151 - FRATERNIDAD MUPRESPA","201 - FREMAP","272 - IBERMUTUA","061 - MAC MUTUA"];
 const PROVINCIAS = ["Alava","Albacete","Alicante","Almeria","Avila","Badajoz","Barcelona","Burgos","Caceres","Cadiz","Castellon","Ciudad Real","Cordoba","Cuenca","Girona","Granada","Guadalajara","Guipuzcoa","Huelva","Huesca","Jaen","La Rioja","Las Palmas","Leon","Lerida","Lugo","Madrid","Malaga","Murcia","Navarra","Orense","Palencia","Pontevedra","Salamanca","Santa Cruz de Tenerife","Segovia","Sevilla","Soria","Tarragona","Teruel","Toledo","Valencia","Valladolid","Vizcaya","Zamora","Zaragoza"];
@@ -13,6 +14,8 @@ const VIAS = ["AVENIDA","CALLE","PLAZA","PASEO","CARRETERA","CAMINO","RONDA"];
 const SERVICIOS_ESP = ["Servicios Centrales","Servicios Especiales","Ninguno"];
 const ESPECIALIDADES_LIST = ["Medicina General","Traumatologia","Rehabilitacion","Fisioterapia","Psicologia","Enfermeria","Radiologia","Cirugia","Cardiologia","Neurologia","Dermatologia","Oftalmologia","Urgencias","Pediatria"];
 const ANOS = ["2020","2021","2022","2023","2024","2025"];
+
+const logError = useLogError("Ficha cliente");
 
 const onExportingGrid = (e, filename) => {
     const workbook = new Workbook();
@@ -117,9 +120,11 @@ const handleAceptar = async () => {
             notify('Centro guardado correctamente', 'success', 2000);
             onClose();
         } else {
+            logError(`Fallo al actualizar cliente/centro ID: ${form.CentroId}. Status: ${res.status}`);
             notify('Error al guardar el centro', 'error', 3000);
         }
     } catch (err) {
+        logError(`Error de red al guardar cliente/centro ID: ${form.CentroId}`, err);
         notify('Error de conexión: ' + err.message, 'error', 3000);
     }
 };

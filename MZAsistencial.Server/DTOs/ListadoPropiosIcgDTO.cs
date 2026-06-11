@@ -8,6 +8,7 @@ namespace MZAsistencial.Server.DTOs
         public int?    MutuaId                     { get; set; }
         public int?    Año                         { get; set; }
         public int?    IdIcg                       { get; set; }
+        public int?    Validado                    { get; set; }  // ← añadido
         public decimal Cap1_GastosPersonal         { get; set; }
         public decimal Cap1Anterior_GastosPersonal { get; set; }
         public decimal Cap2_GastosCorrientes       { get; set; }

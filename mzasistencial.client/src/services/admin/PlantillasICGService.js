@@ -14,9 +14,9 @@ const authHeaders = () => {
 
 const PlantillasICGService = {
     // Obtener la lista de plantillas subidas
-    getInformes: async (mutua, anio) => {
+    getInformes: async (mutuaId, anio) => {
         let url = `${BASE_URL}/informes?anio=${anio}`;
-        if (mutua) url += `&mutua=${encodeURIComponent(mutua)}`;
+        if (mutuaId) url += `&mutuaId=${encodeURIComponent(mutuaId)}`;
 
         const response = await fetch(url, { headers: authHeaders() });
         if (!response.ok) throw new Error('Error al cargar informes ICG');
@@ -24,13 +24,13 @@ const PlantillasICGService = {
     },
 
     // Generar la plantilla en CSV o XML
-    generarPlantilla: async (mutua, anio, tipo, formato) => {
+    generarPlantilla: async (mutuaId, anio, tipo, formato) => {
         const params = new URLSearchParams({
             anio: anio,
             tipo: tipo,
             formato: formato
         });
-        if (mutua) params.append('mutua', mutua);
+        if (mutuaId) params.append('mutuaId', mutuaId);
 
         const response = await fetch(`${BASE_URL}/generar?${params.toString()}`, {
             method: 'GET',

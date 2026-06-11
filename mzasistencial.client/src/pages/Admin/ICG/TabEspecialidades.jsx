@@ -9,6 +9,7 @@ import DataGrid, {
     RequiredRule,
 } from "devextreme-react/data-grid";
 import { Button } from "devextreme-react/button";
+import { useLogError } from '../../../hooks/useLogError';
 
 const API = "/api/Icg06Especialidad";
 
@@ -32,6 +33,8 @@ const TabEspecialidades = ({ centroId, año }) => {
     const [loading, setLoading] = useState(true);
     const [error,   setError]   = useState(null);
     const [msg,     setMsg]     = useState(null);
+
+    const logError = useLogError("Tab especialidades");
 
     // ── Carga inicial ──────────────────────────────────────────────────────
     const cargar = useCallback(() => {
@@ -68,6 +71,7 @@ const TabEspecialidades = ({ centroId, año }) => {
             mostrarMsg(true, "Especialidad añadida.");
             cargar();
         } catch {
+            logError("Fallo al insertar nueva especialidad", error);
             mostrarMsg(false, "Error al añadir la especialidad.");
         }
     };
@@ -93,6 +97,7 @@ const TabEspecialidades = ({ centroId, año }) => {
             mostrarMsg(true, "Especialidad actualizada.");
             cargar();
         } catch {
+            logError(`Fallo al actualizar especialidad ID: ${actualizado.id}`, error);
             mostrarMsg(false, "Error al actualizar la especialidad.");
         }
     };
@@ -107,6 +112,7 @@ const TabEspecialidades = ({ centroId, año }) => {
             mostrarMsg(true, "Especialidad eliminada.");
             cargar();
         } catch {
+            logError(`Fallo al eliminar especialidad ID: ${e.data.id}`, error);
             mostrarMsg(false, "Error al eliminar la especialidad.");
         }
     };

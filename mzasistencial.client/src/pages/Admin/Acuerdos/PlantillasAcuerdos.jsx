@@ -29,6 +29,8 @@ import DataGrid, {
     Button as GridButton
 } from "devextreme-react/data-grid";
 
+import { useLogError } from '../../../hooks/useLogError';
+
 import { useTranslation } from "react-i18next";
 import { Popup, ToolbarItem } from "devextreme-react/popup";
 import SelectBox from "devextreme-react/select-box";
@@ -92,6 +94,8 @@ const PlantillasAcuerdos = () => {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
 
+    const logError = useLogError("Plantillas acuerdos");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -129,7 +133,7 @@ const PlantillasAcuerdos = () => {
         fetch('/api/PlantillasAcuerdo')
             .then(r => r.json())
             .then(data => setAcuerdos(data))
-            .catch(err => console.error('Error al cargar acuerdos:', err));
+            .catch(err => logError('Error al cargar acuerdos', err));
     };
     //Aquí vamos a traer todas las plantilla de la base de datos y las vamos a cargar todas las plantillas en el data grid
 
@@ -137,7 +141,7 @@ const PlantillasAcuerdos = () => {
         fetch('/api/PlantillasAcuerdo/mutuas')
             .then(r => r.json())
             .then(data => setMutuasList(data.map(m => m.mutua)))
-            .catch(err => console.error('Error al cargar mutuas:', err));
+            .catch(err => logError('Error al cargar mutuas', err));
     };
     //Aquí vamos a traer mutuas de la tabla mutuas
 
@@ -154,13 +158,13 @@ const PlantillasAcuerdos = () => {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedData),
-        }).catch(err => console.error('Error al actualizar:', err));
+        }).catch(err => logError('Error al actualizar registro', err));
     };
 
     const onRowRemoving = (e) => {
         fetch(`/api/PlantillasAcuerdo/${e.key}`, {
             method: 'DELETE',
-        }).catch(err => console.error('Error al eliminar:', err));
+        }).catch(err => logError('Error al eliminar registro', err));
     };
 
     // ── Popup handlers ───────────────────────────────────────────────────────
@@ -206,7 +210,7 @@ const PlantillasAcuerdos = () => {
                 console.error("Error procesando plantillas");
             }
         })
-        .catch(error => console.error('Error al procesar:', error));
+        .catch(err => logError('Error al procesar plantillas', err));
     };
 
     const handleSave = async () => {
@@ -256,7 +260,9 @@ const PlantillasAcuerdos = () => {
                     return response.text().then(msg => { throw new Error(msg || "Error al guardar el registro."); });
                 }
             })
-            .catch(err => setErrors({ general: err.message }));
+            .catch(err => {
+                logError('Error al guardar nueva plantilla', err); setErrors({ general: err.message });
+            });
     };
 
     // ── Render ───────────────────────────────────────────────────────────────

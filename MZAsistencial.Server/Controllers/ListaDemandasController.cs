@@ -17,11 +17,29 @@ public class ListaDemandasController : ControllerBase
 
     [HttpPost("lista")]
     public async Task<IActionResult> GetLista(
-        [FromBody] FiltrosListaDemandasDTO filtros,
-        [FromQuery] int mutuaId = 1)
+      [FromBody] FiltrosListaDemandasDTO filtros,
+      [FromQuery] int mutuaId = 1)
     {
+        Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        Response.Headers["Pragma"] = "no-cache";
+        Console.WriteLine($">>> GetLista - Tipo: {filtros.Tipo} Año: {filtros.Año}");
         var result = await _service.GetListaDemandasAsync(filtros, mutuaId);
-        return Ok(result);
+        var lista = result.ToList();
+        Console.WriteLine($">>> Total filas: {lista.Count} - IDs: {string.Join(",", lista.Select(x => x.DemandaId).Distinct())}");
+        return Ok(lista);
+    }
+
+    [HttpPost("lista-test")]
+    public async Task<IActionResult> GetListaTest(
+      [FromBody] FiltrosListaDemandasDTO filtros,
+      [FromQuery] int mutuaId = 1)
+    {
+        Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        Console.WriteLine($">>> GetListaTest - Tipo: {filtros.Tipo} Año: {filtros.Año}");
+        var result = await _service.GetListaDemandasAsync(filtros, mutuaId);
+        var lista = result.ToList();
+        Console.WriteLine($">>> Test Total filas: {lista.Count} - IDs: {string.Join(",", lista.Select(x => x.DemandaId).Distinct())}");
+        return Ok(lista);
     }
 
     [HttpGet("estados")]

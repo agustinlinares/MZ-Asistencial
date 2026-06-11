@@ -4,6 +4,7 @@ import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import AuthService from "../../../services/auth/AuthService";
+import { useLogError } from '../../../hooks/useLogError';
 import DataGrid, {
     Column,
     Paging,
@@ -40,6 +41,8 @@ const AcreditacionesIndividuales = () => {
     const mutuaId = userData?.mutuaId;
     const [menuAbierto, setMenuAbierto] = useState(false);
 
+    const logError = useLogError("Acreditaciones individuales");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -69,8 +72,11 @@ const AcreditacionesIndividuales = () => {
                             dataGridRef.current?.instance()?.columnOption('año', 'filterValue', año);
                         }, 0);
                     }
+                } else {
+                    logError(`Fallo al cargar acreditaciones. Estado: ${resDatos.status}`);
                 }
             } catch (error) {
+                logError("Error crítico al cargar acreditaciones individuales", error);
                 console.error('Error cargando acreditaciones individuales:', error);
             }
         };
@@ -102,6 +108,7 @@ const AcreditacionesIndividuales = () => {
             const blob = await respuesta.blob();
             saveAs(blob, nombreFichero);
         } catch (error) {
+            logError(`Error al descargar el fichero ID: ${id}`, error);
             console.error('Error descargando el fichero:', error);
         }
     };

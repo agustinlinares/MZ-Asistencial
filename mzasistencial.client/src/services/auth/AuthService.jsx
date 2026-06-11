@@ -1,33 +1,43 @@
 ﻿const AuthService = {
+
     setUserData: (data) => {
         localStorage.setItem('UsuarioActual', JSON.stringify(data));
     },
+
     getUserData: () => {
         const datos = localStorage.getItem('UsuarioActual');
         return datos ? JSON.parse(datos) : null;
     },
+
     getToken: () => {
         const datos = AuthService.getUserData();
         return datos?.token ?? null;
     },
+
     getUser: () => {
         const datos = AuthService.getUserData();
         return datos?.usuario ?? '';
     },
+
     getUserId: () => {
         const datos = AuthService.getUserData();
         return datos?.usuarioId ?? '';
     },
+
     getPerfilId: () => {
         const datos = AuthService.getUserData();
         return datos?.perfilId ?? null;
     },
+
     removeUserData: () => {
         localStorage.removeItem('UsuarioActual');
     },
+
     isTokenValid: () => {
         const token = AuthService.getToken();
+
         if (!token) return false;
+
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             return payload.exp * 1000 > Date.now();
@@ -35,6 +45,7 @@
             return false;
         }
     },
+
     // Helper para fetch autenticado
     fetch: (url, options = {}) => {
         const token = AuthService.getToken();
@@ -46,7 +57,19 @@
                 ...(options.headers ?? {})
             }
         });
+    },
+
+    logErrorExterno: (mensaje, error) => {
+        fetch('/api/RegistroErrores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                descripcion: `${mensaje}: ${error?.message || error}`,
+                modulo: 'AuthService'
+            })
+        }).catch(() => console.error("Fallo crítico al loguear"));
     }
 };
 
-export default AuthService;
+export default AuthService; 
+

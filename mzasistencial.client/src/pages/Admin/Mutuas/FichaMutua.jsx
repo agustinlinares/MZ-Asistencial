@@ -3,6 +3,7 @@ import '../../../styles/FichaGlobal.css';
 import notify from 'devextreme/ui/notify';
 import './FichaMutua.css';
 import MapaModal from '../../Admin/Centros/MapaModal'; // La ruta a MapaModal.jsx
+import { useLogError } from '../../../hooks/useLogError';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -70,6 +71,8 @@ const FichaMutua = ({ mutua, onClose }) => {
     // Estados para especialidades
     const [especialidadesPropios, setEspecialidadesPropios] = useState([]);
     const [especialidadesConciertos, setEspecialidadesConciertos] = useState([]);
+
+    const logError = useLogError("Ficha mutua");
 
     // Función para exportar a Excel cualquier DataGrid
     const exportarExcel = (gridRef, nombreArchivo) => {
@@ -237,6 +240,7 @@ const FichaMutua = ({ mutua, onClose }) => {
         if (!form.personaContacto) newErrors.personaContacto = true;
         if (!provinciaId) newErrors.provincia = true;
         if (!form.poblacionId) newErrors.poblacion = true;
+        if (!form.numeroMutua) newErrors.numeroMutua = true;
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -251,6 +255,15 @@ const FichaMutua = ({ mutua, onClose }) => {
         );
         const usuarioId = userData.usuarioId || userData.UsuarioId || null;
 
+        // Comprobamos unicidad del número de mutua
+        const mutuaIdParam = esNuevo ? '' : `&mutuaId=${mutua.numeroId}`;
+        const checkRes = await fetch(`/api/mutuas/comprobarNumero?numero=${form.numeroMutua}${mutuaIdParam}`);
+        const yaExiste = await checkRes.json();
+        if (yaExiste) {
+            setErrors(f => ({ ...f, numeroMutua: true }));
+            notify('El número de mutua ya existe en el sistema', 'error', 3000);
+            return;
+        }
 
     
         try {
@@ -278,7 +291,7 @@ const FichaMutua = ({ mutua, onClose }) => {
                     // Email opcional — si está vacío se envía null
                     direccionElectronica: form.direccionElectronica || null,
                     personaContacto: form.personaContacto,
-                    //numeroMutua: form.numeroMutua,
+                    numeroMutua: form.numeroMutua,
                     // Usuario de la sesión para el registro de actividad
                     usuarioId: usuarioId,
                 })
@@ -288,11 +301,14 @@ const FichaMutua = ({ mutua, onClose }) => {
                 notify(esNuevo ? 'Mutua creada correctamente' : 'Mutua guardada correctamente', 'success', 2000);
                 onClose();
             } else {
+                const status = response.status;
+                logError(`Fallo al ${esNuevo ? 'crear' : 'actualizar'} Mutua (ID: ${mutua?.numeroId || 'Nueva'}). Estado: ${status}`);
                 notify('Error al guardar la mutua', 'error', 3000);
             }
 
         } catch (error) {
             console.error("Error guardando mutua:", error);
+            logError(`Error crítico de red al guardar Mutua (ID: ${mutua?.numeroId || 'Nueva'})`, error);
             notify('Error de conexión', 'error', 3000);
         }
     };
@@ -321,30 +337,36 @@ const FichaMutua = ({ mutua, onClose }) => {
                     >
                         General
                     </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
-                        onClick={() => setActiveTab("centrosPropios")}
-                    >
-                        Centros Propios
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "conciertos" ? "active" : ""}`}
-                        onClick={() => setActiveTab("conciertos")}
-                    >
-                        Conciertos
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
-                        onClick={() => setActiveTab("especialidadesPropios")}
-                    >
-                        Especialidades / Serv. (Propios)
-                    </button>
-                    <button
-                        className={`ficha-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
-                        onClick={() => setActiveTab("especialidadesConciertos")}
-                    >
-                        Especialidades / Serv. (Conciertos)
-                    </button>
+
+                    {/* Solo mostramos el resto de pestañas si la mutua ya existe */}
+                    {!esNuevo && (
+                        <>
+                            <button
+                                className={`ficha-tab ${activeTab === "centrosPropios" ? "active" : ""}`}
+                                onClick={() => setActiveTab("centrosPropios")}
+                            >
+                                Centros Propios
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "conciertos" ? "active" : ""}`}
+                                onClick={() => setActiveTab("conciertos")}
+                            >
+                                Conciertos
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "especialidadesPropios" ? "active" : ""}`}
+                                onClick={() => setActiveTab("especialidadesPropios")}
+                            >
+                                Especialidades / Serv. (Propios)
+                            </button>
+                            <button
+                                className={`ficha-tab ${activeTab === "especialidadesConciertos" ? "active" : ""}`}
+                                onClick={() => setActiveTab("especialidadesConciertos")}
+                            >
+                                Especialidades / Serv. (Conciertos)
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* CONTENIDO DE CADA PESTAÑA */}
@@ -493,7 +515,18 @@ const FichaMutua = ({ mutua, onClose }) => {
                             </div>
                             <div className="ficha-field">
                                 <label>Número de Mutua</label>
-                                <input type="text" value={esNuevo ? "Se generará automáticamente" : form.numeroMutua} disabled />
+                                {/*ahora es editable tanto en alta como en edición */}
+                                <input
+                                    type="text"
+                                    className={errors.numeroMutua ? 'error' : ''}
+                                    value={form.numeroMutua || ""}
+                                    onChange={(e) => {
+                                        set("numeroMutua")(e);
+                                        setErrors(f => ({ ...f, numeroMutua: false }));
+                                    }}
+                                    //placeholder="Ej: 001"
+                                    maxLength={3}
+                                />
                             </div>
 
                         </div>

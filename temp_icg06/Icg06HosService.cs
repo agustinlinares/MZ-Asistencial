@@ -8,7 +8,13 @@ namespace MZAsistencial.Server.Services
     public class Icg06HosService
     {
         private readonly MZAsistencialContext _context;
-        public Icg06HosService(MZAsistencialContext context) { _context = context; }
+        private readonly IRegistroErroresService _registroErroresService;
+
+        public Icg06HosService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
+        {
+            _context = context;
+            _registroErroresService = registroErroresService;
+        }
 
         public async Task<Icg06HosDTO?> GetByCentroYAñoAsync(int centroId, int año)
         {

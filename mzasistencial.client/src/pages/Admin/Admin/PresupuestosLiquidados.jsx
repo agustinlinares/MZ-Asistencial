@@ -13,6 +13,7 @@ import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
+import { useLogError } from '../../../hooks/useLogError';
 
 const PresupuestosLiquidados = () => {
     const dataGridRef = useRef(null);
@@ -25,12 +26,15 @@ const PresupuestosLiquidados = () => {
     const [idSeleccionado, setIdSeleccionado] = useState(null);
     const [menuAccionesAbierto, setMenuAccionesAbierto] = useState(false);
 
+    const logError = useLogError("Presupuestos liquidados");
+
     const cargarDatos = async () => {
         try {
             const datos = await presupuestosLiquidadosService.obtenerTodos();
             setPresupuestos(datos);
         } catch (error) {
             console.error("Error al cargar presupuestos", error);
+            logError("Fallo al cargar el listado de presupuestos liquidados", error);
         }
     };
 
@@ -64,6 +68,7 @@ const PresupuestosLiquidados = () => {
             cargarDatos();
         } catch (error) {
             console.error("Error al eliminar", error);
+            logError("Fallo al eliminar el presupuesto liquidado", error);
         }
     };
 
@@ -93,16 +98,16 @@ const PresupuestosLiquidados = () => {
     const cargarCatalogos = async () => {
         try {
             const response = await fetch('/api/Mutuas');
-            if (response.ok) {
-                const data = await response.json();
-                setMutuas(data); 
-            }
+            if (!response.ok) throw new Error(`Error ${response.status}: Fallo al cargar mutuas`);
+            
+            const data = await response.json();
+            setMutuas(data);
         } catch (error) {
             console.error("Error al cargar mutuas", error);
+            logError("Fallo al cargar el catálogo de mutuas", error);
         }
     };
 
-    // Modificamos el useEffect inicial para que llame a ambas cargas
     useEffect(() => {
         cargarDatos();
         cargarCatalogos();

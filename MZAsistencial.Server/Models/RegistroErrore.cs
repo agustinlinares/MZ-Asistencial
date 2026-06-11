@@ -24,6 +24,5 @@ public partial class RegistroErrore
 
     public string? Comentarios { get; set; }
 
-    [NotMapped]
-    public string? NombreModulo { get; set; }
+    public string? Nombre_Modulo { get; set; }
 }

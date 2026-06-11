@@ -1,20 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Workbook } from 'exceljs';
-import './GestionReserva.css';
-import { saveAs } from 'file-saver-es';
-import { exportDataGrid } from 'devextreme/excel_exporter';
-import DataGrid, {
-    Column, Paging, SearchPanel, FilterRow, HeaderFilter,
-    Selection, ColumnChooser, Export, Scrolling, Sorting,
-    ColumnFixing, Pager, Toolbar, Item, Summary, TotalItem, Grouping, GroupPanel
-} from "devextreme-react/data-grid";
-
-import { useTranslation } from "react-i18next";
+import React from "react";
 import CitacionesService from "../../../services/admin/CitacionesService";
-import AuthService from "../../../services/auth/AuthService";
-import notify from 'devextreme/ui/notify';
-import FichaCitacion from "./FichaCitacion";
-import { custom } from 'devextreme/ui/dialog';
+import TablaCitaciones from "./TablaCitaciones";
+
+import { useLogError } from '../../../hooks/useLogError';
 
 const ConcederCitacion = () => {
     const { t } = useTranslation();
@@ -24,6 +12,7 @@ const ConcederCitacion = () => {
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
 
+    const logError = useLogError("Conceder citación");
     // Ficha Citacion State
     const [showFicha, setShowFicha] = useState(false);
     const [citacionSeleccionada, setCitacionSeleccionada] = useState(null);
@@ -78,6 +67,7 @@ const ConcederCitacion = () => {
             const data = await CitacionesService.getRecibidas(mid, apiFilters);
             setCitaciones(data);
         } catch (error) {
+            logError("Fallo al cargar el listado de citaciones recibidas", error);
             console.error("Error cargando citaciones:", error);
         } finally {
             setLoading(false);
@@ -90,6 +80,7 @@ const ConcederCitacion = () => {
             notify(t('Citación concedida correctamente'), 'success', 2000);
             cargarDatos();
         } catch {
+            logError(`Fallo al conceder la citación ID: ${citacion.CitacionId}`, error);
             notify(t('Error al conceder la citación'), 'error', 2000);
         }
     };
@@ -102,6 +93,7 @@ const ConcederCitacion = () => {
             notify(t('Citación rechazada'), 'warning', 2000);
             cargarDatos();
         } catch {
+            logError(`Fallo al rechazar la citación ID: ${citacion.CitacionId}`, error);
             notify(t('Error al rechazar la citación'), 'error', 2000);
         }
     };
@@ -226,194 +218,16 @@ const ConcederCitacion = () => {
     };
 
     return (
-        <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
-            <div className="file-box">
-                {!showFicha && (
-                    <>
-                        <div className="header-page">
-                            <div className="title">{t('GESTIÓN CONCESIÓN DE CITACIÓN')}</div>
-                    <div className="header-actions-side">
-                        <div className="acciones-container" ref={menuRef}>
-                            <div className="acciones-btn" onClick={() => setMenuAbierto(!menuAbierto)}>
-                                <i className="ri-settings-3-line"></i> {t('Acciones')}
-                            </div>
-                            {menuAbierto && (
-                                <div className="acciones-menu">
-                                    <div className="acciones-item" onClick={handleExportarExcel}><i className="ri-file-excel-2-line" style={{ color: '#2e7d32' }}></i> {t('Exportar Excel')}</div>
-                                    <div className="acciones-item" onClick={handleExportarPDF}><i className="ri-file-pdf-line" style={{ color: '#c62828' }}></i> {t('Exportar PDF')}</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="filter-panel-premium">
-                    <div className="filter-row">
-                        <div className="filter-group">
-                            <label>{t('Vista')}</label>
-                            <div className="radio-group">
-                                <label className={filtros.vista === 'Agrupada' ? 'active' : ''}>
-                                    <input type="radio" name="vista" value="Agrupada" checked={filtros.vista === 'Agrupada'} onChange={handleFilterChange} />
-                                    {t('Agrupada')}
-                                </label>
-                                <label className={filtros.vista === 'Desagrupada' ? 'active' : ''}>
-                                    <input type="radio" name="vista" value="Desagrupada" checked={filtros.vista === 'Desagrupada'} onChange={handleFilterChange} />
-                                    {t('Desagrupada')}
-                                </label>
-                            </div>
-                        </div>
-                        <div className="filter-group">
-                            <label>{t('Año')}</label>
-                            <select name="anio" value={filtros.anio} onChange={handleFilterChange}>
-                                {anios.map(y => <option key={y} value={y}>{y}</option>)}
-                            </select>
-                        </div>
-                        <div className="filter-group" style={{ flex: 2 }}>
-                            <label>{t('Estado')}</label>
-                            <select name="estado" value={filtros.estado} onChange={handleFilterChange}>
-                                {estados.map(e => <option key={e} value={e}>{t(e)}</option>)}
-                            </select>
-                        </div>
-                        <div className="filter-group">
-                            <label>{t('Demanda ID')}</label>
-                            <input type="number" name="demandaId" value={filtros.demandaId} onChange={handleFilterChange} placeholder="Ex: 123" />
-                        </div>
-                    </div>
-                    <div className="filter-row">
-                        <div className="filter-group">
-                            <label>{t('Citación ID')}</label>
-                            <input type="number" name="citacionId" value={filtros.citacionId} onChange={handleFilterChange} placeholder="Ex: 456" />
-                        </div>
-                        <div className="filter-group" style={{ flex: 3 }}>
-                            <label>{t('Necesidades Citación')}</label>
-                            <input type="text" name="necesidad" value={filtros.necesidad} onChange={handleFilterChange} placeholder={t('Buscar en necesidades...')} />
-                        </div>
-                        <div className="filter-group actions">
-                            <button className="btn-buscar" onClick={() => cargarDatos()}>
-                                <i className="ri-search-line"></i>
-                                {t('Buscar')}
-                            </button>
-                            <button className="btn-limpiar" onClick={handleLimpiarFiltros}>
-                                <i className="ri-eraser-line"></i>
-                                {t('Limpiar Filtros')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                </>
-                )}
-
-                <div className="table-container" style={{ padding: showFicha ? '0' : '0 20px 20px 20px', height: showFicha ? 'calc(100vh - 60px)' : 'auto' }}>
-                    {showFicha ? (
-                        <FichaCitacion 
-                            visible={showFicha}
-                            onHiding={() => setShowFicha(false)}
-                            citacion={citacionSeleccionada}
-                            modo="concesion"
-                            onSave={cargarDatos}
-                        />
-                    ) : (
-                        <DataGrid
-                        ref={dataGridRef}
-                        dataSource={citaciones}
-                        keyExpr="CitacionId"
-                        showBorders={true}
-                        columnAutoWidth={false}
-                        allowColumnResizing={true}
-                        className="mz-table"
-                        rowAlternationEnabled={true}
-                        showRowLines={true}
-                        showColumnLines={true}
-                        wordWrapEnabled={false}
-                        height="100%"
-                        onRowDblClick={handleRowDblClick}
-                        selectedRowKeys={selectedRowKeys}
-                        onSelectionChanged={handleSelectionChanged}
-                    >
-                        <Toolbar>
-                            <Item location="before">
-                                {selectedRowKeys.length > 1 && (
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <button className="btn-guardar" onClick={handleConcederLote}>
-                                            <i className="ri-check-line"></i> {t('Conceder Seleccionadas')} ({selectedRowKeys.length})
-                                        </button>
-                                        <button className="btn-cancelar" onClick={handleRechazarLote} style={{ backgroundColor: '#c62828', color: 'white', border: 'none' }}>
-                                            <i className="ri-close-line"></i> {t('Rechazar Seleccionadas')} ({selectedRowKeys.length})
-                                        </button>
-                                    </div>
-                                )}
-                            </Item>
-                            <Item location="after" name="searchPanel" />
-                            <Item location="after" name="columnChooserButton" />
-                            <Item location="after">
-                                <div className="refresh-button" onClick={() => cargarDatos()} title={t('Actualizar')}>
-                                    <i className="ri-refresh-line"></i>
-                                </div>
-                            </Item>
-                        </Toolbar>
-
-                        <Scrolling mode="standard" showScrollbar="always" />
-                        <Paging defaultPageSize={20} />
-                        <Pager visible={true} allowedPageSizes={[10, 20, 50]} showPageSizeSelector showInfo showNavigationButtons />
-                        <SearchPanel visible width={240} placeholder={t('buscar')} />
-                        <FilterRow visible={true} />
-                        <HeaderFilter visible />
-                        <Selection mode="multiple" showCheckBoxesMode="always" />
-                        <ColumnChooser enabled mode="select" />
-                        <Sorting mode="multiple" />
-                        <ColumnFixing enabled />
-                        
-                        {filtros.vista === 'Agrupada' && <Grouping autoExpandAll={false} />}
-                        {filtros.vista === 'Agrupada' && <GroupPanel visible={true} />}
-
-                        <Column dataField="DemandaId" caption={t('Demanda')} width={100} groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
-                        <Column dataField="Anio" caption={t('Año')} width={80} alignment="center" />
-                        <Column dataField="MutuaSolicitante" caption={t('Mutua Solicitante')} width={160} />
-                        <Column dataField="Centro" caption={t('Centro')} width={180} />
-                        <Column dataField="Especialidad" caption={t('Especialidad')} width={160} />
-                        <Column dataField="Servicio" caption={t('Servicio')} width={150} />
-                        
-                        <Column caption={t('Mensualidades')} alignment="center">
-                            <Column dataField="Ene" caption="Ene" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Feb" caption="Feb" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Mar" caption="Mar" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Abr" caption="Abr" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="May" caption="May" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Jun" caption="Jun" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Jul" caption="Jul" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Ago" caption="Ago" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Sep" caption="Sep" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Oct" caption="Oct" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Nov" caption="Nov" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                            <Column dataField="Diciembre" caption="Dic" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                        </Column>
-
-                        <Column dataField="Total" caption={t('Total')} width={70} alignment="center" />
-                        <Column dataField="Estado" caption={t('Estado')} width={140} alignment="center" cellRender={(cell) => <span style={getEstadoStyle(cell.value)}>{cell.value || t('PENDIENTE')}</span>} />
-                        <Column dataField="FechaAltaSolicitud" caption={t('Fecha Solicitud')} dataType="date" width={110} format="dd/MM/yyyy" />
-
-                        <Column 
-                            caption={t('Acciones')} 
-                            width={100} 
-                            fixed={true} 
-                            fixedPosition="right" 
-                            alignment="center"
-                            cellRender={(cell) => (
-                                <div className="ficha-row-actions">
-                                    <i className="ri-checkbox-circle-line edit-icon" title={t('Conceder')} style={{ color: '#2e7d32', cursor: 'pointer' }} onClick={() => handleConceder(cell.data)} />
-                                    <i className="ri-close-circle-line delete-icon" title={t('Rechazar')} style={{ color: '#c62828', cursor: 'pointer' }} onClick={() => handleRechazar(cell.data)} />
-                                </div>
-                            )}
-                        />
-
-                        <Summary>
-                            <TotalItem column="Total" summaryType="sum" displayFormat="Total: {0}" />
-                        </Summary>
-                    </DataGrid>
-                    )}
-                </div>
-            </div>
-        </div>
+        <TablaCitaciones 
+            modo="concesion"
+            titulo="GESTIÓN CONCESIÓN DE CITACIÓN"
+            createStore={CitacionesService.createRecibidasStore}
+            mutuaColumnField="MutuaSolicitante"
+            mutuaColumnCaption="Mutua Solicitante"
+            hasNuevaSolicitud={false}
+            hasBatchActions={true}
+            hasRowActions={true}
+        />
     );
 };
 

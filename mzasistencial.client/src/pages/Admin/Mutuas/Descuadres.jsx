@@ -3,6 +3,7 @@ import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
+import { useLogError } from '../../../hooks/useLogError';
 
 const API = '/api';
 
@@ -31,6 +32,8 @@ const Descuadres = () => {
     const [error, setError] = useState(null);
     const [menuAbierto, setMenuAbierto] = useState(false);
 
+    const logError = useLogError("Descuadres");
+
     // ── Obtener usuario de sesión ────────────────────────────────────────────
     const getUsuarioSesion = () => {
         try {
@@ -41,6 +44,7 @@ const Descuadres = () => {
                 anio: u?.anio ?? new Date().getFullYear(),
             };
         } catch {
+            logError("Fallo al recuperar o parsear el UsuarioActual desde localStorage", err);
             return { usuarioId: 0, mutuaIdSesion: 0, anio: new Date().getFullYear() };
         }
     };
@@ -59,6 +63,7 @@ const Descuadres = () => {
             const data = await res.json();
             setDatos(data);
         } catch (err) {
+            logError(`Fallo crítico en el proceso de descuadres (Mutua: ${mutuaIdSesion}, Año: ${anio})`, err);
             setError(err.message || 'Error al cargar los descuadres');
         } finally {
             setCargando(false);

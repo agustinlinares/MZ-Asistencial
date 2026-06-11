@@ -12,12 +12,16 @@ import DataGrid, {
 import { useTranslation } from "react-i18next";
 import '../Centros/FichaFinca.css';
 
+import { useLogError } from '../../../hooks/useLogError';
+
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 
 const Ejercicios = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
+
+    const logError = useLogError("Ejercicios");
 
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [datos, setDatos] = useState([]);
@@ -37,7 +41,7 @@ const Ejercicios = () => {
         fetch(`${API}/Ejercicios`)
             .then(res => res.json())
             .then(data => setDatos(data))
-            .catch(err => console.error('Error al cargar ejercicios:', err))
+            .catch(err => logError('Error al cargar ejercicios:', err))
             .finally(() => setCargando(false));
     }, []);
 
