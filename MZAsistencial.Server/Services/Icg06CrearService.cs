@@ -13,14 +13,12 @@ public class Icg06CrearService
         _context = context;
     }
 
-    // Comprueba si ya existe un registro ICG06 para ese centro y año
     public async Task<bool> ExisteAsync(int centroId, int año)
     {
         return await _context.Icg06s
             .AnyAsync(e => e.CentroId == centroId && e.Año == año);
     }
 
-    // Crea un registro ICG06 vacío y registra la actividad
     public async Task<int> CrearAsync(int centroId, int año, int? usuarioId)
     {
         var sql = @"
@@ -37,7 +35,6 @@ public class Icg06CrearService
 
         var nuevoId = result.FirstOrDefault();
 
-        // FIX: registro de actividad al crear, igual que el original VB
         if (nuevoId > 0)
         {
             await RegistrarActividadAsync(
@@ -50,7 +47,24 @@ public class Icg06CrearService
         return nuevoId;
     }
 
-    // ─── Registro de actividad ────────────────────────────────────────────
+    // FIX: método de eliminación expuesto para el listado
+    public async Task<bool> EliminarAsync(int idIcg, int? usuarioId)
+    {
+        var entity = await _context.Icg06s.FindAsync(idIcg);
+        if (entity is null) return false;
+
+        _context.Icg06s.Remove(entity);
+        await _context.SaveChangesAsync();
+
+        await RegistrarActividadAsync(
+            usuarioId,
+            $"DELETE ICG06 ID {idIcg}",
+            $"DELETE FROM ICG06 WHERE Id_ICG={idIcg}"
+        );
+
+        return true;
+    }
+
     private async Task RegistrarActividadAsync(int? usuarioId, string accion, string sql)
     {
         _context.RegistroActividads.Add(new RegistroActividad

@@ -5,13 +5,12 @@ using MZAsistencial.Server.Services;
 using System.Threading.Tasks;
 using DevExtreme.AspNet.Data;
 using MZAsistencial.Server.Models;
-using DevExtreme.AspNet.Data;
 
 namespace MZAsistencial.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    // [Authorize]
     public class RegistroErroresController : ControllerBase
     {
         private readonly IRegistroErroresService _registroErroresService;
@@ -19,6 +18,14 @@ namespace MZAsistencial.Server.Controllers
         public RegistroErroresController(IRegistroErroresService registroErroresService)
         {
             _registroErroresService = registroErroresService;
+        }
+
+        [AllowAnonymous]
+        [HttpPost] 
+        public async Task<IActionResult> Post([FromBody] CrearRegistroErrorDTO dto)
+        {
+            await _registroErroresService.RegistrarErrorCompletoAsync(dto);
+            return Ok();
         }
 
         [HttpGet]

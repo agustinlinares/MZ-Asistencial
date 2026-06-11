@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useReducer } from 'react'; // Cambiado useState por useReducer
+﻿import React, { useEffect, useMemo, useRef, useReducer } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Popup } from 'devextreme-react/popup';
 import { Button } from 'devextreme-react/button';
@@ -9,9 +9,7 @@ import AuthService from '@services/auth/AuthService';
 import { TextBox } from 'devextreme-react';
 import DropDownButton from 'devextreme-react/drop-down-button';
 import './AdminHeader.css';
-// import SelectBox from 'devextreme-react/select-box';
 
-// 1. Estado inicial
 const initialState = {
     isMobile: rdd.isMobile,
     popupVisible: false,
@@ -26,7 +24,6 @@ const initialState = {
     passwordError: null,
 };
 
-// 2. Reducer para gestionar toda la lógica de estado
 function headerReducer(state, action) {
     switch (action.type) {
         case 'SET_FIELD':
@@ -58,15 +55,13 @@ function headerReducer(state, action) {
     }
 }
 
-function AdminHeader(props) {
+function AdminHeader() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const popupRefUser = useRef(null);
 
-    // 3. Inicialización del Reducer
     const [state, dispatch] = useReducer(headerReducer, initialState);
 
-    // Desestructuración del estado
     const { 
         username, popupVisible, popupVisibleUser, loggedUser, 
         oldPassword, newPassword, confirmNewPassword, 
@@ -121,7 +116,6 @@ function AdminHeader(props) {
             dispatch({ type: 'SET_ERROR', error });
             return;
         }
-        // Lógica de API aquí
         console.log('Cambio de contraseña realizado');
         destroyModal();
     };
@@ -145,16 +139,14 @@ function AdminHeader(props) {
     };
 
     const actions = [
-            { id: 'logout', text: 'Cerrar sesión', icon: 'runner' },
-            { id: 'password', text: 'Cambiar contraseña', icon: 'key' },
-        ];
+        { id: 'logout', text: 'Cerrar sesión', icon: 'runner' },
+        { id: 'password', text: 'Cambiar contraseña', icon: 'key' },
+    ];
 
-        const handleActionClick = (e) => {
-            if (e.itemData.id === 'logout') handleShowLogout();
-            if (e.itemData.id === 'password') handleShowPasswordData();
-        };
-
-
+    const handleActionClick = (e) => {
+        if (e.itemData.id === 'logout') handleShowLogout();
+        if (e.itemData.id === 'password') handleShowPasswordData();
+    };
 
     return (
         <React.Fragment>
@@ -197,9 +189,7 @@ function AdminHeader(props) {
                                     stylingMode="text"
                                     splitButton={false}
                                     elementAttr={{ class: 'filter-dropdown-custom' }}
-                                    dropDownOptions={{
-                                        width: 160
-                                    }}
+                                    dropDownOptions={{ width: 160 }}
                                 />
                             </div>
 
@@ -218,14 +208,27 @@ function AdminHeader(props) {
                                     stylingMode="text"
                                     splitButton={false}
                                     elementAttr={{ class: 'filter-dropdown-custom' }}
-                                    dropDownOptions={{
-                                        width: 160
-                                    }}
+                                    dropDownOptions={{ width: 160 }}
+                                />
+                            </div>
+
+                            {/* Menú usuario */}
+                            <div className="filter-item">
+                                <DropDownButton
+                                    text="⚙"
+                                    stylingMode="text"
+                                    splitButton={false}
+                                    showArrowIcon={false}
+                                    items={actions}
+                                    keyExpr="id"
+                                    displayExpr="text"
+                                    onItemClick={handleActionClick}
+                                    elementAttr={{ class: 'filter-dropdown-custom header-user-menu' }}
+                                    dropDownOptions={{ width: 180 }}
                                 />
                             </div>
 
                         </div>
-
                     </div>
                 </div>
             </header>
@@ -278,19 +281,19 @@ function AdminHeader(props) {
                         <div className='popup-body'>
                             <div className='form-group'>
                                 <label>{t('common.usuario')}:</label>
-                                <TextBox value={loggedUser} onValueChanged={(e) => updateField('loggedUser', e.value)} onFocusIn={handleFocus} />
+                                <TextBox value={loggedUser} onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'loggedUser', value: e.value })} onFocusIn={handleFocus} />
                             </div>
                             <div className='form-group'>
                                 <label>{t('password.oldPassword')}:</label>
-                                <TextBox mode="password" value={oldPassword} onValueChanged={(e) => updateField('oldPassword', e.value)} onFocusIn={handleFocus} />
+                                <TextBox mode="password" value={oldPassword} onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'oldPassword', value: e.value })} onFocusIn={handleFocus} />
                             </div>
                             <div className='form-group'>
                                 <label>{t('password.newPassword')}:</label>
-                                <TextBox mode="password" value={newPassword} onValueChanged={(e) => updateField('newPassword', e.value)} onFocusIn={handleFocus} />
+                                <TextBox mode="password" value={newPassword} onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'newPassword', value: e.value })} onFocusIn={handleFocus} />
                             </div>
                             <div className='form-group'>
                                 <label>{t('password.confirmPassword')}:</label>
-                                <TextBox mode="password" value={confirmNewPassword} onValueChanged={(e) => updateField('confirmNewPassword', e.value)} onFocusIn={handleFocus} />
+                                <TextBox mode="password" value={confirmNewPassword} onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'confirmNewPassword', value: e.value })} onFocusIn={handleFocus} />
                             </div>
                         </div>
                         <div className='popup-footer'>

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import FincasService from "../../../services/admin/FincasService";
+import { useLogError } from '../../../hooks/useLogError';
 import '../../../styles/FichaGlobal.css';
 
 const REPORT_TYPES = [
@@ -19,6 +20,8 @@ const GenerarInformes = () => {
     const [anio, setAnio] = useState("2024");
     const [generando, setGenerando] = useState(false);
 
+    const logError = useLogError("Generar informes");
+
     const handleGenerar = async () => {
         setGenerando(true);
         try {
@@ -28,6 +31,7 @@ const GenerarInformes = () => {
                 alert(t('Este informe estará disponible próximamente.'));
             }
         } catch (error) {
+            logError(`Fallo al generar el informe tipo: ${reportType}`, error);
             console.error(error);
             alert(t('Error al generar el informe: ') + error.message);
         } finally {

@@ -25,6 +25,7 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
+import { useLogError } from '../../../hooks/useLogError';
 
 const TIPOS_CENTRO = [
     { id: 1, nombre: 'Propios' },
@@ -58,6 +59,8 @@ const ExportarAccess = () => {
     const esAdmin     = userData?.perfilId === 1;
     const usuarioId   = userData?.usuarioId || 0;
 
+    const logError = useLogError("Exportar Access");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target))
@@ -80,6 +83,7 @@ const ExportarAccess = () => {
                 if (resAños.ok)  setAños(await resAños.json());
             } catch (err) {
                 console.error('Error cargando datos:', err);
+                logError("Fallo al cargar los listados iniciales de Exportar Access", err);
             }
         };
         cargarDatos();
@@ -91,6 +95,7 @@ const ExportarAccess = () => {
             if (resp.ok) setFicheros(await resp.json());
         } catch (err) {
             console.error('Error recargando ficheros:', err);
+            logError("Fallo al recargar el listado de ficheros", err);
         }
     };
 
@@ -103,6 +108,7 @@ const ExportarAccess = () => {
             const blob = await resp.blob();
             saveAs(blob, row.nombreFichero || `fichero_${row.ficheroGeneradoId}.accdb`);
         } catch {
+            logError("Fallo al descargar fichero", err);
             notify(t('Error al descargar el fichero.'), 'error', 3000);
         }
     };
@@ -133,9 +139,11 @@ const ExportarAccess = () => {
                 await cargarFicheros();
             } else {
                 const err = await resp.json().catch(() => ({}));
+                logError("Error del servidor al guardar fichero: " + mensajeError);
                 notify(err.message || t('Error al guardar.'), 'error', 3000);
             }
         } catch {
+            logError("Fallo al registrar/generar nuevo fichero Access", err);
             notify(t('Error al guardar.'), 'error', 3000);
         } finally {
             setCargando(false);
@@ -164,6 +172,7 @@ const ExportarAccess = () => {
                 notify(t('No se pudo eliminar el fichero.'), 'error', 3000);
             }
         } catch {
+            logError("Fallo al eliminar el fichero", err);
             notify(t('Error al eliminar el fichero.'), 'error', 3000);
         }
         setRowToDelete(null);

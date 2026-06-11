@@ -8,6 +8,8 @@ import { licenseKey } from "../devextreme-license";
 import { locale, loadMessages } from "devextreme/localization";
 import esMessages from "../lib/translate/es.json";
 
+import { useLogError } from '../hooks/useLogError';
+
 config({ licenseKey });
 
 i18next
@@ -23,6 +25,8 @@ i18next
 export const AppProvider = ({ children }) => {
     const [currentLanguage, setCurrentLanguage] = useState(i18next.language);
 
+    const logError = useLogError("App Provider");
+
     useEffect(() => {
         const loadLocalizationMessages = async (lang) => {
             try {
@@ -30,6 +34,7 @@ export const AppProvider = ({ children }) => {
                 loadMessages(dictionary);
                 locale(lang);
             } catch (error) {
+                logError(`Fallo al cargar el idioma: ${lang}`, error);
                 console.error("Error cargando mensajes de localización:", error);
             }
         };

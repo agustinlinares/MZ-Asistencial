@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
+import { useLogError } from '../../../hooks/useLogError';
 import DataGrid, {
     Column,
     Paging,
@@ -46,6 +47,8 @@ const ICGConciertos = () => {
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
 
+    const logError = useLogError("ICG Conciertos");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -70,6 +73,8 @@ const ICGConciertos = () => {
                     setRows(Array.isArray(data) ? data : []);
                 }
             } catch {
+                logError("Fallo al cargar el listado de ICG Conciertos", err);
+                
                 if (active) {
                     setRows([]);
                 }

@@ -3,7 +3,6 @@ import './ICG.css';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import DataGrid, {
     Column, Paging, SearchPanel, FilterRow, HeaderFilter,
@@ -12,13 +11,15 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { Button } from "devextreme-react/button";
 import SelectBox from "devextreme-react/select-box";
+import { useLogError } from '../../../hooks/useLogError';
 
 const API_CENTROS      = "/api/CentrosPropios";
 const API_ESPECIALIDAD = "/api/Icg06Especialidad";
 const API_CREAR_ICG    = "/api/Icg06Crear";
 const YEAR_NOW         = new Date().getFullYear();
 const YEARS            = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
-const API_VALIDAR = "/api/Icg06Validar";
+const API_VALIDAR      = "/api/Icg06Validar";
+const API_LISTADO      = "/api/ListadoPropiosIcg";
 
 // ─── Helper: campos de plantilla por grupo de personal ───────────────────────
 const cp = (prefijo, label) => [
@@ -492,6 +493,8 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
     const [error,   setError]   = useState(null);
     const [msg,     setMsg]     = useState(null);
 
+    const logError = useLogError("IGC Centros Propios - TabEspecialidades");
+
     const mostrarMsg = (ok, text) => {
         setMsg({ ok, text });
         setTimeout(() => setMsg(null), 3500);
@@ -519,7 +522,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad añadida.");
             cargar();
-        } catch { mostrarMsg(false, "Error al añadir la especialidad."); }
+        } catch (err) {
+            logError("Error al añadir especialidad", err);
+            mostrarMsg(false, "Error al añadir la especialidad.");
+        }
     };
 
     const onRowUpdating = async (e) => {
@@ -532,7 +538,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad actualizada.");
             cargar();
-        } catch { mostrarMsg(false, "Error al actualizar la especialidad."); }
+        } catch (err) {
+            logError("Error al actualizar especialidad", err);
+            mostrarMsg(false, "Error al actualizar la especialidad.");
+        }
     };
 
     const onRowRemoving = async (e) => {
@@ -542,7 +551,10 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
             if (!res.ok) throw new Error();
             mostrarMsg(true, "Especialidad eliminada.");
             cargar();
-        } catch { mostrarMsg(false, "Error al eliminar la especialidad."); }
+        } catch (err) {
+            logError("Error al eliminar especialidad", err);
+            mostrarMsg(false, "Error al eliminar la especialidad.");
+        }
     };
 
     if (loading) return <div style={st.loading}>Cargando especialidades…</div>;
@@ -574,12 +586,14 @@ const TabEspecialidades = ({ centroId, año, esAdmin }) => {
     );
 };
 
-// ─── TabContent (genérico) — con ref para exponer guardar al padre ────────────
+// ─── TabContent (genérico) ────────────────────────────────────────────────────
 const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref) => {
     const [datos,   setDatos]   = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving,  setSaving]  = useState(false);
     const [msg,     setMsg]     = useState(null);
+
+    const logError = useLogError("IGC Centros Propios - TabContent ICG");
 
     useEffect(() => {
         setLoading(true); setMsg(null); setDatos(null);
@@ -604,13 +618,13 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
             if (!res.ok) throw new Error();
             setMsg({ ok: true, text: "Guardado correctamente." });
             setTimeout(() => setMsg(null), 3500);
-        } catch {
+        } catch (err) {
+            logError(`Fallo al guardar en /api/${apiName}/${datos.idIcg ?? datos.id}`, err);
             setMsg({ ok: false, text: "Error al guardar." });
         } finally { setSaving(false); }
         return saving;
     };
 
-    // Exponer guardar y estado al componente padre via ref
     useImperativeHandle(ref, () => ({ guardar, isSaving: () => saving }));
 
     if (loading) return <div style={st.loading}>Cargando…</div>;
@@ -647,17 +661,16 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
 
 // ─── FichaICG06 ───────────────────────────────────────────────────────────────
 const FichaICG06 = ({ centro, año, onBack }) => {
-    const [tabActiva,      setTabActiva]      = useState("generales");
-    const [validado,       setValidado]       = useState(null);
-    const [idIcg,          setIdIcg]          = useState(null);
-    const [validando,      setValidando]      = useState(false);
-    const [msgValidar,     setMsgValidar]     = useState(null);
-    const [guardando,      setGuardando]      = useState(false);
+    const [tabActiva,  setTabActiva]  = useState("generales");
+    const [validado,   setValidado]   = useState(null);
+    const [idIcg,      setIdIcg]      = useState(null);
+    const [validando,  setValidando]  = useState(false);
+    const [msgValidar, setMsgValidar] = useState(null);
+    const [guardando,  setGuardando]  = useState(false);
 
+    const logError = useLogError("IGC Centros Propios - Ficha ICG06");
     const tabContentRef = useRef(null);
-
-    const tab          = TABS.find(t => t.key === tabActiva);
-
+    const tab = TABS.find(t => t.key === tabActiva);
     const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
     const esAdmin = user?.perfilId === 1;
 
@@ -665,10 +678,7 @@ const FichaICG06 = ({ centro, año, onBack }) => {
         fetch(`/api/Icg06DatosGenerales?centroId=${centro.centroId}&a%C3%B1o=${año}`)
             .then(r => r.ok ? r.json() : null)
             .then(d => {
-                if (d) {
-                    setIdIcg(d.idIcg);
-                    setValidado(d.validado ?? 0);
-                }
+                if (d) { setIdIcg(d.idIcg); setValidado(d.validado ?? 0); }
             })
             .catch(() => {});
     }, [centro.centroId, año]);
@@ -688,23 +698,21 @@ const FichaICG06 = ({ centro, año, onBack }) => {
             setValidado(nuevoEstado);
             setMsgValidar({ ok: true, text: nuevoEstado === 1 ? 'ICG validado correctamente.' : 'ICG desvalidado correctamente.' });
             setTimeout(() => setMsgValidar(null), 3500);
-        } catch {
+        } catch (err) {
+            logError(`Error al cambiar estado de validación (ICG ID: ${idIcg})`, err);
             setMsgValidar({ ok: false, text: 'Error al cambiar el estado de validación.' });
-        } finally {
-            setValidando(false);
-        }
+        } finally { setValidando(false); }
     };
 
-    // Botón Guardar centralizado: llama a guardar() del TabContent activo via ref
     const handleGuardar = async () => {
-        if (tabActiva === "especialidades") return; // especialidades gestiona su propio guardado inline
+        if (tabActiva === "especialidades") return;
         if (!tabContentRef.current) return;
         setGuardando(true);
         try {
             await tabContentRef.current.guardar();
-        } finally {
-            setGuardando(false);
-        }
+        } catch (error) {
+            logError(`Fallo en el guardado centralizado para la pestaña: ${tabActiva}`, error);
+        } finally { setGuardando(false); }
     };
 
     return (
@@ -724,42 +732,20 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                                 {msgValidar.text}
                             </span>
                         )}
-                        {/* ── Botón Guardar centralizado ── */}
                         {tabActiva !== "especialidades" && (
-                            <button
-                                onClick={handleGuardar}
-                                disabled={guardando}
-                                style={{
-                                    border: "none", borderRadius: 4, padding: "6px 20px",
-                                    fontSize: 13, fontWeight: 700, cursor: guardando ? "wait" : "pointer",
-                                    background: "#fff", color: "#1976d2",
-                                    opacity: guardando ? 0.7 : 1,
-                                }}
-                            >
+                            <button onClick={handleGuardar} disabled={guardando}
+                                style={{ border: "none", borderRadius: 4, padding: "6px 20px", fontSize: 13, fontWeight: 700, cursor: guardando ? "wait" : "pointer", background: "#fff", color: "#1976d2", opacity: guardando ? 0.7 : 1 }}>
                                 {guardando ? "Guardando…" : "💾 Guardar"}
                             </button>
                         )}
-                        {/* ── Botón de validación (solo admin) ── */}
                         {esAdmin && idIcg && (
-                            <div style={{
-                                display: "flex", alignItems: "center", gap: 8,
-                                background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px",
-                            }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "6px 12px" }}>
                                 <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>Estado:</span>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: validado === 1 ? "#c8e6c9" : "#ffcc80" }}>
                                     {validado === null ? "…" : validado === 1 ? "✓ Validado" : "⏳ Pendiente"}
                                 </span>
-                                <button
-                                    onClick={cambiarValidado}
-                                    disabled={validando || validado === null}
-                                    style={{
-                                        border: "none", borderRadius: 4, padding: "4px 14px",
-                                        fontSize: 12, fontWeight: 700, cursor: validando ? "wait" : "pointer",
-                                        background: validado === 1 ? "#e53935" : "#43a047",
-                                        color: "#fff",
-                                        opacity: (validando || validado === null) ? 0.6 : 1,
-                                    }}
-                                >
+                                <button onClick={cambiarValidado} disabled={validando || validado === null}
+                                    style={{ border: "none", borderRadius: 4, padding: "4px 14px", fontSize: 12, fontWeight: 700, cursor: validando ? "wait" : "pointer", background: validado === 1 ? "#e53935" : "#43a047", color: "#fff", opacity: (validando || validado === null) ? 0.6 : 1 }}>
                                     {validando ? "…" : validado === 1 ? "Desvalidar" : "Validar"}
                                 </button>
                             </div>
@@ -775,18 +761,15 @@ const FichaICG06 = ({ centro, año, onBack }) => {
                         ))}
                     </div>
                     <div style={st.tabContent}>
-                    {tabActiva === "especialidades" ? (
-                        <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} esAdmin={esAdmin} />
-                    ) : (
-                        tab && (
-                            <TabContent
-                                ref={tabContentRef}
-                                key={`${centro.centroId}-${año}-${tabActiva}`}
-                                centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api} esAdmin={esAdmin}
-                            />
-                        )
-                    )}
-                </div>
+                        {tabActiva === "especialidades" ? (
+                            <TabEspecialidades key={`esp-${centro.centroId}-${año}`} centroId={centro.centroId} año={año} esAdmin={esAdmin} />
+                        ) : (
+                            tab && (
+                                <TabContent ref={tabContentRef} key={`${centro.centroId}-${año}-${tabActiva}`}
+                                    centroId={centro.centroId} año={año} tabKey={tabActiva} apiName={tab.api} esAdmin={esAdmin} />
+                            )
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -807,6 +790,10 @@ const ICGCentrosPropios = () => {
     const [menuAbierto,        setMenuAbierto]        = useState(false);
     const menuRef = useRef(null);
 
+    const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+    const esAdmin = user?.perfilId === 1;
+    const logError = useLogError("IGC Centros Propios");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) setMenuAbierto(false);
@@ -816,8 +803,8 @@ const ICGCentrosPropios = () => {
     }, []);
 
     useEffect(() => {
-        const user     = JSON.parse(localStorage.getItem('UsuarioActual'));
-        const perfilId = user?.perfilId ?? '';
+        const u        = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+        const perfilId = u?.perfilId ?? '';
         fetch(`${API_CENTROS}?perfilId=${perfilId}`)
             .then(r => r.ok ? r.json() : [])
             .then(d => setCentros(d))
@@ -826,7 +813,7 @@ const ICGCentrosPropios = () => {
 
     const cargarIcgData = useCallback(() => {
         setLoading(true);
-        fetch(`/api/ListadoPropiosIcg?a%C3%B1o=${año}`)
+        fetch(`${API_LISTADO}?a%C3%B1o=${año}`)
             .then(r => r.ok ? r.json() : [])
             .then(d => setIcgData(d))
             .catch(() => setIcgData([]))
@@ -839,8 +826,7 @@ const ICGCentrosPropios = () => {
         if (creando) return;
         setCreando(true);
         try {
-            const user = JSON.parse(localStorage.getItem('UsuarioActual'));
-            const res  = await fetch(API_CREAR_ICG, {
+            const res = await fetch(API_CREAR_ICG, {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ centroId: centro.centroId, año, usuarioId: user?.usuarioId ?? null }),
@@ -848,10 +834,39 @@ const ICGCentrosPropios = () => {
             if (!res.ok) throw new Error();
             await cargarIcgData();
             setCentroSeleccionado(centro);
-        } catch {
+        } catch (err) {
+            logError(`Error al crear registro ICG para Centro: ${centro?.centroId}`, err);
             alert('Error al crear el registro ICG06.');
-        } finally {
-            setCreando(false);
+        } finally { setCreando(false); }
+    };
+
+    // ─── Validar/desvalidar inline desde el listado ───────────────────────────
+    const toggleValidado = async (idIcg, validadoActual) => {
+        const nuevoEstado = validadoActual === 1 ? 0 : 1;
+        try {
+            const res = await fetch(`${API_LISTADO}/${idIcg}/validar`, {
+                method:  'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ validado: nuevoEstado, usuarioId: user?.usuarioId ?? null }),
+            });
+            if (!res.ok) throw new Error();
+            setIcgData(prev => prev.map(i => i.idIcg === idIcg ? { ...i, validado: nuevoEstado } : i));
+        } catch (err) {
+            logError(`Error al cambiar validación inline (ICG ID: ${idIcg})`, err);
+            alert('Error al cambiar el estado de validación.');
+        }
+    };
+
+    // ─── Eliminar desde el listado ────────────────────────────────────────────
+    const eliminarIcg = async (idIcg) => {
+        if (!window.confirm('¿Seguro que quieres eliminar este registro ICG06? Esta acción no se puede deshacer.')) return;
+        try {
+            const res = await fetch(`${API_LISTADO}/${idIcg}?usuarioId=${user?.usuarioId ?? ''}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error();
+            await cargarIcgData();
+        } catch (err) {
+            logError(`Error al eliminar ICG (ID: ${idIcg})`, err);
+            alert('Error al eliminar el registro ICG06.');
         }
     };
 
@@ -859,9 +874,11 @@ const ICGCentrosPropios = () => {
         const icg = icgData.find(i => i.centroId === c.centroId) || {};
         return {
             ...c,
+            idIcg:                    icg.idIcg                    ?? null,
+            validado:                 icg.validado                 ?? null,
             cap1GastosPersonal:       icg.cap1_GastosPersonal       ?? null,
             cap2GastosCorrientes:     icg.cap2_GastosCorrientes     ?? null,
-            cap3GastosFinancieros:    icg.cap3_GastosFinancieros     ?? null,
+            cap3GastosFinancieros:    icg.cap3_GastosFinancieros    ?? null,
             cuenta68Amortizaciones:   icg.cuenta68_Amortizaciones   ?? null,
             art32OtrosIngresos:       icg.art32_OtrosIngresos       ?? null,
             art62InversionNueva:      icg.art62_InversionNueva      ?? null,
@@ -922,14 +939,14 @@ const ICGCentrosPropios = () => {
                     </div>
                 </div>
                 <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
-                    <DataGrid 
-                        ref={dataGridRef} 
-                        dataSource={dataSource} 
-                        showBorders={true} 
+                    <DataGrid
+                        ref={dataGridRef}
+                        dataSource={dataSource}
+                        showBorders={true}
                         rowAlternationEnabled={true}
-                        columnAutoWidth={true} 
-                        allowColumnResizing={true} 
-                        allowColumnReordering={true} 
+                        columnAutoWidth={true}
+                        allowColumnResizing={true}
+                        allowColumnReordering={true}
                         onExporting={onExporting}
                         className="mz-table"
                         showRowLines={true}
@@ -956,7 +973,7 @@ const ICGCentrosPropios = () => {
 
                         <Column dataField="localizador" caption={t("Localizador")}  width={130} />
                         <Column dataField="mutuaId"     caption={t("Mutua")}        width={90}  />
-                        <Column dataField="centroId"    caption={t("Centro ID")}    width={100}  />
+                        <Column dataField="centroId"    caption={t("Centro ID")}    width={100} />
                         <Column dataField="centro"      caption={t("Centro")}       width={250} />
                         <Column dataField="cp"          caption={t("C.P.")}         width={80}  />
                         <Column dataField="provincia"   caption={t("Provincia")}    width={150} />
@@ -989,34 +1006,52 @@ const ICGCentrosPropios = () => {
                                 </span>
                             )}
                         />
-                        <Column 
-                            caption={t("Acciones")} 
-                            width={110}
+
+                        {/* ─── Columna Acciones ─────────────────────────────────────────────── */}
+                        <Column
+                            caption={t("Acciones")}
+                            width={esAdmin ? 150 : 110}
                             fixed={true}
                             fixedPosition="right"
                             alignment="center"
                             cellRender={({ data }) => {
                                 if (data.tieneIcg) {
                                     return (
-                                        <div className="ficha-row-actions">
-                                            <i 
-                                                className="ri-file-search-line action-icon" 
+                                        <div className="ficha-row-actions" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
+                                            {/* Ver ficha */}
+                                            <i
+                                                className="ri-file-search-line action-icon"
                                                 onClick={(e) => { e.stopPropagation(); setCentroSeleccionado(data); }}
                                                 title={t('Ver ICG')}
                                                 style={{ color: "#1976d2", fontSize: "18px", cursor: "pointer" }}
                                             />
+                                            {/* Validar/desvalidar — solo admin */}
+                                            {esAdmin && (
+                                                <i
+                                                    className={data.validado === 1 ? "ri-checkbox-circle-fill" : "ri-checkbox-blank-circle-line"}
+                                                    onClick={(e) => { e.stopPropagation(); toggleValidado(data.idIcg, data.validado); }}
+                                                    title={data.validado === 1 ? t('Desvalidar') : t('Validar')}
+                                                    style={{ color: data.validado === 1 ? "#43a047" : "#fb8c00", fontSize: "18px", cursor: "pointer" }}
+                                                />
+                                            )}
+                                            {/* Eliminar — solo admin */}
+                                            {esAdmin && (
+                                                <i
+                                                    className="ri-delete-bin-line action-icon"
+                                                    onClick={(e) => { e.stopPropagation(); eliminarIcg(data.idIcg); }}
+                                                    title={t('Eliminar ICG')}
+                                                    style={{ color: "#e53935", fontSize: "18px", cursor: "pointer" }}
+                                                />
+                                            )}
                                         </div>
                                     );
                                 }
                                 return (
                                     <div className="ficha-row-actions">
-                                        <i 
-                                            className="ri-file-add-line action-icon" 
+                                        <i
+                                            className="ri-file-add-line action-icon"
                                             style={{ color: creando ? "#bbb" : "#e65100", fontSize: "18px", cursor: creando ? "not-allowed" : "pointer" }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (!creando) crearIcg06(data);
-                                            }}
+                                            onClick={(e) => { e.stopPropagation(); if (!creando) crearIcg06(data); }}
                                             title={t('Crear ICG')}
                                         />
                                     </div>

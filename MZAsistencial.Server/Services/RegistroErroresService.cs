@@ -20,34 +20,31 @@ namespace MZAsistencial.Server.Services
         public async Task LogErrorAsync(Exception ex, string modulo, int? usuarioId = null)
         {
             string descripcion = $"[{modulo}] {ex.Message}";
-            await LogInternalAsync(descripcion, usuarioId, ex.StackTrace);
+            await LogInternalAsync(descripcion, usuarioId, ex.StackTrace, modulo);
         }
 
         public async Task LogErrorStringAsync(string descripcion, string modulo, int? usuarioId = null)
         {
             string msg = $"[{modulo}] {descripcion}";
-            await LogInternalAsync(msg, usuarioId, null);
+            await LogInternalAsync(msg, usuarioId, null, modulo);
         }
 
-        private async Task LogInternalAsync(string descripcion, int? usuarioId, string? stackTrace)
+        private async Task LogInternalAsync(string descripcion, int? usuarioId, string? stackTrace, string modulo = "React Client")
         {
             try
             {
                 // Limitar tamaño para no exceder columnas si fuera necesario (asumiendo varchar(max) pero por precaución)
                 if (descripcion.Length > 2000) descripcion = descripcion.Substring(0, 2000);
                 
-                string ficheroLogName = stackTrace == null 
-                    ? $"LOG_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt" 
-                    : $"C:\\Ficheros\\Errores\\LOG_{DateTime.Now:yyyy_MM_dd_HH_mm_ss}.txt";
-
                 var registro = new RegistroErrore
                 {
                     UsuarioId = usuarioId,
                     FechaError = DateTime.Now,
                     Descripcion = descripcion,
-                    FicheroLog = ficheroLogName,
+                    FicheroLog = null,
                     EstadoId = 1, // 1 = Abierto
-                    Comentarios = stackTrace // Guardamos el stack trace en comentarios por si acaso
+                    Comentarios = stackTrace ?? "Sin detalles adicionales",
+                    Nombre_Modulo = modulo
                 };
 
                 _context.RegistroErrores.Add(registro);
@@ -81,5 +78,22 @@ namespace MZAsistencial.Server.Services
 
             return query;
         }
+
+        public async Task<bool> UpdateEstadoAsync(int errorId, int nuevoEstadoId)
+        {
+            var registro = await _context.RegistroErrores.FindAsync(errorId);
+            if (registro == null) return false;
+
+            registro.EstadoId = nuevoEstadoId;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Añade este método nuevo en tu servicio
+        public async Task RegistrarErrorCompletoAsync(CrearRegistroErrorDTO dto)
+        {
+            await LogInternalAsync(dto.Descripcion, dto.UsuarioId, dto.DetalleError + "\n" + dto.Comentarios, dto.Nombre_Modulo);
+        }
+
     }
 }

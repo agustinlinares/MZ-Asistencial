@@ -4,6 +4,7 @@ import './Admin.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import AuthService from "../../../services/auth/AuthService";
+import { useLogError } from '../../../hooks/useLogError';
 import UseProtectedRoute from '@hooks/UseProtectedRoute';
 import DataGrid, {
     Column,
@@ -59,6 +60,8 @@ const Ficheros = () => {
     const usuarioId = userData?.usuarioId || 0;
     const usuarioNombre = userData?.nombre || userData?.usuario || 'Usuario';
 
+    const logError = useLogError("Gestión de ficheros");
+
     // Cerrar menú al click fuera
     useEffect(() => {
         const handleClick = (e) => {
@@ -82,6 +85,7 @@ const Ficheros = () => {
                 if (resAreas.ok) setAreas(await resAreas.json());
             } catch (error) {
                 console.error('Error cargando datos:', error);
+                logError("Fallo al cargar el listado inicial de ficheros", error);
             }
         };
         cargarDatos();
@@ -93,6 +97,7 @@ const Ficheros = () => {
             if (resp.ok) setFicheros(await resp.json());
         } catch (error) {
             console.error('Error cargando ficheros:', error);
+            logError("Fallo al refrescar el listado de ficheros", error);
         }
     };
 
@@ -114,6 +119,7 @@ const Ficheros = () => {
             const blob = await respuesta.blob();
             saveAs(blob, nombreFichero);
         } catch (error) {
+            logError("Fallo al descargar el fichero", error);
             notify(t('Error al descargar el fichero.'), 'error', 3000);
         }
     };
@@ -145,6 +151,7 @@ const Ficheros = () => {
                 notify(err.message || t('Error al guardar el fichero.'), 'error', 3000);
             }
         } catch {
+            logError(`Fallo al ${editMode ? "editar" : "crear"} fichero`, error);
             notify(t('Error al guardar el fichero.'), 'error', 3000);
         } finally {
             setCargando(false);
@@ -187,6 +194,7 @@ const Ficheros = () => {
                 notify(t('No se pudo eliminar el fichero.'), 'error', 3000);
             }
         } catch {
+            logError("Fallo al eliminar el fichero", error);
             notify(t('Error al eliminar el fichero.'), 'error', 3000);
         }
         setRowToDelete(null);

@@ -15,11 +15,11 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int usuarioId = 0)
+        public async Task<IActionResult> GetAll([FromQuery] int usuarioId = 0, [FromQuery] int? mutuaId = null)
         {
             if (usuarioId > 0)
                 await _service.LogAccesoAsync(usuarioId);
-            var data = await _service.GetAllAsync();
+            var data = await _service.GetAllAsync(mutuaId);
             return Ok(data);
         }
 

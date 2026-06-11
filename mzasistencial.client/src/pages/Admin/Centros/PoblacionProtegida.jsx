@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import "./Centros.css";
+import { useLogError } from '../../../hooks/useLogError';
 
 const API_URL = "/api/Icg06PoblacionProtegida";
 
@@ -131,14 +132,17 @@ const PoblacionProtegida = ({ centroId: centroIdProp, año: añoProp }) => {
     const [saving,   setSaving]   = useState(false);
     const [msg,      setMsg]      = useState(null);
 
+    const logError = useLogError("Población protegida");
+
     const cargar = useCallback(async () => {
         if (!centroId || !año) return;
         setLoading(true); setMsg(null);
         try {
             const res = await fetch(`${API_URL}?centroId=${centroId}&año=${año}`);
-            if (!res.ok) throw new Error();
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
             setDatos(apiToState(await res.json()));
         } catch {
+            logError(`Fallo al cargar población protegida para Centro: ${centroId}, Año: ${año}`, error);
             setMsg({ ok: false, text: "No se encontraron datos para ese centro/año." });
             setDatos(null);
         } finally { setLoading(false); }
@@ -154,9 +158,10 @@ const PoblacionProtegida = ({ centroId: centroIdProp, año: añoProp }) => {
                 method: "PUT", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(stateToApi(datos)),
             });
-            if (!res.ok) throw new Error();
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
             setMsg({ ok: true, text: "Guardado correctamente." });
         } catch {
+            logError(`Fallo al guardar población protegida para ICG ID: ${datos?.idIcg}`, error);
             setMsg({ ok: false, text: "Error al guardar. Inténtalo de nuevo." });
         } finally { setSaving(false); }
     };

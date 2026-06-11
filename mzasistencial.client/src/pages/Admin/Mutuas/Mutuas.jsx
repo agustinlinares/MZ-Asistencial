@@ -4,6 +4,7 @@ import { Workbook } from 'exceljs';
 import './Mutuas.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
+import { useLogError } from '../../../hooks/useLogError';
 import { useNavigate } from "react-router-dom";
 import FichaMutua from './FichaMutua'; // Importamos la ficha
 import DataGrid, {
@@ -73,6 +74,8 @@ const Mutuas = () => {
 
     // const { isAuthenticated } = UseProtectedRoute();
     const navigate = useNavigate();
+
+    const logError = useLogError("Mutuas");
 
     // useEffect(() => {
     //     if (!isAuthenticated) {
@@ -234,9 +237,11 @@ const Mutuas = () => {
             if (res.ok) {
                 cargarMutuas();
             } else {
+                logError(`Fallo al eliminar Mutua ID: ${id}. Estado: ${res.status}`);
                 alert('Error al eliminar');
             }
         } catch (error) {
+            logError(`Error crítico al intentar eliminar Mutua ID: ${id}`, error);
             console.error('Error al eliminar mutua:', error);
         }
     };

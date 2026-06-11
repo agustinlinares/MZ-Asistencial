@@ -3,6 +3,7 @@ import '../../../styles/FichaGlobal.css';
 import notify from 'devextreme/ui/notify';
 import './FichaMutua.css';
 import MapaModal from '../../Admin/Centros/MapaModal'; // La ruta a MapaModal.jsx
+import { useLogError } from '../../../hooks/useLogError';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
@@ -70,6 +71,8 @@ const FichaMutua = ({ mutua, onClose }) => {
     // Estados para especialidades
     const [especialidadesPropios, setEspecialidadesPropios] = useState([]);
     const [especialidadesConciertos, setEspecialidadesConciertos] = useState([]);
+
+    const logError = useLogError("Ficha mutua");
 
     // Función para exportar a Excel cualquier DataGrid
     const exportarExcel = (gridRef, nombreArchivo) => {
@@ -298,11 +301,14 @@ const FichaMutua = ({ mutua, onClose }) => {
                 notify(esNuevo ? 'Mutua creada correctamente' : 'Mutua guardada correctamente', 'success', 2000);
                 onClose();
             } else {
+                const status = response.status;
+                logError(`Fallo al ${esNuevo ? 'crear' : 'actualizar'} Mutua (ID: ${mutua?.numeroId || 'Nueva'}). Estado: ${status}`);
                 notify('Error al guardar la mutua', 'error', 3000);
             }
 
         } catch (error) {
             console.error("Error guardando mutua:", error);
+            logError(`Error crítico de red al guardar Mutua (ID: ${mutua?.numeroId || 'Nueva'})`, error);
             notify('Error de conexión', 'error', 3000);
         }
     };

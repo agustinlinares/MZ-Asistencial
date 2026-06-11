@@ -11,13 +11,13 @@ import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { exportDataGrid as exportDataGridToExcel } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { saveAs } from 'file-saver-es';
+import { useLogError } from '../../../hooks/useLogError';
 
 const authHeaders = () => {
     const token = AuthService.getToken();
     return { 'Authorization': token ? `Bearer ${token}` : '', 'Content-Type': 'application/json' };
 };
 
-/* ── PESTAÑA GENERAL ───────────────────────────────────────────── */
 const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => {
     
     const handleLocalizadorChange = (rawText) => {
@@ -267,6 +267,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
     const [mutuasAsignadas, setMutuasAsignadas] = useState([]);
     const [registrosICG, setRegistrosICG] = useState([]);
     const [especialidades, setEspecialidades] = useState([]);
+
+    const logError = useLogError("Ficha centros concertados");
     
     // Función para convertir fechas de DD/MM/YYYY o ISO a YYYY-MM-DD
     const parseDateForInput = (dateStr) => {
@@ -283,7 +285,6 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         }
         return dateStr;
     };
-    console.log("Datos que llegan de la tabla:", cliente);
 
     const [form, setForm] = useState({
         centro_id: cliente?.CentroId ?? cliente?.centro_id ?? '',
@@ -312,6 +313,8 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         longitud: cliente?.longitud ?? cliente?.Longitud ?? ''
     });
 
+    const esNuevo = !form.centro_id || form.centro_id === 0;
+
     const [datosMutuas, setDatosMutuas] = useState([]);
 
     const [opts, setOpts] = useState({ proveedores: [], delegaciones: [], provincias: [], poblaciones: [] });
@@ -324,12 +327,15 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 const resProv = await fetch('/api/AuxProvincias', { headers });
                 const resProvdd = await fetch('/api/AuxProveedores', { headers }); 
                 
-                if (resProv.ok && resProvdd.ok) {
-                    const provincias = await resProv.json();
-                    const proveedores = await resProvdd.json();
-                    setOpts(prev => ({ ...prev, provincias, proveedores }));
-                }
+                if (!resProv.ok) throw new Error(`Error ${resProv.status} al cargar Provincias`);
+                if (!resProvdd.ok) throw new Error(`Error ${resProvdd.status} al cargar Proveedores`);
+
+                const provincias = await resProv.json();
+                const proveedores = await resProvdd.json();
+                setOpts(prev => ({ ...prev, provincias, proveedores }));
+
             } catch (error) {
+                logError("Fallo al cargar datos maestros (Provincias/Proveedores)", error);
                 console.error("Error cargando maestros:", error);
             }
         };
@@ -369,10 +375,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 const data = await response.json();
                 setMutuasAsignadas(data);
             } else {
-                console.error("Error al cargar mutuas asignadas");
+                throw new Error(`Error ${response.status} al cargar mutuas`);
             }
         } catch (error) {
-            console.error("Error de red al cargar mutuas:", error);
+            logError(`Fallo al cargar mutuas asignadas para el centro ID: ${id}`, error);
         }
     };
 
@@ -386,10 +392,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 const data = await response.json();
                 setRegistrosICG(data);
             } else {
-                console.error("Error al cargar registros ICG");
+                throw new Error(`Error ${response.status} al cargar registros ICG`);
             }
         } catch (error) {
-            console.error("Error de red al cargar ICG:", error);
+            logError(`Fallo al cargar los registros ICG para el centro ID: ${id}`, error);
         }
     };
 
@@ -402,10 +408,10 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 const data = await response.json();
                 setEspecialidades(data);
             } else {
-                console.error("Error al cargar especialidades");
+                throw new Error(`Error ${response.status} al cargar especialidades`);
             }
         } catch (error) {
-            console.error("Error de red al cargar especialidades:", error);
+            logError(`Fallo al cargar las especialidades para el centro ID: ${id}`, error);
         }
     };
 
@@ -436,9 +442,11 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                     const data = await response.json();
                     setDatosMutuas(data);
                 } else {
+                    logError(`Error del servidor al cargar mutuas para centro ID: ${form.centro_id}. Status: ${response.status}`);
                     console.error("Error en la respuesta del servidor al cargar mutuas");
                 }
             } catch (error) {
+                logError(`Fallo crítico al cargar mutuas para centro ID: ${form.centro_id}`, error);
                 console.error("Error de red cargando mutuas:", error);
             }
         };
@@ -561,7 +569,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             onSave?.(payload); 
 
         } catch (error) {
-            console.error("Error al guardar en BD:", error);
+            logError(`Fallo crítico al ${payload.centro_id > 0 ? 'actualizar' : 'crear'} centro`, error);
             alert("Hubo un problema al guardar los datos en el servidor. Revisa la consola.");
         }
     };
@@ -595,7 +603,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
                 notify(`Error al dar de baja: ${errorData.message}`, "error", 4000);
             }
         } catch (error) {
-            console.error("Error de red al borrar el centro:", error);
+            logError(`Fallo al dar de baja el centro ID: ${form.centro_id}`, error);
             notify("Hubo un error de conexión al intentar dar de baja el centro.", "error", 4000);
         }
     };
@@ -615,41 +623,58 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
 
                 <div className="ficha-tabs">
                     <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
-                    <button className={`ficha-tab ${activeTab === 'registroICG' ? 'active' : ''}`} onClick={() => setActiveTab('registroICG')}>Registro ICG</button>
-                    <button className={`ficha-tab ${activeTab === 'mutuasAsignadas' ? 'active' : ''}`} onClick={() => setActiveTab('mutuasAsignadas')}>Mutuas Asignadas</button>
-                    <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades / Serv.</button>
+                    
+                    {!esNuevo && (
+                        <>
+                            <button className={`ficha-tab ${activeTab === 'registroICG' ? 'active' : ''}`} onClick={() => setActiveTab('registroICG')}>Registro ICG</button>
+                            <button className={`ficha-tab ${activeTab === 'mutuasAsignadas' ? 'active' : ''}`} onClick={() => setActiveTab('mutuasAsignadas')}>Mutuas Asignadas</button>
+                            <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades / Serv.</button>
+                        </>
+                    )}
+                    
                     <button className={`ficha-tab ${activeTab === 'mapa' ? 'active' : ''}`} onClick={() => setActiveTab('mapa')}>Mapa / Ubicación</button>
                 </div>
 
                 <div className="ficha-tab-content">
-                    {activeTab === 'general' && <TabGeneral form={form} onChange={handleChange} errors={errors} onGoToMap={() => setActiveTab('mapa')} opts={opts} />}
+                    {activeTab === 'general' && (
+                        <TabGeneral 
+                            form={form} 
+                            onChange={handleChange} 
+                            errors={errors} 
+                            onGoToMap={() => setActiveTab('mapa')} 
+                            opts={opts} 
+                        />
+                    )}
                     
-                    {activeTab === 'registroICG' && (
-                        <TabDataGrid datos={registrosICG} nombreArchivo="Registro_ICG">
-                            <Column dataField="ano" caption="Año" width={100} />
-                            <Column dataField="mutua" caption="Mutua" />
-                            <Column dataField="centro" caption="Centro" />
-                            <Column dataField="fechaModificacion" caption="Fecha Act." dataType="date" width={150} />
-                            <Column dataField="usuarioModificacionId" caption="ID Usuario" width={150} />
-                        </TabDataGrid>
-                    )}
+                    {!esNuevo && (
+                        <>
+                            {activeTab === 'registroICG' && (
+                                <TabDataGrid datos={registrosICG} nombreArchivo="Registro_ICG">
+                                    <Column dataField="ano" caption="Año" width={100} />
+                                    <Column dataField="mutua" caption="Mutua" />
+                                    <Column dataField="centro" caption="Centro" />
+                                    <Column dataField="fechaModificacion" caption="Fecha Act." dataType="date" width={150} />
+                                    <Column dataField="usuarioModificacionId" caption="ID Usuario" width={150} />
+                                </TabDataGrid>
+                            )}
 
-                    {activeTab === 'mutuasAsignadas' && (
-                        <TabDataGrid datos={mutuasAsignadas} nombreArchivo="Mutuas_Asignadas">
-                            <Column dataField="mutua" caption="Mutua" />
-                            
-                            <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
-                            <Column dataField="localizador" caption="Localizador" width={150} />
-                        </TabDataGrid>
-                    )}
+                            {activeTab === 'mutuasAsignadas' && (
+                                <TabDataGrid datos={mutuasAsignadas} nombreArchivo="Mutuas_Asignadas">
+                                    <Column dataField="mutua" caption="Mutua" />
+                                    <Column dataField="codigoCasa" caption="Cód. CASA" width={150} />
+                                    <Column dataField="localizador" caption="Localizador" width={150} />
+                                </TabDataGrid>
+                            )}
 
-                    {activeTab === 'especialidades' && (
-                        <TabDataGrid datos={especialidades} nombreArchivo="Especialidades">
-                            <Column dataField="anyo" caption="Año" width={100} />
-                            <Column dataField="servicio" caption="Servicio" />
-                            <Column dataField="especialidad" caption="Especialidad" />
-                            <Column dataField="cantidad" caption="Cantidad" width={100} />
-                        </TabDataGrid>
+                            {activeTab === 'especialidades' && (
+                                <TabDataGrid datos={especialidades} nombreArchivo="Especialidades">
+                                    <Column dataField="anyo" caption="Año" width={100} />
+                                    <Column dataField="servicio" caption="Servicio" />
+                                    <Column dataField="especialidad" caption="Especialidad" />
+                                    <Column dataField="cantidad" caption="Cantidad" width={100} />
+                                </TabDataGrid>
+                            )}
+                        </>
                     )}
 
                     {activeTab === 'mapa' && (

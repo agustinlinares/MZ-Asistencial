@@ -5,6 +5,7 @@ import './ICG.css';
 import '../../../styles/FichaGlobal.css'; // Aplicamos estilo premium y estandarizado
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
+import { useLogError } from '../../../hooks/useLogError';
 import { useNavigate } from "react-router-dom";
 import DataGrid, {
     Column,
@@ -91,6 +92,8 @@ const ICGPlantillasICG = () => {
     const [informes, setInformes] = useState([]);
     const [cargando, setCargando] = useState(false);
 
+    const logError = useLogError("Plantillas ICG");
+
     // Modal de Subir Plantilla
     const [popupVisible, setPopupVisible] = useState(false);
     const [uploadForm, setUploadForm] = useState({
@@ -133,6 +136,7 @@ const ICGPlantillasICG = () => {
                     }
                 }
             } catch (error) {
+                logError("Fallo al inicializar datos del formulario de plantillas", error);
                 console.error("Error al cargar datos iniciales:", error);
             }
         };
@@ -146,7 +150,7 @@ const ICGPlantillasICG = () => {
             const data = await PlantillasICGService.getInformes(mutua, anio);
             setInformes(data);
         } catch (error) {
-            console.error("Error cargando grid:", error);
+            logError(`Fallo al cargar informes (Mutua: ${mutua}, Año: ${anio})`, error);
             // Si el backend aún no está listo, ponemos una tabla vacía para no bloquear la UI
             setInformes([]);
         } finally {
@@ -183,6 +187,7 @@ const ICGPlantillasICG = () => {
             await PlantillasICGService.generarPlantilla(mutua, anio, tipo, plantilla);
             notify(t("Plantilla descargada correctamente"), "success", 2000);
         } catch (error) {
+            logError(`Fallo al generar plantilla para Mutua: ${mutua}, Año: ${anio}, Tipo: ${tipo}`, error);
             notify(error.message, "error", 4000);
         } finally {
             setCargando(false);
@@ -196,6 +201,7 @@ const ICGPlantillasICG = () => {
             notify(t("Plantillas procesadas correctamente"), "success", 2000);
             cargarGrid();
         } catch (error) {
+            logError("Fallo crítico al procesar todas las plantillas en lote", error);
             notify(error.message, "error", 4000);
         } finally {
             setCargando(false);
@@ -236,6 +242,7 @@ const ICGPlantillasICG = () => {
             setUploadForm({ ...uploadForm, fichero: null });
             cargarGrid();
         } catch (error) {
+            logError(`Fallo al subir fichero para Tipo ICG: ${uploadForm.tipoICG}, Año: ${uploadForm.anio}`, error);
             notify(error.message, "error", 4000);
         } finally {
             setCargando(false);
@@ -264,6 +271,7 @@ const ICGPlantillasICG = () => {
                 notify(t("Informe eliminado correctamente"), "success", 2000);
                 cargarGrid();
             } catch (error) {
+                logError(`Fallo al eliminar informe ID: ${row.data.Id}`, error);
                 notify(error.message, "error", 4000);
             } finally {
                 setCargando(false);

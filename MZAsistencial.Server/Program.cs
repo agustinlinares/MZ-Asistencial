@@ -97,6 +97,12 @@ builder.Services.AddScoped<Icg06DatosGeneralesService>();
 builder.Services.AddScoped<Icg06DatosPlantillaService>();
 builder.Services.AddScoped<Icg06EspecialidadService>();
 builder.Services.AddScoped<Icg06PoblacionProtegidaService>();
+builder.Services.AddScoped<ListadoPropiosIcgService>();
+builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
+builder.Services.AddScoped<Icg06CrearService>();
+builder.Services.AddScoped<Icg06ValidarService>();
+builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
+builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 
 // ── Servicios ICG07 (Conciertos) ─────────────────────────────────────────────
 builder.Services.AddScoped<IcgConciertosService>();

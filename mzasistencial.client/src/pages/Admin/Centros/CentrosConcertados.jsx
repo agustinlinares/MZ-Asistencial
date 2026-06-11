@@ -62,7 +62,7 @@ const CentrosConcertados = () => {
     const dataGridRef = useRef(null);
     const navigate = useNavigate();
     
-    const logError = useLogError("Centros Concertados");
+    const logError = useLogError("Centros concertados");
 
     const [centros, setCentros] = useState([]);
     const [selectedCentro, setSelectedCentro] = useState(null);
@@ -117,7 +117,7 @@ const CentrosConcertados = () => {
             console.error("Error de red al borrar:", error);
             notify(t('Hubo un error de conexión al intentar dar de baja'), 'error', 4000);
             
-            logError("Fallo al borrar", error);
+            logError(`Fallo al dar de baja el centro ID: ${centroId}`, error);
         }
     };
 
@@ -137,7 +137,7 @@ const CentrosConcertados = () => {
             }
         } catch (error) {
             console.error("Error de red al reactivar:", error);
-            logError(`Fallo al reactivar el centro con ID ${id}`, error, "CentrosConcertados");
+            logError(`Fallo al reactivar el centro con ID ${id}`, error);
         }
     };
 
