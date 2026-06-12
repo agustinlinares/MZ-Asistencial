@@ -168,11 +168,11 @@ const TabGeneral = ({ form, onChange, errors, onGoToMap, opts }) => {
             </div>
 
             <div className="ficha-field">
-                <label>Comentarios</label>
+                <label>Observaciones</label>
                 <textarea 
                     style={{ color: 'black', backgroundColor: 'white', border: '1px solid black' }}
-                    value={form.comentarios || ''} 
-                    onChange={e => onChange('comentarios', e.target.value)} 
+                    value={form.observaciones || ''} 
+                    onChange={e => onChange('observaciones', e.target.value)} 
                 />
             </div>
 
@@ -307,7 +307,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
         numero: cliente?.Numero ?? cliente?.numero ?? '', 
         telefono: cliente?.Telefono ?? cliente?.telefono ?? '', 
         numRegistroSanitario: cliente?.NumRegistroSanitario ?? cliente?.numRegistroSanitario ?? '', 
-        comentarios: cliente?.Comentarios ?? cliente?.comentarios ?? '',
+        observaciones: cliente?.Observaciones ?? cliente?.observaciones ?? '',
         motivoBaja: cliente?.MotivoBaja ?? cliente?.motivoBaja ?? '', 
         latitud: cliente?.latitud ?? cliente?.Latitud ?? '', 
         longitud: cliente?.longitud ?? cliente?.Longitud ?? ''
@@ -507,18 +507,39 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             newErrors.telefono = true;
         }
 
-        // Comprobación final: Si hay algún error, se los pasamos a React y paramos aquí
-        if (Object.keys(newErrors).length > 0) { 
-            setErrors(newErrors); // Esto activará los bordes rojos en la interfaz
-            
-            const soloFaltaMapa = Object.keys(newErrors).length === 1 && newErrors.mapa;
+        const nombresCampos = {
+            centro: 'Centro',
+            provincia: 'Provincia',
+            poblacion: 'Población',
+            direccion: 'Dirección',
+            cif: 'CIF / NIF',
+            cp: 'Código Postal',
+            ccn: 'Localizador Centro',
+            fecha_alta: 'Fecha de alta',
+            mapa: 'Ubicación (Mapa)',
+            telefono: 'Teléfono'
+        };
 
-            if (soloFaltaMapa) {
-                alert("Falta la localización. Por favor, ve a la pestaña 'Mapa / Ubicación' y sitúa el centro.");
+        // Comprobación final: Si hay algún error, lanzamos la notificación
+        if (Object.keys(newErrors).length > 0) { 
+            setErrors(newErrors); 
+            
+            const camposFaltantes = Object.keys(newErrors).map(key => nombresCampos[key] || key);
+
+            const soloFaltanCosasDelMapa = Object.keys(newErrors).every(key => key === 'mapa' || key === 'direccion');
+
+            let mensajeError;
+            
+            if (soloFaltanCosasDelMapa) {
+                mensajeError = "Falta situar el centro. Por favor, ve a la pestaña 'Mapa / Ubicación' para generar las coordenadas y la dirección.";
+            } else if (camposFaltantes.length === 1) {
+                mensajeError = `Falta rellenar el campo obligatorio: ${camposFaltantes[0]}`;
             } else {
-                alert("Faltan campos obligatorios por rellenar. Por favor, revisa los campos marcados en rojo.");
+                mensajeError = 'Hay varios campos obligatorios sin rellenar. Revísalos marcados en rojo.';
             }
-            return; // Ahora sí cortamos, porque la pantalla ya se ha enterado de los errores
+
+            notify(mensajeError, 'error', 4500);
+            return; 
         }
 
         // Construimos el objeto exacto que espera el CentrosConcertadoDTO de C#
@@ -540,7 +561,7 @@ const FichaCentroConcertado = ({ cliente, onClose, onSave }) => {
             fechaAlta: form.fecha_alta || null,
             fechaBaja: form.fecha_baja || null,
             latitud: form.latitud,
-            comentarios: form.comentarios,
+            observaciones: form.observaciones,
             motivoBaja: form.motivoBaja,
             longitud: form.longitud
         };
