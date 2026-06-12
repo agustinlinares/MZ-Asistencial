@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server.DTOs.ICG06;
+﻿namespace MZAsistencial.Server.DTOs.ICG06;
 
 public class Icg06DatosGeneralesDto
 {
