@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -9,11 +9,13 @@ namespace MZAsistencial.Server.Services
     {
         private readonly MZAsistencialContext _context;
         private readonly IRegistroErroresService _registroErroresService;
+        private readonly IRegistrosActividadService _registroActividadService;
 
-        public FincaRegistralService(MZAsistencialContext context, IRegistroErroresService registroErroresService)
+        public FincaRegistralService(MZAsistencialContext context, IRegistroErroresService registroErroresService, IRegistrosActividadService registroActividadService)
         {
             _context = context;
             _registroErroresService = registroErroresService;
+            _registroActividadService = registroActividadService;
         }
 
         private string FixEncoding(string? value)
@@ -27,11 +29,67 @@ namespace MZAsistencial.Server.Services
             catch { return value ?? ""; }
         }
 
-        public async Task<(List<FincaRegistralDTO> Data, int Total)> ObtenerFincasPaginadas(int page, int pageSize, int? centroId)
+        private string ConvertirTitularidad(string? cod)
+        {
+            if (string.IsNullOrEmpty(cod)) return "";
+            return cod.Trim().ToUpper() switch
+            {
+                "PH" => "Patrimonio Histórico",
+                "SS" => "Patrimonio de la Seguridad Social",
+                "TT" => "Terceros distintos de los anteriores",
+                _ => cod
+            };
+        }
+
+        private string DesconvertirTitularidad(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            return text.Trim() switch
+            {
+                "Patrimonio Histórico" => "PH",
+                "Patrimonio de la Seguridad Social" => "SS",
+                "Terceros distintos de los anteriores" => "TT",
+                _ => text
+            };
+        }
+
+        private int? ObtenerMutuaId(System.Security.Claims.ClaimsPrincipal? user)
+        {
+            if (user == null) return null;
+            var mutuaClaim = user.FindFirst("mutuaId");
+            if (mutuaClaim != null && int.TryParse(mutuaClaim.Value, out int mutuaId)) return mutuaId;
+            return null;
+        }
+
+        private int? ObtenerPerfilId(System.Security.Claims.ClaimsPrincipal? user)
+        {
+            if (user == null) return null;
+            var perfilClaim = user.FindFirst("perfilId");
+            if (perfilClaim != null && int.TryParse(perfilClaim.Value, out int perfilId)) return perfilId;
+            return null;
+        }
+
+        private int? ObtenerUsuarioId(System.Security.Claims.ClaimsPrincipal? user)
+        {
+            if (user == null) return null;
+            var subClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? user.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+            if (subClaim != null && int.TryParse(subClaim.Value, out int uId)) return uId;
+            return null;
+        }
+
+        public async Task<(List<FincaRegistralDTO> Data, int Total)> ObtenerFincasPaginadas(int page, int pageSize, int? centroId, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             var query = _context.FincasRegistrales.AsQueryable();
             if (centroId.HasValue)
                 query = query.Where(f => f.CentroId == centroId.Value);
+
+            var perfilId = ObtenerPerfilId(user);
+            var mutuaId = ObtenerMutuaId(user);
+
+            if (perfilId == 2 && mutuaId.HasValue)
+            {
+                query = query.Where(f => _context.CentrosPropios.Any(c => c.CentroId == f.CentroId && c.MutuaId == mutuaId.Value));
+            }
 
             var total = await query.CountAsync();
 
@@ -68,7 +126,7 @@ namespace MZAsistencial.Server.Services
                 F_Inscripcion = x.Finscreg,
                 F_Baja = x.FechaBaja,
                 TipoFinca = x.TipoFinca,
-                Titularidad = FixEncoding(x.Titinmueble),
+                Titularidad = ConvertirTitularidad(FixEncoding(x.Titinmueble)),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
                 CentroValidado = x.CentroValidado,
@@ -115,7 +173,7 @@ namespace MZAsistencial.Server.Services
                 F_Inscripcion = x.Finscreg,
                 F_Baja = x.FechaBaja,
                 TipoFinca = x.TipoFinca,
-                Titularidad = FixEncoding(x.Titinmueble),
+                Titularidad = ConvertirTitularidad(FixEncoding(x.Titinmueble)),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
                 CentroValidado = x.CentroValidado,
@@ -142,13 +200,25 @@ namespace MZAsistencial.Server.Services
                 finca.ReferenciaCatastral = dto.Referencia_Catastral;
                 finca.Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion;
                 finca.TipoFinca = dto.TipoFinca;
-                finca.Titinmueble = dto.Titularidad;
+                finca.Titinmueble = DesconvertirTitularidad(dto.Titularidad);
                 finca.OtrosDatos = dto.OtrosDatos;
                 finca.DireccionElectronica = dto.DireccionGoogle;
+
+                var usuarioId = ObtenerUsuarioId(user);
 
                 finca.FechaModificacion = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
+
+                if (usuarioId.HasValue)
+                {
+                    await _registroActividadService.InsertarRegistroActividad(
+                        $"UPDATE FincasRegistrales SET NombreVia='{dto.Direccion}', Utilizacion='{finca.Utilizacion}', FechaModificacion='{finca.FechaModificacion}' WHERE Finca_id={id}",
+                        usuarioId.Value,
+                        $"UPDATE FincaRegistral {id} ({dto.Localizador})"
+                    );
+                }
+
                 return await ObtenerFincaPorId(id);
             }
             catch (Exception ex)
@@ -158,10 +228,12 @@ namespace MZAsistencial.Server.Services
             }
         }
 
-        public async Task<FincaRegistralDTO?> CrearFinca(FincaRegistralDTO dto)
+        public async Task<FincaRegistralDTO?> CrearFinca(FincaRegistralDTO dto, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             try
             {
+                var usuarioId = ObtenerUsuarioId(user);
+                
                 var finca = new FincasRegistrale
                 {
                     CentroId = dto.Centro_id != 0 ? dto.Centro_id : null,
@@ -175,15 +247,25 @@ namespace MZAsistencial.Server.Services
                     FechaBaja = dto.F_Baja,
                     Utilizacion = string.IsNullOrEmpty(dto.Utilizacion) ? InferUtilizacion(dto.TipoFinca) : dto.Utilizacion,
                     TipoFinca = dto.TipoFinca,
-                    Titinmueble = dto.Titularidad,
+                    Titinmueble = DesconvertirTitularidad(dto.Titularidad),
                     OtrosDatos = dto.OtrosDatos,
                     DireccionElectronica = dto.DireccionGoogle,
                     FechaAlta = DateTime.UtcNow,
+                    UsuarioAltaId = usuarioId,
                     FechaModificacion = DateTime.UtcNow
                 };
 
                 _context.FincasRegistrales.Add(finca);
                 await _context.SaveChangesAsync();
+
+                if (usuarioId.HasValue)
+                {
+                    await _registroActividadService.InsertarRegistroActividad(
+                        $"INSERT INTO FincasRegistrales (Localizador, NombreVia) VALUES ('{dto.Localizador}', '{dto.Direccion}')",
+                        usuarioId.Value,
+                        $"INSERT FincaRegistral {finca.FincaId} ({dto.Localizador})"
+                    );
+                }
 
                 return await ObtenerFincaPorId(finca.FincaId);
             }
@@ -269,8 +351,26 @@ namespace MZAsistencial.Server.Services
                 var finca = await _context.FincasRegistrales.FirstOrDefaultAsync(f => f.FincaId == id);
                 if (finca == null) return false;
 
+                // Eliminate associated costs first
+                var costes = await _context.FincasRegistralesCostesPorAños.Where(c => c.FincaId == id).ToListAsync();
+                if (costes.Any())
+                {
+                    _context.FincasRegistralesCostesPorAños.RemoveRange(costes);
+                }
+
                 _context.FincasRegistrales.Remove(finca);
                 await _context.SaveChangesAsync();
+
+                var usuarioId = ObtenerUsuarioId(user);
+                if (usuarioId.HasValue)
+                {
+                    await _registroActividadService.InsertarRegistroActividad(
+                        $"DELETE FROM FincasRegistrales WHERE Finca_id={id}",
+                        usuarioId.Value,
+                        $"DELETE FincaRegistral {id}"
+                    );
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -280,30 +380,45 @@ namespace MZAsistencial.Server.Services
             }
         }
 
-        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId, int? anio)
+        public async Task<List<FincaRegistralDTO>> ObtenerTodasLasFincas(int? centroId, int? anio, System.Security.Claims.ClaimsPrincipal? user = null)
         {
             var query = _context.FincasRegistrales.AsQueryable();
             if (centroId.HasValue)
                 query = query.Where(f => f.CentroId == centroId.Value);
 
-            var rawList = await (from f in query
-                           join c in _context.CentrosPropios on f.CentroId equals c.CentroId into cg
-                           from c in cg.DefaultIfEmpty()
-                           join cost in _context.FincasRegistralesCostesPorAños.Where(x => anio == null || x.Anio == anio) on f.FincaId equals cost.FincaId into costg
-                           from cost in costg.DefaultIfEmpty()
-                           orderby f.FincaId
-                           select new 
+            var perfilId = ObtenerPerfilId(user);
+            var mutuaId = ObtenerMutuaId(user);
+
+            if (perfilId == 2 && mutuaId.HasValue)
+            {
+                query = query.Where(f => _context.CentrosPropios.Any(c => c.CentroId == f.CentroId && c.MutuaId == mutuaId.Value));
+            }
+
+            var fincas = await query.ToListAsync();
+            var fincasIds = fincas.Select(f => f.FincaId).ToList();
+            var centrosIds = fincas.Where(f => f.CentroId.HasValue).Select(f => f.CentroId!.Value).Distinct().ToList();
+
+            var centros = await _context.CentrosPropios.Where(c => centrosIds.Contains(c.CentroId)).ToDictionaryAsync(c => c.CentroId, c => c);
+            var costesQuery = _context.FincasRegistralesCostesPorAños.Where(c => fincasIds.Contains(c.FincaId));
+            if (anio.HasValue)
+            {
+                costesQuery = costesQuery.Where(c => c.Anio == anio.Value);
+            }
+            var costes = await costesQuery.ToListAsync();
+            var costesDict = costes.GroupBy(c => c.FincaId).ToDictionary(g => g.Key, g => g.FirstOrDefault());
+
+            var rawList = fincas.Select(f => new 
                            { 
                                f.FincaId, f.CentroId, f.Localizador, f.NombreVia, f.Numero, f.Piso, f.Puerta,
                                f.Utilizacion, f.Superficie, 
                                CosteOriginal = f.Coste,
-                               CosteAnual = cost != null ? cost.Coste : (double?)null,
+                               CosteAnual = costesDict.ContainsKey(f.FincaId) ? costesDict[f.FincaId]?.Coste : (double?)null,
                                f.Fadqoarr, f.ReferenciaCatastral,
                                f.Finscreg, f.FechaBaja, f.TipoFinca, f.Titinmueble, f.OtrosDatos, f.DireccionElectronica,
                                f.FechaAlta, f.FechaModificacion,
-                               CentroNombre = c != null ? c.Centro : null,
-                               CentroValidado = c != null && c.Validado == true
-                           }).ToListAsync();
+                               CentroNombre = f.CentroId.HasValue && centros.ContainsKey(f.CentroId.Value) ? centros[f.CentroId.Value].Centro : null,
+                               CentroValidado = f.CentroId.HasValue && centros.ContainsKey(f.CentroId.Value) && centros[f.CentroId.Value].Validado == true
+                           }).ToList();
 
             return rawList.Select(x => new FincaRegistralDTO
             {
@@ -323,7 +438,7 @@ namespace MZAsistencial.Server.Services
                 F_Inscripcion = x.Finscreg,
                 F_Baja = x.FechaBaja,
                 TipoFinca = x.TipoFinca,
-                Titularidad = FixEncoding(x.Titinmueble),
+                Titularidad = ConvertirTitularidad(FixEncoding(x.Titinmueble)),
                 OtrosDatos = FixEncoding(x.OtrosDatos),
                 DireccionGoogle = x.DireccionElectronica,
                 CentroValidado = x.CentroValidado,

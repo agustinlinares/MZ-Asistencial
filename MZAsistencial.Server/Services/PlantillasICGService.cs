@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
+using System.Security.Claims;
 
 namespace MZAsistencial.Server.Services;
 
@@ -21,45 +23,58 @@ public class PlantillasICGService
         _registroErroresService = registroErroresService;
     }
 
-    public async Task<List<PlantillasICGDTO>> GetInformesAsync(int? mutuaId, int? anio)
+    private int? ObtenerMutuaId(ClaimsPrincipal? user)
+    {
+        if (user == null) return null;
+        var perfilClaim = user.Claims.FirstOrDefault(c => c.Type == "perfilId" || c.Type == "PerfilId");
+        if (perfilClaim != null && int.TryParse(perfilClaim.Value, out int perfilId) && perfilId == 2)
+        {
+            var mutuaClaim = user.Claims.FirstOrDefault(c => c.Type == "mutuaId" || c.Type == "MutuaId");
+            if (mutuaClaim != null && int.TryParse(mutuaClaim.Value, out int mutuaId))
+                return mutuaId;
+        }
+        return null;
+    }
+
+    private int? ObtenerUsuarioId(ClaimsPrincipal? user)
+    {
+        if (user == null) return null;
+        var claim = user.Claims.FirstOrDefault(c => c.Type == "usuarioId" || c.Type == "UsuarioId");
+        if (claim != null && int.TryParse(claim.Value, out int uid)) return uid;
+        return null;
+    }
+
+    public async Task<List<PlantillasICGDTO>> GetInformesAsync(int? mutuaId, int? anio, ClaimsPrincipal? user)
     {
         try
         {
-            var query = _context.InformesIcgs.AsQueryable();
+            var userMutuaId = ObtenerMutuaId(user);
+            int? finalMutuaId = userMutuaId.HasValue ? userMutuaId.Value : mutuaId;
 
-            if (anio.HasValue)
-            {
-                query = query.Where(i => i.Año == anio.Value);
-            }
+            var result = await (from i in _context.InformesIcgs
+                                join m in _context.Mutuas on i.MutuaId equals m.MutuaId into mGroup
+                                from m in mGroup.DefaultIfEmpty()
+                                join e in _context.AuxEstadosInformesIcgs on i.EstadoInformeId equals e.EstadoInformeId into eGroup
+                                from e in eGroup.DefaultIfEmpty()
+                                join u in _context.Usuarios on i.UsuarioModificación equals u.UsuarioId into uGroup
+                                from u in uGroup.DefaultIfEmpty()
+                                where (!anio.HasValue || i.Año == anio.Value)
+                                   && (!finalMutuaId.HasValue || i.MutuaId == finalMutuaId.Value)
+                                select new PlantillasICGDTO
+                                {
+                                    Id = i.InformeId,
+                                    Informe = i.Informe,
+                                    ResultadoInforme = i.ResultadoInforme,
+                                    EstadoInforme = e != null ? e.EstadoInforme : "Pendiente",
+                                    TipoICG = i.TipoIcg,
+                                    Mutua = m != null ? m.Mutua1 : "",
+                                    Anio = i.Año,
+                                    Mes = i.Mes,
+                                    Usuario = u != null ? u.Usuario1 : "Sistema",
+                                    FechaAlta = i.FechaModificacion
+                                }).ToListAsync();
 
-            // Mock lookup lists for demonstration. Ideally these come from joins.
-            var mutuas = await _context.Mutuas.ToDictionaryAsync(m => m.MutuaId, m => m.Mutua1);
-            var estados = await _context.AuxEstadosInformesIcgs.ToDictionaryAsync(e => e.EstadoInformeId, e => e.EstadoInforme);
-            var usuarios = await _context.Usuarios.ToDictionaryAsync(u => u.UsuarioId, u => u.Usuario1);
-
-            var result = await query.ToListAsync();
-            
-            var dtos = result.Select(i => new PlantillasICGDTO
-            {
-                Id = i.InformeId,
-                Informe = i.Informe,
-                ResultadoInforme = i.ResultadoInforme,
-                EstadoInforme = i.EstadoInformeId.HasValue && estados.ContainsKey(i.EstadoInformeId.Value) ? estados[i.EstadoInformeId.Value] : "Pendiente",
-                TipoICG = i.TipoIcg,
-                Mutua = i.MutuaId.HasValue && mutuas.ContainsKey(i.MutuaId.Value) ? mutuas[i.MutuaId.Value] : "",
-                Anio = i.Año,
-                Mes = i.Mes,
-                Usuario = i.UsuarioModificación.HasValue && usuarios.ContainsKey(i.UsuarioModificación.Value) ? usuarios[i.UsuarioModificación.Value] : "Sistema",
-                FechaAlta = i.FechaModificacion
-            }).ToList();
-
-            if (mutuaId.HasValue)
-            {
-                var mutuaNombre = await _context.Mutuas.Where(m => m.MutuaId == mutuaId.Value).Select(m => m.Mutua1).FirstOrDefaultAsync();
-                if (!string.IsNullOrEmpty(mutuaNombre)) dtos = dtos.Where(d => d.Mutua == mutuaNombre).ToList();
-            }
-
-            return dtos;
+            return result;
         }
         catch (Exception ex)
         {
@@ -68,26 +83,30 @@ public class PlantillasICGService
         }
     }
 
-    public async Task<byte[]> GenerarPlantillaAsync(int? mutuaId, int? anio, string tipo, string formato)
+    public async Task<byte[]> GenerarPlantillaAsync(int? mutuaId, int? anio, string tipo, string formato, ClaimsPrincipal? user)
     {
         try
         {
-            // Mock generation. In a real scenario, this would query DB, build CSV/XML bytes.
-            var content = $"Plantilla Tipo: {tipo}, Año: {anio}, MutuaId: {mutuaId}\nCol1,Col2,Col3\nVal1,Val2,Val3";
+            var userMutuaId = ObtenerMutuaId(user);
+            int? finalMutuaId = userMutuaId.HasValue ? userMutuaId.Value : mutuaId;
+
+            // TODO: Replace with real data generation logic
+            var content = $"Plantilla Tipo: {tipo}, Año: {anio}, MutuaId: {finalMutuaId}\nCol1,Col2,Col3\nVal1,Val2,Val3";
             if (formato.ToUpper() == "XML")
             {
                 content = $"<xml><tipo>{tipo}</tipo><anio>{anio}</anio></xml>";
             }
             
-            // Registrar la generación en base de datos
             var nuevoInforme = new InformesIcg
             {
                 Informe = $"Plantilla_{tipo}_{anio}.{formato.ToLower()}",
                 ResultadoInforme = "Generado Correctamente",
                 Año = anio,
+                MutuaId = finalMutuaId,
                 TipoIcg = tipo,
                 FechaModificacion = DateTime.Now,
-                EstadoInformeId = 1 // 1: Por ejemplo, "Generado"
+                EstadoInformeId = 1, // 1: "Generado"
+                UsuarioModificación = ObtenerUsuarioId(user)
             };
             _context.InformesIcgs.Add(nuevoInforme);
             await _context.SaveChangesAsync();
@@ -101,19 +120,35 @@ public class PlantillasICGService
         }
     }
 
-    public async Task<PlantillasICGDTO> SubirPlantillaAsync(IFormFile fichero, int? mutuaId, int? anio, string tipoICG)
+    public async Task<PlantillasICGDTO> SubirPlantillaAsync(IFormFile fichero, int? mutuaId, int? anio, string tipoICG, ClaimsPrincipal? user)
     {
         try
         {
-            // Mock upload logic. Save file to disk or blob storage.
+            var userMutuaId = ObtenerMutuaId(user);
+            int? finalMutuaId = userMutuaId.HasValue ? userMutuaId.Value : mutuaId;
+
+            // Save file physical
+            string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Plantillas");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            string uniqueFileName = $"{Guid.NewGuid()}_{fichero.FileName}";
+            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await fichero.CopyToAsync(fileStream);
+            }
+
             var nuevoInforme = new InformesIcg
             {
                 Informe = fichero.FileName,
-                ResultadoInforme = "Subido con éxito",
+                ResultadoInforme = uniqueFileName, // Usar ResultadoInforme para guardar la ruta real interna si es necesario
                 Año = anio,
+                MutuaId = finalMutuaId,
                 TipoIcg = tipoICG,
                 FechaModificacion = DateTime.Now,
-                EstadoInformeId = 2 // 2: "Pendiente de procesar"
+                EstadoInformeId = 2, // 2: "Pendiente de procesar"
+                UsuarioModificación = ObtenerUsuarioId(user)
             };
             
             _context.InformesIcgs.Add(nuevoInforme);
@@ -123,7 +158,7 @@ public class PlantillasICGService
             {
                 Id = nuevoInforme.InformeId,
                 Informe = nuevoInforme.Informe,
-                ResultadoInforme = nuevoInforme.ResultadoInforme,
+                ResultadoInforme = "Subido con éxito",
                 TipoICG = nuevoInforme.TipoIcg,
                 Anio = nuevoInforme.Año,
                 FechaAlta = nuevoInforme.FechaModificacion
@@ -136,17 +171,20 @@ public class PlantillasICGService
         }
     }
 
-    public async Task<int> ProcesarPlantillasAsync()
+    public async Task<int> ProcesarPlantillasAsync(ClaimsPrincipal? user)
     {
         try
         {
-            // Mock logic to process pending templates
             var pendientes = await _context.InformesIcgs.Where(i => i.EstadoInformeId == 2).ToListAsync();
+            int uid = ObtenerUsuarioId(user) ?? 0;
+            
             foreach (var p in pendientes)
             {
+                // TODO: Leer el fichero fisico p.ResultadoInforme y procesarlo
                 p.EstadoInformeId = 3; // "Procesado"
                 p.ResultadoInforme = "Procesado OK";
                 p.FechaModificacion = DateTime.Now;
+                if (uid > 0) p.UsuarioModificación = uid;
             }
             
             await _context.SaveChangesAsync();
@@ -160,9 +198,14 @@ public class PlantillasICGService
     }
     public async Task<object> GetDatosInicialesAsync()
     {
-        var mutuas = await _context.Mutuas.Select(m => new { m.MutuaId, m.Mutua1 }).ToListAsync();
+        var mutuas = await _context.Mutuas.Select(m => new { id = m.MutuaId, nombre = m.Mutua1 }).ToListAsync();
         var estados = await _context.AuxEstadosInformesIcgs.Select(e => new { e.EstadoInformeId, e.EstadoInforme }).ToListAsync();
-        return new { mutuas, estados };
+        
+        var tipos = new List<string> { "ICG06", "ICG07", "FINCAS", "OTROS" };
+        var anios = Enumerable.Range(2022, 10).Select(a => a.ToString()).ToList();
+        var plantillas = new List<string> { "CSV", "XML" };
+
+        return new { mutuas, estados, tipos, anios, plantillas };
     }
     public async Task<bool> EliminarPlantillaAsync(int id)
     {
@@ -170,6 +213,15 @@ public class PlantillasICGService
         {
             var plantilla = await _context.InformesIcgs.FindAsync(id);
             if (plantilla == null) return false;
+
+            // Eliminar fichero físico
+            if (!string.IsNullOrEmpty(plantilla.ResultadoInforme) && plantilla.ResultadoInforme.Contains("_"))
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "Plantillas");
+                string filePath = Path.Combine(uploadsFolder, plantilla.ResultadoInforme);
+                if (File.Exists(filePath)) File.Delete(filePath);
+            }
+
             _context.InformesIcgs.Remove(plantilla);
             await _context.SaveChangesAsync();
             return true;
