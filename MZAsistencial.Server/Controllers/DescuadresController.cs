@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
 
@@ -17,16 +17,28 @@ namespace MZAsistencial.Server.Controllers
 
         // GET: api/Descuadres
         [HttpGet]
-        public async Task<IActionResult> GetDescuadres([FromQuery] int usuarioId, [FromQuery] int mutuaIdSesion, [FromQuery] int anio)
+        public async Task<IActionResult> GetDescuadres([FromQuery] int perfilId, [FromQuery] int usuarioId, [FromQuery] int mutuaIdSesion, [FromQuery] int anio)
         {
+            // CONTROL DE ACCESO: Solo permitimos la entrada a Perfil 1 (Admin) y Perfil 4 (Gestor Centro)
+            if (perfilId != 1 && perfilId != 4)
+            {
+                return Forbid(); // Devuelve un HTTP 403 inmediatamente
+            }
+
             var descuadres = await _service.RecalcularYObtenerDescuadresAsync(usuarioId, mutuaIdSesion, anio);
             return Ok(descuadres);
         }
 
         // PUT: api/Descuadres/{mutuaId}
         [HttpPut("{mutuaId}")]
-        public async Task<IActionResult> PutDescuadre(int mutuaId, [FromBody] DescuadreDTO dto)
+        public async Task<IActionResult> PutDescuadre(int mutuaId, [FromQuery] int perfilId, [FromBody] DescuadreDTO dto)
         {
+            // CONTROL DE ACCESO: Protegemos también la edición para que nadie use herramientas externas
+            if (perfilId != 1 && perfilId != 4)
+            {
+                return Forbid(); // Devuelve un HTTP 403 inmediatamente
+            }
+
             var usuarioId = dto.UsuarioId ?? 0;
             if (usuarioId == 0)
                 return BadRequest(new { error = "UsuarioId requerido" });

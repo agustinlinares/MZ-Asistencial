@@ -92,6 +92,24 @@ const RegistrosError = () => {
         }
     };
 
+    const cellRenderAcciones = (cell) => {
+        if (cell.data.estado !== 'Cerrado' && cell.data.estado !== 'Resuelto') {
+            return (
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                    <button 
+                        className="mz-btn mz-btn-primary mz-btn-sm" 
+                        style={{ padding: '4px 8px', fontSize: '12px', border: 'none', background: '#1976d2', color: 'white', borderRadius: '4px', cursor: 'pointer' }}
+                        onClick={() => handleResolver(cell.data.errorId)}
+                        title={t('Marcar como resuelto')}
+                    >
+                        <i className="ri-check-double-line"></i> {t('Resolver')}
+                    </button>
+                </div>
+            );
+        }
+        return <span style={{ color: '#4caf50', fontWeight: 'bold' }}><i className="ri-check-line"></i> {t('Resuelto')}</span>;
+    };
+
     const onExporting = (e) => {
         e.component.beginUpdate();
         const workbook = new Workbook();
@@ -200,6 +218,14 @@ const RegistrosError = () => {
                                 <Column dataField="descripcion" caption={t('Descripción')} minWidth={300} />
                                 <Column dataField="ficheroLog" caption={t('Fichero Log')} width={200} />
                                 <Column dataField="estado" caption={t('Estado')} width={120} />
+                                <Column 
+                                    caption={t('Acciones')} 
+                                    width={120} 
+                                    alignment="center"
+                                    cellRender={cellRenderAcciones} 
+                                    allowFiltering={false}
+                                    allowSorting={false}
+                                />
                             </DataGrid>
                         </div>
                     </div>

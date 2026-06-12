@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -82,19 +82,20 @@ namespace MZAsistencial.Server.Services
             }
         }
 
-        public IQueryable<RegistroActividadDTO> ObtenerListadoRegistrosQuery()
+        public IQueryable<RegistroActividadDTO> ObtenerListadoRegistrosQuery(int? mutuaId = null)
         {
             var query = from r in _context.RegistroActividads
                         join u in _context.Usuarios on r.UsuarioId equals u.UsuarioId into gjU
                         from subU in gjU.DefaultIfEmpty()
                         join m in _context.Mutuas on subU.MutuaId equals m.MutuaId into gjM
                         from subM in gjM.DefaultIfEmpty()
+                        where (!mutuaId.HasValue || subU.MutuaId == mutuaId.Value)
                         // Quitamos el orderby aquí para que DevExtreme decida el orden
                         select new RegistroActividadDTO
                         {
                             RegistroId = r.RegistroId,
-                            Mutua = subU.MutuaId == null ? "ADMINISTRADOR" : subM.Mutua1,
-                            Usuario = subU.Usuario1, 
+                            Mutua = subM != null ? subM.Mutua1 : "ADMINISTRADOR",
+                            Usuario = subU != null ? subU.Usuario1 : "Desconocido", 
                             Fecha = r.Fecha,
                             Accion = r.Accion,
                             Sql = r.Sql
@@ -108,7 +109,7 @@ namespace MZAsistencial.Server.Services
             return await _context.RegistroActividads
                 .Where(r => r.UsuarioId == usuarioId)
                 .OrderByDescending(r => r.RegistroId)
-                .Take(1000)
+                .Take(50)
                 .ToListAsync();
         }
     }

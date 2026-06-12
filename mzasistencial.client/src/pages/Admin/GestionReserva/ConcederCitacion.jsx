@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import CitacionesService from "../../../services/admin/CitacionesService";
 import TablaCitaciones from "./TablaCitaciones";
-
 import { useLogError } from '../../../hooks/useLogError';
+import AuthService from "../../../services/auth/AuthService";
+import notify from 'devextreme/ui/notify';
+import { Workbook } from 'exceljs';
+import { saveAs } from 'file-saver-es';
+import { exportDataGrid } from 'devextreme/pdf_exporter';
 
 const ConcederCitacion = () => {
     const { t } = useTranslation();
@@ -53,9 +58,11 @@ const ConcederCitacion = () => {
 
     const cargarDatos = async (f = filtros) => {
         setLoading(true);
+        let mid = 1;
         try {
             const user = AuthService.getUserData();
-            const mid = user?.mutuaId || 1;
+            mid = user?.mutuaId || 1;
+            
 
             const apiFilters = {
                 Anio: f.anio,
@@ -75,6 +82,7 @@ const ConcederCitacion = () => {
     };
 
     const handleConceder = async (citacion) => {
+        let mid = 1;
         try {
             await CitacionesService.updateEstado(citacion.CitacionId, 2, '');
             notify(t('Citación concedida correctamente'), 'success', 2000);
@@ -88,6 +96,7 @@ const ConcederCitacion = () => {
     const handleRechazar = async (citacion) => {
         const motivo = window.prompt(t('Indica el motivo del rechazo:'));
         if (!motivo || !motivo.trim()) return;
+        let mid = 1;
         try {
             await CitacionesService.updateRechazo(citacion.CitacionId, motivo.trim());
             notify(t('Citación rechazada'), 'warning', 2000);
@@ -133,7 +142,8 @@ const ConcederCitacion = () => {
 
         const result = await dialog.show();
         if (result) {
-            try {
+            let mid = 1;
+        try {
                 await CitacionesService.updateEstadoLote(selectedRowKeys, 2, result);
                 notify(t('Citaciones concedidas correctamente'), 'success', 2000);
                 setSelectedRowKeys([]);
@@ -158,7 +168,8 @@ const ConcederCitacion = () => {
 
         const result = await dialog.show();
         if (result) {
-            try {
+            let mid = 1;
+        try {
                 await CitacionesService.updateRechazoLote(selectedRowKeys, result);
                 notify(t('Citaciones rechazadas correctamente'), 'success', 2000);
                 setSelectedRowKeys([]);

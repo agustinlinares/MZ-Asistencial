@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
@@ -15,9 +15,9 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int? mutuaId = null)
         {
-            var data = await _service.GetAllAsync();
+            var data = await _service.GetAllAsync(mutuaId);
             return Ok(data);
         }
 

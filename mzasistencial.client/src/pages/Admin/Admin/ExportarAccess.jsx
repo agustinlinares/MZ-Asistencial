@@ -58,6 +58,7 @@ const ExportarAccess = () => {
     const userData    = AuthService.getUserData();
     const esAdmin     = userData?.perfilId === 1;
     const usuarioId   = userData?.usuarioId || 0;
+    const mutuaId     = userData?.mutuaId;
 
     const logError = useLogError("Exportar Access");
 
@@ -73,8 +74,9 @@ const ExportarAccess = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
+                const mutuaParam = !esAdmin && mutuaId ? `?mutuaId=${mutuaId}` : '';
                 const [resFich, resMut, resAños] = await Promise.all([
-                    fetch('/api/ExportarAccess', { headers: authHeaders() }),
+                    fetch(`/api/ExportarAccess${mutuaParam}`, { headers: authHeaders() }),
                     fetch('/api/ExportarAccess/mutuas', { headers: authHeaders() }),
                     fetch('/api/ExportarAccess/años', { headers: authHeaders() }),
                 ]);
@@ -91,7 +93,8 @@ const ExportarAccess = () => {
 
     const cargarFicheros = async () => {
         try {
-            const resp = await fetch('/api/ExportarAccess', { headers: authHeaders() });
+            const mutuaParam = !esAdmin && mutuaId ? `?mutuaId=${mutuaId}` : '';
+            const resp = await fetch(`/api/ExportarAccess${mutuaParam}`, { headers: authHeaders() });
             if (resp.ok) setFicheros(await resp.json());
         } catch (err) {
             console.error('Error recargando ficheros:', err);

@@ -1,0 +1,87 @@
+[33m45e15df[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelopment[m[33m, [m[1;31morigin/development[m[33m)[m HEAD@{0}: pull origin development: Merge made by the 'ort' strategy.
+[33m39ea3e8[m HEAD@{1}: commit: feat: optimizacion rendimiento descuadres y ajuste de permisos perfil 1 y 4
+[33m65abf15[m HEAD@{2}: commit: Actualizaciones Oferta Demanda
+[33m3fa0756[m HEAD@{3}: commit: Actualizaciones Oferta Demanda
+[33m3b9d913[m HEAD@{4}: pull origin development: Merge made by the 'ort' strategy.
+[33m64e8a4f[m HEAD@{5}: commit: Actualizaciones Oferta Demanda
+[33m71d82a7[m HEAD@{6}: pull origin development: Merge made by the 'ort' strategy.
+[33m30f1969[m HEAD@{7}: commit: Fichas Oferta/Demanda: pestañas, scroll, agrupación, radio button subsolicitudes
+[33m08c3401[m HEAD@{8}: pull --rebase origin development (finish): returning to refs/heads/development
+[33m08c3401[m HEAD@{9}: pull --rebase origin development (pick): actualizaciones
+[33m0f2a9d4[m HEAD@{10}: pull --rebase origin development (start): checkout 0f2a9d48f867e37c7162d0d4e5252007da6552f1
+[33m6411640[m HEAD@{11}: commit: actualizaciones
+[33md878575[m HEAD@{12}: pull origin development: Merge made by the 'ort' strategy.
+[33m86a2f1c[m HEAD@{13}: commit: FichaOferta y FichaDemanda (anual/individual) + agrupación GrupoKey + Acuerdos totales + Descuadres readonly + AuthController anio sesion + ListaOfertas UNION ALL + tarifas activas
+[33mf6829da[m HEAD@{14}: pull origin development: Fast-forward
+[33m4ca48ed[m HEAD@{15}: commit: Actualizaciones
+[33mb774d25[m HEAD@{16}: commit: Descuadres: resuelto conflicto, versión compañero
+[33m4d33af8[m HEAD@{17}: pull origin development: Fast-forward
+[33m636a390[m HEAD@{18}: reset: moving to HEAD
+[33m636a390[m HEAD@{19}: pull origin development --rebase (finish): returning to refs/heads/development
+[33m636a390[m HEAD@{20}: pull origin development --rebase (pick): Ofertas y Demandas: doble fila, modal edición, lógica rechazo. Acuerdos: secciones con tabs y totales
+[33m6329570[m HEAD@{21}: pull origin development --rebase (start): checkout 6329570129c2e5d7787658d7228db06b0c7a70cc
+[33mb4a0dca[m HEAD@{22}: commit: Ofertas y Demandas: doble fila, modal edición, lógica rechazo. Acuerdos: secciones con tabs y totales
+[33mc8325fa[m HEAD@{23}: pull origin development --rebase: Fast-forward
+[33m85da642[m HEAD@{24}: rebase (finish): returning to refs/heads/development
+[33m85da642[m HEAD@{25}: rebase (continue): Actualizaciones GestionOferta
+[33mba83c7d[m HEAD@{26}: pull origin development --rebase (start): checkout ba83c7d1636c7f76088e8d943338982b85f59851
+[33mdeea521[m HEAD@{27}: commit: Actualizaciones GestionOferta
+[33m6dd287b[m HEAD@{28}: commit: GestionOferta: disponibilidad real en fila asignación
+[33mfa07fc2[m HEAD@{29}: commit: GestionOferta: grid sin agrupación, filtros panel arriba, dos tonos azul
+[33mcf7d0b8[m HEAD@{30}: commit: config: locale DevExtreme en español, lógica rechazo oferta completa
+[33m6c5869b[m HEAD@{31}: commit: GestionOferta: lógica de rechazo estado 3 y 8 con confirmación
+[33mbe10ba4[m HEAD@{32}: commit: GestionOferta: grid agrupado con doble línea asignación/demanda
+[33m6b71d0d[m HEAD@{33}: pull origin development --rebase: Fast-forward
+[33md6b342a[m HEAD@{34}: commit: GestionOferta: resolver provincia y localidad de centros propios en memoria
+[33mce0f752[m HEAD@{35}: pull origin development --rebase: Fast-forward
+[33me8daf0d[m HEAD@{36}: commit: fix: mapeo columna Año en Oferta, Demanda e ICG07
+[33m154b691[m HEAD@{37}: pull origin development: Merge made by the 'ort' strategy.
+[33ma70f5c2[m HEAD@{38}: commit: Avances interfaz
+[33m124ec3f[m HEAD@{39}: pull origin development: Fast-forward
+[33m1c3a9b1[m HEAD@{40}: pull origin development: Fast-forward
+[33md7ab7db[m HEAD@{41}: commit: fix: resolver conflictos de merge y limpiar marcas de git en GestionOferta
+[33md4af1c3[m HEAD@{42}: commit (merge): merge: finalización de fusión y estandarización de Ficha en Descuadres
+[33mdf8d2dc[m HEAD@{43}: commit: feat: implementar GestionDemanda y ajustes en GestionOferta
+[33m116d180[m HEAD@{44}: pull origin development: Fast-forward
+[33mc987107[m HEAD@{45}: commit (merge): Sincronización de rama y resolución de conflictos en módulos de Centros.
+[33md87968f[m HEAD@{46}: rebase (abort): returning to refs/heads/development
+[33m6a1c2ef[m HEAD@{47}: pull origin development --rebase (start): checkout 6a1c2ef71ca2259937c9045e873a8b8aa323dd91
+[33md87968f[m HEAD@{48}: commit: Actualizaciones
+[33m5e5b6ff[m HEAD@{49}: pull origin development: Fast-forward
+[33m5e7fcb2[m HEAD@{50}: reset: moving to HEAD
+[33m5e7fcb2[m HEAD@{51}: pull origin development --rebase: Fast-forward
+[33mfba085f[m HEAD@{52}: reset: moving to HEAD
+[33mfba085f[m HEAD@{53}: pull origin development --rebase: Fast-forward
+[33mec45b06[m HEAD@{54}: commit: feat: rediseño UI módulos Acuerdos, Descuadres y GestionOferta con estilo FichaFinca
+[33ma106c10[m HEAD@{55}: pull origin development --rebase (finish): returning to refs/heads/development
+[33ma106c10[m HEAD@{56}: pull origin development --rebase (pick): fix: CentrosPropios sin clave resuelto en ListaOfertasService
+[33md9d781e[m HEAD@{57}: pull origin development --rebase (pick): feat: Lista Ofertas - Centro resuelto para CentrosPropios y CentrosConcertados
+[33md3d9a4c[m HEAD@{58}: pull origin development --rebase (start): checkout d3d9a4c29e68dec4ab68108e383b558709a0e899
+[33m46085e3[m HEAD@{59}: commit: fix: CentrosPropios sin clave resuelto en ListaOfertasService
+[33m6579b92[m HEAD@{60}: commit: feat: Lista Ofertas - Centro resuelto para CentrosPropios y CentrosConcertados
+[33mf455773[m HEAD@{61}: pull origin development: Fast-forward
+[33medfd4ea[m HEAD@{62}: reset: moving to HEAD
+[33medfd4ea[m HEAD@{63}: pull origin development --rebase (finish): returning to refs/heads/development
+[33medfd4ea[m HEAD@{64}: pull origin development --rebase (pick): AcuerdosBI - JOIN con Mutuas, Provincias y TipoServicio para mostrar nombres
+[33m7ef29c5[m HEAD@{65}: pull origin development --rebase (start): checkout 7ef29c507110ed2661a8ef9b63e0977be49bc81a
+[33m34c8076[m HEAD@{66}: commit: AcuerdosBI - JOIN con Mutuas, Provincias y TipoServicio para mostrar nombres
+[33m722fc76[m HEAD@{67}: commit: Pantalla Descuadres - tabla completa con nombre de mutua y todos los campos
+[33maf23942[m HEAD@{68}: commit: Pantalla Acuerdos - secciones colapsables con datos reales de BD
+[33m803e8e2[m HEAD@{69}: commit: Backend AcuerdosBI - endpoints Mutua, Provincia y TipoServicio
+[33md16209c[m HEAD@{70}: pull origin development --rebase: Fast-forward
+[33m188e095[m HEAD@{71}: commit: actualizacion User Secrets para cadena de conexión local
+[33md601c62[m HEAD@{72}: pull origin development --rebase: Fast-forward
+[33m1a33d07[m HEAD@{73}: reset: moving to HEAD
+[33m1a33d07[m HEAD@{74}: commit: Pantalla acuerdos y descuadres montadas + configuración local de BD excluida del repositorio
+[33m7c2b4d3[m HEAD@{75}: commit: Eliminada cadena de conexión hardcodeada del MZAsistencialContext
+[33md6c6f7d[m HEAD@{76}: commit (merge): Resuelto conflicto en Program.cs - combinados servicios Descuadres y CentrosConcertados
+[33mf0cec52[m HEAD@{77}: commit: Módulo Descuadres completado - frontend conectado a API
+[33m1f4a8bb[m HEAD@{78}: commit: Migración a .NET 10
+[33m314540b[m HEAD@{79}: commit: Actualizado Program.cs
+[33m1e1b12b[m HEAD@{80}: commit: Añadida arquitectura en capas - DTO y Service para Descuadres
+[33m81da02f[m HEAD@{81}: commit: Añadidos controladores Descuadres, InformesAcuerdos y AuxInformesAcuerdos
+[33mf69cccc[m HEAD@{82}: pull origin development: Fast-forward
+[33m7372fe5[m HEAD@{83}: pull origin development: Fast-forward
+[33m447378d[m HEAD@{84}: pull origin development: Fast-forward
+[33m220bd2e[m HEAD@{85}: checkout: moving from main to development
+[33m31d08f0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{86}: clone: from https://mzprojectgit.mercanza.es/josemanuel.leal/mz-asistencial.git

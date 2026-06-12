@@ -1,4 +1,4 @@
-using MZAsistencial.Server.Data;
+﻿using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +23,7 @@ namespace MZAsistencial.Server.Services
                     cp.Mutua_id         AS MutuaId,
                     icg.Año,
                     icg.Id_ICG          AS IdIcg,
+                    icg.Validado        AS Validado,
                     ISNULL(c1.Respuesta,  0) AS Cap1_GastosPersonal,
                     ISNULL(c1a.Respuesta, 0) AS Cap1Anterior_GastosPersonal,
                     ISNULL(c2.Respuesta,  0) AS Cap2_GastosCorrientes,
@@ -74,6 +75,7 @@ namespace MZAsistencial.Server.Services
                     cp.Mutua_id         AS MutuaId,
                     icg.Año,
                     icg.Id_ICG          AS IdIcg,
+                    icg.Validado        AS Validado,
                     ISNULL(c1.Respuesta,  0) AS Cap1_GastosPersonal,
                     ISNULL(c1a.Respuesta, 0) AS Cap1Anterior_GastosPersonal,
                     ISNULL(c2.Respuesta,  0) AS Cap2_GastosCorrientes,

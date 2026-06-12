@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -16,10 +16,11 @@ namespace MZAsistencial.Server.Services
             _configuration = configuration;
         }
 
-        public async Task<IEnumerable<AcreditacionIndividualDTO>> GetAllAsync()
+        public async Task<IEnumerable<AcreditacionIndividualDTO>> GetAllAsync(int? mutuaId = null)
         {
             return await _context.FicherosAcreditacionesInformes
-                .Where(f => f.TipoAcreditacionId == 2 && f.Visible == 1)
+                .Where(f => (f.TipoAcreditacionId == null || f.TipoAcreditacionId == 2) && f.Visible == 1)
+                .Where(f => mutuaId == null || f.MutuaId == mutuaId.Value)
                 .GroupJoin(_context.Mutuas,
                     f => f.MutuaId,
                     m => m.MutuaId,
@@ -46,7 +47,7 @@ namespace MZAsistencial.Server.Services
         public async Task<int> GetMaxAñoAsync()
         {
             var maxFecha = await _context.FicherosAcreditacionesInformes
-                .Where(f => f.TipoAcreditacionId == 2 && f.Visible == 1 && f.FechaAlta != null)
+                .Where(f => (f.TipoAcreditacionId == null || f.TipoAcreditacionId == 2) && f.Visible == 1 && f.FechaAlta != null)
                 .MaxAsync(f => (DateOnly?)f.FechaAlta);
 
             return maxFecha?.Year ?? DateTime.Today.Year;
@@ -55,7 +56,7 @@ namespace MZAsistencial.Server.Services
         public async Task<(string? filePath, string? nombreFichero)> GetFilePathAsync(int id)
         {
             var registro = await _context.FicherosAcreditacionesInformes
-                .FirstOrDefaultAsync(f => f.FicheroId == id && f.TipoAcreditacionId == 2);
+                .FirstOrDefaultAsync(f => f.FicheroId == id && (f.TipoAcreditacionId == null || f.TipoAcreditacionId == 2));
 
             if (registro == null || string.IsNullOrEmpty(registro.Fichero))
                 return (null, null);

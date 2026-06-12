@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Models;
@@ -27,11 +27,20 @@ namespace MZAsistencial.Server.Services
             _configuration = configuration;
         }
 
-        public async Task<IEnumerable<FicheroGeneradoDTO>> GetAllAsync()
+        public async Task<IEnumerable<FicheroGeneradoDTO>> GetAllAsync(int? mutuaId = null)
         {
-            var ficheros = await _context.FicherosGenerados.ToListAsync();
             var mutuas   = await _context.Mutuas.ToListAsync();
             var usuarios = await _context.Usuarios.ToListAsync();
+
+            string? numeroMutuaFiltro = null;
+            if (mutuaId.HasValue)
+                numeroMutuaFiltro = mutuas.FirstOrDefault(m => m.MutuaId == mutuaId.Value)?.NumeroMutua?.Trim();
+
+            var query = _context.FicherosGenerados.AsQueryable();
+            if (numeroMutuaFiltro != null)
+                query = query.Where(f => f.MutuaId != null && f.MutuaId.Trim() == numeroMutuaFiltro);
+
+            var ficheros = await query.ToListAsync();
 
             return ficheros.Select(fg =>
             {

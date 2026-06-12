@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server.DTOs
+﻿namespace MZAsistencial.Server.DTOs
 {
     public class DescuadreDTO
     {
