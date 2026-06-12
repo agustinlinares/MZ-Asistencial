@@ -27,7 +27,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var result = await _service.GetInformesAsync(mutuaId, anio);
+            var result = await _service.GetInformesAsync(mutuaId, anio, User);
             return Ok(result);
         }
         catch (Exception ex)
@@ -42,7 +42,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var fileBytes = await _service.GenerarPlantillaAsync(mutuaId, anio, tipo, formato);
+            var fileBytes = await _service.GenerarPlantillaAsync(mutuaId, anio, tipo, formato, User);
             var mimeType = formato.ToUpper() == "XML" ? "application/xml" : "text/csv";
             return File(fileBytes, mimeType, $"Plantilla_{tipo}_{anio}.{formato.ToLower()}");
         }
@@ -61,7 +61,7 @@ public class PlantillasICGController : ControllerBase
             if (fichero == null || fichero.Length == 0)
                 return BadRequest("No se adjuntó ningún fichero válido.");
 
-            var dto = await _service.SubirPlantillaAsync(fichero, mutuaId, anio, tipoICG);
+            var dto = await _service.SubirPlantillaAsync(fichero, mutuaId, anio, tipoICG, User);
             return Ok(dto);
         }
         catch (Exception ex)
@@ -91,7 +91,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var procesados = await _service.ProcesarPlantillasAsync();
+            var procesados = await _service.ProcesarPlantillasAsync(User);
             return Ok(new { Message = $"Se han procesado {procesados} plantillas correctamente." });
         }
         catch (Exception ex)

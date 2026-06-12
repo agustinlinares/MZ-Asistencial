@@ -25,18 +25,26 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRegistrosActividad(DataSourceLoadOptions loadOptions)
         {
-            var perfilId = User.FindFirst("perfilId")?.Value;
-            if (perfilId != "1") return Forbid();
+            var perfilId = User.FindFirst("perfilId")?.Value ?? User.FindFirst("PerfilId")?.Value;
+            var mutuaIdClaim = User.FindFirst("mutuaId")?.Value ?? User.FindFirst("MutuaId")?.Value;
 
-            var query = _registrosActividadService.ObtenerListadoRegistrosQuery();
+            if (perfilId != "1" && perfilId != "2") return Forbid();
+
+            int? mutuaId = null;
+            if (perfilId == "2" && int.TryParse(mutuaIdClaim, out int parsedMutua))
+            {
+                mutuaId = parsedMutua;
+            }
+
+            var query = _registrosActividadService.ObtenerListadoRegistrosQuery(mutuaId);
             return Ok(await DataSourceLoader.LoadAsync(query, loadOptions));
         }
 
         [HttpGet("ultimo/{usuarioId}")]
         public async Task<ActionResult<IEnumerable<RegistroActividad>>> GetUltimoRegistro(int usuarioId)
         {
-            var perfilId = User.FindFirst("perfilId")?.Value;
-            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var perfilId = User.FindFirst("perfilId")?.Value ?? User.FindFirst("PerfilId")?.Value;
+            var currentUserId = User.FindFirst("usuarioId")?.Value ?? User.FindFirst("UsuarioId")?.Value;
             
             if (perfilId != "1" && currentUserId != usuarioId.ToString()) 
                 return Forbid();
