@@ -20,13 +20,7 @@ namespace MZAsistencial.Server.Services
 
         private string FixEncoding(string? value)
         {
-            if (string.IsNullOrEmpty(value)) return "";
-            try
-            {
-                byte[] bytes = System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(value);
-                return System.Text.Encoding.UTF8.GetString(bytes);
-            }
-            catch { return value ?? ""; }
+            return value ?? "";
         }
 
         private string ConvertirTitularidad(string? cod)

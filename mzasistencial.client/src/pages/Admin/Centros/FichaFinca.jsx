@@ -171,6 +171,7 @@ const TabMapa = ({ form, onChange }) => {
 /* ── PESTAÑA COSTES ────────────────────────────────────────────── */
 const TabCostes = ({ fincaId }) => {
     const { t } = useTranslation();
+    const logError = useLogError("Ficha finca - TabCostes");
     const [costes, setCostes] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [editando, setEditando] = useState(null);

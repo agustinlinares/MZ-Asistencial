@@ -54,7 +54,7 @@ public class PlantillasICGController : ControllerBase
 
     // POST /api/PlantillasICG/subir
     [HttpPost("subir")]
-    public async Task<IActionResult> SubirPlantilla([FromForm] IFormFile fichero, [FromForm] int? mutuaId, [FromForm] int? anio, [FromForm] string tipoICG)
+    public async Task<IActionResult> SubirPlantilla(IFormFile fichero, [FromForm] int? mutuaId, [FromForm] int? anio, [FromForm] string tipoICG)
     {
         try
         {
