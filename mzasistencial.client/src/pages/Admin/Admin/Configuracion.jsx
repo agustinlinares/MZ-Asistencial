@@ -2,7 +2,6 @@
 import { useTranslation } from "react-i18next";
 import SelectBox from "devextreme-react/select-box";
 import '../../../styles/FichaGlobal.css';
-import { useLogError } from '../../../hooks/useLogError';
 
 const API = '/api';
 
@@ -26,8 +25,6 @@ const Configuracion = () => {
     const [guardando, setGuardando] = useState(false);
     const [msg,       setMsg]       = useState(null);
     const [cargando,  setCargando]  = useState(true);
-
-    const logError = useLogError("Configuración de administración");
 
     // ── AÑOS Y MUTUAS ────────────────────────────────────────
     const [añosOrigen,  setAñosOrigen]  = useState([]);
@@ -55,10 +52,7 @@ const Configuracion = () => {
             .then(data => {
                 if (data) { setForm(data); setOriginal(data); }
             })
-            .catch(err => {
-                logError("Error al cargar la configuración", err);
-                setMsg({ ok: false, text: 'Error al cargar la configuracion.' });
-            })
+            .catch(() => setMsg({ ok: false, text: 'Error al cargar la configuracion.' }))
             .finally(() => setCargando(false));
 
         fetch(`${API}/ConfiguracionAdministracion/años`)
@@ -98,20 +92,19 @@ const Configuracion = () => {
             const user = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
             const body = { ...form, usuarioModificacionId: user?.usuarioId ?? null };
             const res = await fetch(`${API}/ConfiguracionAdministracion/${form.id}`, {
-                method:  'PUT',
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(body),
+                body: JSON.stringify(body),
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || `Error ${res.status}: Fallo al actualizar configuración`);
+                throw new Error(err.error || 'Error al guardar');
             }
             const updated = await res.json();
             setForm(updated);
             setOriginal(updated);
             setMsg({ ok: true, text: 'Configuracion guardada correctamente.' });
         } catch (err) {
-            logError("Fallo al guardar la configuración de administración", err);
             setMsg({ ok: false, text: err.message || 'Error al guardar.' });
         } finally {
             setGuardando(false);
@@ -214,7 +207,7 @@ const Configuracion = () => {
                 {/* HEADER */}
                 <div className="header-page">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div className="title">Configuracion de Administracion</div>
+                        <div className="title">Ficha Configuracion Administracion</div>
                         {msg && (
                             <span style={{ fontSize: 13, color: msg.ok ? '#2e7d32' : '#c62828', fontWeight: 500 }}>
                                 {msg.ok ? '✓' : '✗'} {msg.text}
@@ -371,6 +364,7 @@ const Configuracion = () => {
                                 Replica de disponibilidad de especialidades médicas y servicios sanitarios disponibles
                             </span>
                         </div>
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 40px', maxWidth: 900 }}>
                             <div className="ficha-field">
                                 <label>Año del que replicar la Disponibilidad</label>
@@ -429,6 +423,7 @@ const Configuracion = () => {
                                 Réplica del Catálogo de Servicios de los centros de una mutua en específico
                             </span>
                         </div>
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 40px', maxWidth: 900 }}>
                             <div className="ficha-field">
                                 <label>Año del que replicar el Catálogo</label>
@@ -478,7 +473,6 @@ const Configuracion = () => {
                         </div>
                     </div>
                 )}
-
             </div>
         </div>
     );
