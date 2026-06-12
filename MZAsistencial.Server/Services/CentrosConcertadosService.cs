@@ -63,7 +63,7 @@ namespace MZAsistencial.Server.Services
                             Longitud = c.Longitud,
                             Numero = c.Numero,
                             NumRegistroSanitario = c.NumRegistroSanitario,
-                            Comentarios = c.Comentarios,
+                            Observaciones = c.Observaciones,
                             MotivoBaja = c.MotivoBaja,
                             
                             MapaValidado = c.MapaValidado,
@@ -103,7 +103,7 @@ namespace MZAsistencial.Server.Services
                 Longitud = dto.Longitud,
                 Numero = dto.Numero,
                 NumRegistroSanitario = dto.NumRegistroSanitario,
-                Comentarios = dto.Comentarios,
+                Observaciones = dto.Observaciones,
                 MotivoBaja = dto.MotivoBaja,
                 MapaValidado = dto.MapaValidado
             };
@@ -142,7 +142,7 @@ namespace MZAsistencial.Server.Services
             centroExistente.Telefono = dto.Telefono?.Trim();
             centroExistente.Numero = dto.Numero?.Trim();
             centroExistente.NumRegistroSanitario = dto.NumRegistroSanitario;
-            centroExistente.Comentarios = dto.Comentarios;
+            centroExistente.Observaciones = dto.Observaciones;
             centroExistente.MotivoBaja = dto.MotivoBaja;
             centroExistente.MapaValidado = dto.MapaValidado;
 
