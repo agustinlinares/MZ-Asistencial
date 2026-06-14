@@ -7,6 +7,7 @@ import DataGrid, {
 import SelectBox from "devextreme-react/select-box";
 import { useTranslation } from "react-i18next";
 import '../Centros/FichaFinca.css';
+import { useLogError } from '../../../hooks/useLogError';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5118/api';
 
@@ -28,6 +29,8 @@ const CIEP = () => {
     const [editCiep, setEditCiep] = useState('');
     const [editEspecialidad, setEditEspecialidad] = useState(null);
 
+    const logError = useLogError("CIEP");
+
     useEffect(() => {
         const handleClick = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target))
@@ -47,7 +50,7 @@ const CIEP = () => {
         fetch(`${API}/CIEP`)
             .then(res => res.json())
             .then(data => setDatos(data))
-            .catch(err => console.error('Error:', err))
+            .catch(err => logError('Error al cargar datos CIEP', err))
             .finally(() => setCargando(false));
     };
 
@@ -55,7 +58,7 @@ const CIEP = () => {
         fetch(`${API}/CIEP/especialidades`)
             .then(res => res.json())
             .then(data => setEspecialidades(data))
-            .catch(err => console.error('Error:', err));
+            .catch(err => logError('Error al cargar especialidades', err));
     };
 
     const handleAnadir = () => {

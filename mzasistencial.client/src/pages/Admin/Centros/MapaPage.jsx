@@ -1,10 +1,13 @@
 ﻿import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useLogError } from '../../../hooks/useLogError';
 
 const MapaPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const s = location.state || {};
+
+    const logError = useLogError("Mapa page");
 
     const [lat, setLat] = useState(s.latitud !== undefined ? String(s.latitud) : "");
     const [lng, setLng] = useState(s.longitud !== undefined ? String(s.longitud) : "");
@@ -23,7 +26,11 @@ const MapaPage = () => {
                     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dirBuscar)}&limit=1`,
                     { headers: { 'Accept-Language': 'es' } }
                 );
+
+                if (!res.ok) throw new Error(`Error ${res.status} al contactar con Nominatim`);
+
                 const data = await res.json();
+
                 if (data && data.length > 0) {
                     const { lat: newLat, lon: newLng, display_name } = data[0];
                     setLat(newLat);
@@ -33,7 +40,8 @@ const MapaPage = () => {
                 } else {
                     setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dirBuscar)}&z=15&output=embed`);
                 }
-            } catch {
+            } catch (error) {
+                logError(`Fallo al geolocalizar dirección en MapaPage: "${dirBuscar}"`, error);
                 setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dirBuscar)}&z=15&output=embed`);
             }
         } else if (lat && lng) {

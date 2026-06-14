@@ -11,19 +11,24 @@ export const useLogError = (moduloPorDefecto = 'React Frontend') => {
         const moduloFinal = moduloSobreescrito || moduloPorDefecto;
 
         let detalleError = '';
+        let stackTrace = '';
+
         if (errorOriginal) {
-            detalleError = errorOriginal instanceof Error 
-                ? errorOriginal.message 
-                : typeof errorOriginal === 'string' 
-                    ? errorOriginal 
-                    : JSON.stringify(errorOriginal);
+            if (errorOriginal instanceof Error) {
+                detalleError = errorOriginal.message;
+                stackTrace = errorOriginal.stack;
+            } else {
+                detalleError = typeof errorOriginal === 'string' ? errorOriginal : JSON.stringify(errorOriginal);
+                stackTrace = "No hay stack trace disponible";
+            }
         }
 
         const payload = {
             descripcion: contextoDelError,
-            modulo: moduloFinal, 
+            Nombre_Modulo: moduloFinal, 
             usuarioId: usuarioId,
-            detalleError: detalleError
+            detalleError: detalleError,
+            comentarios: stackTrace
         };
 
         try {

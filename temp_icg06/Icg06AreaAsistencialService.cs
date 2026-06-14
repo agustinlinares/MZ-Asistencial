@@ -40,17 +40,21 @@ namespace MZAsistencial.Server.Services
         // ─── Entity → DTO ────────────────────────────────────────────────────
         private static Icg06AreaAsistencialDTO MapToDTO(Icg06 e) => new()
         {
-            IdIcg      = e.IdIcg,
-            Año        = e.Año,
-            CentroId   = e.CentroId,
-            TipoHorario = e.TipoHorario,
-            HorarioA   = e.HorarioA,
-            HorarioDe  = e.HorarioDe,
-            TraslNdirec = e.TraslNdirec,
-            Numdiano   = e.Numdiano,
-            Numdcierre = e.Numdcierre,
-            Numquirof  = e.Numquirof,
-            Numcamas   = e.Numcamas,
+            IdIcg        = e.IdIcg,
+            Año          = e.Año,
+            CentroId     = e.CentroId,
+            TipoHorario  = e.TipoHorario,
+            HorarioA     = e.HorarioA,
+            HorarioDe    = e.HorarioDe,
+            TraslNdirec  = e.TraslNdirec,
+            Numdiano     = e.Numdiano,
+            Numdcierre   = e.Numdcierre,
+            Numquirof    = e.Numquirof,
+            Numcamas     = e.Numcamas,
+            Hormande     = e.Hormande,   // ← añadido
+            Hormanha     = e.Hormanha,   // ← añadido
+            Hortardes    = e.Hortardes,  // ← añadido
+            Hortarhas    = e.Hortarhas,  // ← añadido
         };
 
         // ─── DTO → Entity ────────────────────────────────────────────────────
@@ -64,6 +68,10 @@ namespace MZAsistencial.Server.Services
             e.Numdcierre  = dto.Numdcierre;
             e.Numquirof   = dto.Numquirof;
             e.Numcamas    = dto.Numcamas;
+            e.Hormande    = dto.Hormande;   // ← añadido
+            e.Hormanha    = dto.Hormanha;   // ← añadido
+            e.Hortardes   = dto.Hortardes;  // ← añadido
+            e.Hortarhas   = dto.Hortarhas;  // ← añadido
         }
     }
 }

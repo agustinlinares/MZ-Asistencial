@@ -3,6 +3,7 @@ import { NumberBox } from 'devextreme-react/number-box';
 import { SelectBox } from 'devextreme-react/select-box';
 import { custom } from 'devextreme/ui/dialog';
 import { presupuestosLiquidadosService } from '@services/admin/presupuestosLiquidadosService';
+import { useLogError } from '../../../hooks/useLogError';
 
 const estadoInicial = {
     idPresupuesto: 0, año: '', mutuaId: null,
@@ -20,6 +21,8 @@ const FichaPresupuestoLiquidado = ({ idPresupuesto, onCerrar, mutuas }) => {
 
     const añosLista = Array.from({ length: 20 }, (_, i) => (2007 + i).toString());
 
+    const logError = useLogError("Presupuesto Liquidado");
+
     useEffect(() => {
         if (esEdicion) {
             cargarFicha();
@@ -32,6 +35,7 @@ const FichaPresupuestoLiquidado = ({ idPresupuesto, onCerrar, mutuas }) => {
             setForm(datos);
         } catch (error) {
             console.error("Error al cargar la ficha:", error);
+            logError("Fallo al cargar los datos de la ficha de presupuesto", error);
         }
     };
 
@@ -45,6 +49,8 @@ const FichaPresupuestoLiquidado = ({ idPresupuesto, onCerrar, mutuas }) => {
             }
             onCerrar(); 
         } catch (error) {
+            logError(`Fallo al ${esEdicion ? "actualizar" : "insertar"} presupuesto liquidado`, error);
+            
             const alertResult = custom({
                 title: "Error al guardar",
                 messageHtml: error.message || "No se pudo procesar la solicitud.",

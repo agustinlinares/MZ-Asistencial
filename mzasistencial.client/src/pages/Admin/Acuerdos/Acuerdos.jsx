@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import '../../../styles/FichaGlobal.css';
 import './Acuerdos.css';
+import { useLogError } from '../../../hooks/useLogError';
 
 const API = '/api';
 
@@ -18,6 +19,8 @@ const fmtEur = (v) =>
 
 const Acuerdos = () => {
     const { t } = useTranslation();
+
+    const logError = useLogError("Acuerdos");
 
     const [mutuas, setMutuas] = useState([]);
     const [anos, setAnos] = useState([]);
@@ -43,7 +46,7 @@ const Acuerdos = () => {
         fetch(`${API}/Mutuas`)
             .then(res => res.json())
             .then(data => setMutuas(data))
-            .catch(err => console.error('Error al cargar mutuas:', err));
+            .catch(err => logError("Error al cargar mutuas", err));
 
         fetch(`${API}/InformesAcuerdos`)
             .then(res => res.json())
@@ -53,7 +56,7 @@ const Acuerdos = () => {
                     .sort((a, b) => b - a);
                 setAnos(anosUnicos);
             })
-            .catch(err => console.error('Error al cargar anos:', err));
+            .catch(err => logError("Error al cargar años", err));
     }, []);
 
     useEffect(() => {
@@ -61,17 +64,17 @@ const Acuerdos = () => {
         const params = `mutuaId=${mutuaSeleccionada}&anio=${anoSeleccionado}`;
 
         fetch(`${API}/AcuerdosBI/mutuas/oferta?${params}`)
-            .then(res => res.json()).then(setDatosMutuaOferta).catch(console.error);
+            .then(res => res.json()).then(setDatosMutuaOferta).catch(err => logError("Error al cargar datos de acuerdos (mutuas/oferta)", err));
         fetch(`${API}/AcuerdosBI/mutuas/demanda?${params}`)
-            .then(res => res.json()).then(setDatosMutuaDemanda).catch(console.error);
+            .then(res => res.json()).then(setDatosMutuaDemanda).catch(err => logError("Error al cargar datos de acuerdos (mutuas/demanda)", err));
         fetch(`${API}/AcuerdosBI/provincias/oferta?${params}`)
-            .then(res => res.json()).then(setDatosProvinciaOferta).catch(console.error);
+            .then(res => res.json()).then(setDatosProvinciaOferta).catch(err => logError("Error al cargar datos de acuerdos (provincias/oferta)", err));
         fetch(`${API}/AcuerdosBI/provincias/demanda?${params}`)
-            .then(res => res.json()).then(setDatosProvinciaDemanda).catch(console.error);
+            .then(res => res.json()).then(setDatosProvinciaDemanda).catch(err => logError("Error al cargar datos de acuerdos (provincias/demanda)", err));
         fetch(`${API}/AcuerdosBI/tiposervicio/oferta?${params}`)
-            .then(res => res.json()).then(setDatosTipoServicioOferta).catch(console.error);
+            .then(res => res.json()).then(setDatosTipoServicioOferta).catch(err => logError("Error al cargar datos de acuerdos (tiposervicio/oferta)", err));
         fetch(`${API}/AcuerdosBI/tiposervicio/demanda?${params}`)
-            .then(res => res.json()).then(setDatosTipoServicioDemanda).catch(console.error);
+            .then(res => res.json()).then(setDatosTipoServicioDemanda).catch(err => logError("Error al cargar datos de acuerdos (tiposervicio/demanda)", err));
     }, [mutuaSeleccionada, anoSeleccionado]);
 
     // ── Estilos pie de tabla ──────────────────────────────────────────────────

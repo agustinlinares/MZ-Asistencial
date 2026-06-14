@@ -1,16 +1,19 @@
-﻿
-import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation } from "react-router";
+﻿import React, { useState } from 'react';
+import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import * as rdd from 'react-device-detect';
 
 import './AdminMenu.css'
 
-function AdminMenu(props) {
+function AdminMenu() {
     const { t } = useTranslation();
     const [ISMOBILE] = useState(rdd.isMobile);
-    const location = useLocation();
-    const [user, setUser] = useState(null);
+
+    // Inicialización limpia desde el localStorage
+    const [user] = useState(() => {
+        const userData = JSON.parse(localStorage.getItem('UsuarioActual') || 'null');
+        return userData;
+    });
 
     // Estados para submenús
     const [openProveedores, setOpenProveedores] = useState(false);
@@ -22,15 +25,6 @@ function AdminMenu(props) {
     const [openGestionReserva, setOpenGestionReserva] = useState(false);
     const [openAnalisis, setOpenAnalisis] = useState(false);
     const [openAdmin, setOpenAdmin] = useState(false);
-
-    useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('UsuarioActual') || 'null');
-        if (userData) setUser(userData);
-    }, []);
-
-    useEffect(() => {
-        // Podríamos cerrar otros al abrir uno, o dejar que el usuario los gestione
-    }, [location.pathname]);
 
     return (
         <div id="cover-admin-nav">
@@ -56,7 +50,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenProveedores(!openProveedores)}
                         >
@@ -72,7 +66,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenMutuas(!openMutuas)}
                         >
@@ -83,12 +77,15 @@ function AdminMenu(props) {
 
                         <ul className={`submenu ${openMutuas ? 'open' : ''}`}>
                             <li><NavLink to="Mutuas/Mutuas">{t('Mutuas')}</NavLink></li>
-                            <li><NavLink to="Mutuas/Descuadres">{t('Descuadres')}</NavLink></li>
+
+                            {(user?.perfilId === 1 || user?.perfilId === 4) && (
+                                <li><NavLink to="Mutuas/Descuadres">{t('Descuadres')}</NavLink></li>
+                            )}
                         </ul>
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenAcuerdos(!openAcuerdos)}
                         >
@@ -105,7 +102,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenCentros(!openCentros)}
                         >
@@ -123,7 +120,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenICG(!openICG)}
                         >
@@ -140,7 +137,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenOfertaDemanda(!openOfertaDemanda)}
                         >
@@ -159,7 +156,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenGestionReserva(!openGestionReserva)}
                         >
@@ -182,7 +179,7 @@ function AdminMenu(props) {
                     </li>
 
                     <li className="menu-group">
-                        <div 
+                        <div
                             className="menu-title"
                             onClick={() => setOpenAnalisis(!openAnalisis)}
                         >
@@ -197,8 +194,8 @@ function AdminMenu(props) {
                         </ul>
                     </li>
 
-                     <li className="menu-group">
-                        <div 
+                    <li className="menu-group">
+                        <div
                             className="menu-title"
                             onClick={() => setOpenAdmin(!openAdmin)}
                         >
@@ -265,6 +262,5 @@ function AdminMenu(props) {
         </div>
     );
 }
-
 
 export default AdminMenu;

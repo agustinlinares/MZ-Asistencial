@@ -18,10 +18,6 @@ public interface ICitacionesService
     Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
     Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<List<object>> GetDocumentosAsync(int citacionId);
-    Task<dynamic?> GetDocumentoByIdAsync(int docId);
-    Task UploadDocumentoAsync(int citacionId, string nombre, string rutaFisica, int mutuaId, int usuarioId);
-    Task<List<object>> GetHistorialAsync(int citacionId);
 }
 
 public class CitacionFilter
@@ -309,8 +305,4 @@ public class CitacionesService : ICitacionesService
             throw;
         }
     }
-    public Task<List<object>> GetDocumentosAsync(int citacionId) => Task.FromResult(new List<object>());
-    public Task<dynamic?> GetDocumentoByIdAsync(int docId) => Task.FromResult<dynamic?>(null);
-    public Task UploadDocumentoAsync(int citacionId, string nombre, string rutaFisica, int mutuaId, int usuarioId) => Task.CompletedTask;
-    public Task<List<object>> GetHistorialAsync(int citacionId) => Task.FromResult(new List<object>());
 }

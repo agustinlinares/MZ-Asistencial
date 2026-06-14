@@ -4,9 +4,11 @@ import { TextBox, NumberBox, SelectBox, TextArea, Button } from 'devextreme-reac
 import { useTranslation } from 'react-i18next';
 import CitacionesService from '../../../services/admin/CitacionesService';
 import notify from 'devextreme/ui/notify';
+import { useLogError } from '../../../hooks/useLogError';
 
 const NuevaSolicitud = ({ visible, onHiding, onSave, mutuaId }) => {
     const { t } = useTranslation();
+    const logError = useLogError("Nueva solicitud");
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         anio: new Date().getFullYear(),
@@ -44,6 +46,8 @@ const NuevaSolicitud = ({ visible, onHiding, onSave, mutuaId }) => {
             onSave();
             onHiding();
         } catch (error) {
+            logError(`Fallo al crear nueva solicitud para Mutua ID: ${mutuaId}, Año: ${formData.anio}`, error);
+            
             console.error("Error guardando solicitud:", error);
             notify(t('Error al crear la solicitud'), 'error', 2000);
         } finally {

@@ -4,6 +4,7 @@ import './Centros.css';
 import { saveAs } from 'file-saver-es';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import AuthService from "../../../services/auth/AuthService";
+import { useLogError } from '../../../hooks/useLogError';
 import DataGrid, {
     Column,
     Paging,
@@ -34,8 +35,13 @@ const AcreditacionesIndividuales = () => {
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
     const [acreditaciones, setAcreditaciones] = useState([]);
-    const usuarioId = AuthService.getUserData()?.usuarioId || 0;
+    const userData = AuthService.getUserData();
+    const usuarioId = userData?.usuarioId || 0;
+    const esAdmin = userData?.perfilId === 1;
+    const mutuaId = userData?.mutuaId;
     const [menuAbierto, setMenuAbierto] = useState(false);
+
+    const logError = useLogError("Acreditaciones individuales");
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -50,8 +56,9 @@ const AcreditacionesIndividuales = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
+                const mutuaParam = !esAdmin && mutuaId ? `&mutuaId=${mutuaId}` : '';
                 const [resDatos, resAño] = await Promise.all([
-                    fetch(`/api/AcreditacionesIndividuales?usuarioId=${usuarioId}`, { headers: authHeaders() }),
+                    fetch(`/api/AcreditacionesIndividuales?usuarioId=${usuarioId}${mutuaParam}`, { headers: authHeaders() }),
                     fetch('/api/AcreditacionesIndividuales/max-year', { headers: authHeaders() }),
                 ]);
 
@@ -65,8 +72,11 @@ const AcreditacionesIndividuales = () => {
                             dataGridRef.current?.instance()?.columnOption('año', 'filterValue', año);
                         }, 0);
                     }
+                } else {
+                    logError(`Fallo al cargar acreditaciones. Estado: ${resDatos.status}`);
                 }
             } catch (error) {
+                logError("Error crítico al cargar acreditaciones individuales", error);
                 console.error('Error cargando acreditaciones individuales:', error);
             }
         };
@@ -98,6 +108,7 @@ const AcreditacionesIndividuales = () => {
             const blob = await respuesta.blob();
             saveAs(blob, nombreFichero);
         } catch (error) {
+            logError(`Error al descargar el fichero ID: ${id}`, error);
             console.error('Error descargando el fichero:', error);
         }
     };

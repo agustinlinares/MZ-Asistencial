@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import "./Centros.css";
+import { useLogError } from '../../../hooks/useLogError';
 
 const API_URL = "/api/Icg06Hos";
 
@@ -263,6 +264,8 @@ const ActuacionesSustentadasH = ({ centroId: centroIdProp, año: añoProp }) => 
     const [saving,   setSaving]   = useState(false);
     const [msg,      setMsg]      = useState(null); // { ok, text }
 
+    const logError = useLogError("Actuaciones sustentadas");
+
     // ── Carga ──────────────────────────────────────────────────────────────
     const cargar = useCallback(async () => {
         if (!centroId || !año) return;
@@ -274,12 +277,13 @@ const ActuacionesSustentadasH = ({ centroId: centroIdProp, año: añoProp }) => 
             const json = await res.json();
             setDatos(apiToState(json));
         } catch {
+            logError(`Fallo al cargar actuaciones para Centro: ${centroId}, Año: ${año}`, error);
             setMsg({ ok: false, text: "No se encontraron datos para ese centro/año." });
             setDatos(null);
         } finally {
             setLoading(false);
         }
-    }, [centroId, año]);
+    }, [centroId, año, logError]);
 
     useEffect(() => {
         if (centroIdProp) cargar();
@@ -299,6 +303,7 @@ const ActuacionesSustentadasH = ({ centroId: centroIdProp, año: añoProp }) => 
             if (!res.ok) throw new Error();
             setMsg({ ok: true, text: "Guardado correctamente." });
         } catch {
+            logError(`Fallo al guardar actuaciones para ICG ID: ${datos?.idIcg}`, error);
             setMsg({ ok: false, text: "Error al guardar. Inténtalo de nuevo." });
         } finally {
             setSaving(false);

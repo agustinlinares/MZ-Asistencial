@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import "../../../styles/FichaGlobal.css";
+import { useLogError } from '../../../hooks/useLogError';
+
 
 
 const MapaModal = ({ latitud, longitud, direccion, onAceptar, onCerrar }) => {
+    const logError = useLogError("Mapa modal");
     const [lat, setLat] = useState(latitud || "");
     const [lng, setLng] = useState(longitud || "");
     const [dir, setDir] = useState(direccion || "");
@@ -28,7 +31,8 @@ const handleBuscar = async () => {
             } else {
                 setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
             }
-        } catch {
+        } catch (error) {
+            logError(`Fallo al geolocalizar dirección: "${dir}"`, error);
             setMapUrl(`https://maps.google.com/maps?q=${encodeURIComponent(dir)}&z=15&output=embed`);
         }
     } else if (lat && lng) {

@@ -7,7 +7,7 @@ import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { jsPDF } from 'jspdf';
 import DataGrid, {
     Column, Paging, FilterRow, HeaderFilter, Selection,
-    GroupPanel, Grouping, Scrolling, Sorting, ColumnFixing, Pager, Toolbar, Item,
+    GroupPanel, Grouping, Scrolling, Sorting, ColumnFixing, Pager, Toolbar, Item, MasterDetail
 } from "devextreme-react/data-grid";
 import DateBox from "devextreme-react/date-box";
 import SelectBox from "devextreme-react/select-box";
@@ -20,6 +20,50 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
+
+// --- 🛠️ NUEVO: COMPONENTE DETALLE DE SUBSOLICITUDES ---
+const SubsolicitudesDetalle = ({ demandaId }) => {
+    const { t } = useTranslation();
+    const [subsolicitudes, setSubsolicitudes] = useState([]);
+    const [cargandoSub, setCargandoSub] = useState(true);
+
+    useEffect(() => {
+        fetch(`${API}/ListaDemandas/${demandaId}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Error obteniendo detalle");
+                return res.json();
+            })
+            .then(data => {
+                setSubsolicitudes(data.subSolicitudes || []);
+            })
+            .catch(err => console.error("Error al cargar subsolicitudes:", err))
+            .finally(() => setCargandoSub(false));
+    }, [demandaId]);
+
+    if (cargandoSub) return <div style={{ padding: '15px' }}>{t('Cargando subsolicitudes...')}</div>;
+
+    return (
+        <div style={{ padding: '15px', backgroundColor: '#fdfdfd', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+            <span style={{ display: 'block', fontWeight: 'bold', color: '#555', fontSize: '13px', marginBottom: '10px' }}>
+                {t('Subsolicitudes asociadas a la Demanda')} #{demandaId}
+            </span>
+            <DataGrid
+                dataSource={subsolicitudes}
+                keyExpr="subSolId"
+                showBorders={true}
+                rowAlternationEnabled={true}
+                columnAutoWidth={true}
+            >
+                <Column dataField="subSolId" caption={t("Sub ID")} width={80} alignment="center" />
+                <Column dataField="mutuaOfertante" caption={t("Mutua Ofertante")} />
+                <Column dataField="centro" caption={t("Centro")} />
+                <Column dataField="estado" caption={t("Estado")} width={140} />
+                <Column dataField="total" caption={t("Total")} width={100} alignment="center" />
+            </DataGrid>
+        </div>
+    );
+};
+// -------------------------------------------------------
 
 const GestionDemanda = () => {
     const { t } = useTranslation();
@@ -149,6 +193,7 @@ const GestionDemanda = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
+                    {/* CABECERA */}
                     <div className="header-page">
                         <div className="title">{t('Gestión Demandas')}</div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -159,6 +204,7 @@ const GestionDemanda = () => {
                             >
                                 <i className="ri-layout-column-line"></i>
                             </div>
+
                             <div className="acciones-container" ref={menuRef}>
                                 <div className="acciones-btn" onClick={() => setMenuAbierto(v => !v)}>
                                     <i className="ri-settings-3-line"></i>
@@ -180,6 +226,7 @@ const GestionDemanda = () => {
                         </div>
                     </div>
 
+                    {/* FILTROS Y BÚSQUEDA */}
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid #e0e0e0', background: '#fafafa' }}>
                         <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                             <div className="ficha-field">
@@ -248,6 +295,7 @@ const GestionDemanda = () => {
                         )}
                     </div>
 
+                    {/* DATAGRID PRINCIPAL */}
                     <div className="table-container" style={{ padding: '0 20px 20px 20px' }}>
                         <DataGrid
                             ref={dataGridRef}

@@ -141,7 +141,6 @@ public partial class MZAsistencialContext : DbContext
     public virtual DbSet<HistoricoCentrosPropiosEspecialidade> HistoricoCentrosPropiosEspecialidades { get; set; }
 
     public virtual DbSet<Icg06> Icg06s { get; set; }
-    public virtual DbSet<Icg06Especialidad> Icg06Especialidades { get; set; }
 
     public virtual DbSet<Icg07> Icg07s { get; set; }
 
@@ -2227,7 +2226,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.TipoId).HasColumnName("Tipo_id");
             entity.Property(e => e.UsuarioAltaId).HasColumnName("UsuarioAlta_id");
             entity.Property(e => e.UsuarioAnulacionId).HasColumnName("UsuarioAnulacion_id");
-            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.Año).HasColumnName("Año");
         });
 
         modelBuilder.Entity<DemandasDocumentacion>(entity =>
@@ -2385,7 +2384,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.FincaId).HasColumnName("Finca_id");
             entity.Property(e => e.Localizador).HasMaxLength(50);
-            entity.Property(e => e.Anio).HasColumnName("Anio");
+            entity.Property(e => e.Anio).HasColumnName("Año");
             entity.HasOne(d => d.Finca).WithMany(p => p.FincasRegistralesCostesPorAños)
                 .HasForeignKey(d => d.FincaId)
                 .HasConstraintName("FK_FincasRegistrales_CostesPorAño_FincasRegistrales");
@@ -4149,7 +4148,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.EstadoInformeId).HasColumnName("EstadoInforme_id");
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
-            entity.Property(e => e.Año).HasColumnName("Anio");
+            entity.Property(e => e.Año).HasColumnName("Año");
             entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificación");
             entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)

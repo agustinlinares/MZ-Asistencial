@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,7 +23,7 @@ public partial class Demanda
     public int? Nov { get; set; }
     public int? Dic { get; set; }
 
-    [Column("Anio")]
+    [Column("Año")]
     public int? Año { get; set; }
 
     public int? MutuaDemandaId { get; set; }

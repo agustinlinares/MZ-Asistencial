@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react"; 
 import { useParams, useNavigate } from "react-router-dom";
 import DataGrid, {
     Column, FilterRow, HeaderFilter, Scrolling, Sorting, Paging, Pager,
@@ -40,6 +40,9 @@ const FichaOfertaDetalle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    // Referencia para enlazar el botón con el selector de archivos oculto
+    const fileInputRef = useRef(null);
+
     const [datos, setDatos] = useState(null);
     const [estados, setEstados] = useState([]);
     const [form, setForm] = useState(null);
@@ -47,6 +50,27 @@ const FichaOfertaDetalle = () => {
     const [error, setError] = useState(null);
 
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+    // Helper interno para recuperar las credenciales activas del usuario
+    const getUsuarioSesion = () => {
+        try {
+            const u = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
+            return {
+                usuarioId: u?.usuarioId ?? 0,
+                mutuaIdSesion: u?.mutuaId ?? 0
+            };
+        } catch {
+            return { usuarioId: 0, mutuaIdSesion: 0 };
+        }
+    };
+
+    // Helper para refrescar la lista de documentos sin recargar toda la página
+    const recargarFichaYDocumentos = () => {
+        fetch(`${API}/ListaOfertas/${id}`)
+            .then(r => r.json())
+            .then(data => { setDatos(data); setForm(data); })
+            .catch(err => console.error("Error al refrescar documentos:", err));
+    };
 
     useEffect(() => {
         fetch(`${API}/ListaOfertas/estados`)
@@ -60,6 +84,40 @@ const FichaOfertaDetalle = () => {
             .catch(err => setError(err.message))
             .finally(() => setCargando(false));
     }, [id]);
+
+    // Función encargada de empaquetar y subir el archivo al backend
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const { usuarioId, mutuaIdSesion } = getUsuarioSesion();
+
+        // Creamos el contenedor multipart binario
+        const formData = new FormData();
+        formData.append("archivo", file);
+        formData.append("ofertaId", id);
+        formData.append("usuarioId", usuarioId);
+        formData.append("mutuaId", mutuaIdSesion);
+
+        try {
+            const res = await fetch(`${API}/ListaOfertas/AdjuntarDocumento`, {
+                method: 'POST',
+                body: formData // Enviamos el contenedor con el archivo
+            });
+
+            if (res.ok) {
+                notify('Documento adjuntado correctamente', 'success', 2000);
+                recargarFichaYDocumentos(); // Refrescamos el grid automáticamente
+            } else {
+                notify('Error al subir el documento al servidor', 'error', 3000);
+            }
+        } catch (err) {
+            console.error(err);
+            notify('Error de conexión al subir el archivo', 'error', 3000);
+        } finally {
+            if (fileInputRef.current) fileInputRef.current.value = ""; // Limpiamos el input
+        }
+    };
 
     const handleGuardar = async () => {
         if (form.estadoId === 3) {
@@ -243,9 +301,17 @@ const FichaOfertaDetalle = () => {
                     </div>
 
                     {/* DOCUMENTOS */}
+                    {/* Input nativo oculto conectado a la lógica de React */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        onChange={handleFileChange}
+                    />
+
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                         <button
-                            onClick={() => notify('Funcionalidad de adjuntar pendiente de implementar', 'info', 2000)}
+                            onClick={() => fileInputRef.current.click()} // Simula el clic en el input oculto
                             style={{ background: '#1a5fa8', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}
                         >
                             Adjuntar

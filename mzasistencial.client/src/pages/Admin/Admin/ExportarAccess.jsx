@@ -25,6 +25,7 @@ import DataGrid, {
 } from "devextreme-react/data-grid";
 import { useTranslation } from "react-i18next";
 import notify from 'devextreme/ui/notify';
+import { useLogError } from '../../../hooks/useLogError';
 
 const TIPOS_CENTRO = [
     { id: 1, nombre: 'Propios' },
@@ -57,6 +58,9 @@ const ExportarAccess = () => {
     const userData    = AuthService.getUserData();
     const esAdmin     = userData?.perfilId === 1;
     const usuarioId   = userData?.usuarioId || 0;
+    const mutuaId     = userData?.mutuaId;
+
+    const logError = useLogError("Exportar Access");
 
     useEffect(() => {
         const handleClick = (e) => {
@@ -70,8 +74,9 @@ const ExportarAccess = () => {
     useEffect(() => {
         const cargarDatos = async () => {
             try {
+                const mutuaParam = !esAdmin && mutuaId ? `?mutuaId=${mutuaId}` : '';
                 const [resFich, resMut, resAños] = await Promise.all([
-                    fetch('/api/ExportarAccess', { headers: authHeaders() }),
+                    fetch(`/api/ExportarAccess${mutuaParam}`, { headers: authHeaders() }),
                     fetch('/api/ExportarAccess/mutuas', { headers: authHeaders() }),
                     fetch('/api/ExportarAccess/años', { headers: authHeaders() }),
                 ]);
@@ -80,6 +85,7 @@ const ExportarAccess = () => {
                 if (resAños.ok)  setAños(await resAños.json());
             } catch (err) {
                 console.error('Error cargando datos:', err);
+                logError("Fallo al cargar los listados iniciales de Exportar Access", err);
             }
         };
         cargarDatos();
@@ -87,10 +93,12 @@ const ExportarAccess = () => {
 
     const cargarFicheros = async () => {
         try {
-            const resp = await fetch('/api/ExportarAccess', { headers: authHeaders() });
+            const mutuaParam = !esAdmin && mutuaId ? `?mutuaId=${mutuaId}` : '';
+            const resp = await fetch(`/api/ExportarAccess${mutuaParam}`, { headers: authHeaders() });
             if (resp.ok) setFicheros(await resp.json());
         } catch (err) {
             console.error('Error recargando ficheros:', err);
+            logError("Fallo al recargar el listado de ficheros", err);
         }
     };
 
@@ -103,6 +111,7 @@ const ExportarAccess = () => {
             const blob = await resp.blob();
             saveAs(blob, row.nombreFichero || `fichero_${row.ficheroGeneradoId}.accdb`);
         } catch {
+            logError("Fallo al descargar fichero", err);
             notify(t('Error al descargar el fichero.'), 'error', 3000);
         }
     };
@@ -133,9 +142,11 @@ const ExportarAccess = () => {
                 await cargarFicheros();
             } else {
                 const err = await resp.json().catch(() => ({}));
+                logError("Error del servidor al guardar fichero: " + mensajeError);
                 notify(err.message || t('Error al guardar.'), 'error', 3000);
             }
         } catch {
+            logError("Fallo al registrar/generar nuevo fichero Access", err);
             notify(t('Error al guardar.'), 'error', 3000);
         } finally {
             setCargando(false);
@@ -164,6 +175,7 @@ const ExportarAccess = () => {
                 notify(t('No se pudo eliminar el fichero.'), 'error', 3000);
             }
         } catch {
+            logError("Fallo al eliminar el fichero", err);
             notify(t('Error al eliminar el fichero.'), 'error', 3000);
         }
         setRowToDelete(null);
