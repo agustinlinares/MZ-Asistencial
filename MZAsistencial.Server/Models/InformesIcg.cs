@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MZAsistencial.Server.Models;
 
@@ -23,5 +24,6 @@ public partial class InformesIcg
 
     public DateTime? FechaModificacion { get; set; }
 
+    [Column("UsuarioModificacion")]
     public int? UsuarioModificación { get; set; }
 }

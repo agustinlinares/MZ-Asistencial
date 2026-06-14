@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+// using Microsoft.AspNetCore.Authentication.JwtBearer;
+// using Microsoft.IdentityModel.Tokens;
+// using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +103,7 @@ builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
 builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
 builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
+builder.Services.AddScoped<ITiposDemandaService, TiposDemandaService>();
 
 // ── Servicios ICG07 (Conciertos) ─────────────────────────────────────────────
 builder.Services.AddScoped<IcgConciertosService>();

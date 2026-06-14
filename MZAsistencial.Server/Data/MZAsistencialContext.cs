@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MZAsistencial.Server.Models;
 using Microsoft.EntityFrameworkCore;
@@ -4149,7 +4149,7 @@ public partial class MZAsistencialContext : DbContext
             entity.Property(e => e.FechaModificacion).HasColumnType("datetime");
             entity.Property(e => e.MutuaId).HasColumnName("Mutua_id");
             entity.Property(e => e.Año).HasColumnName("Año");
-            entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificación");
+            entity.Property(e => e.UsuarioModificación).HasColumnName("UsuarioModificacion");
             entity.Property(e => e.TipoIcg)
                 .HasMaxLength(10)
                 .HasColumnName("TipoICG");

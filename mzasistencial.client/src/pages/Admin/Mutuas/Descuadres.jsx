@@ -45,10 +45,11 @@ const Descuadres = () => {
                 // Ahora extraemos y exponemos el perfil de forma segura
                 perfilId: u?.perfilId ?? u?.perfil_id ?? 0,
             };
-        } catch {
-
+        } catch (err) {
             logError("Fallo al recuperar o parsear el UsuarioActual desde localStorage", err);
             return { usuarioId: 0, mutuaIdSesion: 0, anio: new Date().getFullYear() };
+        }
+    };
 
     // ── Cargar / recalcular ──────────────────────────────────────────────────
     // El backend ejecuta: borrar → recalcular → insertar → actualizar contadores
