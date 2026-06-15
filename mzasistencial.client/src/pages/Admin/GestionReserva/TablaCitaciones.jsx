@@ -435,7 +435,7 @@ const TablaCitaciones = ({
                                 <Column dataField="Diciembre" caption="Dic" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
                             </Column>
 
-                            <Column dataField="Total" caption={t('Total')} width={80} alignment="center" />
+                            <Column dataField="Total" caption={t('Total')} width={110} alignment="center" />
                             <Column dataField="Estado" caption={t('Estado')} width={140} alignment="center" cellRender={(cell) => <span style={getEstadoStyle(cell.value)}>{cell.value || t('PENDIENTE')}</span>} />
                             <Column dataField="FechaAltaSolicitud" caption={t('Fecha Solicitud')} dataType="date" width={130} format="dd/MM/yyyy" />
 
