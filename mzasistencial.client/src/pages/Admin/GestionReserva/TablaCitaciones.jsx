@@ -349,13 +349,13 @@ const TablaCitaciones = ({
                             remoteOperations={true}
                             keyExpr="CitacionId"
                             showBorders={true}
-                            columnAutoWidth={false}
+                            columnAutoWidth={true}
                             allowColumnResizing={true}
                             className="mz-table"
                             rowAlternationEnabled={true}
                             showRowLines={true}
                             showColumnLines={true}
-                            wordWrapEnabled={false}
+                            wordWrapEnabled={true}
                             height="100%"
                             onRowDblClick={handleRowDblClick}
                             selectedRowKeys={hasBatchActions ? selectedRowKeys : undefined}
@@ -410,12 +410,16 @@ const TablaCitaciones = ({
                             {filtros.vista === 'Agrupada' && <Grouping autoExpandAll={false} />}
                             {filtros.vista === 'Agrupada' && <GroupPanel visible={true} />}
 
-                            <Column dataField="DemandaId" caption={t('Demanda')} width={100} groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
-                            <Column dataField="Anio" caption={t('Año')} width={80} alignment="center" />
-                            <Column dataField={mutuaColumnField} caption={t(mutuaColumnCaption)} width={160} />
-                            <Column dataField="Centro" caption={t('Centro')} width={180} />
-                            <Column dataField="Especialidad" caption={t('Especialidad')} width={160} />
-                            <Column dataField="Servicio" caption={t('Servicio')} width={150} />
+                            <Column dataField="Anio" caption={t('Año')} width={80} alignment="center" groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
+                            <Column dataField="DemandaId" caption={t('Demanda')} visible={false} groupIndex={filtros.vista === 'Agrupada' ? 1 : undefined} />
+                            <Column dataField="MutuaOfertante" caption={t('Mutua Ofertante')} />
+                            <Column dataField="MutuaSolicitante" caption={t('Mutua Demandante')} />
+                            <Column dataField="Centro" caption={t('Centro')} />
+                            <Column dataField="Provincia" caption={t('Provincia')} />
+                            <Column dataField="Localidad" caption={t('Localidad')} />
+                            <Column dataField="Especialidad" caption={t('Especialidad')} />
+                            <Column dataField="TipoMovimiento" caption={t('Tipo Movimiento')} />
+                            <Column dataField="Servicio" caption={t('Servicio')} />
                             
                             <Column caption={t('Mensualidades')} alignment="center">
                                 <Column dataField="Ene" caption="Ene" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />

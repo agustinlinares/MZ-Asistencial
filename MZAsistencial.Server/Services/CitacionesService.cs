@@ -155,7 +155,10 @@ public class CitacionesService : ICitacionesService
                 FechaAltaSolicitud = x.c.FechaAltaSolicitud,
                 EstadoId = x.c.EstadoId,
                 MutuaOfertanteId = x.c.MutuaOfertanteId,
-                MutuaDemandanteId = x.c.MutuaDemandanteId
+                MutuaDemandanteId = x.c.MutuaDemandanteId,
+                Provincia = x.c.Provincia,
+                Localidad = x.c.Localidad,
+                TipoMovimiento = x.c.TipoMovimiento
             });
     }
 
