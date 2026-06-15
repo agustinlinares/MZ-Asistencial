@@ -144,7 +144,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     };
 
     const handleMesChange = (mes, value) => {
-        const val = parseInt(value, 10) || 0;
+        let val = parseInt(value, 10) || 0;
+        if (val < 0) val = 0; // Impedir números negativos
         setCitacionMeses(prev => ({ ...prev, [mes]: val }));
     };
 
