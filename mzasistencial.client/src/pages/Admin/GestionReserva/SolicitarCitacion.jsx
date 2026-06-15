@@ -161,7 +161,7 @@ const SolicitarCitacion = () => {
             createStore={CitacionesService.createSolicitadasStore}
             mutuaColumnField="MutuaOfertante"
             mutuaColumnCaption="Mutua Ofertante"
-            hasNuevaSolicitud={true}
+            hasNuevaSolicitud={false}
             hasBatchActions={false}
             hasRowActions={false}
         />
