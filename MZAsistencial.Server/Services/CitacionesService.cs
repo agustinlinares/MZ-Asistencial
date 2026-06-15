@@ -222,11 +222,29 @@ public class CitacionesService : ICitacionesService
                 MutuaDemandante = mutuaId,
                 MutaOferta = dto.MutuaOfertanteId ?? 0,
                 CentroId = dto.CentroId ?? 0,
+                EspecialidadId = dto.EspecialidadId,
+                ServicioId = (int?)(dto.ServicioId),
+                ProvinciaId = dto.ProvinciaId,
+                Localidad = dto.LocalidadId,
+                MovimientoId = dto.TipoMovimientoId, // added field mapped to Aux_Citacion_Movimientos
                 Necesidad = dto.Necesidad,
                 EstadoId = 1, // Pendiente
                 FechaAltaSolicitud = DateTime.Now,
                 FechaAlta = DateTime.Now,
-                UsuarioAltaId = 1 // Default admin
+                UsuarioAltaId = 1, // Default admin
+                Ene = dto.Ene ?? 0,
+                Feb = dto.Feb ?? 0,
+                Mar = dto.Mar ?? 0,
+                Abr = dto.Abr ?? 0,
+                May = dto.May ?? 0,
+                Jun = dto.Jun ?? 0,
+                Jul = dto.Jul ?? 0,
+                Ago = dto.Ago ?? 0,
+                Sep = dto.Sep ?? 0,
+                Oct = dto.Oct ?? 0,
+                Nov = dto.Nov ?? 0,
+                Diciembre = dto.Diciembre ?? 0,
+                Total = dto.Total ?? 0
             };
 
             _context.Citaciones.Add(citacion);
