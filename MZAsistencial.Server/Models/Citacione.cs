@@ -58,8 +58,8 @@ public partial class Citacione
 
     public int? Diciembre { get; set; }
 
-    [Column("Anio")]
-    public int? AÃ±o { get; set; }
+    [Column("Año")]
+    public int? Año { get; set; }
 
     public int? Total { get; set; }
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 
@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+// using Microsoft.AspNetCore.Authentication.JwtBearer;
+// using Microsoft.IdentityModel.Tokens;
+// using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +80,12 @@ builder.Services.AddScoped<PlantillasICGService>();
 builder.Services.AddScoped<ListadoPropiosIcgService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
+builder.Services.AddScoped<IConciertosService, ConciertosService>();
+builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
+builder.Services.AddScoped<ITiposDemandaService, TiposDemandaService>();
+builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
+builder.Services.AddScoped<ITiposDemandaService, TiposDemandaService>();
+builder.Services.AddScoped<IUsuariosService, UsuariosService>();
 
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();
@@ -102,7 +108,6 @@ builder.Services.AddScoped<IListaDemandasService, ListaDemandasService>();
 builder.Services.AddScoped<Icg06CrearService>();
 builder.Services.AddScoped<Icg06ValidarService>();
 builder.Services.AddScoped<IRegistrosActividadService, RegistrosActividadService>();
-builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 
 // ── Servicios ICG07 (Conciertos) ─────────────────────────────────────────────
 builder.Services.AddScoped<IcgConciertosService>();

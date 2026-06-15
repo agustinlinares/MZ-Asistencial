@@ -144,7 +144,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     };
 
     const handleMesChange = (mes, value) => {
-        const val = parseInt(value, 10) || 0;
+        let val = parseInt(value, 10) || 0;
+        if (val < 0) val = 0; // Impedir números negativos
         setCitacionMeses(prev => ({ ...prev, [mes]: val }));
     };
 
@@ -204,8 +205,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                         <TextBox readOnly value={citacion.CitacionId?.toString()} />
                     </div>
                     <div className="form-group">
-                        <label>{t('ID Demanda')}</label>
-                        <TextBox readOnly value={citacion.DemandaId?.toString()} />
+                        <label>{t('Tipo Movimiento')}</label>
+                        <TextBox readOnly value={citacion.TipoMovimiento} />
                     </div>
                     <div className="form-group">
                         <label>{t('Mutua Solicitante')}</label>

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
@@ -10,7 +10,7 @@ namespace MZAsistencial.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize]
+    [Authorize]
     public class RegistroErroresController : ControllerBase
     {
         private readonly IRegistroErroresService _registroErroresService;
@@ -31,8 +31,23 @@ namespace MZAsistencial.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRegistroErrores(DataSourceLoadOptions loadOptions)
         {
+            var perfilId = User.FindFirst("perfilId")?.Value ?? User.FindFirst("PerfilId")?.Value;
+            if (perfilId != "1") return Forbid();
+
             var query = _registroErroresService.ObtenerListadoErroresQuery();
             return Ok(await DataSourceLoader.LoadAsync(query, loadOptions));
+        }
+
+        [HttpPut("{errorId}/estado")]
+        public async Task<IActionResult> UpdateEstado(int errorId, [FromBody] int nuevoEstadoId)
+        {
+            var perfilId = User.FindFirst("perfilId")?.Value ?? User.FindFirst("PerfilId")?.Value;
+            if (perfilId != "1") return Forbid();
+
+            var success = await _registroErroresService.UpdateEstadoAsync(errorId, nuevoEstadoId);
+            if (!success) return NotFound();
+            
+            return Ok();
         }
     }
 }

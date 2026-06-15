@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server
+﻿namespace MZAsistencial.Server
 {
     public class WeatherForecast
     {

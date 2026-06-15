@@ -27,7 +27,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var result = await _service.GetInformesAsync(mutuaId, anio);
+            var result = await _service.GetInformesAsync(mutuaId, anio, User);
             return Ok(result);
         }
         catch (Exception ex)
@@ -42,7 +42,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var fileBytes = await _service.GenerarPlantillaAsync(mutuaId, anio, tipo, formato);
+            var fileBytes = await _service.GenerarPlantillaAsync(mutuaId, anio, tipo, formato, User);
             var mimeType = formato.ToUpper() == "XML" ? "application/xml" : "text/csv";
             return File(fileBytes, mimeType, $"Plantilla_{tipo}_{anio}.{formato.ToLower()}");
         }
@@ -54,14 +54,17 @@ public class PlantillasICGController : ControllerBase
 
     // POST /api/PlantillasICG/subir
     [HttpPost("subir")]
-    public async Task<IActionResult> SubirPlantilla([FromForm] IFormFile fichero, [FromForm] int? mutuaId, [FromForm] int? anio, [FromForm] string tipoICG)
+    public async Task<IActionResult> SubirPlantilla(IFormFile fichero, [FromForm] int? mutuaId, [FromForm] int? anio, [FromForm] string tipoICG)
     {
         try
         {
             if (fichero == null || fichero.Length == 0)
                 return BadRequest("No se adjuntó ningún fichero válido.");
 
-            var dto = await _service.SubirPlantillaAsync(fichero, mutuaId, anio, tipoICG);
+            var (isValid, error) = await MZAsistencial.Server.Helpers.FileValidator.ValidateAsync(fichero);
+            if (!isValid) return BadRequest(error);
+
+            var dto = await _service.SubirPlantillaAsync(fichero, mutuaId, anio, tipoICG, User);
             return Ok(dto);
         }
         catch (Exception ex)
@@ -91,7 +94,7 @@ public class PlantillasICGController : ControllerBase
     {
         try
         {
-            var procesados = await _service.ProcesarPlantillasAsync();
+            var procesados = await _service.ProcesarPlantillasAsync(User);
             return Ok(new { Message = $"Se han procesado {procesados} plantillas correctamente." });
         }
         catch (Exception ex)
