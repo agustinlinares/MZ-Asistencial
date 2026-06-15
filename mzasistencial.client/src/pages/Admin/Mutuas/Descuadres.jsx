@@ -47,7 +47,7 @@ const Descuadres = () => {
             };
         } catch (err) {
             logError("Fallo al recuperar o parsear el UsuarioActual desde localStorage", err);
-            return { usuarioId: 0, mutuaIdSesion: 0, anio: new Date().getFullYear() };
+            return { usuarioId: 0, mutuaIdSesion: 0, anio: new Date().getFullYear(), perfilId: 0 };
         }
     };
 
@@ -70,7 +70,7 @@ const Descuadres = () => {
         } finally {
             setCargando(false);
         }
-    }, []);
+    }, [logError]);
 
     useEffect(() => { cargar(); }, [cargar]);
 
