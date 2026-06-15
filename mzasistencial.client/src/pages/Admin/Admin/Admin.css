@@ -512,4 +512,12 @@
 }
 .fichero-link:hover {
     color: #1348a0;
+}
+
+/* Centrar checkbox en celdas de datos pero mantener cabecera a la izquierda */
+.dx-data-row .qlik-sense-col {
+    text-align: center !important;
+}
+.dx-data-row .qlik-sense-col .dx-checkbox {
+    margin: 0 auto;
 }

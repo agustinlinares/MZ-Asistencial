@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 import LoginPage from "../pages/LoginPage/LoginPage";
@@ -49,6 +49,7 @@ const AnalisisView = lazy(() => import("../pages/Admin/Analisis/AnalisisView"));
 const AnalisisSense = lazy(() => import("../pages/Admin/Analisis/AnalisisSense"));
  
 const Usuarios = lazy(() => import("../pages/Admin/Admin/Usuarios"));
+const FichaUsuario = lazy(() => import("../pages/Admin/Admin/FichaUsuario"));
 const Perfiles = lazy(() => import("../pages/Admin/Admin/Perfiles"));
 const PresupuestosLiquidados = lazy(() => import("../pages/Admin/Admin/PresupuestosLiquidados"));
 const Ejercicios = lazy(() => import("../pages/Admin/Admin/Ejercicios"));
@@ -130,6 +131,7 @@ const AppRoutes = () => {
  
                         <Route path="Admin">
                             <Route path="Usuarios" element={<Usuarios />} />
+                            <Route path="Usuarios/Ficha/:id" element={<FichaUsuario />} />
                             <Route path="Perfiles" element={<Perfiles />} />
                             <Route path="PresupuestosLiquidados" element={<PresupuestosLiquidados />} />
                             <Route path="Ejercicios" element={<Ejercicios />} />
