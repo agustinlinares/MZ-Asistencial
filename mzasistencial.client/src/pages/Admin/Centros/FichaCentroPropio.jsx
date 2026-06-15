@@ -50,7 +50,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const navigate = useNavigate();
     const modalRef = useRef(null);
 
-    // ── Perfil del usuario actual ─────────────────────────────────────────────
     const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
     const esAdmin = user?.perfilId === 1;
 
@@ -65,7 +64,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const [especialidades, setEspecialidades] = useState([]);
     const [catalogo,    setCatalogo]    = useState([]);
     const [anioEsp,     setAnioEsp]     = useState(null);
-    const [anioCat,     setAnioCat]     = useState(null); // ── Estado independiente para Catálogo
+    const [anioCat,     setAnioCat]     = useState(null);
     const [bloqueado,   setBloqueado]   = useState(false);
     const [editandoEsp,  setEditandoEsp]  = useState({});
     const [guardandoEsp, setGuardandoEsp] = useState(false);
@@ -149,17 +148,15 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     MapaValidado:            c.mapaValidado           ?? c.MapaValidado           ?? false,
                 });
             })
-            .catch(() => { /* silently handled */ });
+            .catch(() => {});
     }, [cliente, onClose]);
 
-    // ── Autocalcular Tipo de Centro según actividades ─────────────────────────
     useEffect(() => {
         if (Object.keys(form).length === 0) return;
         const esHospitalario = form.ActividadHospitalaria || form.ActividadAmbulatoria || form.ActividadRehabilitacion;
         setForm(f => ({ ...f, TipoCentroRadio: esHospitalario ? "hospitalarios" : "noSanitario" }));
     }, [form.ActividadHospitalaria, form.ActividadAmbulatoria, form.ActividadRehabilitacion]); // eslint-disable-line
 
-    // ── Leer coordenadas al volver de MapaPage ────────────────────────────────
     useEffect(() => {
         const leerMapaRetorno = () => {
             const mapaData = sessionStorage.getItem('mapaRetorno');
@@ -174,9 +171,9 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                         DireccionGoogle: direccion || f.DireccionGoogle,
                         MapaValidado:    mapaValidado === true ? true : f.MapaValidado,
                     }));
-                } catch (err) { 
+                } catch (err) {
                     logError("Fallo al recuperar/parsear datos del mapa desde sessionStorage", err);
-                 }
+                }
             }
         };
         leerMapaRetorno();
@@ -204,7 +201,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             .then(r => r.ok ? r.json() : []).then(d => { setEspecialidades(d); setEditandoEsp({}); }).catch(() => setEspecialidades([]));
     };
 
-    // ── Catálogo: carga independiente con anioCat ─────────────────────────────
     const cargarCatalogo = () => {
         if (!form.CentroId || !anioCat) return;
         fetch(`/api/CentrosPropiosEspecialidades/catalogo?centroId=${form.CentroId}&anio=${anioCat}`)
@@ -226,7 +222,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
             fetch(`/api/CentrosPropios/siguiente-localizador/${form.Mutua}`)
                 .then(r => r.ok ? r.text() : null)
                 .then(loc => { if (loc) setForm(f => ({ ...f, Localizador: loc.replace(/"/g, '') })); })
-                .catch(() => { /* silently handled */ });
+                .catch(() => {});
         }
     }, [form.Mutua, form.CentroId]);
 
@@ -436,14 +432,26 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                             <div className="ficha-section">
                                 <p className="ficha-section-title"><i className="ri-building-line"></i> {t('Tipo de Centro')}</p>
                                 <div className="ficha-radio-group">
-                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
+                                    <label style={{
+                                        opacity:    form.TipoCentroRadio === "noSanitario" ? 1 : 0.4,
+                                        cursor:     'not-allowed',
+                                        fontWeight: form.TipoCentroRadio === "noSanitario" ? 700 : 400,
+                                        color:      form.TipoCentroRadio === "noSanitario" ? "#1976d2" : "inherit",
+                                        transition: 'all 0.2s',
+                                    }}>
                                         <input type="radio" name="tipoCentro" value="noSanitario"
                                             checked={form.TipoCentroRadio === "noSanitario"}
                                             onChange={() => {}} disabled
                                         />
                                         {t('Centro NO Sanitario')}
                                     </label>
-                                    <label style={{ opacity: 0.7, cursor: 'not-allowed' }}>
+                                    <label style={{
+                                        opacity:    form.TipoCentroRadio === "hospitalarios" ? 1 : 0.4,
+                                        cursor:     'not-allowed',
+                                        fontWeight: form.TipoCentroRadio === "hospitalarios" ? 700 : 400,
+                                        color:      form.TipoCentroRadio === "hospitalarios" ? "#1976d2" : "inherit",
+                                        transition: 'all 0.2s',
+                                    }}>
                                         <input type="radio" name="tipoCentro" value="hospitalarios"
                                             checked={form.TipoCentroRadio === "hospitalarios"}
                                             onChange={() => {}} disabled
@@ -691,7 +699,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                     {/* CATÁLOGO */}
                     {tabActiva === "catalogo" && (
                         <div className="ficha-tab-inner">
-                            {/* Bloqueado para usuario final */}
                             {!esAdmin && (
                                 <div className="ficha-alert ficha-alert-warning" style={{ marginBottom: 15 }}>
                                     <i className="ri-lock-line" />
@@ -716,7 +723,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                 </div>
                                 <div className="ficha-field">
                                     <label>Especialidad</label>
-                                    <select disabled={!esAdmin}>
+                                    <select>
                                         <option value="">— Seleccionar —</option>
                                         {ESPECIALIDADES_LIST.map(e => <option key={e}>{e}</option>)}
                                     </select>
@@ -725,7 +732,6 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     <label>Año</label>
                                     <select
                                         value={anioCat || ''}
-                                        disabled={!esAdmin}
                                         onChange={e => setAnioCat(e.target.value ? Number(e.target.value) : null)}
                                     >
                                         <option value=''>-- Seleccionar --</option>
@@ -733,19 +739,28 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
                                     </select>
                                 </div>
                             </div>
-                            {!anioCat && esAdmin && (
+                            {!anioCat && (
                                 <p style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
                                     <i className="ri-information-line"></i> Selecciona un año para ver el catálogo.
                                 </p>
                             )}
-                            <DataGrid dataSource={anioCat ? catalogo : []} showBorders rowAlternationEnabled noDataText="Sin datos para mostrar" className="mz-table" width="100%" height="auto">
+                            <DataGrid
+                                dataSource={anioCat ? catalogo : []}
+                                showBorders
+                                rowAlternationEnabled
+                                noDataText="Sin datos para mostrar"
+                                className="mz-table"
+                                width="100%"
+                                height="auto"
+                                columnAutoWidth={false}
+                                allowColumnResizing={true}
+                            >
                                 <Scrolling mode="standard" /><Paging defaultPageSize={10} />
                                 <Pager visible showInfo showNavigationButtons displayMode="full" allowedPageSizes={[10, 20, 50]} showPageSizeSelector />
                                 <FilterRow visible /><HeaderFilter visible /><Sorting mode="multiple" />
-                                <Column dataField="especialidad"   caption="Especialidad"   width={220} />
-                                <Column dataField="servicio"       caption="Servicio"       width={250} />
-                                <Column dataField="disponibilidad" caption="Disponibilidad" width={120} />
-                                <Column dataField="fechaAlta"      caption="F. Alta"        width={120} dataType="date" format="dd/MM/yyyy" />
+                                <Column dataField="especialidad"   caption="Especialidad"   width="40%" />
+                                <Column dataField="servicio"       caption="Servicio"       width="40%" />
+                                <Column dataField="disponibilidad" caption="Disponibilidad" width="20%" alignment="center" />
                             </DataGrid>
                         </div>
                     )}

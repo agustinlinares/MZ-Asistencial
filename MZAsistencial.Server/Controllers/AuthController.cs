@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MZAsistencial.Server.Data;
@@ -35,27 +35,45 @@ namespace MZAsistencial.Server.Controllers
             }
         }
 
+        private static string CreateMD5(string input)
+        {
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+                return Convert.ToHexString(hashBytes);
+            }
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.Contrasena))
                 return BadRequest(new { message = "Usuario y contrasena son obligatorios." });
 
+            var hashedPwd = CreateMD5(request.Contrasena);
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == request.Contrasena);
+                .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == hashedPwd);
+
+            // Permitimos también que entren con texto plano si aún no han sido migrados
+            if (usuario == null)
+            {
+                usuario = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.Usuario1 == request.Usuario && u.Password == request.Contrasena);
+                
+                // Opcional: si entró con texto plano, podríamos actualizarle a MD5 aquí.
+            }
 
             if (usuario == null)
                 return Unauthorized(new { message = "Usuario o contrasena incorrectos." });
 
-            // Obtener el año del ejercicio activo (sin FechaCierre)
-            // Si no hay ejercicio abierto, usar el año actual
-            // var ejercicioActivo = await _context.Ejercicios
-            //     .Where(e => e.FechaCierre == null)
-            //     .OrderByDescending(e => e.Año)
-            //     .FirstOrDefaultAsync();
+            if (usuario.FechaBaja.HasValue && usuario.FechaBaja.Value <= DateTime.Now)
+                return Unauthorized(new { message = "El usuario se encuentra dado de baja." });
+
+            // Verificar si necesita cambio de contraseña
+            bool requiresPasswordChange = usuario.CambioPassword == true;
 
             var anio = DateTime.Now.Year;
-
             var token = GenerarToken(usuario);
 
             return Ok(new
@@ -67,7 +85,8 @@ namespace MZAsistencial.Server.Controllers
                 nombre = usuario.Nombre,
                 apellidos = usuario.Apellidos,
                 anio = anio,
-                token = token
+                token = token,
+                requiresPasswordChange = requiresPasswordChange
             });
         }
 

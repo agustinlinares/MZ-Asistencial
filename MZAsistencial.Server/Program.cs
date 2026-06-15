@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.Services;
 
@@ -83,6 +83,9 @@ builder.Services.AddScoped<Icg06ValidarService>();
 builder.Services.AddScoped<IConciertosService, ConciertosService>();
 builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
 builder.Services.AddScoped<ITiposDemandaService, TiposDemandaService>();
+builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
+builder.Services.AddScoped<ITiposDemandaService, TiposDemandaService>();
+builder.Services.AddScoped<IUsuariosService, UsuariosService>();
 
 // ── Servicios ICG06 ──────────────────────────────────────────────────────────
 builder.Services.AddScoped<Icg06HosService>();

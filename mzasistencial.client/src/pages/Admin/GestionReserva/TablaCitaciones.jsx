@@ -244,7 +244,7 @@ const TablaCitaciones = ({
     return (
         <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
             <div className="file-box">
-                {!showFicha && (
+                {!(showFicha || showNuevaSolicitud) && (
                     <>
                         <div className="header-page">
                             <div className="title">{t(titulo)}</div>
@@ -268,14 +268,6 @@ const TablaCitaciones = ({
                             </div>
                         </div>
 
-                        {hasNuevaSolicitud && (
-                            <NuevaSolicitud 
-                                visible={showNuevaSolicitud}
-                                onHiding={() => setShowNuevaSolicitud(false)}
-                                onSave={() => cargarDatos()}
-                                mutuaId={AuthService.getUserData()?.mutuaId}
-                            />
-                        )}
 
                         <div className="filter-panel-premium">
                             <div className="filter-row">
@@ -333,7 +325,7 @@ const TablaCitaciones = ({
                     </>
                 )}
 
-                <div className="table-container" style={{ padding: showFicha ? '0' : '0 20px 20px 20px', height: showFicha ? 'calc(100vh - 60px)' : 'auto' }}>
+                <div className="table-container" style={{ padding: (showFicha || showNuevaSolicitud) ? '0' : '0 20px 20px 20px', height: (showFicha || showNuevaSolicitud) ? 'calc(100vh - 60px)' : 'auto' }}>
                     {showFicha ? (
                         <FichaCitacion 
                             visible={showFicha}
@@ -342,20 +334,26 @@ const TablaCitaciones = ({
                             modo={modo}
                             onSave={cargarDatos}
                         />
+                    ) : showNuevaSolicitud ? (
+                        <NuevaSolicitud 
+                            visible={showNuevaSolicitud}
+                            onHiding={() => setShowNuevaSolicitud(false)}
+                            onSave={() => cargarDatos()}
+                            mutuaId={AuthService.getUserData()?.mutuaId}
+                        />
                     ) : (
                         <DataGrid
                             ref={dataGridRef}
                             dataSource={dataSource}
                             remoteOperations={true}
                             keyExpr="CitacionId"
-                            showBorders={true}
                             columnAutoWidth={false}
                             allowColumnResizing={true}
                             className="mz-table"
                             rowAlternationEnabled={true}
                             showRowLines={true}
                             showColumnLines={true}
-                            wordWrapEnabled={false}
+                            wordWrapEnabled={true}
                             height="100%"
                             onRowDblClick={handleRowDblClick}
                             selectedRowKeys={hasBatchActions ? selectedRowKeys : undefined}
@@ -410,31 +408,35 @@ const TablaCitaciones = ({
                             {filtros.vista === 'Agrupada' && <Grouping autoExpandAll={false} />}
                             {filtros.vista === 'Agrupada' && <GroupPanel visible={true} />}
 
-                            <Column dataField="DemandaId" caption={t('Demanda')} width={100} groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
-                            <Column dataField="Anio" caption={t('Año')} width={80} alignment="center" />
-                            <Column dataField={mutuaColumnField} caption={t(mutuaColumnCaption)} width={160} />
+                            <Column dataField="Anio" caption={t('Año')} width={90} alignment="center" groupIndex={filtros.vista === 'Agrupada' ? 0 : undefined} />
+                            <Column dataField="DemandaId" caption={t('Demanda')} visible={false} groupIndex={filtros.vista === 'Agrupada' ? 1 : undefined} />
+                            <Column dataField="MutuaOfertante" caption={t('Mutua Ofertante')} width={180} />
+                            <Column dataField="MutuaSolicitante" caption={t('Mutua Demandante')} width={180} />
                             <Column dataField="Centro" caption={t('Centro')} width={180} />
-                            <Column dataField="Especialidad" caption={t('Especialidad')} width={160} />
-                            <Column dataField="Servicio" caption={t('Servicio')} width={150} />
+                            <Column dataField="Provincia" caption={t('Provincia')} width={120} />
+                            <Column dataField="Localidad" caption={t('Localidad')} width={120} />
+                            <Column dataField="Especialidad" caption={t('Especialidad')} width={180} />
+                            <Column dataField="TipoMovimiento" caption={t('Tipo Movimiento')} width={160} />
+                            <Column dataField="Servicio" caption={t('Servicio')} width={160} />
                             
                             <Column caption={t('Mensualidades')} alignment="center">
-                                <Column dataField="Ene" caption="Ene" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Feb" caption="Feb" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Mar" caption="Mar" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Abr" caption="Abr" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="May" caption="May" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Jun" caption="Jun" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Jul" caption="Jul" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Ago" caption="Ago" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Sep" caption="Sep" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Oct" caption="Oct" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Nov" caption="Nov" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
-                                <Column dataField="Diciembre" caption="Dic" width={50} alignment="center" allowFiltering={false} allowHeaderFiltering={false} />
+                                <Column dataField="Ene" caption="Ene" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Feb" caption="Feb" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Mar" caption="Mar" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Abr" caption="Abr" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="May" caption="May" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Jun" caption="Jun" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Jul" caption="Jul" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Ago" caption="Ago" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Sep" caption="Sep" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Oct" caption="Oct" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Nov" caption="Nov" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
+                                <Column dataField="Diciembre" caption="Dic" width={60} alignment="center" allowFiltering={false} allowHeaderFiltering={false} allowSorting={false} />
                             </Column>
 
-                            <Column dataField="Total" caption={t('Total')} width={70} alignment="center" />
+                            <Column dataField="Total" caption={t('Total')} width={110} alignment="center" />
                             <Column dataField="Estado" caption={t('Estado')} width={140} alignment="center" cellRender={(cell) => <span style={getEstadoStyle(cell.value)}>{cell.value || t('PENDIENTE')}</span>} />
-                            <Column dataField="FechaAltaSolicitud" caption={t('Fecha Solicitud')} dataType="date" width={110} format="dd/MM/yyyy" />
+                            <Column dataField="FechaAltaSolicitud" caption={t('Fecha Solicitud')} dataType="date" width={130} format="dd/MM/yyyy" />
 
                             {hasRowActions && (
                                 <Column 

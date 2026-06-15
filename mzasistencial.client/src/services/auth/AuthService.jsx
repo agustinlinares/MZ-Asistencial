@@ -1,11 +1,11 @@
-﻿const AuthService = {
+const AuthService = {
 
     setUserData: (data) => {
         localStorage.setItem('UsuarioActual', JSON.stringify(data));
     },
 
     getUserData: () => {
-        const datos = localStorage.getItem('UsuarioActual');
+        const datos = localStorage.getItem('UsuarioActual') || sessionStorage.getItem('user');
         return datos ? JSON.parse(datos) : null;
     },
 

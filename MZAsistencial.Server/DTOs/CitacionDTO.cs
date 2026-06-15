@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -111,6 +111,9 @@ public class CitacionDTO
 
     [JsonPropertyName("Localidad")]
     public string? Localidad { get; set; }
+
+    [JsonPropertyName("TipoMovimiento")]
+    public string? TipoMovimiento { get; set; }
 
     [JsonPropertyName("Direccion")]
     public string? Direccion { get; set; }

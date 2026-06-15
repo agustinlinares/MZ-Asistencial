@@ -4,6 +4,7 @@ import { CheckBox } from 'devextreme-react/check-box';
 import { useNavigate } from "react-router-dom";
 import AuthService from '@services/auth/AuthService';
 import { useLogError } from '../../hooks/useLogError';
+import CambioPasswordModal from '../Admin/Admin/CambioPasswordModal';
 
 import './LoginPage.css';
 
@@ -14,6 +15,8 @@ const initialState = {
     toastMessage: "",
     showPassword: false,
     isLoading: false,
+    isPasswordModalOpen: false,
+    userIdForPasswordModal: null
 };
 
 function loginReducer(state, action) {
@@ -26,6 +29,10 @@ function loginReducer(state, action) {
             return { ...state, isLoading: false, toastVisible: true, toastMessage: action.message };
         case 'LOGIN_SUCCESS':
             return { ...state, isLoading: false };
+        case 'SHOW_PASSWORD_MODAL':
+            return { ...state, isPasswordModalOpen: true, userIdForPasswordModal: action.userId };
+        case 'HIDE_PASSWORD_MODAL':
+            return { ...state, isPasswordModalOpen: false, userIdForPasswordModal: null };
         case 'TOGGLE_PASSWORD':
             return { ...state, showPassword: !state.showPassword };
         case 'HIDE_TOAST':
@@ -68,7 +75,12 @@ const LoginPage = () => {
             const data = await res.json();
             AuthService.setUserData(data);
             dispatch({ type: 'LOGIN_SUCCESS' });
-            navigate("/Admin/ResumendeGastos");
+
+            if (data.requiresPasswordChange) {
+                dispatch({ type: 'SHOW_PASSWORD_MODAL', userId: data.usuarioId });
+            } else {
+                navigate("/Admin/ResumendeGastos");
+            }
         } catch (error) {
             logError("Fallo crítico de conexión al intentar iniciar sesión", error);
             console.error("Error en login:", error);
@@ -151,6 +163,17 @@ const LoginPage = () => {
                     )}
                 </div>
             </div>
+
+            {state.isPasswordModalOpen && (
+                <CambioPasswordModal 
+                    visible={state.isPasswordModalOpen}
+                    usuarioId={state.userIdForPasswordModal}
+                    onClose={() => {
+                        dispatch({ type: 'HIDE_PASSWORD_MODAL' });
+                        navigate("/Admin/ResumendeGastos");
+                    }}
+                />
+            )}
         </div>
     );
 };

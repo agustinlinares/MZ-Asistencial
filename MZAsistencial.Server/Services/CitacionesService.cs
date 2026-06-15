@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -94,7 +94,7 @@ public class CitacionesService : ICitacionesService
             joinedQuery = joinedQuery.Where(x => x.c.Id == filter.DemandaId);
 
         if (!string.IsNullOrEmpty(filter.Necesidad))
-            joinedQuery = joinedQuery.Where(x => x.c.Necesidad.Contains(filter.Necesidad));
+            joinedQuery = joinedQuery.Where(x => x.c.Necesidad != null && x.c.Necesidad.Contains(filter.Necesidad));
 
         // 3. Lógica de Estados (incluyendo virtuales)
         if (!string.IsNullOrEmpty(filter.Estado) && filter.Estado != "Todas")
@@ -155,7 +155,10 @@ public class CitacionesService : ICitacionesService
                 FechaAltaSolicitud = x.c.FechaAltaSolicitud,
                 EstadoId = x.c.EstadoId,
                 MutuaOfertanteId = x.c.MutuaOfertanteId,
-                MutuaDemandanteId = x.c.MutuaDemandanteId
+                MutuaDemandanteId = x.c.MutuaDemandanteId,
+                Provincia = x.c.Provincia,
+                Localidad = x.c.Localidad,
+                TipoMovimiento = x.c.TipoMovimiento
             });
     }
 
