@@ -71,20 +71,7 @@ namespace MZAsistencial.Server.Controllers
                 return Unauthorized(new { message = "El usuario se encuentra dado de baja." });
 
             // Verificar si necesita cambio de contraseña
-            bool requiresPasswordChange = false;
-            if (usuario.CambioPassword == true)
-            {
-                requiresPasswordChange = true;
-            }
-            else if (usuario.FechaPassword.HasValue)
-            {
-                var days = (DateTime.Now - usuario.FechaPassword.Value).TotalDays;
-                if (days > 180) requiresPasswordChange = true;
-            }
-            else
-            {
-                requiresPasswordChange = true; // Si no tiene fecha, le obligamos.
-            }
+            bool requiresPasswordChange = usuario.CambioPassword == true;
 
             var anio = DateTime.Now.Year;
             var token = GenerarToken(usuario);
