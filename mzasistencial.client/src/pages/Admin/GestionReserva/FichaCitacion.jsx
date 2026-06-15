@@ -204,8 +204,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                         <TextBox readOnly value={citacion.CitacionId?.toString()} />
                     </div>
                     <div className="form-group">
-                        <label>{t('ID Demanda')}</label>
-                        <TextBox readOnly value={citacion.DemandaId?.toString()} />
+                        <label>{t('Tipo Movimiento')}</label>
+                        <TextBox readOnly value={citacion.TipoMovimiento} />
                     </div>
                     <div className="form-group">
                         <label>{t('Mutua Solicitante')}</label>
