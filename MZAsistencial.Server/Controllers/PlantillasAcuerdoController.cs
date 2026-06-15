@@ -39,12 +39,6 @@ namespace MZAsistencial.Server.Controllers
             if (dto == null) return BadRequest("Los datos no son válidos.");
             if (dto.File != null)
             {
-                var (isValid, error) = await MZAsistencial.Server.Helpers.FileValidator.ValidateAsync(dto.File);
-                if (!isValid) return BadRequest(error);
-            }
-
-            if (dto.File != null)
-            {
                 var (isValid, error) = await FileValidator.ValidateAsync(dto.File);
                 if (!isValid)
                     return BadRequest(new { mensaje = error });
