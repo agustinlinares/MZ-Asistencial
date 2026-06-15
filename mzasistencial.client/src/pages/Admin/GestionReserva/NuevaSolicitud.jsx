@@ -55,71 +55,62 @@ const NuevaSolicitud = ({ visible, onHiding, onSave, mutuaId }) => {
         }
     };
 
-    return (
-        <Popup
-            visible={visible}
-            onHiding={onHiding}
-            dragEnabled={false}
-            hideOnOutsideClick={true}
-            showCloseButton={true}
-            showTitle={true}
-            title={t('Nueva Solicitud de Citación')}
-            container=".file-box"
-            width={550}
-            height="auto"
-            wrapperAttr={{ class: 'nueva-solicitud-popup' }}
-        >
-            <div className="nueva-solicitud-content">
-                <div className="form-section">
-                    <div className="input-group-premium">
-                        <label><i className="ri-calendar-line"></i> {t('Año de la Solicitud')}</label>
-                        <NumberBox 
-                            value={formData.anio} 
-                            onValueChanged={e => setFormData({...formData, anio: e.value})}
-                            className="premium-input"
-                            showSpinButtons={true}
-                        />
-                    </div>
-                    
-                    <div className="input-group-premium">
-                        <label><i className="ri-message-3-line"></i> {t('Necesidad / Concepto')}</label>
-                        <TextArea 
-                            height={110}
-                            value={formData.necesidad}
-                            onValueChanged={e => setFormData({...formData, necesidad: e.value})}
-                            placeholder={t('Ej: Urgencia dental, Tratamiento rehabilitador...')}
-                            className="premium-input"
-                        />
-                    </div>
+    if (!visible) return null;
 
-                    <div className="input-group-premium">
-                        <label><i className="ri-numbers-line"></i> {t('Cantidad / Mensualidad')}</label>
-                        <NumberBox 
-                            min={1}
-                            value={formData.cantidad}
-                            onValueChanged={e => setFormData({...formData, cantidad: e.value})}
-                            className="premium-input"
-                            showSpinButtons={true}
-                        />
+    return (
+        <div className="ficha-container-inline" role="region" aria-label={t('Nueva Solicitud de Citación')}>
+            <div className="ficha-inline-content" tabIndex={-1}>
+                <div className="ficha-modal-header">
+                    <span className="ficha-modal-title">
+                        <i className="ri-file-text-line"></i> {t('Nueva Solicitud de Citación')}
+                    </span>
+                    <div className="ficha-header-btns">
+                        <button className="ficha-btn-primary" onClick={handleSave} disabled={loading}>
+                            <i className="ri-save-line"></i> {t('Crear Solicitud')}
+                        </button>
+                        <button className="ficha-btn-secondary" onClick={onHiding}>
+                            <i className="ri-close-line"></i> {t('Cancelar')}
+                        </button>
                     </div>
                 </div>
 
-                <div className="modal-footer-premium">
-                    <Button 
-                        text={t('Cancelar')} 
-                        onClick={onHiding}
-                        className="btn-cancel-premium"
-                    />
-                    <Button 
-                        text={t('Crear Solicitud')} 
-                        type="default" 
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="btn-create-premium"
-                    />
+                <div className="ficha-content-premium" style={{ padding: '25px', overflowY: 'auto', height: 'calc(100% - 60px)' }}>
+                    <div className="form-section" style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div className="input-group-premium">
+                            <label><i className="ri-calendar-line"></i> {t('Año de la Solicitud')}</label>
+                            <NumberBox 
+                                value={formData.anio} 
+                                onValueChanged={e => setFormData({...formData, anio: e.value})}
+                                className="premium-input"
+                                showSpinButtons={true}
+                            />
+                        </div>
+                        
+                        <div className="input-group-premium">
+                            <label><i className="ri-message-3-line"></i> {t('Necesidad / Concepto')}</label>
+                            <TextArea 
+                                height={120}
+                                value={formData.necesidad}
+                                onValueChanged={e => setFormData({...formData, necesidad: e.value})}
+                                placeholder={t('Ej: Urgencia dental, Tratamiento rehabilitador...')}
+                                className="premium-input"
+                            />
+                        </div>
+
+                        <div className="input-group-premium">
+                            <label><i className="ri-numbers-line"></i> {t('Cantidad / Mensualidad')}</label>
+                            <NumberBox 
+                                min={1}
+                                value={formData.cantidad}
+                                onValueChanged={e => setFormData({...formData, cantidad: e.value})}
+                                className="premium-input"
+                                showSpinButtons={true}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
-        </Popup>
+        </div>
     );
 };
 
