@@ -61,6 +61,9 @@ public class PlantillasICGController : ControllerBase
             if (fichero == null || fichero.Length == 0)
                 return BadRequest("No se adjuntó ningún fichero válido.");
 
+            var (isValid, error) = await MZAsistencial.Server.Helpers.FileValidator.ValidateAsync(fichero);
+            if (!isValid) return BadRequest(error);
+
             var dto = await _service.SubirPlantillaAsync(fichero, mutuaId, anio, tipoICG, User);
             return Ok(dto);
         }
