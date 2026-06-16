@@ -5,10 +5,7 @@ using MZAsistencial.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-
-// using Microsoft.AspNetCore.Authentication.JwtBearer;
-// using Microsoft.IdentityModel.Tokens;
-// using System.Text;
+using MZAsistencial.Server.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +51,16 @@ builder.Services.AddCors(options =>
 // ── Conexión a la base de datos ──────────────────────────────────────────────
 builder.Services.AddDbContext<MZAsistencialContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<BruteForceHelper>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connectionString = config.GetConnectionString("DefaultConnection")!;
+    return new BruteForceHelper(connectionString);
+});
+builder.Services.AddScoped<CaptchaHelper>();
 
 // ── Servicios existentes ─────────────────────────────────────────────────────
 builder.Services.AddScoped<IRegistroErroresService, RegistroErroresService>();
