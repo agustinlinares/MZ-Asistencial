@@ -139,12 +139,10 @@ function AdminHeader() {
     };
 
     const actions = [
-        { id: 'logout', text: 'Cerrar sesión', icon: 'runner' },
         { id: 'password', text: 'Cambiar contraseña', icon: 'key' },
     ];
 
     const handleActionClick = (e) => {
-        if (e.itemData.id === 'logout') handleShowLogout();
         if (e.itemData.id === 'password') handleShowPasswordData();
     };
 
@@ -162,6 +160,7 @@ function AdminHeader() {
 
                     <div className='admin-action'>
                         <div className='item-admin-action header-filters'>
+
                             {/* Usuario */}
                             <div className="filter-item">
                                 <i className="ri-user-line"></i>
@@ -212,7 +211,7 @@ function AdminHeader() {
                                 />
                             </div>
 
-                            {/* Menú usuario */}
+                            {/* Menú cambiar contraseña */}
                             <div className="filter-item">
                                 <DropDownButton
                                     text="⚙"
@@ -228,29 +227,125 @@ function AdminHeader() {
                                 />
                             </div>
 
+                            {/* ─── Botón Cerrar Sesión ────────────────────────────── */}
+                            <div className="filter-item">
+                                <button
+                                    type="button"
+                                    onClick={handleShowLogout}
+                                    title="Cerrar sesión"
+                                    style={{
+                                        display:        'flex',
+                                        alignItems:     'center',
+                                        gap:            6,
+                                        background:     '#e53935',
+                                        color:          '#fff',
+                                        border:         'none',
+                                        borderRadius:   6,
+                                        padding:        '6px 14px',
+                                        fontSize:       13,
+                                        fontWeight:     600,
+                                        cursor:         'pointer',
+                                        letterSpacing:  '0.3px',
+                                        transition:     'background 0.2s',
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#b71c1c'}
+                                    onMouseLeave={e => e.currentTarget.style.background = '#e53935'}
+                                >
+                                    <i className="ri-logout-box-r-line" style={{ fontSize: 16 }}></i>
+                                    Cerrar sesión
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Popup Logout */}
+            {/* ─── Popup Logout con estilo propio ─────────────────────────── */}
             <Popup
                 visible={popupVisible}
                 onHiding={destroyModal}
-                width={'350px'}
-                height='350px'
+                width={380}
+                height="auto"
                 showTitle={false}
                 wrapperAttr={popupAttributes}
                 position="center"
+                hideOnOutsideClick={true}
             >
-                <div className='popup-inner'>
-                    <div className='popup-body'>
-                        <div className='ico-popup-body'><i className="ri-information-line"></i></div>
-                        <h2>{t('CerrarSessionAsk')}</h2>
+                <div style={{
+                    display:       'flex',
+                    flexDirection: 'column',
+                    alignItems:    'center',
+                    padding:       '32px 28px 24px',
+                    gap:           16,
+                    textAlign:     'center',
+                }}>
+                    {/* Icono */}
+                    <div style={{
+                        width:          64,
+                        height:         64,
+                        borderRadius:   '50%',
+                        background:     '#fff3e0',
+                        display:        'flex',
+                        alignItems:     'center',
+                        justifyContent: 'center',
+                        marginBottom:   4,
+                    }}>
+                        <i className="ri-logout-box-r-line" style={{ fontSize: 32, color: '#e53935' }}></i>
                     </div>
-                    <div className='popup-footer'>
-                        <Button text={t('cancelar')} onClick={destroyModal} />
-                        <Button text={t('aceptar')} onClick={handleCLoseSesion} />
+
+                    {/* Título */}
+                    <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#212121' }}>
+                        ¿Cerrar sesión?
+                    </h3>
+
+                    {/* Subtítulo */}
+                    <p style={{ margin: 0, fontSize: 14, color: '#757575', lineHeight: 1.5 }}>
+                        Se cerrará la sesión actual y serás redirigido al inicio de sesión.
+                    </p>
+
+                    {/* Botones */}
+                    <div style={{ display: 'flex', gap: 12, marginTop: 8, width: '100%' }}>
+                        <button
+                            type="button"
+                            onClick={destroyModal}
+                            style={{
+                                flex:         1,
+                                padding:      '10px 0',
+                                border:       '1px solid #e0e0e0',
+                                borderRadius: 6,
+                                background:   '#fff',
+                                color:        '#444',
+                                fontSize:     14,
+                                fontWeight:   600,
+                                cursor:       'pointer',
+                                transition:   'background 0.15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCLoseSesion}
+                            style={{
+                                flex:         1,
+                                padding:      '10px 0',
+                                border:       'none',
+                                borderRadius: 6,
+                                background:   '#e53935',
+                                color:        '#fff',
+                                fontSize:     14,
+                                fontWeight:   600,
+                                cursor:       'pointer',
+                                transition:   'background 0.15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#b71c1c'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#e53935'}
+                        >
+                            Cerrar sesión
+                        </button>
                     </div>
                 </div>
             </Popup>
