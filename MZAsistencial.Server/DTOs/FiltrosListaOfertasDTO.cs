@@ -4,7 +4,7 @@ public class FiltrosListaOfertasDTO
 {
     public int? Año { get; set; }
     public int? EstadoId { get; set; }
-    public string? Tipo { get; set; }              // "Todos", "Anuales", "Individuales"
+    public string? Tipo { get; set; }             
     public bool VistaAgrupada { get; set; } = true;
     public DateTime? FechaSolicitudDesde { get; set; }
     public DateTime? FechaSolicitudHasta { get; set; }

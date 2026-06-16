@@ -473,11 +473,11 @@ public class ListaDemandasService : IListaDemandasService
                         oferta.FechaModificacion = DateTime.Now;
                     }
                 }
-            }
-
-            
+            }            
             await _context.SaveChangesAsync();
         }
+
+        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -640,5 +640,44 @@ public class ListaDemandasService : IListaDemandasService
             SubSolicitudes = subSolicitudes,
             Documentos = documentos,
         };
+    }
+    public async Task<bool> GuardarDocumentoAsync(int demandaId, IFormFile fichero)
+    {
+        var demanda = await _context.Demandas.FindAsync(demandaId);
+        if (demanda == null) return false;
+
+        // A) Definimos la ruta física en el servidor donde se guardarán los archivos
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath); // Crea la carpeta si no existe
+        }
+
+        // B) Creamos un nombre de archivo único para evitar que un usuario pise el archivo de otro
+        var extension = Path.GetExtension(fichero.FileName);
+        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileNameWithoutExtension(fichero.FileName)}{extension}";
+        var filePath = Path.Combine(folderPath, uniqueFileName);
+
+        // C) Guardamos el archivo binario en el disco duro del servidor
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await fichero.CopyToAsync(stream);
+        }
+
+        // D) 💾 Insertamos el registro en tu tabla relacional de documentos (deducida de tu GetByIdAsync)
+        var nuevaDocumentacion = new DemandasDocumentacion
+        {
+            DemandaId = demandaId,
+            NombreDocumento = fichero.FileName,          // Nombre original (ej: "informe.pdf")
+            Nombre = uniqueFileName,                     // Nombre físico real único en el disco
+            FechaAlta = DateTime.Now,
+            UsuarioAlta = 1,                             // ID de usuario administrador por defecto para tus pruebas
+            MutuaId = demanda.MutuaDemandaId             // Vinculamos la mutua de la demanda original
+        };
+
+        _context.DemandasDocumentacions.Add(nuevaDocumentacion);
+        await _context.SaveChangesAsync(); // Consolidamos los cambios físicamente en SQL Server
+
+        return true;
     }
 }
