@@ -71,9 +71,16 @@ public class CitacionesController : ControllerBase
             return BadRequest(new { errores });
         }
 
-        var result = await _service.CreateSolicitudAsync(mutuaId, dto, User);
-        if (!result) return NotFound(new { error = "La mutua indicada no existe o no tiene permisos para solicitar." });
-        return Ok(new { success = true });
+        try
+        {
+            var result = await _service.CreateSolicitudAsync(mutuaId, dto, User);
+            if (!result) return NotFound(new { error = "La mutua indicada no existe o no tiene permisos para solicitar." });
+            return Ok(new { success = true });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("seed/{mutuaId}")]

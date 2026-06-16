@@ -245,8 +245,35 @@ public class CitacionesService : ICitacionesService
             var mutuaExiste = await _context.Mutuas.AnyAsync(m => m.MutuaId == mutuaId);
             if (!mutuaExiste) return false;
 
+            if (dto.DemandaId == null || dto.DemandaId == 0)
+                throw new InvalidOperationException("El identificador de la demanda es obligatorio.");
+
+            var oferta = await _context.Ofertas
+                .FirstOrDefaultAsync(o => o.DemandaId == dto.DemandaId && o.FechaConfirmacion != null);
+
+            if (oferta == null)
+                throw new InvalidOperationException("No existe ninguna oferta confirmada para esta demanda.");
+
+            var consumidas = await _context.Citaciones
+                .Where(c => c.DemandaId == dto.DemandaId && (c.EstadoId == 4 || c.EstadoId == 5))
+                .ToListAsync();
+
+            if ((dto.Ene ?? 0) > ((oferta.Ene ?? 0) - consumidas.Sum(c => c.Ene ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Enero supera la reserva disponible.");
+            if ((dto.Feb ?? 0) > ((oferta.Feb ?? 0) - consumidas.Sum(c => c.Feb ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Febrero supera la reserva disponible.");
+            if ((dto.Mar ?? 0) > ((oferta.Mar ?? 0) - consumidas.Sum(c => c.Mar ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Marzo supera la reserva disponible.");
+            if ((dto.Abr ?? 0) > ((oferta.Abr ?? 0) - consumidas.Sum(c => c.Abr ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Abril supera la reserva disponible.");
+            if ((dto.May ?? 0) > ((oferta.May ?? 0) - consumidas.Sum(c => c.May ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Mayo supera la reserva disponible.");
+            if ((dto.Jun ?? 0) > ((oferta.Jun ?? 0) - consumidas.Sum(c => c.Jun ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Junio supera la reserva disponible.");
+            if ((dto.Jul ?? 0) > ((oferta.Jul ?? 0) - consumidas.Sum(c => c.Jul ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Julio supera la reserva disponible.");
+            if ((dto.Ago ?? 0) > ((oferta.Ago ?? 0) - consumidas.Sum(c => c.Ago ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Agosto supera la reserva disponible.");
+            if ((dto.Sep ?? 0) > ((oferta.Sep ?? 0) - consumidas.Sum(c => c.Sep ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Septiembre supera la reserva disponible.");
+            if ((dto.Oct ?? 0) > ((oferta.Oct ?? 0) - consumidas.Sum(c => c.Oct ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Octubre supera la reserva disponible.");
+            if ((dto.Nov ?? 0) > ((oferta.Nov ?? 0) - consumidas.Sum(c => c.Nov ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Noviembre supera la reserva disponible.");
+            if ((dto.Diciembre ?? 0) > ((oferta.Dic ?? 0) - consumidas.Sum(c => c.Diciembre ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Diciembre supera la reserva disponible.");
+
             var citacion = new Citacione
             {
+                DemandaId = dto.DemandaId,
                 Año = dto.Anio ?? DateTime.Now.Year,
                 MutuaDemandante = mutuaId,
                 MutaOferta = dto.MutuaOfertanteId ?? 0,
