@@ -11,4 +11,5 @@ public interface IListaDemandasService
     Task<DemandaEditDTO?> GetByIdAsync(int id);
     Task<bool> UpdateAsync(int id, ActualizarDemandaDTO dto);
     Task<bool> UpdateAsync(int id, DemandaUpdateDTO dto);
+    Task<bool> GuardarDocumentoAsync(int demandaId, IFormFile fichero);
 }     

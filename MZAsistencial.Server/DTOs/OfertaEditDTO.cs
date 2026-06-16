@@ -64,6 +64,8 @@ public class OfertaEditDTO
 
     // Subsolicitudes (para ficha Individual)
     public List<SubSolicitudDTO> SubSolicitudes { get; set; } = new();
+
+    public List<DocumentoDemandaDTO> Documentos { get; set; } = new List<DocumentoDemandaDTO>();
 }
 
 public class SubSolicitudDTO
