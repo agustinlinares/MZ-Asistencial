@@ -18,6 +18,9 @@ public interface ICitacionesService
     Task<bool> UpdateRechazoAsync(int citacionId, string motivo, int estadoId = 6, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
     Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId);
+    Task<CitacionDocumentacion?> GetDocumentoByIdAsync(long docId);
+    Task<CitacionDocumentacion> UploadDocumentoAsync(int citacionId, string nombreOriginal, string rutaFisica, int mutuaId, int usuarioAltaId);
 }
 
 public class CitacionFilter
@@ -351,5 +354,36 @@ public class CitacionesService : ICitacionesService
             await _registroErroresService.LogErrorAsync(ex, "Citaciones");
             throw;
         }
+    }
+
+    public async Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId)
+    {
+        return await _context.CitacionDocumentacions
+            .Where(d => d.CitacionId == citacionId)
+            .OrderByDescending(d => d.FechaAlta)
+            .ToListAsync();
+    }
+
+    public async Task<CitacionDocumentacion?> GetDocumentoByIdAsync(long docId)
+    {
+        return await _context.CitacionDocumentacions.FindAsync(docId);
+    }
+
+    public async Task<CitacionDocumentacion> UploadDocumentoAsync(int citacionId, string nombreOriginal, string rutaFisica, int mutuaId, int usuarioAltaId)
+    {
+        var doc = new CitacionDocumentacion
+        {
+            CitacionId = citacionId,
+            Nombre = nombreOriginal,
+            NombreFisicoServidor = rutaFisica,
+            MutuaId = mutuaId,
+            UsuarioAlta = usuarioAltaId,
+            FechaAlta = System.DateTime.Now
+        };
+
+        _context.CitacionDocumentacions.Add(doc);
+        await _context.SaveChangesAsync();
+
+        return doc;
     }
 }
