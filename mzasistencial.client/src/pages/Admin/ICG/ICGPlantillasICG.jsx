@@ -71,6 +71,7 @@ const onExporting = (e) => {
 const ICGPlantillasICG = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
+    const fileUploaderRef = useRef(null);
     const navigate = useNavigate();
 
     // Estado local del usuario
@@ -96,6 +97,7 @@ const ICGPlantillasICG = () => {
 
     // Modal de Subir Plantilla
     const [popupVisible, setPopupVisible] = useState(false);
+    const [uploaderKey, setUploaderKey] = useState(0);
     const [uploadForm, setUploadForm] = useState({
         mutua: "",
         anio: new Date().getFullYear().toString(),
@@ -504,16 +506,33 @@ const ICGPlantillasICG = () => {
                     <div className="ficha-grid" style={{ gridTemplateColumns: "1fr", marginBottom: "15px" }}>
                         <div className="ficha-field">
                             <label>{t('Fichero')}</label>
-                            <div className="uploader-btn-derecha" style={{ border: "1px solid #d1d5db", padding: "5px", borderRadius: "6px", backgroundColor: "#fff" }}>
-                                <FileUploader
-                                    selectButtonText={t('Examinar...')}
-                                    labelText={t('Ningún archivo seleccionado')}
-                                    accept=".csv, .xml"
-                                    uploadMode="useForm"
-                                    onValueChanged={(e) => {
-                                        setUploadForm({...uploadForm, fichero: e.value[0]});
-                                    }}
-                                />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="uploader-btn-derecha" style={{ border: "1px solid #d1d5db", padding: "5px", borderRadius: "6px", backgroundColor: "#fff", flexGrow: 1 }}>
+                                    <FileUploader
+                                        key={uploaderKey}
+                                        ref={fileUploaderRef}
+                                        selectButtonText={t('Examinar...')}
+                                        labelText={t('Ningún archivo seleccionado')}
+                                        accept=".csv, .xml"
+                                        uploadMode="useForm"
+                                        onValueChanged={(e) => {
+                                            setUploadForm({...uploadForm, fichero: e.value?.[0] || null});
+                                        }}
+                                    />
+                                </div>
+                                {uploadForm.fichero && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setUploaderKey(prev => prev + 1);
+                                            setUploadForm({...uploadForm, fichero: null});
+                                        }}
+                                        title={t('Quitar archivo seleccionado')}
+                                        style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '24px', padding: '0 5px' }}
+                                    >
+                                        <i className="ri-close-circle-fill"></i>
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

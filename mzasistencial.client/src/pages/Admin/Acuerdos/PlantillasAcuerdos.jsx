@@ -469,7 +469,7 @@ const PlantillasAcuerdos = () => {
                     <div className="popup-row mt-3">
                         <div className="popup-field full">
                             <label>Fichero <span className="required">*</span></label>
-                            <div className={`file-uploader-custom${errors.fichero ? ' is-invalid' : ''}`}>
+                            <div className={`file-uploader-custom${errors.fichero ? ' is-invalid' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <input
                                     type="text"
                                     className="file-text-mock"
@@ -477,6 +477,19 @@ const PlantillasAcuerdos = () => {
                                     value={fileName}
                                     readOnly
                                 />
+                                {selectedFile && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedFile(null);
+                                            setFileName('');
+                                        }}
+                                        title="Quitar archivo seleccionado"
+                                        style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '20px', padding: 0 }}
+                                    >
+                                        <i className="ri-close-circle-fill"></i>
+                                    </button>
+                                )}
                                 <div className="file-btn-mock">
                                     <span>Examinar...</span>
                                     <input

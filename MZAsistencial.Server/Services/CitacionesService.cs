@@ -162,7 +162,11 @@ public class CitacionesService : ICitacionesService
                 Centro = x.c.Centro,
                 Especialidad = x.c.Especialidad,
                 Servicio = x.c.Servicio,
-                Estado = x.c.Estado,
+                Estado = (x.c.FechaRespuestaCitacion == null && x.c.FechaAltaSolicitud != null && x.c.FechaAltaSolicitud <= DateTime.Now.AddHours(-96)) ? "Desierta" :
+                         (x.c.FechaRespuestaCitacion == null && x.d != null && x.d.FechaAlta != null && x.d.FechaAlta <= DateTime.Now.AddMonths(-1)) ? "Caducada" :
+                         (x.d != null && (x.c.Ene ?? 0) >= (x.d.Ene ?? 0) && (x.c.Feb ?? 0) >= (x.d.Feb ?? 0) && (x.c.Mar ?? 0) >= (x.d.Mar ?? 0) && (x.c.Abr ?? 0) >= (x.d.Abr ?? 0) && (x.c.May ?? 0) >= (x.d.May ?? 0) && (x.c.Jun ?? 0) >= (x.d.Jun ?? 0) && (x.c.Jul ?? 0) >= (x.d.Jul ?? 0) && (x.c.Ago ?? 0) >= (x.d.Ago ?? 0) && (x.c.Sep ?? 0) >= (x.d.Sep ?? 0) && (x.c.Oct ?? 0) >= (x.d.Oct ?? 0) && (x.c.Nov ?? 0) >= (x.d.Nov ?? 0) && (x.c.Diciembre ?? 0) >= (x.d.Dic ?? 0)) ? "Consumida" :
+                         (x.d != null && ((x.d.Ene ?? 0) > (x.c.Ene ?? 0) || (x.d.Feb ?? 0) > (x.c.Feb ?? 0) || (x.d.Mar ?? 0) > (x.c.Mar ?? 0) || (x.d.Abr ?? 0) > (x.c.Abr ?? 0) || (x.d.May ?? 0) > (x.c.May ?? 0) || (x.d.Jun ?? 0) > (x.c.Jun ?? 0) || (x.d.Jul ?? 0) > (x.c.Jul ?? 0) || (x.d.Ago ?? 0) > (x.c.Ago ?? 0) || (x.d.Sep ?? 0) > (x.c.Sep ?? 0) || (x.d.Oct ?? 0) > (x.c.Oct ?? 0) || (x.d.Nov ?? 0) > (x.c.Nov ?? 0) || (x.d.Dic ?? 0) > (x.c.Diciembre ?? 0))) ? "Pendiente Consumir" :
+                         x.c.Estado,
                 Ene = x.c.Ene,
                 Feb = x.c.Feb,
                 Mar = x.c.Mar,
@@ -176,13 +180,48 @@ public class CitacionesService : ICitacionesService
                 Nov = x.c.Nov,
                 Diciembre = x.c.Diciembre,
                 Total = x.c.Total,
+                DemandaEne = x.d != null ? x.d.Ene : 0,
+                DemandaFeb = x.d != null ? x.d.Feb : 0,
+                DemandaMar = x.d != null ? x.d.Mar : 0,
+                DemandaAbr = x.d != null ? x.d.Abr : 0,
+                DemandaMay = x.d != null ? x.d.May : 0,
+                DemandaJun = x.d != null ? x.d.Jun : 0,
+                DemandaJul = x.d != null ? x.d.Jul : 0,
+                DemandaAgo = x.d != null ? x.d.Ago : 0,
+                DemandaSep = x.d != null ? x.d.Sep : 0,
+                DemandaOct = x.d != null ? x.d.Oct : 0,
+                DemandaNov = x.d != null ? x.d.Nov : 0,
+                DemandaDic = x.d != null ? x.d.Dic : 0,
+                DemandaTotal = x.d != null ? (
+                    (x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) +
+                    (x.d.May ?? 0) + (x.d.Jun ?? 0) + (x.d.Jul ?? 0) + (x.d.Ago ?? 0) +
+                    (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)
+                ) : 0,
+                ConsumoEne = x.c.Ene,
+                ConsumoFeb = x.c.Feb,
+                ConsumoMar = x.c.Mar,
+                ConsumoAbr = x.c.Abr,
+                ConsumoMay = x.c.May,
+                ConsumoJun = x.c.Jun,
+                ConsumoJul = x.c.Jul,
+                ConsumoAgo = x.c.Ago,
+                ConsumoSep = x.c.Sep,
+                ConsumoOct = x.c.Oct,
+                ConsumoNov = x.c.Nov,
+                ConsumoDic = x.c.Diciembre,
+                ConsumoTotal = x.c.Total,
                 FechaAltaSolicitud = x.c.FechaAltaSolicitud,
                 EstadoId = x.c.EstadoId,
                 MutuaOfertanteId = x.c.MutuaOfertanteId,
                 MutuaDemandanteId = x.c.MutuaDemandanteId,
                 Provincia = x.c.Provincia,
                 Localidad = x.c.Localidad,
-                TipoMovimiento = x.c.TipoMovimiento
+                Direccion = x.c.DireccionGis,
+                Telefono = x.c.Telefono,
+                Necesidad = x.c.Necesidad,
+                TipoMovimiento = x.c.TipoMovimiento,
+                Contestacion = x.c.Contestacion,
+                FechaContestacion = x.c.FechaRespuestaCitacion
             });
     }
 
