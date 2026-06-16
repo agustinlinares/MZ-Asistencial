@@ -75,7 +75,11 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
 
     const handleRechazar = async () => {
         const motivo = window.prompt(t('Indica el motivo del rechazo:'));
-        if (!motivo || !motivo.trim()) return;
+        if (motivo !== null && (!motivo || !motivo.trim())) {
+            notify(t('Debe introducir un motivo de rechazo'), 'warning', 2000);
+            return;
+        }
+        if (motivo === null) return;
         try {
             await CitacionesService.updateRechazo(citacion.CitacionId, motivo.trim());
             notify(t('Citación rechazada'), 'warning', 2000);
@@ -181,7 +185,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                             <i className="ri-printer-line"></i> {t('Imprimir Ficha')}
                         </button>
                         
-                        {(isPendiente || isConfirmada) && (
+                        {isConfirmada && (
                             <button className="ficha-btn-secondary" style={{ color: '#c62828', borderColor: '#c62828' }} onClick={handleRechazar}>
                                 <i className="ri-close-line"></i> {t('Rechazar cita')}
                             </button>

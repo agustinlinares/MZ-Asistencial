@@ -15,7 +15,7 @@ public interface ICitacionesService
     Task<object> GetSolicitadasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
     Task<object> GetRecibidasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
     Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, int estadoId = 6, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
     Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
 }
@@ -108,18 +108,39 @@ public class CitacionesService : ICitacionesService
                     break;
                 case "Caducadas":
                     joinedQuery = joinedQuery.Where(x => x.c.FechaRespuestaCitacion == null && 
-                                                      x.c.FechaAltaSolicitud <= now.AddMonths(-1));
+                                                      x.d != null && x.d.FechaAlta <= now.AddMonths(-1));
                     break;
                 case "Pendiente Consumir":
-                    // Demanda > Citación en algún mes (simplificado a Total para este ejemplo)
-                    joinedQuery = joinedQuery.Where(x => x.d != null && 
-                        ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
-                         (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)) > (x.c.Total ?? 0));
+                    joinedQuery = joinedQuery.Where(x => x.d != null && (
+                        (x.d.Ene ?? 0) > (x.c.Ene ?? 0) ||
+                        (x.d.Feb ?? 0) > (x.c.Feb ?? 0) ||
+                        (x.d.Mar ?? 0) > (x.c.Mar ?? 0) ||
+                        (x.d.Abr ?? 0) > (x.c.Abr ?? 0) ||
+                        (x.d.May ?? 0) > (x.c.May ?? 0) ||
+                        (x.d.Jun ?? 0) > (x.c.Jun ?? 0) ||
+                        (x.d.Jul ?? 0) > (x.c.Jul ?? 0) ||
+                        (x.d.Ago ?? 0) > (x.c.Ago ?? 0) ||
+                        (x.d.Sep ?? 0) > (x.c.Sep ?? 0) ||
+                        (x.d.Oct ?? 0) > (x.c.Oct ?? 0) ||
+                        (x.d.Nov ?? 0) > (x.c.Nov ?? 0) ||
+                        (x.d.Dic ?? 0) > (x.c.Diciembre ?? 0)
+                    ));
                     break;
                 case "Consumidas":
                     joinedQuery = joinedQuery.Where(x => x.d != null && 
-                        (x.c.Total ?? 0) >= ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
-                                             (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)));
+                        (x.c.Ene ?? 0) >= (x.d.Ene ?? 0) &&
+                        (x.c.Feb ?? 0) >= (x.d.Feb ?? 0) &&
+                        (x.c.Mar ?? 0) >= (x.d.Mar ?? 0) &&
+                        (x.c.Abr ?? 0) >= (x.d.Abr ?? 0) &&
+                        (x.c.May ?? 0) >= (x.d.May ?? 0) &&
+                        (x.c.Jun ?? 0) >= (x.d.Jun ?? 0) &&
+                        (x.c.Jul ?? 0) >= (x.d.Jul ?? 0) &&
+                        (x.c.Ago ?? 0) >= (x.d.Ago ?? 0) &&
+                        (x.c.Sep ?? 0) >= (x.d.Sep ?? 0) &&
+                        (x.c.Oct ?? 0) >= (x.d.Oct ?? 0) &&
+                        (x.c.Nov ?? 0) >= (x.d.Nov ?? 0) &&
+                        (x.c.Diciembre ?? 0) >= (x.d.Dic ?? 0)
+                    );
                     break;
                 default:
                     joinedQuery = joinedQuery.Where(x => x.c.Estado == filter.Estado);
@@ -183,22 +204,27 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, int estadoId = 6, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
             var citacion = await _context.Citaciones.FindAsync(citacionId);
             if (citacion == null) return false;
 
-            citacion.EstadoId = 6; // Hardcoded state 6 for Rechazo as per legacy logic
+            bool eraConfirmada = citacion.EstadoId == 2;
+
+            citacion.EstadoId = estadoId;
             citacion.MotivoRechazo = motivo;
             citacion.FechaRechazo = DateTime.Now;
             citacion.FechaRespuestaCitacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
             
-            // TODO: Integrar con EmailService cuando esté disponible
-            Console.WriteLine($"[EMAIL ALERT MOCK] Enviando alerta de cancelación. Citación {citacionId} rechazada. Motivo: {motivo}");
+            if (eraConfirmada)
+            {
+                // TODO: Integrar con EmailService cuando esté disponible
+                Console.WriteLine($"[EMAIL ALERT MOCK] Enviando alerta de cancelación. Citación {citacionId} rechazada. Motivo: {motivo}");
+            }
             
             return true;
         }

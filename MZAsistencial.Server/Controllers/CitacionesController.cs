@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -47,12 +47,12 @@ public class CitacionesController : ControllerBase
     }
 
     [HttpPut("{id:int}/rechazar")]
-    public async Task<IActionResult> UpdateRechazo(int id, [FromQuery] string motivo)
+    public async Task<IActionResult> UpdateRechazo(int id, [FromQuery] string motivo, [FromQuery] int estadoId = 6)
     {
         if (string.IsNullOrWhiteSpace(motivo))
             return BadRequest(new { error = "Debe indicar un motivo para el rechazo" });
 
-        var result = await _service.UpdateRechazoAsync(id, motivo, User);
+        var result = await _service.UpdateRechazoAsync(id, motivo, estadoId, User);
         if (!result) return NotFound(new { error = $"No se encontró la citación con ID {id} o no tiene permisos." });
         return Ok(new { success = true });
     }
