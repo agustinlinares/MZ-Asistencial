@@ -302,7 +302,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                                 displayExpr="text"
                                 value={conceder}
                                 onValueChanged={e => setConceder(e.value)}
-                                readOnly={!isPendiente}
+                                disabled={!isPendiente}
                             />
                         </div>
                         <div className="form-group">
