@@ -42,7 +42,8 @@ function loginReducer(state, action) {
             return { ...state, showPassword: !state.showPassword };
         case 'HIDE_TOAST':
             return { ...state, toastVisible: false };
-        case 'SET_CAPTCHA':
+        case 'NEED_CAPTCHA':
+            // Solo marca que se necesita captcha y muestra el mensaje; la imagen se carga aparte
             return {
                 ...state,
                 isLoading: false,
@@ -50,16 +51,14 @@ function loginReducer(state, action) {
                 toastMessage: action.message,
                 toastType: "warning",
                 requiereCaptcha: true,
-                captchaId: action.captchaId,
-                captchaTexto: "",
-                captchaUrl: `/api/Auth/captcha?id=${action.captchaId}&t=${Date.now()}`,
             };
-        case 'REFRESH_CAPTCHA':
+        case 'SET_CAPTCHA_IMAGE':
+            // Aquí se fija el ID real confirmado por el backend (header X-Captcha-Id)
             return {
                 ...state,
                 captchaId: action.captchaId,
                 captchaTexto: "",
-                captchaUrl: `/api/Auth/captcha?id=${action.captchaId}&t=${Date.now()}`,
+                captchaUrl: action.captchaUrl,
             };
         case 'CLEAR_CAPTCHA':
             return { ...state, requiereCaptcha: false, captchaId: null, captchaTexto: "", captchaUrl: null };
@@ -78,6 +77,24 @@ const LoginPage = () => {
     } = state;
 
     const logError = useLogError("Página de login");
+
+    // Pide una imagen de captcha NUEVA al backend y lee el ID real desde el header.
+    // Esto es lo único fiable: el backend genera el captcha en este momento,
+    // y el ID que devuelve es el que hay que guardar y enviar luego en el login.
+    const cargarCaptcha = async () => {
+        try {
+            const res = await fetch(`/api/Auth/captcha?t=${Date.now()}`, { method: 'GET' });
+            if (!res.ok) return;
+
+            const captchaIdReal = res.headers.get('X-Captcha-Id');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+
+            dispatch({ type: 'SET_CAPTCHA_IMAGE', captchaId: captchaIdReal, captchaUrl: url });
+        } catch (error) {
+            logError("Fallo al cargar el captcha", error);
+        }
+    };
 
     const handleLogin = async () => {
         dispatch({ type: 'START_LOGIN' });
@@ -113,12 +130,11 @@ const LoginPage = () => {
             if (!res.ok) {
                 logError(`Intento de login fallido para usuario: ${username}. Estado: ${res.status}`);
 
-                if (data.requiereCaptcha && data.captchaId) {
-                    dispatch({ type: 'SET_CAPTCHA', captchaId: data.captchaId, message: data.message });
-                } else if (data.requiereCaptcha) {
-                    const nuevoId = data.captchaId || captchaId;
-                    dispatch({ type: 'REFRESH_CAPTCHA', captchaId: nuevoId });
-                    dispatch({ type: 'LOGIN_ERROR', message: data.message, toastType: "warning" });
+                if (data.requiereCaptcha) {
+                    // Sea la primera vez que toca captcha, o un reintento con captcha incorrecto,
+                    // siempre se pide una imagen NUEVA y se descarta cualquier ID anterior.
+                    dispatch({ type: 'NEED_CAPTCHA', message: data.message });
+                    await cargarCaptcha();
                 } else {
                     dispatch({ type: 'LOGIN_ERROR', message: data.message || 'Usuario o contraseña incorrectos.' });
                 }
@@ -152,6 +168,13 @@ const LoginPage = () => {
             txtUserRef.current.instance().focus();
         }
     }, []);
+
+    // Libera el blob URL anterior cuando se genera uno nuevo o se desmonta el componente
+    useEffect(() => {
+        return () => {
+            if (captchaUrl) URL.revokeObjectURL(captchaUrl);
+        };
+    }, [captchaUrl]);
 
     return (
         <div className="login-page-container">
