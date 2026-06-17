@@ -13,10 +13,15 @@ const initialState = {
     password: "",
     toastVisible: false,
     toastMessage: "",
+    toastType: "error", // "error" | "warning"
     showPassword: false,
     isLoading: false,
     isPasswordModalOpen: false,
-    userIdForPasswordModal: null
+    userIdForPasswordModal: null,
+    requiereCaptcha: false,
+    captchaId: null,
+    captchaTexto: "",
+    captchaUrl: null,
 };
 
 function loginReducer(state, action) {
@@ -26,7 +31,7 @@ function loginReducer(state, action) {
         case 'START_LOGIN':
             return { ...state, isLoading: true, toastVisible: false };
         case 'LOGIN_ERROR':
-            return { ...state, isLoading: false, toastVisible: true, toastMessage: action.message };
+            return { ...state, isLoading: false, toastVisible: true, toastMessage: action.message, toastType: action.toastType || "error" };
         case 'LOGIN_SUCCESS':
             return { ...state, isLoading: false };
         case 'SHOW_PASSWORD_MODAL':
@@ -37,6 +42,27 @@ function loginReducer(state, action) {
             return { ...state, showPassword: !state.showPassword };
         case 'HIDE_TOAST':
             return { ...state, toastVisible: false };
+        case 'SET_CAPTCHA':
+            return {
+                ...state,
+                isLoading: false,
+                toastVisible: true,
+                toastMessage: action.message,
+                toastType: "warning",
+                requiereCaptcha: true,
+                captchaId: action.captchaId,
+                captchaTexto: "",
+                captchaUrl: `/api/Auth/captcha?id=${action.captchaId}&t=${Date.now()}`,
+            };
+        case 'REFRESH_CAPTCHA':
+            return {
+                ...state,
+                captchaId: action.captchaId,
+                captchaTexto: "",
+                captchaUrl: `/api/Auth/captcha?id=${action.captchaId}&t=${Date.now()}`,
+            };
+        case 'CLEAR_CAPTCHA':
+            return { ...state, requiereCaptcha: false, captchaId: null, captchaTexto: "", captchaUrl: null };
         default:
             return state;
     }
@@ -46,7 +72,10 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const txtUserRef = useRef(null);
     const [state, dispatch] = useReducer(loginReducer, initialState);
-    const { username, password, toastVisible, toastMessage, showPassword, isLoading } = state;
+    const {
+        username, password, toastVisible, toastMessage, toastType,
+        showPassword, isLoading, requiereCaptcha, captchaId, captchaTexto, captchaUrl
+    } = state;
 
     const logError = useLogError("Página de login");
 
@@ -59,28 +88,54 @@ const LoginPage = () => {
         }
 
         try {
+            const body = {
+                usuario: username,
+                contrasena: password,
+                captchaId: captchaId || null,
+                captchaTexto: captchaTexto || null,
+            };
+
             const res = await fetch('/api/Auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario: username, contrasena: password }),
+                body: JSON.stringify(body),
             });
 
-            if (!res.ok) {
-                const err = await res.json();
-                logError(`Intento de login fallido para usuario: ${username}. Estado: ${res.status}`);
-                dispatch({ type: 'LOGIN_ERROR', message: err.message || 'Usuario o contraseña incorrectos.' });
+            const data = await res.json();
+
+            if (res.status === 429) {
+                // Usuario bloqueado
+                dispatch({ type: 'LOGIN_ERROR', message: data.message, toastType: "error" });
+                dispatch({ type: 'CLEAR_CAPTCHA' });
                 return;
             }
 
-            const data = await res.json();
+            if (!res.ok) {
+                logError(`Intento de login fallido para usuario: ${username}. Estado: ${res.status}`);
+
+                if (data.requiereCaptcha && data.captchaId) {
+                    dispatch({ type: 'SET_CAPTCHA', captchaId: data.captchaId, message: data.message });
+                } else if (data.requiereCaptcha) {
+                    const nuevoId = data.captchaId || captchaId;
+                    dispatch({ type: 'REFRESH_CAPTCHA', captchaId: nuevoId });
+                    dispatch({ type: 'LOGIN_ERROR', message: data.message, toastType: "warning" });
+                } else {
+                    dispatch({ type: 'LOGIN_ERROR', message: data.message || 'Usuario o contraseña incorrectos.' });
+                }
+                return;
+            }
+
+            // Login exitoso
             AuthService.setUserData(data);
             dispatch({ type: 'LOGIN_SUCCESS' });
+            dispatch({ type: 'CLEAR_CAPTCHA' });
 
             if (data.requiresPasswordChange) {
                 dispatch({ type: 'SHOW_PASSWORD_MODAL', userId: data.usuarioId });
             } else {
                 navigate("/Admin/ResumendeGastos");
             }
+
         } catch (error) {
             logError("Fallo crítico de conexión al intentar iniciar sesión", error);
             console.error("Error en login:", error);
@@ -136,6 +191,24 @@ const LoginPage = () => {
                                 icon={showPassword ? "ri ri-eye-off-line" : "ri ri-eye-line"}
                             />
                         </div>
+
+                        {/* Captcha */}
+                        {requiereCaptcha && captchaUrl && (
+                            <div className="captcha-box">
+                                <img
+                                    src={captchaUrl}
+                                    alt="Captcha"
+                                    className="captcha-imagen"
+                                />
+                                <TextBox
+                                    value={captchaTexto}
+                                    onValueChanged={(e) => dispatch({ type: 'SET_FIELD', field: 'captchaTexto', value: e.value })}
+                                    placeholder={"Introduce el texto de la imagen"}
+                                    className="input-form"
+                                />
+                            </div>
+                        )}
+
                         <div className="relative-box">
                             <Button
                                 className="btn-form"
@@ -157,7 +230,7 @@ const LoginPage = () => {
                         )}
                     </form>
                     {toastVisible && (
-                        <div className="messages-error">
+                        <div className={`messages-error ${toastType === "warning" ? "messages-warning" : ""}`}>
                             {toastMessage}
                         </div>
                     )}
