@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -66,8 +66,8 @@ namespace MZAsistencial.Server.Services
                         select new RegistroErrorDTO
                         {
                             ErrorId = r.ErrorId,
-                            Usuario = subU.Usuario1,
-                            Mutua = subU.MutuaId == null ? "ADMINISTRADOR" : subM.Mutua1,
+                            Usuario = subU != null ? subU.Usuario1 : "Desconocido",
+                            Mutua = subM != null ? subM.Mutua1 : "ADMINISTRADOR",
                             FechaError = r.FechaError,
                             FicheroLog = r.FicheroLog,
                             Descripcion = r.Descripcion,

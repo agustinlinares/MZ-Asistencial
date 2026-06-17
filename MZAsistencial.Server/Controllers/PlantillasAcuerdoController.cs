@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
+using MZAsistencial.Server.Helpers;
 using MZAsistencial.Server.Services;
 
 namespace MZAsistencial.Server.Controllers
@@ -36,6 +37,12 @@ namespace MZAsistencial.Server.Controllers
         public async Task<IActionResult> PostPlantillaAcuerdo([FromForm] PlantillaUploadDTO dto)
         {
             if (dto == null) return BadRequest("Los datos no son válidos.");
+            if (dto.File != null)
+            {
+                var (isValid, error) = await FileValidator.ValidateAsync(dto.File);
+                if (!isValid)
+                    return BadRequest(new { mensaje = error });
+            }
 
             var success = await _service.CreatePlantillaAcuerdoAsync(dto);
 

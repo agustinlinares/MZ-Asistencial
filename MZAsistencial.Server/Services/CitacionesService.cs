@@ -15,9 +15,12 @@ public interface ICitacionesService
     Task<object> GetSolicitadasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
     Task<object> GetRecibidasAsync(int mutuaId, CitacionFilter filter, DataSourceLoadOptions loadOptions);
     Task<bool> UpdateEstadoAsync(int citacionId, int estadoId, string contestacion, System.Security.Claims.ClaimsPrincipal? user = null);
-    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<bool> UpdateRechazoAsync(int citacionId, string motivo, int estadoId = 6, System.Security.Claims.ClaimsPrincipal? user = null);
     Task<int> SeedDataAsync(int mutuaId);
     Task<bool> CreateSolicitudAsync(int mutuaId, CitacionDTO dto, System.Security.Claims.ClaimsPrincipal? user = null);
+    Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId);
+    Task<CitacionDocumentacion?> GetDocumentoByIdAsync(long docId);
+    Task<CitacionDocumentacion> UploadDocumentoAsync(int citacionId, string nombreOriginal, string rutaFisica, int mutuaId, int usuarioAltaId);
 }
 
 public class CitacionFilter
@@ -94,7 +97,7 @@ public class CitacionesService : ICitacionesService
             joinedQuery = joinedQuery.Where(x => x.c.Id == filter.DemandaId);
 
         if (!string.IsNullOrEmpty(filter.Necesidad))
-            joinedQuery = joinedQuery.Where(x => x.c.Necesidad.Contains(filter.Necesidad));
+            joinedQuery = joinedQuery.Where(x => x.c.Necesidad != null && x.c.Necesidad.Contains(filter.Necesidad));
 
         // 3. Lógica de Estados (incluyendo virtuales)
         if (!string.IsNullOrEmpty(filter.Estado) && filter.Estado != "Todas")
@@ -108,18 +111,39 @@ public class CitacionesService : ICitacionesService
                     break;
                 case "Caducadas":
                     joinedQuery = joinedQuery.Where(x => x.c.FechaRespuestaCitacion == null && 
-                                                      x.c.FechaAltaSolicitud <= now.AddMonths(-1));
+                                                      x.d != null && x.d.FechaAlta <= now.AddMonths(-1));
                     break;
                 case "Pendiente Consumir":
-                    // Demanda > Citación en algún mes (simplificado a Total para este ejemplo)
-                    joinedQuery = joinedQuery.Where(x => x.d != null && 
-                        ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
-                         (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)) > (x.c.Total ?? 0));
+                    joinedQuery = joinedQuery.Where(x => x.d != null && (
+                        (x.d.Ene ?? 0) > (x.c.Ene ?? 0) ||
+                        (x.d.Feb ?? 0) > (x.c.Feb ?? 0) ||
+                        (x.d.Mar ?? 0) > (x.c.Mar ?? 0) ||
+                        (x.d.Abr ?? 0) > (x.c.Abr ?? 0) ||
+                        (x.d.May ?? 0) > (x.c.May ?? 0) ||
+                        (x.d.Jun ?? 0) > (x.c.Jun ?? 0) ||
+                        (x.d.Jul ?? 0) > (x.c.Jul ?? 0) ||
+                        (x.d.Ago ?? 0) > (x.c.Ago ?? 0) ||
+                        (x.d.Sep ?? 0) > (x.c.Sep ?? 0) ||
+                        (x.d.Oct ?? 0) > (x.c.Oct ?? 0) ||
+                        (x.d.Nov ?? 0) > (x.c.Nov ?? 0) ||
+                        (x.d.Dic ?? 0) > (x.c.Diciembre ?? 0)
+                    ));
                     break;
                 case "Consumidas":
                     joinedQuery = joinedQuery.Where(x => x.d != null && 
-                        (x.c.Total ?? 0) >= ((x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) + (x.d.May ?? 0) + (x.d.Jun ?? 0) + 
-                                             (x.d.Jul ?? 0) + (x.d.Ago ?? 0) + (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)));
+                        (x.c.Ene ?? 0) >= (x.d.Ene ?? 0) &&
+                        (x.c.Feb ?? 0) >= (x.d.Feb ?? 0) &&
+                        (x.c.Mar ?? 0) >= (x.d.Mar ?? 0) &&
+                        (x.c.Abr ?? 0) >= (x.d.Abr ?? 0) &&
+                        (x.c.May ?? 0) >= (x.d.May ?? 0) &&
+                        (x.c.Jun ?? 0) >= (x.d.Jun ?? 0) &&
+                        (x.c.Jul ?? 0) >= (x.d.Jul ?? 0) &&
+                        (x.c.Ago ?? 0) >= (x.d.Ago ?? 0) &&
+                        (x.c.Sep ?? 0) >= (x.d.Sep ?? 0) &&
+                        (x.c.Oct ?? 0) >= (x.d.Oct ?? 0) &&
+                        (x.c.Nov ?? 0) >= (x.d.Nov ?? 0) &&
+                        (x.c.Diciembre ?? 0) >= (x.d.Dic ?? 0)
+                    );
                     break;
                 default:
                     joinedQuery = joinedQuery.Where(x => x.c.Estado == filter.Estado);
@@ -138,7 +162,11 @@ public class CitacionesService : ICitacionesService
                 Centro = x.c.Centro,
                 Especialidad = x.c.Especialidad,
                 Servicio = x.c.Servicio,
-                Estado = x.c.Estado,
+                Estado = (x.c.FechaRespuestaCitacion == null && x.c.FechaAltaSolicitud != null && x.c.FechaAltaSolicitud <= DateTime.Now.AddHours(-96)) ? "Desierta" :
+                         (x.c.FechaRespuestaCitacion == null && x.d != null && x.d.FechaAlta != null && x.d.FechaAlta <= DateTime.Now.AddMonths(-1)) ? "Caducada" :
+                         (x.d != null && (x.c.Ene ?? 0) >= (x.d.Ene ?? 0) && (x.c.Feb ?? 0) >= (x.d.Feb ?? 0) && (x.c.Mar ?? 0) >= (x.d.Mar ?? 0) && (x.c.Abr ?? 0) >= (x.d.Abr ?? 0) && (x.c.May ?? 0) >= (x.d.May ?? 0) && (x.c.Jun ?? 0) >= (x.d.Jun ?? 0) && (x.c.Jul ?? 0) >= (x.d.Jul ?? 0) && (x.c.Ago ?? 0) >= (x.d.Ago ?? 0) && (x.c.Sep ?? 0) >= (x.d.Sep ?? 0) && (x.c.Oct ?? 0) >= (x.d.Oct ?? 0) && (x.c.Nov ?? 0) >= (x.d.Nov ?? 0) && (x.c.Diciembre ?? 0) >= (x.d.Dic ?? 0)) ? "Consumida" :
+                         (x.d != null && ((x.d.Ene ?? 0) > (x.c.Ene ?? 0) || (x.d.Feb ?? 0) > (x.c.Feb ?? 0) || (x.d.Mar ?? 0) > (x.c.Mar ?? 0) || (x.d.Abr ?? 0) > (x.c.Abr ?? 0) || (x.d.May ?? 0) > (x.c.May ?? 0) || (x.d.Jun ?? 0) > (x.c.Jun ?? 0) || (x.d.Jul ?? 0) > (x.c.Jul ?? 0) || (x.d.Ago ?? 0) > (x.c.Ago ?? 0) || (x.d.Sep ?? 0) > (x.c.Sep ?? 0) || (x.d.Oct ?? 0) > (x.c.Oct ?? 0) || (x.d.Nov ?? 0) > (x.c.Nov ?? 0) || (x.d.Dic ?? 0) > (x.c.Diciembre ?? 0))) ? "Pendiente Consumir" :
+                         x.c.Estado,
                 Ene = x.c.Ene,
                 Feb = x.c.Feb,
                 Mar = x.c.Mar,
@@ -152,10 +180,48 @@ public class CitacionesService : ICitacionesService
                 Nov = x.c.Nov,
                 Diciembre = x.c.Diciembre,
                 Total = x.c.Total,
+                DemandaEne = x.d != null ? x.d.Ene : 0,
+                DemandaFeb = x.d != null ? x.d.Feb : 0,
+                DemandaMar = x.d != null ? x.d.Mar : 0,
+                DemandaAbr = x.d != null ? x.d.Abr : 0,
+                DemandaMay = x.d != null ? x.d.May : 0,
+                DemandaJun = x.d != null ? x.d.Jun : 0,
+                DemandaJul = x.d != null ? x.d.Jul : 0,
+                DemandaAgo = x.d != null ? x.d.Ago : 0,
+                DemandaSep = x.d != null ? x.d.Sep : 0,
+                DemandaOct = x.d != null ? x.d.Oct : 0,
+                DemandaNov = x.d != null ? x.d.Nov : 0,
+                DemandaDic = x.d != null ? x.d.Dic : 0,
+                DemandaTotal = x.d != null ? (
+                    (x.d.Ene ?? 0) + (x.d.Feb ?? 0) + (x.d.Mar ?? 0) + (x.d.Abr ?? 0) +
+                    (x.d.May ?? 0) + (x.d.Jun ?? 0) + (x.d.Jul ?? 0) + (x.d.Ago ?? 0) +
+                    (x.d.Sep ?? 0) + (x.d.Oct ?? 0) + (x.d.Nov ?? 0) + (x.d.Dic ?? 0)
+                ) : 0,
+                ConsumoEne = x.c.Ene,
+                ConsumoFeb = x.c.Feb,
+                ConsumoMar = x.c.Mar,
+                ConsumoAbr = x.c.Abr,
+                ConsumoMay = x.c.May,
+                ConsumoJun = x.c.Jun,
+                ConsumoJul = x.c.Jul,
+                ConsumoAgo = x.c.Ago,
+                ConsumoSep = x.c.Sep,
+                ConsumoOct = x.c.Oct,
+                ConsumoNov = x.c.Nov,
+                ConsumoDic = x.c.Diciembre,
+                ConsumoTotal = x.c.Total,
                 FechaAltaSolicitud = x.c.FechaAltaSolicitud,
                 EstadoId = x.c.EstadoId,
                 MutuaOfertanteId = x.c.MutuaOfertanteId,
-                MutuaDemandanteId = x.c.MutuaDemandanteId
+                MutuaDemandanteId = x.c.MutuaDemandanteId,
+                Provincia = x.c.Provincia,
+                Localidad = x.c.Localidad,
+                Direccion = x.c.DireccionGis,
+                Telefono = x.c.Telefono,
+                Necesidad = x.c.Necesidad,
+                TipoMovimiento = x.c.TipoMovimiento,
+                Contestacion = x.c.Contestacion,
+                FechaContestacion = x.c.FechaRespuestaCitacion
             });
     }
 
@@ -180,22 +246,27 @@ public class CitacionesService : ICitacionesService
         }
     }
 
-    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, System.Security.Claims.ClaimsPrincipal? user = null)
+    public async Task<bool> UpdateRechazoAsync(int citacionId, string motivo, int estadoId = 6, System.Security.Claims.ClaimsPrincipal? user = null)
     {
         try
         {
             var citacion = await _context.Citaciones.FindAsync(citacionId);
             if (citacion == null) return false;
 
-            citacion.EstadoId = 6; // Hardcoded state 6 for Rechazo as per legacy logic
+            bool eraConfirmada = citacion.EstadoId == 2;
+
+            citacion.EstadoId = estadoId;
             citacion.MotivoRechazo = motivo;
             citacion.FechaRechazo = DateTime.Now;
             citacion.FechaRespuestaCitacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
             
-            // TODO: Integrar con EmailService cuando esté disponible
-            Console.WriteLine($"[EMAIL ALERT MOCK] Enviando alerta de cancelación. Citación {citacionId} rechazada. Motivo: {motivo}");
+            if (eraConfirmada)
+            {
+                // TODO: Integrar con EmailService cuando esté disponible
+                Console.WriteLine($"[EMAIL ALERT MOCK] Enviando alerta de cancelación. Citación {citacionId} rechazada. Motivo: {motivo}");
+            }
             
             return true;
         }
@@ -213,17 +284,62 @@ public class CitacionesService : ICitacionesService
             var mutuaExiste = await _context.Mutuas.AnyAsync(m => m.MutuaId == mutuaId);
             if (!mutuaExiste) return false;
 
+            if (dto.DemandaId == null || dto.DemandaId == 0)
+                throw new InvalidOperationException("El identificador de la demanda es obligatorio.");
+
+            var oferta = await _context.Ofertas
+                .FirstOrDefaultAsync(o => o.DemandaId == dto.DemandaId && o.FechaConfirmacion != null);
+
+            if (oferta == null)
+                throw new InvalidOperationException("No existe ninguna oferta confirmada para esta demanda.");
+
+            var consumidas = await _context.Citaciones
+                .Where(c => c.DemandaId == dto.DemandaId && (c.EstadoId == 4 || c.EstadoId == 5))
+                .ToListAsync();
+
+            if ((dto.Ene ?? 0) > ((oferta.Ene ?? 0) - consumidas.Sum(c => c.Ene ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Enero supera la reserva disponible.");
+            if ((dto.Feb ?? 0) > ((oferta.Feb ?? 0) - consumidas.Sum(c => c.Feb ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Febrero supera la reserva disponible.");
+            if ((dto.Mar ?? 0) > ((oferta.Mar ?? 0) - consumidas.Sum(c => c.Mar ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Marzo supera la reserva disponible.");
+            if ((dto.Abr ?? 0) > ((oferta.Abr ?? 0) - consumidas.Sum(c => c.Abr ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Abril supera la reserva disponible.");
+            if ((dto.May ?? 0) > ((oferta.May ?? 0) - consumidas.Sum(c => c.May ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Mayo supera la reserva disponible.");
+            if ((dto.Jun ?? 0) > ((oferta.Jun ?? 0) - consumidas.Sum(c => c.Jun ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Junio supera la reserva disponible.");
+            if ((dto.Jul ?? 0) > ((oferta.Jul ?? 0) - consumidas.Sum(c => c.Jul ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Julio supera la reserva disponible.");
+            if ((dto.Ago ?? 0) > ((oferta.Ago ?? 0) - consumidas.Sum(c => c.Ago ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Agosto supera la reserva disponible.");
+            if ((dto.Sep ?? 0) > ((oferta.Sep ?? 0) - consumidas.Sum(c => c.Sep ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Septiembre supera la reserva disponible.");
+            if ((dto.Oct ?? 0) > ((oferta.Oct ?? 0) - consumidas.Sum(c => c.Oct ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Octubre supera la reserva disponible.");
+            if ((dto.Nov ?? 0) > ((oferta.Nov ?? 0) - consumidas.Sum(c => c.Nov ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Noviembre supera la reserva disponible.");
+            if ((dto.Diciembre ?? 0) > ((oferta.Dic ?? 0) - consumidas.Sum(c => c.Diciembre ?? 0))) throw new InvalidOperationException("La cantidad solicitada para Diciembre supera la reserva disponible.");
+
             var citacion = new Citacione
             {
+                DemandaId = dto.DemandaId,
                 Año = dto.Anio ?? DateTime.Now.Year,
                 MutuaDemandante = mutuaId,
                 MutaOferta = dto.MutuaOfertanteId ?? 0,
                 CentroId = dto.CentroId ?? 0,
+                EspecialidadId = dto.EspecialidadId,
+                ServicioId = (int?)(dto.ServicioId),
+                ProvinciaId = dto.ProvinciaId,
+                Localidad = dto.LocalidadId,
+                MovimientoId = dto.TipoMovimientoId, // added field mapped to Aux_Citacion_Movimientos
                 Necesidad = dto.Necesidad,
                 EstadoId = 1, // Pendiente
                 FechaAltaSolicitud = DateTime.Now,
                 FechaAlta = DateTime.Now,
-                UsuarioAltaId = 1 // Default admin
+                UsuarioAltaId = 1, // Default admin
+                Ene = dto.Ene ?? 0,
+                Feb = dto.Feb ?? 0,
+                Mar = dto.Mar ?? 0,
+                Abr = dto.Abr ?? 0,
+                May = dto.May ?? 0,
+                Jun = dto.Jun ?? 0,
+                Jul = dto.Jul ?? 0,
+                Ago = dto.Ago ?? 0,
+                Sep = dto.Sep ?? 0,
+                Oct = dto.Oct ?? 0,
+                Nov = dto.Nov ?? 0,
+                Diciembre = dto.Diciembre ?? 0,
+                Total = dto.Total ?? 0
             };
 
             _context.Citaciones.Add(citacion);
@@ -304,5 +420,36 @@ public class CitacionesService : ICitacionesService
             await _registroErroresService.LogErrorAsync(ex, "Citaciones");
             throw;
         }
+    }
+
+    public async Task<List<CitacionDocumentacion>> GetDocumentosAsync(int citacionId)
+    {
+        return await _context.CitacionDocumentacions
+            .Where(d => d.CitacionId == citacionId)
+            .OrderByDescending(d => d.FechaAlta)
+            .ToListAsync();
+    }
+
+    public async Task<CitacionDocumentacion?> GetDocumentoByIdAsync(long docId)
+    {
+        return await _context.CitacionDocumentacions.FindAsync(docId);
+    }
+
+    public async Task<CitacionDocumentacion> UploadDocumentoAsync(int citacionId, string nombreOriginal, string rutaFisica, int mutuaId, int usuarioAltaId)
+    {
+        var doc = new CitacionDocumentacion
+        {
+            CitacionId = citacionId,
+            Nombre = nombreOriginal,
+            NombreFisicoServidor = rutaFisica,
+            MutuaId = mutuaId,
+            UsuarioAlta = usuarioAltaId,
+            FechaAlta = System.DateTime.Now
+        };
+
+        _context.CitacionDocumentacions.Add(doc);
+        await _context.SaveChangesAsync();
+
+        return doc;
     }
 }

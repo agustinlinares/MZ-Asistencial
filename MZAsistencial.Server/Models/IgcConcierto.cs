@@ -1,4 +1,4 @@
-namespace MZAsistencial.Server.Models
+﻿namespace MZAsistencial.Server.Models
 {
     public class IcgConcierto
     {

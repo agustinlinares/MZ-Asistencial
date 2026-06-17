@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MZAsistencial.Server.Data;
 using MZAsistencial.Server.DTOs;
@@ -39,31 +39,33 @@ namespace MZAsistencial.Server.Services
 
         public async Task<IEnumerable<PlantillasAcuerdosDTO>> GetPlantillasAcuerdosAsync()
         {
-            return await _context.InformesIcgs
-                .GroupJoin(_context.Mutuas,
-                    ia => ia.MutuaId,
-                    m => m.MutuaId,
-                    (ia, mutuas) => new { ia, mutuas })
-                .SelectMany(
-                    x => x.mutuas.DefaultIfEmpty(),
-                    (x, m) => new PlantillasAcuerdosDTO
-                    {
-                        Id = x.ia.InformeId,
-                        Informe = x.ia.Informe,
-                        EstadoInforme = x.ia.EstadoInformeId == 1 ? "Pendiente"
-                                      : x.ia.EstadoInformeId == 2 ? "Procesado"
-                                      : x.ia.EstadoInformeId.ToString(),
-                        TipoAcuerdo = x.ia.TipoIcg == "1" ? "Acuerdo 1 (Acuerdos mutua)"
-                                    : x.ia.TipoIcg == "2" ? "Acuerdo 2 (Acuerdo provincia)"
-                                    : x.ia.TipoIcg == "3" ? "Acuerdo 3 (Acuerdos tipo de servicio)"
-                                    : x.ia.TipoIcg ?? "Desconocido",
-                        Mutua = m != null ? m.Mutua1 : "Sin mutua",
-                        Año = x.ia.Año,
-                        Mes = x.ia.Mes,
-                        Usuario = x.ia.UsuarioModificación.ToString(),
-                        FechaAlta = x.ia.FechaModificacion
-                    })
-                .ToListAsync();
+            var informes  = await _context.InformesIcgs.ToListAsync();
+            var mutuas    = await _context.Mutuas.ToListAsync();
+            var usuarios  = await _context.Usuarios.ToListAsync();
+
+            return informes.Select(ia =>
+            {
+                var mutua   = mutuas.FirstOrDefault(m => m.MutuaId == ia.MutuaId);
+                var usuario = usuarios.FirstOrDefault(u => u.UsuarioId == ia.UsuarioModificación);
+
+                return new PlantillasAcuerdosDTO
+                {
+                    Id = ia.InformeId,
+                    Informe = ia.Informe,
+                    EstadoInforme = ia.EstadoInformeId == 1 ? "Pendiente"
+                                  : ia.EstadoInformeId == 2 ? "Procesado"
+                                  : ia.EstadoInformeId.ToString(),
+                    TipoAcuerdo = ia.TipoIcg == "1" ? "Acuerdo 1 (Acuerdos mutua)"
+                                : ia.TipoIcg == "2" ? "Acuerdo 2 (Acuerdo provincia)"
+                                : ia.TipoIcg == "3" ? "Acuerdo 3 (Acuerdos tipo de servicio)"
+                                : ia.TipoIcg ?? "Desconocido",
+                    Mutua    = mutua?.Mutua1 ?? "Sin mutua",
+                    Año      = ia.Año,
+                    Mes      = ia.Mes,
+                    Usuario  = usuario != null ? $"{usuario.Nombre} {usuario.Apellidos}".Trim() : ia.UsuarioModificación.ToString(),
+                    FechaAlta = ia.FechaModificacion
+                };
+            }).ToList();
         }
 
         public async Task<IEnumerable<string>> GetMutuasAsync()

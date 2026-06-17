@@ -13,6 +13,7 @@ import { useLogError } from '../../../hooks/useLogError';
 
 import { useTranslation } from "react-i18next";
 import CitacionesService from "../../../services/admin/CitacionesService";
+import AuthService from "../../../services/auth/AuthService";
 import TablaCitaciones from "./TablaCitaciones";
 
 const SolicitarCitacion = () => {
@@ -65,6 +66,7 @@ const SolicitarCitacion = () => {
 
     const cargarDatos = async (f = filtros) => {
         setLoading(true);
+        let mid = 1;
         try {
             const user = AuthService.getUserData();
             const mid = user?.mutuaId || 1;
@@ -159,7 +161,7 @@ const SolicitarCitacion = () => {
             createStore={CitacionesService.createSolicitadasStore}
             mutuaColumnField="MutuaOfertante"
             mutuaColumnCaption="Mutua Ofertante"
-            hasNuevaSolicitud={true}
+            hasNuevaSolicitud={false}
             hasBatchActions={false}
             hasRowActions={false}
         />

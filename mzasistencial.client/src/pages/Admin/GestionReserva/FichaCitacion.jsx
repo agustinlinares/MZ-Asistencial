@@ -75,7 +75,11 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
 
     const handleRechazar = async () => {
         const motivo = window.prompt(t('Indica el motivo del rechazo:'));
-        if (!motivo || !motivo.trim()) return;
+        if (motivo !== null && (!motivo || !motivo.trim())) {
+            notify(t('Debe introducir un motivo de rechazo'), 'warning', 2000);
+            return;
+        }
+        if (motivo === null) return;
         try {
             await CitacionesService.updateRechazo(citacion.CitacionId, motivo.trim());
             notify(t('Citación rechazada'), 'warning', 2000);
@@ -144,7 +148,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
     };
 
     const handleMesChange = (mes, value) => {
-        const val = parseInt(value, 10) || 0;
+        let val = parseInt(value, 10) || 0;
+        if (val < 0) val = 0; // Impedir números negativos
         setCitacionMeses(prev => ({ ...prev, [mes]: val }));
     };
 
@@ -180,7 +185,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                             <i className="ri-printer-line"></i> {t('Imprimir Ficha')}
                         </button>
                         
-                        {(isPendiente || isConfirmada) && (
+                        {isConfirmada && (
                             <button className="ficha-btn-secondary" style={{ color: '#c62828', borderColor: '#c62828' }} onClick={handleRechazar}>
                                 <i className="ri-close-line"></i> {t('Rechazar cita')}
                             </button>
@@ -204,8 +209,8 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                         <TextBox readOnly value={citacion.CitacionId?.toString()} />
                     </div>
                     <div className="form-group">
-                        <label>{t('ID Demanda')}</label>
-                        <TextBox readOnly value={citacion.DemandaId?.toString()} />
+                        <label>{t('Tipo Movimiento')}</label>
+                        <TextBox readOnly value={citacion.TipoMovimiento} />
                     </div>
                     <div className="form-group">
                         <label>{t('Mutua Solicitante')}</label>
@@ -297,7 +302,7 @@ const FichaCitacion = ({ visible, onHiding, citacion, modo, onSave }) => {
                                 displayExpr="text"
                                 value={conceder}
                                 onValueChanged={e => setConceder(e.value)}
-                                readOnly={!isPendiente}
+                                disabled={!isPendiente}
                             />
                         </div>
                         <div className="form-group">

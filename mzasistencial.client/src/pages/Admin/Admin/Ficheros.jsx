@@ -439,7 +439,7 @@ const Ficheros = () => {
                             <div className="fich-popup-row">
                                 <div className="fich-popup-field fich-popup-field-full">
                                     <label>Fichero</label>
-                                    <div className="fich-file-wrap">
+                                    <div className="fich-file-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <input
                                             type="text"
                                             className="fich-input fich-file-text"
@@ -447,6 +447,19 @@ const Ficheros = () => {
                                             value={archivoNombre}
                                             readOnly
                                         />
+                                        {archivo && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setArchivo(null);
+                                                    setArchivoNombre('');
+                                                }}
+                                                title="Quitar archivo seleccionado"
+                                                style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '20px', padding: 0 }}
+                                            >
+                                                <i className="ri-close-circle-fill"></i>
+                                            </button>
+                                        )}
                                         <label className="fich-file-btn">
                                             Examinar...
                                             <input type="file" className="fich-file-hidden" onChange={handleArchivoChange} />

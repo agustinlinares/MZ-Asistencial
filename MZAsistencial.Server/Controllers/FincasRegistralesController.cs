@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MZAsistencial.Server.DTOs;
 using MZAsistencial.Server.Services;
@@ -19,16 +19,22 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<FincaRegistralDTO>>> Get([FromQuery] int? centroId, [FromQuery] int? anio)
+        public async Task<ActionResult> Get([FromQuery] int? centroId, [FromQuery] int? anio, [FromQuery] int? page, [FromQuery] int? pageSize)
         {
-            var data = await _service.ObtenerTodasLasFincas(centroId, anio);
+            if (page.HasValue && pageSize.HasValue)
+            {
+                var pagedData = await _service.ObtenerFincasPaginadas(page.Value, pageSize.Value, centroId, User);
+                return Ok(new { Data = pagedData.Data, Total = pagedData.Total });
+            }
+
+            var data = await _service.ObtenerTodasLasFincas(centroId, anio, User);
             return Ok(data);
         }
 
         [HttpPost]
         public async Task<ActionResult<FincaRegistralDTO>> Create(FincaRegistralDTO fincaDto)
         {
-            var result = await _service.CrearFinca(fincaDto);
+            var result = await _service.CrearFinca(fincaDto, User);
             if (result == null)
                 return BadRequest();
             return CreatedAtAction(nameof(Get), new { }, result);

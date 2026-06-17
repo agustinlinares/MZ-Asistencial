@@ -15,6 +15,8 @@ const CIEP = () => {
     const { t } = useTranslation();
     const dataGridRef = useRef(null);
     const menuRef = useRef(null);
+    const nuevoCiepRef = useRef(null);
+    const editCiepRef = useRef(null);
 
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [datos, setDatos] = useState([]);
@@ -44,6 +46,11 @@ const CIEP = () => {
         cargarDatos();
         cargarEspecialidades();
     }, []);
+
+    useEffect(() => {
+        if (mostrarNueva && nuevoCiepRef.current)
+            nuevoCiepRef.current.focus();
+    }, [mostrarNueva]);
 
     const cargarDatos = () => {
         setCargando(true);
@@ -100,15 +107,9 @@ const CIEP = () => {
             .then(() => setDatos(prev => prev.filter(d => d.ciepId !== id)));
     };
 
-    const filaNueva = mostrarNueva ? [{
-        ciepId: 'nuevo',
-        especialidad: '__nueva__',
-        ciep: '__nueva__',
-        especialidadId: null,
-        esNueva: true
-    }] : [];
-
-    const datosConNueva = [...filaNueva, ...datos];
+    // Estilos de celda para la tabla manual
+    const tdStyle = { padding: '8px 12px', borderBottom: '1px solid #e0e0e0', fontSize: 14 };
+    const thStyle = { padding: '10px 12px', background: '#f0f4fa', color: '#1a5fa8', fontWeight: 700, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid #e0e0e0' };
 
     return (
         <div className="finca-container-inline">
@@ -133,11 +134,64 @@ const CIEP = () => {
                     </div>
                 </div>
 
+                {/* FILA NUEVA — fuera del DataGrid */}
+                {mostrarNueva && (
+                    <div style={{ padding: '0 16px' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ ...thStyle, width: 150, textAlign: 'center' }}>Código</th>
+                                    <th style={{ ...thStyle, textAlign: 'center' }}>Especialidad</th>
+                                    <th style={{ ...thStyle, width: 300, textAlign: 'center' }}>C.I.E.P.</th>
+                                    <th style={{ ...thStyle, width: 150, textAlign: 'center' }}>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style={{ background: '#f0f7ff' }}>
+                                    <td style={{ ...tdStyle, textAlign: 'center' }}></td>
+                                    <td style={tdStyle}>
+                                        <SelectBox
+                                            dataSource={especialidades}
+                                            displayExpr="especialidad"
+                                            valueExpr="especialidadId"
+                                            value={nuevaEspecialidad}
+                                            onValueChanged={e => setNuevaEspecialidad(e.value)}
+                                            placeholder="Selecciona especialidad"
+                                            width="100%"
+                                        />
+                                    </td>
+                                    <td style={tdStyle}>
+                                        <input
+                                            ref={nuevoCiepRef}
+                                            value={nuevoCiep}
+                                            onChange={e => setNuevoCiep(e.target.value)}
+                                            placeholder="Código CIEP"
+                                            style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '6px 10px', width: '100%', fontSize: 14 }}
+                                        />
+                                    </td>
+                                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        <i className="ri-check-line"
+                                            style={{ cursor: 'pointer', color: '#2e7d32', fontSize: 20, marginRight: 10 }}
+                                            title="Guardar"
+                                            onClick={handleAnadir}
+                                        />
+                                        <i className="ri-close-line"
+                                            style={{ cursor: 'pointer', color: '#c62828', fontSize: 20 }}
+                                            title="Cancelar"
+                                            onClick={() => { setMostrarNueva(false); setNuevoCiep(''); setNuevaEspecialidad(null); }}
+                                        />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
                 {/* TABLA */}
-                <div className="finca-tab-content" style={{ padding: '16px' }}>
+                <div className="finca-tab-content" style={{ padding: '0 16px 16px' }}>
                     <DataGrid
                         ref={dataGridRef}
-                        dataSource={datosConNueva}
+                        dataSource={datos}
                         keyExpr="ciepId"
                         showBorders={true}
                         columnAutoWidth={false}
@@ -171,7 +225,6 @@ const CIEP = () => {
                             width={150}
                             alignment="center"
                             cssClass="dx-cell-large"
-                            cellRender={(cell) => cell.data.esNueva ? '' : cell.value}
                         />
                         <Column
                             dataField="especialidad"
@@ -179,19 +232,6 @@ const CIEP = () => {
                             alignment="center"
                             cssClass="dx-cell-large"
                             cellRender={(cell) => {
-                                if (cell.data.esNueva) {
-                                    return (
-                                        <SelectBox
-                                            dataSource={especialidades}
-                                            displayExpr="especialidad"
-                                            valueExpr="especialidadId"
-                                            value={nuevaEspecialidad}
-                                            onValueChanged={e => setNuevaEspecialidad(e.value)}
-                                            placeholder="Selecciona especialidad"
-                                            width="100%"
-                                        />
-                                    );
-                                }
                                 if (editandoId === cell.data.ciepId) {
                                     return (
                                         <SelectBox
@@ -214,20 +254,10 @@ const CIEP = () => {
                             alignment="center"
                             cssClass="dx-cell-large"
                             cellRender={(cell) => {
-                                if (cell.data.esNueva) {
-                                    return (
-                                        <input
-                                            value={nuevoCiep}
-                                            onChange={e => setNuevoCiep(e.target.value)}
-                                            placeholder="Código CIEP"
-                                            style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '4px 8px', width: '100%', fontSize: 14 }}
-                                        />
-                                    );
-                                }
                                 if (editandoId === cell.data.ciepId) {
                                     return (
                                         <input
-                                            value={editCiep}
+                                            defaultValue={editCiep}
                                             onChange={e => setEditCiep(e.target.value)}
                                             style={{ border: '1px solid #cbd5e1', borderRadius: 4, padding: '4px 8px', width: '100%', fontSize: 14 }}
                                         />
@@ -245,22 +275,6 @@ const CIEP = () => {
                             allowSorting={false}
                             cssClass="dx-cell-large"
                             cellRender={(cell) => {
-                                if (cell.data.esNueva) {
-                                    return (
-                                        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                                            <i className="ri-check-line"
-                                                style={{ cursor: 'pointer', color: '#2e7d32', fontSize: 20 }}
-                                                title="Guardar"
-                                                onClick={(e) => { e.stopPropagation(); handleAnadir(); }}
-                                            />
-                                            <i className="ri-close-line"
-                                                style={{ cursor: 'pointer', color: '#c62828', fontSize: 20 }}
-                                                title="Cancelar"
-                                                onClick={(e) => { e.stopPropagation(); setMostrarNueva(false); setNuevoCiep(''); setNuevaEspecialidad(null); }}
-                                            />
-                                        </div>
-                                    );
-                                }
                                 if (editandoId === cell.data.ciepId) {
                                     return (
                                         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>

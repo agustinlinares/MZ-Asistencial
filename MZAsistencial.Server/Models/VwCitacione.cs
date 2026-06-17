@@ -15,7 +15,7 @@ public partial class VwCitacione
 
     public string? Centro { get; set; }
 
-    public string Provincia { get; set; } = null!;
+    public string? Provincia { get; set; }
 
     public string? Localidad { get; set; }
 

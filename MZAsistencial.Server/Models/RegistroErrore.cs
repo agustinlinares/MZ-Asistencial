@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,5 +24,6 @@ public partial class RegistroErrore
 
     public string? Comentarios { get; set; }
 
+    [NotMapped]
     public string? Nombre_Modulo { get; set; }
 }

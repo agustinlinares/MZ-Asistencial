@@ -21,7 +21,6 @@ const YEARS            = Array.from({ length: 10 }, (_, i) => YEAR_NOW - i);
 const API_VALIDAR      = "/api/Icg06Validar";
 const API_LISTADO      = "/api/ListadoPropiosIcg";
 
-// ─── Helper: campos de plantilla por grupo de personal ───────────────────────
 const cp = (prefijo, label) => [
     { key: `${prefijo}NumPers`,          label: `${label} · Nº personas` },
     { key: `${prefijo}GastPers`,         label: `${label} · Gasto personal` },
@@ -35,7 +34,6 @@ const cp = (prefijo, label) => [
     { key: `${prefijo}HorasPersSustInt`, label: `${label} · Horas sustitución` },
 ];
 
-// ─── Campos de pestañas asistenciales ────────────────────────────────────────
 const camposHos = [
     { key: "pitrmutHos",                          label: "PI trmut HOS" },
     { key: "esttrmutHos",                         label: "Estancias trmut HOS" },
@@ -325,28 +323,28 @@ const CAMPOS = {
         { key: "otrasObservac", label: "Otras observaciones", type: "text" },
     ],
     economicos: [
-        { key: "gasfinAscp",            label: "Gastos financiación ASCP" },
-        { key: "gasfinAscc",            label: "Gastos financiación ASCC" },
-        { key: "gasfinCit",             label: "Gastos financiación CIT" },
-        { key: "gasfinPss",             label: "Gastos financiación PSS" },
-        { key: "gasfinAg",              label: "Gastos financiación AG" },
-        { key: "gasbienescysAscp",      label: "Bienes y servicios ASCP" },
-        { key: "gasbienescysAscc",      label: "Bienes y servicios ASCC" },
-        { key: "gasbienescysCit",       label: "Bienes y servicios CIT" },
-        { key: "gasbienescysPss",       label: "Bienes y servicios PSS" },
-        { key: "gasbienescysAg",        label: "Bienes y servicios AG" },
-        { key: "amortizAscp",           label: "Amortizaciones ASCP" },
-        { key: "amortizAscc",           label: "Amortizaciones ASCC" },
-        { key: "amortizCit",            label: "Amortizaciones CIT" },
-        { key: "amortizPss",            label: "Amortizaciones PSS" },
-        { key: "amortizAg",             label: "Amortizaciones AG" },
-        { key: "inversionesNuevas",     label: "Inversiones nuevas" },
-        { key: "inversionesReposicion", label: "Inversiones reposición" },
-        { key: "factejercsist",         label: "Facturación ejercicio sistema" },
-        { key: "factejercresto",        label: "Facturación ejercicio resto" },
-        { key: "factejerotrmutuasCp",   label: "Facturación otras mutuas CP" },
-        { key: "factejerotrmutuasCc",   label: "Facturación otras mutuas CC" },
-        { key: "factpendcobro",         label: "Facturación pendiente cobro" },
+        { key: "gasfinAscp",            label: "Gastos financiación ASCP",      type: "currency" },
+        { key: "gasfinAscc",            label: "Gastos financiación ASCC",      type: "currency" },
+        { key: "gasfinCit",             label: "Gastos financiación CIT",       type: "currency" },
+        { key: "gasfinPss",             label: "Gastos financiación PSS",       type: "currency" },
+        { key: "gasfinAg",              label: "Gastos financiación AG",        type: "currency" },
+        { key: "gasbienescysAscp",      label: "Bienes y servicios ASCP",       type: "currency" },
+        { key: "gasbienescysAscc",      label: "Bienes y servicios ASCC",       type: "currency" },
+        { key: "gasbienescysCit",       label: "Bienes y servicios CIT",        type: "currency" },
+        { key: "gasbienescysPss",       label: "Bienes y servicios PSS",        type: "currency" },
+        { key: "gasbienescysAg",        label: "Bienes y servicios AG",         type: "currency" },
+        { key: "amortizAscp",           label: "Amortizaciones ASCP",           type: "currency" },
+        { key: "amortizAscc",           label: "Amortizaciones ASCC",           type: "currency" },
+        { key: "amortizCit",            label: "Amortizaciones CIT",            type: "currency" },
+        { key: "amortizPss",            label: "Amortizaciones PSS",            type: "currency" },
+        { key: "amortizAg",             label: "Amortizaciones AG",             type: "currency" },
+        { key: "inversionesNuevas",     label: "Inversiones nuevas",            type: "currency" },
+        { key: "inversionesReposicion", label: "Inversiones reposición",        type: "currency" },
+        { key: "factejercsist",         label: "Facturación ejercicio sistema", type: "currency" },
+        { key: "factejercresto",        label: "Facturación ejercicio resto",   type: "currency" },
+        { key: "factejerotrmutuasCp",   label: "Facturación otras mutuas CP",  type: "currency" },
+        { key: "factejerotrmutuasCc",   label: "Facturación otras mutuas CC",  type: "currency" },
+        { key: "factpendcobro",         label: "Facturación pendiente cobro",   type: "currency" },
     ],
     plantilla: [
         ...cp("persSanitMedArt6",       "Médicos (Art.6)"),
@@ -453,7 +451,6 @@ const TABS = [
     { key: "asPro",          label: "AS Cont. Profesionales",    api: "Icg06AsPro" },
 ];
 
-// ─── Estilos ──────────────────────────────────────────────────────────────────
 const st = {
     backBtn:    { marginBottom: 14 },
     fichaWrap:  { background: "#fff", border: "1px solid #e0e0e0", borderRadius: 6 },
@@ -480,7 +477,6 @@ const st = {
     espMsg: (ok) => ({ fontSize: 12.5, color: ok ? "#2e7d32" : "#c62828", marginLeft: 12 }),
 };
 
-// ─── Helper formato numérico ──────────────────────────────────────────────────
 const fmtNum = (val) =>
     val === null || val === undefined
         ? <span style={{ color: "#bbb" }}>—</span>
@@ -648,6 +644,31 @@ const TabContent = forwardRef(({ centroId, año, tabKey, apiName, esAdmin }, ref
                         ) : type === "date" ? (
                             <input style={{ ...st.fieldInput, background: esAdmin ? "#fff" : "#f5f5f5" }}
                                 type="date" value={datos[key] ? datos[key].substring(0, 10) : ""} onChange={e => esAdmin && handleChange(key, e.target.value || null)} readOnly={!esAdmin} />
+                        ) : type === "currency" ? (
+                            <input
+                                style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222", background: esAdmin ? "#fff" : "#f5f5f5", textAlign: "right" }}
+                                type="text"
+                                inputMode="decimal"
+                                value={
+                                    datos[key] === null || datos[key] === "" || datos[key] === undefined
+                                        ? ""
+                                        : Number(datos[key]).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                }
+                                onFocus={e => {
+                                    if (!esAdmin) return;
+                                    e.target.value = datos[key] ?? "";
+                                    e.target.type = "number";
+                                    e.target.select();
+                                }}
+                                onBlur={e => {
+                                    e.target.type = "text";
+                                    const val = e.target.value;
+                                    handleChange(key, val === "" ? null : Number(val.replace(",", ".")));
+                                }}
+                                onChange={e => esAdmin && handleChange(key, e.target.value === "" ? null : e.target.value)}
+                                readOnly={!esAdmin}
+                                placeholder="0,00"
+                            />
                         ) : (
                             <input style={{ ...st.fieldInput, color: (datos[key] === null || datos[key] === "") ? "#bbb" : "#222", background: esAdmin ? "#fff" : "#f5f5f5" }}
                                 type="number" value={datos[key] ?? ""} onChange={e => esAdmin && handleChange(key, e.target.value)} readOnly={!esAdmin} placeholder="0" />
@@ -840,7 +861,6 @@ const ICGCentrosPropios = () => {
         } finally { setCreando(false); }
     };
 
-    // ─── Validar/desvalidar inline desde el listado ───────────────────────────
     const toggleValidado = async (idIcg, validadoActual) => {
         const nuevoEstado = validadoActual === 1 ? 0 : 1;
         try {
@@ -857,7 +877,6 @@ const ICGCentrosPropios = () => {
         }
     };
 
-    // ─── Eliminar desde el listado ────────────────────────────────────────────
     const eliminarIcg = async (idIcg) => {
         if (!window.confirm('¿Seguro que quieres eliminar este registro ICG06? Esta acción no se puede deshacer.')) return;
         try {
@@ -1007,7 +1026,6 @@ const ICGCentrosPropios = () => {
                             )}
                         />
 
-                        {/* ─── Columna Acciones ─────────────────────────────────────────────── */}
                         <Column
                             caption={t("Acciones")}
                             width={esAdmin ? 150 : 110}
@@ -1018,14 +1036,12 @@ const ICGCentrosPropios = () => {
                                 if (data.tieneIcg) {
                                     return (
                                         <div className="ficha-row-actions" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
-                                            {/* Ver ficha */}
                                             <i
                                                 className="ri-file-search-line action-icon"
                                                 onClick={(e) => { e.stopPropagation(); setCentroSeleccionado(data); }}
                                                 title={t('Ver ICG')}
                                                 style={{ color: "#1976d2", fontSize: "18px", cursor: "pointer" }}
                                             />
-                                            {/* Validar/desvalidar — solo admin */}
                                             {esAdmin && (
                                                 <i
                                                     className={data.validado === 1 ? "ri-checkbox-circle-fill" : "ri-checkbox-blank-circle-line"}
@@ -1034,7 +1050,6 @@ const ICGCentrosPropios = () => {
                                                     style={{ color: data.validado === 1 ? "#43a047" : "#fb8c00", fontSize: "18px", cursor: "pointer" }}
                                                 />
                                             )}
-                                            {/* Eliminar — solo admin */}
                                             {esAdmin && (
                                                 <i
                                                     className="ri-delete-bin-line action-icon"
