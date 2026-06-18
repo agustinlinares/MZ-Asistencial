@@ -23,11 +23,11 @@ namespace MZAsistencial.Server.Migrations
             //    table: "FincasRegistrales_CostesPorAnio",
             //    newName: "Año");
 
-            migrationBuilder.AddColumn<string>(
+            /* migrationBuilder.AddColumn<string>(
                 name: "Nombre_Modulo",
                 table: "Registro_Errores",
                 type: "nvarchar(max)",
-                nullable: true);
+                nullable: true); */
         }
 
         /// <inheritdoc />
