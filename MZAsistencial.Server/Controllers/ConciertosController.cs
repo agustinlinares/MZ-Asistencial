@@ -104,19 +104,18 @@ namespace MZAsistencial.Server.Controllers
         {
             try
             {
-                // No se borra de Conciertos, se limpia la asignación ICG07 del año actual
-                var exito = await _service.DeleteIcg07RecordAsync(id);
+               var exito = await _service.EliminarConciertoCompletoAsync(id);
                 
                 if (!exito)
                 {
-                    return NotFound(new { message = "No se localizó un registro activo ICG07 asociado a este concierto para el año actual." });
+                    return NotFound(new { message = "No se encontró el concierto a eliminar." });
                 }
 
-                return NoContent(); // Regresa HTTP 204 
+                return NoContent(); // Regresa HTTP 204
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error al ejecutar el borrado lógico de la ICG07", details = ex.Message });
+                return StatusCode(500, new { message = "Error crítico al eliminar el concierto y sus dependencias.", details = ex.Message });
             }
         }
 

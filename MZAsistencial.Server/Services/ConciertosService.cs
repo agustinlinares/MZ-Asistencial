@@ -177,7 +177,7 @@ namespace MZAsistencial.Server.Services
             return true;
         }
 
-        public async Task<bool> DeleteIcg07RecordAsync(int conciertoId)
+        /* public async Task<bool> DeleteIcg07RecordAsync(int conciertoId)
         {
             // No borra de la tabla Conciertos. Elimina únicamente el registro de control analítico/financiero ICG07 para el año en curso.
             int anyoActual = DateTime.Now.Year;
@@ -193,6 +193,33 @@ namespace MZAsistencial.Server.Services
             }
 
             _context.ConciertosEspecialidades.Remove(registroIcg07);
+            await _context.SaveChangesAsync();
+            return true;
+        } */
+
+        public async Task<bool> EliminarConciertoCompletoAsync(int conciertoId)
+        {
+            var concierto = await _context.Conciertos.FindAsync(conciertoId);
+            if (concierto == null) return false;
+
+            var documentos = await _context.ConciertosDocumentos
+                .Where(d => d.ConciertoId == conciertoId)
+                .ToListAsync();
+
+            foreach (var doc in documentos)
+            {
+                if (!string.IsNullOrEmpty(doc.Documento))
+                {
+                    string rutaCompleta = Path.Combine(_storagePath, doc.Documento);
+                    if (File.Exists(rutaCompleta))
+                    {
+                        File.Delete(rutaCompleta);
+                    }
+                }
+            }
+
+            _context.Conciertos.Remove(concierto);
+            
             await _context.SaveChangesAsync();
             return true;
         }
@@ -309,20 +336,16 @@ namespace MZAsistencial.Server.Services
 
         public async Task<IEnumerable<ConciertoResponseDTO>> GetSinAutorizarAsync(int? usuarioIdParaPerfil3 = null)
         {
-            // Listado de conciertos con Autorizado = 0 (o nulo) 
             var query = _context.Conciertos
-                .Include(c => c.CentroId)
                 .Where(c => c.Autorizado == false || c.Autorizado == null);
 
-            // Restricción adicional para perfil 3 (solo ve sus centros asignados) 
+            // Restricción adicional para perfil 3 (solo ve sus centros asignados)
             if (usuarioIdParaPerfil3.HasValue)
             {
-                // Vincula directamente con la tabla Usuarios verificando que el centro coincida
                 query = query.Where(c => _context.Usuarios
                             .Any(u => u.UsuarioId == usuarioIdParaPerfil3.Value && u.CentroId == c.CentroId));
             }
 
-            // Reutiliza la proyección con el Localizador calculado igual que en el listado principal
             var resultados = await (from c in query
                                     join centro in _context.CentrosConcertados on c.CentroId equals centro.CentroId
                                     select new ConciertoResponseDTO

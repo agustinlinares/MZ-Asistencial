@@ -11,7 +11,7 @@ namespace MZAsistencial.Server.Services
         Task<ConciertoResponseDTO?> GetByIdAsync(int id);
         Task<ConciertoResponseDTO> CreateAsync(ConciertoCreateDTO dto);
         Task<bool> UpdateAsync(int id, ConciertoUpdateDTO dto);
-        Task<bool> DeleteIcg07RecordAsync(int conciertoId); // Regla del borrado lógico de ICG07
+        // Task<bool> DeleteIcg07RecordAsync(int conciertoId); 
         
         // Gestión de sub-recursos
         Task<IEnumerable<ConciertosAmbitoCoberturaDTO>> GetAmbitosByConciertoAsync(int conciertoId);
@@ -27,5 +27,6 @@ namespace MZAsistencial.Server.Services
         // Manejo físico y lógico de ficheros
         Task<ConciertosDocumentoDTO> UploadDocumentoAsync(int conciertoId, string titulo, string observaciones, string nombreOriginal, Stream archivoStream);
         Task<bool> DeleteDocumentoAsync(int documentoId);
+        Task<bool> EliminarConciertoCompletoAsync(int id);
     }
 }

@@ -13,6 +13,20 @@ namespace MZAsistencial.Server.Services
             _context = context;
         }
 
+        public async Task<bool> DeleteIcgAsync(int idIcg)
+        {
+            // Busca la entidad por su Primary Key
+            var registro = await _context.Icg07s.FindAsync(idIcg);
+            
+            if (registro == null) return false;
+
+            // Borrado de la tabla ICG07
+            _context.Icg07s.Remove(registro);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
+
         public async Task<List<IcgConciertoDto>> GetAllAsync()
         {
             return await (
