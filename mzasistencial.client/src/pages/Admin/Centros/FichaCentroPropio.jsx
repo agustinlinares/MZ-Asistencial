@@ -53,6 +53,14 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
     const user    = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
     const esAdmin = user?.perfilId === 1;
 
+    // ── Determina si estamos creando un centro nuevo o editando uno existente ──
+    const esNuevo = !(cliente?.centroId || cliente?.CentroId);
+
+    // ── Pestañas visibles según el modo (nuevo vs edición) ─────────────────────
+    const TABS_VISIBLES = esNuevo
+        ? TABS.filter(t => ["general", "datosUtilizacion", "catalogo"].includes(t.key))
+        : TABS;
+
     const [MUTUOS,      setMUTUOS]      = useState([]);
     const [PROVINCIAS,  setProvincias]  = useState([]);
     const [POBLACIONES, setPoblaciones] = useState([]);
@@ -239,7 +247,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
         setGuardando(true);
         try {
             const dataToSave = {
-                centroId:               form.CentroId,
+                centroId:               form.CentroId ? parseInt(form.CentroId) : 0,
                 localizador:            form.Localizador,
                 mutuaId:                parseInt(form.Mutua) || 0,
                 centro:                 form.Centro,
@@ -333,7 +341,7 @@ const FichaCentroPropio = ({ cliente, onClose, onSave }) => {
 
                 {/* PESTAÑAS */}
                 <div className="ficha-tabs">
-                    {TABS.map(({ key, label }) => (
+                    {TABS_VISIBLES.map(({ key, label }) => (
                         <button key={key} className={"ficha-tab" + (tabActiva === key ? " active" : "")} onClick={() => setTabActiva(key)}>
                             {t(label)}
                         </button>

@@ -170,6 +170,58 @@ namespace MZAsistencial.Server.Services
             };
         }
 
+        public async Task<int> CrearAsync(CentrosPropiosDTO dto)
+        {
+            var centro = new CentrosPropio
+            {
+                Localizador             = dto.Localizador,
+                MutuaId                 = dto.MutuaId,
+                Centro                  = dto.Centro,
+                Cp                      = dto.Cp,
+                PoblacionId             = dto.PoblacionId,
+                Telefono                = dto.Telefono,
+                Latitud                 = dto.Latitud,
+                Longitud                = dto.Longitud,
+                Direccion               = dto.Direccion,
+                Numero                  = dto.Numero,
+                Piso                    = dto.Piso,
+                Puerta                  = dto.Puerta,
+                DireccionGis            = dto.DireccionGoogle,
+                DireccionElectronica    = dto.Email,
+                PersonaContacto         = dto.PersonaContacto,
+                OtrosDatos              = dto.OtrosDatos,
+                ServiciosEspeciales     = dto.ServiciosEspeciales,
+                Desactivado             = dto.Desactivado ?? false,
+                Traslado                = dto.Traslado,
+                MotivoBaja              = dto.MotivoBaja,
+                FechaBaja               = dto.FechaBaja,
+                AsistenciaHospitalaria  = dto.AsistenciaHospitalaria,
+                AsistenciaAmbulatoria   = dto.AsistenciaAmbulatoria,
+                Rehabilitacion          = dto.Rehabilitacion,
+                IncapacidadTransitoria  = dto.IncapacidadTransitoria,
+                Prevencion              = dto.Prevencion,
+                Administracion          = dto.Administracion,
+                OtrasActividades        = dto.OtrasActividades,
+                Fautocom                = dto.Fautocom,
+                Fpufuncio               = dto.Fpufuncio,
+                Fcalisuf                = dto.Fcalisuf,
+                TipoCentro              = dto.TipoCentro,
+                MapaValidado            = dto.MapaValidado ?? false,
+                FechaModificacion       = DateTime.Now,
+            };
+
+            _context.CentrosPropios.Add(centro);
+            await _context.SaveChangesAsync();
+
+            await RegistrarActividadAsync(
+                dto.UsuarioId,
+                $"CREAR CentroPropio {centro.CentroId} ({dto.Localizador})",
+                $"INSERT INTO CentrosPropios (Centro, Localizador, MutuaId, FechaModificacion) VALUES ('{dto.Centro}', '{dto.Localizador}', {dto.MutuaId}, '{DateTime.Now}')"
+            );
+
+            return centro.CentroId;
+        }
+
         public async Task<bool> UpdateAsync(int centroId, CentrosPropiosDTO dto)
         {
             var centro = await _context.CentrosPropios
@@ -303,16 +355,16 @@ namespace MZAsistencial.Server.Services
             });
             await _context.SaveChangesAsync();
         }
-    public async Task<bool> UpdateCoordenadasAsync(int id, string? latitud, string? longitud)
-    {
-        var centro = await _context.CentrosPropios.FindAsync(id);
-        if (centro == null) return false;
-        centro.Latitud   = latitud;
-        centro.Longitud  = longitud;
-        centro.MapaValidado = true;
-        await _context.SaveChangesAsync();
-        return true;
-    }
 
+        public async Task<bool> UpdateCoordenadasAsync(int id, string? latitud, string? longitud)
+        {
+            var centro = await _context.CentrosPropios.FindAsync(id);
+            if (centro == null) return false;
+            centro.Latitud   = latitud;
+            centro.Longitud  = longitud;
+            centro.MapaValidado = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
