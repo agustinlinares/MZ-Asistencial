@@ -37,6 +37,13 @@ namespace MZAsistencial.Server.Controllers
             var existe = await _service.ExisteLocalizadorAsync(localizador);
             return Ok(existe);
         }
+        [HttpPost]
+        public async Task<ActionResult<CentrosPropiosDTO>> Crear([FromBody] CentrosPropiosDTO dto)
+        {
+            var nuevoId = await _service.CrearAsync(dto);
+            var creado  = await _service.GetByIdAsync(nuevoId);
+            return CreatedAtAction(nameof(GetById), new { id = nuevoId }, creado);
+        }
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] CentrosPropiosDTO dto)
         {
@@ -59,11 +66,11 @@ namespace MZAsistencial.Server.Controllers
             if (!result) return NotFound();
             return Ok();
         }
-
     }
-}
+
     public class CoordenadasDto
     {
         public string? Latitud  { get; set; }
         public string? Longitud { get; set; }
     }
+}
