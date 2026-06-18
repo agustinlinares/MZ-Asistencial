@@ -118,7 +118,7 @@ const FichaUsuario = () => {
             notify('El Perfil es obligatorio', 'error', 3000);
             return;
         }
-        if (formData.perfilId !== 1 && !formData.mutuaId) {
+        if (formData.perfilId !== 1 && formData.perfilId !== 4 && !formData.mutuaId) {
             notify('La Mutua es obligatoria', 'error', 3000);
             return;
         }
@@ -149,7 +149,19 @@ const FichaUsuario = () => {
     };
 
     const onFieldDataChanged = (e) => {
-        setFormData(prev => ({ ...prev, [e.dataField]: e.value }));
+        setFormData(prev => {
+            const updated = { ...prev, [e.dataField]: e.value };
+            // Lógica de limpieza al cambiar el perfil
+            if (e.dataField === 'perfilId') {
+                if (e.value === 1 || e.value === 4) {
+                    updated.mutuaId = null;
+                }
+                if (e.value === 1) {
+                    updated.centroId = null;
+                }
+            }
+            return updated;
+        });
     };
 
     if (loading) return <div>Cargando...</div>;
@@ -211,7 +223,7 @@ const FichaUsuario = () => {
                                 dataSource: mutuas,
                                 displayExpr: "mutua",
                                 valueExpr: "numeroId",
-                                disabled: !isAdmin
+                                disabled: !isAdmin || formData.perfilId === 1 || formData.perfilId === 4
                             }}
                         >
                             {formData.perfilId !== 1 && formData.perfilId !== 4 && <RequiredRule message="La mutua es obligatoria para este perfil" />}
@@ -225,7 +237,8 @@ const FichaUsuario = () => {
                                 displayExpr: "centro",
                                 valueExpr: "centroId",
                                 showClearButton: true,
-                                placeholder: "Seleccionar Centro..."
+                                placeholder: "Seleccionar Centro...",
+                                disabled: formData.perfilId === 1
                             }}
                         />
                         <SimpleItem dataField="dgossrecibeCorreo" editorType="dxCheckBox" label={{ text: "Recibir correos DGOSS" }} />

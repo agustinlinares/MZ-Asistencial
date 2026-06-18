@@ -21,7 +21,7 @@ import { confirm as dxConfirm } from 'devextreme/ui/dialog';
 const API = '/api';
 const TIPOS = ['Todos', 'Anuales', 'Individuales'];
 
-// --- 🛠️ NUEVO: COMPONENTE DETALLE DE SUBSOLICITUDES ---
+// --- COMPONENTE DETALLE DE SUBSOLICITUDES ---
 const SubsolicitudesDetalle = ({ demandaId }) => {
     const { t } = useTranslation();
     const [subsolicitudes, setSubsolicitudes] = useState([]);

@@ -24,6 +24,12 @@ export const usuariosService = {
     return response.json();
   },
   
+  getPerfiles: async () => {
+    const response = await fetch(`${API_URL}/perfiles`, { headers: getHeaders() });
+    if (!response.ok) throw new Error('Error al obtener perfiles');
+    return response.json();
+  },
+  
   create: async (data) => {
     const response = await fetch(API_URL, {
       method: 'POST',

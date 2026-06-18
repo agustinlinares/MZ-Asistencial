@@ -135,7 +135,11 @@ const TablaCitaciones = ({
 
     const handleRechazar = async (citacion) => {
         const motivo = window.prompt(t('Indica el motivo del rechazo:'));
-        if (!motivo || !motivo.trim()) return;
+        if (motivo !== null && (!motivo || !motivo.trim())) {
+            notify(t('Debe introducir un motivo de rechazo'), 'warning', 2000);
+            return;
+        }
+        if (motivo === null) return;
         try {
             await CitacionesService.updateRechazo(citacion.CitacionId, motivo.trim());
             notify(t('Citación rechazada'), 'warning', 2000);
@@ -185,6 +189,10 @@ const TablaCitaciones = ({
 
         const result = await dialog.show();
         if (result !== null) {
+            if (!result || !result.trim()) {
+                notify(t('Debe introducir un motivo de rechazo'), 'warning', 2000);
+                return;
+            }
             try {
                 await CitacionesService.updateRechazoLote(selectedRowKeys, result);
                 notify(t('Citaciones rechazadas correctamente'), 'success', 2000);
@@ -453,7 +461,7 @@ const TablaCitaciones = ({
                                                 {isPendiente && (
                                                     <i className="ri-checkbox-circle-line edit-icon" title={t('Conceder')} style={{ color: '#2e7d32', cursor: 'pointer', marginRight: '8px' }} onClick={() => handleConceder(cell.data)} />
                                                 )}
-                                                {(isPendiente || isConfirmada) && (
+                                                {isConfirmada && (
                                                     <i className="ri-close-circle-line delete-icon" title={t('Rechazar')} style={{ color: '#c62828', cursor: 'pointer' }} onClick={() => handleRechazar(cell.data)} />
                                                 )}
                                             </div>

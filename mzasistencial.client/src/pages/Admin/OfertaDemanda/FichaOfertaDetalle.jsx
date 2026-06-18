@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react"; 
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DataGrid, {
     Column, FilterRow, HeaderFilter, Scrolling, Sorting, Paging, Pager,
@@ -51,19 +51,6 @@ const FichaOfertaDetalle = () => {
 
     const set = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
-    // Helper interno para recuperar las credenciales activas del usuario
-    const getUsuarioSesion = () => {
-        try {
-            const u = JSON.parse(localStorage.getItem('UsuarioActual') || '{}');
-            return {
-                usuarioId: u?.usuarioId ?? 0,
-                mutuaIdSesion: u?.mutuaId ?? 0
-            };
-        } catch {
-            return { usuarioId: 0, mutuaIdSesion: 0 };
-        }
-    };
-
     // Helper para refrescar la lista de documentos sin recargar toda la página
     const recargarFichaYDocumentos = () => {
         fetch(`${API}/ListaOfertas/${id}`)
@@ -85,37 +72,35 @@ const FichaOfertaDetalle = () => {
             .finally(() => setCargando(false));
     }, [id]);
 
-    // Función encargada de empaquetar y subir el archivo al backend
+    // Función que conecta con FileValidator de C# de forma asíncrona
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const { usuarioId, mutuaIdSesion } = getUsuarioSesion();
-
-        // Creamos el contenedor multipart binario
+        // Creamos el contenedor multipart binario exacto para C#
         const formData = new FormData();
-        formData.append("archivo", file);
-        formData.append("ofertaId", id);
-        formData.append("usuarioId", usuarioId);
-        formData.append("mutuaId", mutuaIdSesion);
+        formData.append("fichero", file); // Clave "fichero" idéntica al parámetro IFormFile de C#
 
         try {
-            const res = await fetch(`${API}/ListaOfertas/AdjuntarDocumento`, {
-                method: 'POST',
-                body: formData // Enviamos el contenedor con el archivo
+            // Apuntamos al endpoint RESTful que incluye el ID dinámico
+            const res = await fetch(`${API}/ListaOfertas/${id}/adjuntar`, {
+                method: 'POST', // Envío multipart obligatorio
+                body: formData
             });
 
             if (res.ok) {
-                notify('Documento adjuntado correctamente', 'success', 2000);
+                notify('Documento de la oferta verificado y guardado correctamente', 'success', 2000);
                 recargarFichaYDocumentos(); // Refrescamos el grid automáticamente
             } else {
-                notify('Error al subir el documento al servidor', 'error', 3000);
+                // Capturamos el String de error emitido en vivo por tu FileValidator
+                const errorData = await res.json();
+                notify(errorData.error || 'Error al validar el documento', 'error', 4000);
             }
         } catch (err) {
             console.error(err);
             notify('Error de conexión al subir el archivo', 'error', 3000);
         } finally {
-            if (fileInputRef.current) fileInputRef.current.value = ""; // Limpiamos el input
+            if (fileInputRef.current) fileInputRef.current.value = ""; // Limpiamos el puntero del input
         }
     };
 
@@ -233,7 +218,6 @@ const FichaOfertaDetalle = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {/* DEMANDA */}
                                 <tr style={{ background: '#eff6ff' }}>
                                     <td style={{ padding: '8px 12px', fontWeight: 700, color: '#555' }}>DEMANDA</td>
                                     {MESES.map(m => {
@@ -248,7 +232,6 @@ const FichaOfertaDetalle = () => {
                                     })}
                                     <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700, color: '#555' }}>{totalDem}</td>
                                 </tr>
-                                {/* ASIGNACION TOTAL */}
                                 <tr style={{ background: '#dbeafe' }}>
                                     <td style={{ padding: '8px 12px', fontWeight: 700, color: '#1a5fa8' }}>ASIGNACION TOTAL</td>
                                     {MESES.map(m => (
@@ -260,7 +243,6 @@ const FichaOfertaDetalle = () => {
                                     ))}
                                     <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 700 }}>{totalAsig}</td>
                                 </tr>
-                                {/* ASIGNAR — editable */}
                                 <tr style={{ background: '#f0fdf4' }}>
                                     <td style={{ padding: '8px 12px', fontWeight: 700, color: '#2e7d32' }}>ASIGNAR</td>
                                     {MESES.map(m => (
@@ -301,7 +283,6 @@ const FichaOfertaDetalle = () => {
                     </div>
 
                     {/* DOCUMENTOS */}
-                    {/* Input nativo oculto conectado a la lógica de React */}
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -311,7 +292,7 @@ const FichaOfertaDetalle = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                         <button
-                            onClick={() => fileInputRef.current.click()} // Simula el clic en el input oculto
+                            onClick={() => fileInputRef.current.click()}
                             style={{ background: '#1a5fa8', color: '#fff', border: 'none', borderRadius: 5, padding: '7px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}
                         >
                             Adjuntar
@@ -327,7 +308,21 @@ const FichaOfertaDetalle = () => {
                         className="mz-table"
                         rowAlternationEnabled={true}
                         showRowLines={true}
+                        hoverStateEnabled={true}
                         noDataText="Sin documentos adjuntos"
+
+                        // INTERACTIVIDAD DE DESCARGA: Reutiliza pasarela de archivos binarios
+                        onRowClick={(e) => {
+                            const nombreFisico = e.data?.nombre || e.data?.Nombre;
+                            if (nombreFisico) {
+                                window.open(`/api/ListaDemandas/documento/${nombreFisico}`, '_blank');
+                            }
+                        }}
+                        onRowPrepared={(e) => {
+                            if (e.rowType === 'data') {
+                                e.rowElement.style.cursor = 'pointer'; // Manita de clic activa
+                            }
+                        }}
                     >
                         <Scrolling mode="standard" showScrollbar="always" />
                         <Paging defaultPageSize={10} />

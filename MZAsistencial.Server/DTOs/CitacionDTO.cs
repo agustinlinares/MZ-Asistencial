@@ -115,6 +115,9 @@ public class CitacionDTO
     [JsonPropertyName("TipoMovimiento")]
     public string? TipoMovimiento { get; set; }
 
+    [JsonPropertyName("TipoMovimientoId")]
+    public int? TipoMovimientoId { get; set; }
+
     [JsonPropertyName("Direccion")]
     public string? Direccion { get; set; }
 
