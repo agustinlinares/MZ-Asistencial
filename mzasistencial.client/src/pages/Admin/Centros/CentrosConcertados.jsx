@@ -196,12 +196,12 @@ const CentrosConcertados = () => {
             <div className="col-xxxl-12 col-xxl-12 col-xl-12 col-md-12 col-sm-12 col-12 mzh-xxxl-100 mzh-xxl-100 mzh-xl-100 mzh-md-100 mzh-sm-100 mzh-xs-100 row m-0 p-0">
                 <div className="file-box">
 
-                    <div className="header-page">
-                        <div className="title">
-                            {t('Lista de Centros Concertados')}
-                        </div>
+                    {!selectedCentro && (
+                        <div className="header-page">
+                            <div className="title">
+                                {t('Lista de Centros Concertados')}
+                            </div>
 
-                        {!selectedCentro && (
                             <div className="acciones-container" ref={menuRef}>
                                 <div 
                                     className="acciones-btn"
@@ -235,8 +235,8 @@ const CentrosConcertados = () => {
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div className="table-container tabla-contenedor">
                         {selectedCentro ? (
