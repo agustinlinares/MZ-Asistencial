@@ -34,6 +34,9 @@ namespace MZAsistencial.Server.DTOs
         public string? CentroNombre { get; set; }
         public string? CentroCif { get; set; }
         public string? CentroCp { get; set; }
+        public string? CentroPoblacion { get; set; }
+        public string? CentroProvincia { get; set; }
+        public string? MutuaNombre { get; set; }
     }
 
     public class ConciertoCreateDTO

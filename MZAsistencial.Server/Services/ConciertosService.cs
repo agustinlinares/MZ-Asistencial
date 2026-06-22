@@ -28,11 +28,18 @@ namespace MZAsistencial.Server.Services
         public async Task<IEnumerable<ConciertoResponseDTO>> GetAllAsync(int? mutuaId = null)
         {
             // Campo Localizador Calculado combinando número de mutua + código postal + CIF del centro.
-            // Para resolverlo de forma segura ante datos inconsistentes, realizamos Joins con CentrosConcertados
+            // Joins con CentrosConcertados (datos del centro), Mutuas (nombre de mutua) y
+            // Aux_Poblaciones/Aux_Provincias (Población y Provincia del centro, vía Poblacion_id)
             var baseQuery = from c in _context.Conciertos
                         join centro in _context.CentrosConcertados on c.CentroId equals centro.CentroId
+                        join mutua in _context.Mutuas on c.MutuaId equals mutua.MutuaId into mutuaGroup
+                        from mutua in mutuaGroup.DefaultIfEmpty()
+                        join p in _context.AuxPoblaciones on centro.PoblacionId equals p.PoblacionId into pGroup
+                        from p in pGroup.DefaultIfEmpty()
+                        join pr in _context.AuxProvincias on p.ProvinciaId equals pr.ProvinciaId into prGroup
+                        from pr in prGroup.DefaultIfEmpty()
                         where c.FechaBaja == null
-                        select new { c, centro };
+                        select new { c, centro, mutua, p, pr };
 
             if (mutuaId.HasValue)
             {
@@ -69,6 +76,9 @@ namespace MZAsistencial.Server.Services
                             CentroNombre = x.centro.Centro,
                             CentroCif = x.centro.Cifnif,
                             CentroCp = x.centro.Cp,
+                            CentroPoblacion = (x.p != null && x.p.Poblacion != null) ? x.p.Poblacion.Trim() : null,
+                            CentroProvincia = x.pr != null ? x.pr.Provincia.Trim() : null,
+                            MutuaNombre = x.mutua != null ? x.mutua.Mutua1 : null,
 
                             // Concatenación normalizada aplicando ceros a la izquierda
                             Localizador = (x.c.MutuaId.ToString().PadLeft(3, '0') + 
