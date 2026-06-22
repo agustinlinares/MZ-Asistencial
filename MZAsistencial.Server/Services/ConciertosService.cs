@@ -11,61 +11,69 @@ using System.Threading.Tasks;
 
 namespace MZAsistencial.Server.Services
 {
-    public class ConciertosService : IConciertosService
-    {
-        private readonly MZAsistencialContext _context;
-        private readonly string _storagePath;
-
-        public ConciertosService(MZAsistencialContext context, IConfiguration configuration)
+        public class ConciertosService : IConciertosService
         {
-            _context = context;
-            // Se lee la ruta raíz de almacenamiento físico desde la configuración de la app (appsettings.json)
-            _storagePath = configuration["FileStorage:ConciertosPath"] ?? Path.Combine(AppContext.BaseDirectory, "Uploads");
-        }
+            private readonly MZAsistencialContext _context;
+            private readonly string _storagePath;
+            private readonly IRegistrosActividadService _registroActividadService;
 
-        public async Task<IEnumerable<ConciertoResponseDTO>> GetAllAsync()
+            public ConciertosService(MZAsistencialContext context, IConfiguration configuration, IRegistrosActividadService registroActividadService)
+            {
+                _context = context;
+                // Se lee la ruta raíz de almacenamiento físico desde la configuración de la app (appsettings.json)
+                _storagePath = configuration["FileStorage:ConciertosPath"] ?? Path.Combine(AppContext.BaseDirectory, "Uploads");
+                _registroActividadService = registroActividadService;
+            }
+
+        public async Task<IEnumerable<ConciertoResponseDTO>> GetAllAsync(int? mutuaId = null)
         {
             // Campo Localizador Calculado combinando número de mutua + código postal + CIF del centro.
             // Para resolverlo de forma segura ante datos inconsistentes, realizamos Joins con CentrosConcertados
-            var query = from c in _context.Conciertos
+            var baseQuery = from c in _context.Conciertos
                         join centro in _context.CentrosConcertados on c.CentroId equals centro.CentroId
-                        
-                        select new ConciertoResponseDTO
+                        select new { c, centro };
+
+            if (mutuaId.HasValue)
+            {
+                baseQuery = baseQuery.Where(x => x.c.MutuaId == mutuaId.Value);
+            }
+
+            var query = baseQuery.Select(x => new ConciertoResponseDTO
                         {
-                            ConciertoId = c.ConciertoId,
-                            MutuaId = c.MutuaId,
-                            CentroId = c.CentroId,
-                            CodigoCasa = c.CodigoCasa,
-                            CodigoMz = c.CodigoMz,
-                            CentroAsociadoId = c.CentroAsociadoId,
-                            TipoAsistenciaId = c.TipoAsistenciaId,
-                            AmbitoCobertura = c.AmbitoCobertura,
-                            Muniambito = c.Muniambito,
-                            Autorizado = c.Autorizado,
-                            FechaAutorizacion = c.FechaAutorizacion,
-                            UsuarioAutorizacionId = c.UsuarioAutorizacionId,
-                            FechaSuscripcion = c.FechaSuscripcion,
-                            FechaResolucion = c.FechaResolucion,
-                            FechaVigencia = c.FechaVigencia,
-                            FechaProrroga = c.FechaProrroga,
-                            FechaAlta = c.FechaAlta,
-                            UsuarioAltaId = c.UsuarioAltaId,
-                            FechaModificacion = c.FechaModificacion,
-                            UsuarioModificacionId = c.UsuarioModificacionId,
-                            FechaBaja = c.FechaBaja,
-                            UsuarioBajaId = c.UsuarioBajaId,
-                            Adhesion = c.Adhesion,
-                            ClaveAcces = c.ClaveAcces,
+                            ConciertoId = x.c.ConciertoId,
+                            MutuaId = x.c.MutuaId,
+                            CentroId = x.c.CentroId,
+                            CodigoCasa = x.c.CodigoCasa,
+                            CodigoMz = x.c.CodigoMz,
+                            CentroAsociadoId = x.c.CentroAsociadoId,
+                            TipoAsistenciaId = x.c.TipoAsistenciaId,
+                            AmbitoCobertura = x.c.AmbitoCobertura,
+                            Muniambito = x.c.Muniambito,
+                            Autorizado = x.c.Autorizado,
+                            FechaAutorizacion = x.c.FechaAutorizacion,
+                            UsuarioAutorizacionId = x.c.UsuarioAutorizacionId,
+                            FechaSuscripcion = x.c.FechaSuscripcion,
+                            FechaResolucion = x.c.FechaResolucion,
+                            FechaVigencia = x.c.FechaVigencia,
+                            FechaProrroga = x.c.FechaProrroga,
+                            FechaAlta = x.c.FechaAlta,
+                            UsuarioAltaId = x.c.UsuarioAltaId,
+                            FechaModificacion = x.c.FechaModificacion,
+                            UsuarioModificacionId = x.c.UsuarioModificacionId,
+                            FechaBaja = x.c.FechaBaja,
+                            UsuarioBajaId = x.c.UsuarioBajaId,
+                            Adhesion = x.c.Adhesion,
+                            ClaveAcces = x.c.ClaveAcces,
                             
-                            CentroNombre = centro.Centro,
-                            CentroCif = centro.Cifnif,
-                            CentroCp = centro.Cp,
+                            CentroNombre = x.centro.Centro,
+                            CentroCif = x.centro.Cifnif,
+                            CentroCp = x.centro.Cp,
 
                             // Concatenación normalizada aplicando ceros a la izquierda
-                            Localizador = (c.MutuaId.ToString().PadLeft(3, '0') + 
-                                           (centro.Cp ?? "").Trim().PadLeft(5, '0') + 
-                                           (centro.Cifnif ?? "").Trim()).ToUpper()
-                        };
+                            Localizador = (x.c.MutuaId.ToString().PadLeft(3, '0') + 
+                                        (x.centro.Cp ?? "").Trim().PadLeft(5, '0') + 
+                                        (x.centro.Cifnif ?? "").Trim()).ToUpper()
+                        });
 
             return await query.ToListAsync();
         }
@@ -170,6 +178,8 @@ namespace MZAsistencial.Server.Services
             concierto.FechaResolucion = dto.FechaResolucion;
             concierto.FechaVigencia = dto.FechaVigencia;
             concierto.FechaProrroga = dto.FechaProrroga;
+            concierto.Adhesion = dto.Adhesion;
+            concierto.ClaveAcces = dto.ClaveAcces;
             concierto.FechaModificacion = DateTime.Now;
             concierto.UsuarioModificacionId = dto.UsuarioModificacionId;
 
@@ -384,21 +394,30 @@ namespace MZAsistencial.Server.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<CentroAdhesionDTO>> GetCentrosAdhesionAsync()
+        public async Task<IEnumerable<CentroAdhesionDTO>> GetCentrosAdhesionAsync(int? excluirConciertoId = null)
         {
-            // Muestra conciertos cuyo código CASA termina en "000" 
-            return await (from c in _context.Conciertos
+            // Muestra conciertos cuyo código CASA termina en "000".
+            // Si se está editando un concierto, se excluye a sí mismo para evitar auto-adhesión.
+            var query = from c in _context.Conciertos
                         join centro in _context.CentrosConcertados on c.CentroId equals centro.CentroId
-                        join mutua in _context.Mutuas on c.MutuaId equals mutua.MutuaId // Join extra para dar más contexto visual
+                        join mutua in _context.Mutuas on c.MutuaId equals mutua.MutuaId
                         where c.CodigoCasa != null && c.CodigoCasa.EndsWith("000")
-                        orderby mutua.Mutua1, centro.Centro
-                        select new CentroAdhesionDTO
-                        {
-                            ConciertoId = c.ConciertoId,
-                            CodigoCasa = c.CodigoCasa,
-                            CentroNombre = centro.Centro,
-                            MutuaNombre = mutua.Mutua1
-                        }).ToListAsync();
+                        select new { c, centro, mutua };
+
+            if (excluirConciertoId.HasValue)
+            {
+                query = query.Where(x => x.c.ConciertoId != excluirConciertoId.Value);
+            }
+
+            return await query
+                .OrderBy(x => x.mutua.Mutua1).ThenBy(x => x.centro.Centro)
+                .Select(x => new CentroAdhesionDTO
+                {
+                    ConciertoId = x.c.ConciertoId,
+                    CodigoCasa = x.c.CodigoCasa,
+                    CentroNombre = x.centro.Centro,
+                    MutuaNombre = x.mutua.Mutua1
+                }).ToListAsync();
         }
 
         public async Task<ConciertosAmbitoCoberturaDTO> AddAmbitoAsync(int conciertoId, ConciertosAmbitoCoberturaCreateDTO dto)
@@ -447,5 +466,24 @@ namespace MZAsistencial.Server.Services
 
             return true;
         }
-    }
-}
+
+        public async Task<bool> UsuarioTieneAccesoCentroAsync(int usuarioId, int centroId)
+        {
+            // Mismo criterio que ya usa GetSinAutorizarAsync para perfil 3:
+            // el usuario tiene acceso si su CentroId coincide con el centro consultado.
+            return await _context.Usuarios
+                .AnyAsync(u => u.UsuarioId == usuarioId && u.CentroId == centroId);
+        }
+
+        public async Task RegistrarCambioPestanaAsync(int conciertoId, string nombrePestana, int usuarioId)
+        {
+            // Registra la navegación entre pestañas de la ficha de concierto en el log de actividad,
+            // siguiendo el mismo patrón que ya usa FincaRegistralService.
+            await _registroActividadService.InsertarRegistroActividad(
+                $"SELECT * FROM Conciertos WHERE Concierto_id={conciertoId} -- Navegación a pestaña '{nombrePestana}'",
+                usuarioId,
+                $"NAVEGACION Concierto {conciertoId} (pestaña: {nombrePestana})"
+            );
+        }
+            }
+        }

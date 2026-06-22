@@ -23,11 +23,25 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConciertoResponseDTO>>> Get()
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<ConciertoResponseDTO>>> Get([FromQuery] int? mutuaId = null)
         {
             try
             {
-                var conciertos = await _service.GetAllAsync();
+                var perfilIdStr = HttpContext.User.FindFirst("perfilId")?.Value;
+                int? mutuaIdFiltro = mutuaId;
+
+                // Perfil 2 (bloqueo de mutua) siempre se filtra por su propia mutua, ignorando lo que mande el frontend
+                if (perfilIdStr == "2")
+                {
+                    var mutuaIdStr = HttpContext.User.FindFirst("mutuaId")?.Value;
+                    if (int.TryParse(mutuaIdStr, out int mutuaIdUsuario))
+                    {
+                        mutuaIdFiltro = mutuaIdUsuario;
+                    }
+                }
+
+                var conciertos = await _service.GetAllAsync(mutuaIdFiltro);
                 return Ok(conciertos);
             }
             catch (Exception ex)
@@ -37,6 +51,7 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<ConciertoResponseDTO>> GetById(int id)
         {
             try
@@ -46,6 +61,13 @@ namespace MZAsistencial.Server.Controllers
                 {
                     return NotFound($"No se encontró el concierto con ID {id}");
                 }
+
+                var (tieneAcceso, _) = await ValidarAccesoConciertoAsync(concierto.MutuaId, concierto.CentroId);
+                if (!tieneAcceso)
+                {
+                    return Forbid();
+                }
+
                 return Ok(concierto);
             }
             catch (Exception ex)
@@ -55,10 +77,21 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<ConciertoResponseDTO>> Post([FromBody] ConciertoCreateDTO dto)
         {
             try
             {
+                var perfilIdStr = HttpContext.User.FindFirst("perfilId")?.Value;
+                if (perfilIdStr == "2")
+                {
+                    var mutuaIdStr = HttpContext.User.FindFirst("mutuaId")?.Value;
+                    if (int.TryParse(mutuaIdStr, out int mutuaIdUsuario))
+                    {
+                        dto.MutuaId = mutuaIdUsuario; // Fuerza la mutua del usuario, ignora lo que venga del frontend
+                    }
+                }
+
                 var nuevoConcierto = await _service.CreateAsync(dto);
                 // Retorna 201 Created apuntando al GetById para seguir buenas prácticas REST 
                 return CreatedAtAction(nameof(GetById), new { id = nuevoConcierto.ConciertoId }, nuevoConcierto);
@@ -88,6 +121,26 @@ namespace MZAsistencial.Server.Controllers
 
             try
             {
+                // Verifica que el concierto existe y que el usuario (perfil 2) tiene acceso a su mutua/centro
+                var conciertoExistente = await _service.GetByIdAsync(id);
+                if (conciertoExistente == null) return NotFound($"No se encontró el concierto {id}");
+
+                var (tieneAcceso, _) = await ValidarAccesoConciertoAsync(conciertoExistente.MutuaId, conciertoExistente.CentroId);
+                if (!tieneAcceso)
+                {
+                    return Forbid();
+                }
+
+                // Si el perfil 2 intenta cambiar el concierto a otra mutua distinta de la suya, también se bloquea
+                if (perfilIdStr == "2")
+                {
+                    var mutuaIdStr = HttpContext.User.FindFirst("mutuaId")?.Value;
+                    if (int.TryParse(mutuaIdStr, out int mutuaIdUsuario) && dto.MutuaId != mutuaIdUsuario)
+                    {
+                        return Forbid();
+                    }
+                }
+
                 var actualizado = await _service.UpdateAsync(id, dto);
                 if (!actualizado) return NotFound($"No se encontró el concierto {id}");
                 
@@ -292,11 +345,11 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpGet("centros-adhesion")]
-        public async Task<ActionResult<IEnumerable<CentroAdhesionDTO>>> GetCentrosAdhesion()
+        public async Task<ActionResult<IEnumerable<CentroAdhesionDTO>>> GetCentrosAdhesion([FromQuery] int? excluirConciertoId = null)
         {
             try
             {
-                var centros = await _service.GetCentrosAdhesionAsync();
+                var centros = await _service.GetCentrosAdhesionAsync(excluirConciertoId);
                 return Ok(centros);
             }
             catch (Exception ex)
@@ -341,5 +394,77 @@ namespace MZAsistencial.Server.Controllers
                 return StatusCode(500, $"Fallo crítico al intentar eliminar el ámbito: {ex.Message}");
             }
         }
+
+        [HttpPost("{id}/log-pestana")]
+        [Authorize]
+        public async Task<IActionResult> LogCambioPestana(int id, [FromBody] LogPestanaRequest request)
+        {
+            try
+            {
+                var userIdStr = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                ?? HttpContext.User.FindFirst("sub")?.Value;
+
+                if (!int.TryParse(userIdStr, out int usuarioId))
+                {
+                    return Unauthorized("No se pudo identificar al usuario para registrar la navegación.");
+                }
+
+                await _service.RegistrarCambioPestanaAsync(id, request.NombrePestana, usuarioId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al registrar el cambio de pestaña: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Valida si el usuario actual (perfil 2, mutua bloqueada) tiene acceso al concierto indicado.
+        /// Devuelve true si tiene acceso o si su perfil no está sujeto a esta restricción.
+        /// </summary>
+        private async Task<(bool tieneAcceso, int? mutuaIdUsuario)> ValidarAccesoConciertoAsync(int? mutuaIdConcierto, int? centroIdConcierto)
+        {
+            var perfilIdStr = HttpContext.User.FindFirst("perfilId")?.Value;
+
+            // Solo el perfil 2 está sujeto a bloqueo de mutua/centro
+            if (perfilIdStr != "2")
+            {
+                return (true, null);
+            }
+
+            var mutuaIdStr = HttpContext.User.FindFirst("mutuaId")?.Value;
+            if (!int.TryParse(mutuaIdStr, out int mutuaIdUsuario))
+            {
+                return (false, null); // Sin mutuaId en el token, no puede tener acceso a nada
+            }
+
+            if (mutuaIdConcierto.HasValue && mutuaIdConcierto.Value != mutuaIdUsuario)
+            {
+                return (false, mutuaIdUsuario);
+            }
+
+            // Restricción adicional por centro asignado al usuario, igual que en GetSinAutorizarAsync
+            if (centroIdConcierto.HasValue)
+            {
+                var userIdStr = HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                ?? HttpContext.User.FindFirst("sub")?.Value;
+
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var tieneCentroAsignado = await _service.UsuarioTieneAccesoCentroAsync(userId, centroIdConcierto.Value);
+                    if (!tieneCentroAsignado)
+                    {
+                        return (false, mutuaIdUsuario);
+                    }
+                }
+            }
+
+            return (true, mutuaIdUsuario);
+        }
+    }
+
+    public class LogPestanaRequest
+    {
+        public string NombrePestana { get; set; } = string.Empty;
     }
 }
