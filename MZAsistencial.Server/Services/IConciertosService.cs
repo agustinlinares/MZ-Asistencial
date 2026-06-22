@@ -21,14 +21,13 @@ namespace MZAsistencial.Server.Services
         Task<IEnumerable<TipoAsistenciaDTO>> GetTiposAsistenciaAsync(int anioSesion);
         Task<IEnumerable<CentroAdhesionDTO>> GetCentrosAdhesionAsync(int? excluirConciertoId = null);
         Task<ConciertosAmbitoCoberturaDTO> AddAmbitoAsync(int conciertoId, ConciertosAmbitoCoberturaCreateDTO dto);
-        Task<bool> DeleteAmbitoAsync(int conciertoId, int ambitoId);
+        Task<bool> DeleteAmbitoAsync(int conciertoId, int ambitoId, int? usuarioId = null);
         Task<bool> UpdateDocumentoAsync(int documentoId, ConciertosDocumentoUpdateDTO dto);
         
         // Manejo físico y lógico de ficheros
-        Task<ConciertosDocumentoDTO> UploadDocumentoAsync(int conciertoId, string titulo, string observaciones, string nombreOriginal, Stream archivoStream);
-        Task<bool> DeleteDocumentoAsync(int documentoId);
-        Task<bool> EliminarConciertoCompletoAsync(int id);
+        Task<ConciertosDocumentoDTO> UploadDocumentoAsync(int conciertoId, string titulo, string observaciones, string nombreOriginal, Stream archivoStream, int? usuarioId = null);
+        Task<bool> DeleteDocumentoAsync(int documentoId, int? usuarioId = null);
+        Task<bool> EliminarConciertoCompletoAsync(int id, int? usuarioId = null);
         Task<bool> UsuarioTieneAccesoCentroAsync(int usuarioId, int centroId);
-        Task RegistrarCambioPestanaAsync(int conciertoId, string nombrePestana, int usuarioId);
     }
 }

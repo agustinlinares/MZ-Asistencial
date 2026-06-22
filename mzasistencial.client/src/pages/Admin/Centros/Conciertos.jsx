@@ -75,19 +75,37 @@ const Conciertos = () => {
 
     useEffect(() => {
         cargarDatos();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [modoSinAutorizar]);
 
-    const handleEliminar = async (conciertoId) => {
-        const ok = await dxConfirm(t("¿Eliminar este concierto y todos sus datos asociados permanentemente?"), t("Confirmar eliminación"));
-        if (!ok) return;
+    const abrirFicha = async (datosGrid) => {
+        // Concierto nuevo (sin ID) no requiere verificación de acceso
+        if (!datosGrid?.conciertoId) {
+            setSelectedConcierto(datosGrid);
+            return;
+        }
 
         try {
+            // Verifica acceso real contra el backend antes de abrir la ficha,
+            // por si los datos del grid estuvieran desincronizados (defensa en profundidad)
+            const conciertoVerificado = await conciertosService.obtenerPorId(datosGrid.conciertoId);
+            setSelectedConcierto(conciertoVerificado);
+        } catch (error) {
+            logError(`Acceso denegado o fallo al abrir el concierto ID: ${datosGrid.conciertoId}`, error);
+            notify(error.message || t("No se pudo abrir el concierto."), "error", 4000);
+        }
+    };
+
+    const handleEliminar = async (conciertoId) => {
+        const ok = await dxConfirm(t("¿Desea desactivar este concierto? Quedará marcado como inactivo, pero no se eliminará de la base de datos ni se perderá su historial."), t("Confirmar desactivación"));
+        if (!ok) return;
+        try {
             await conciertosService.eliminarConcierto(conciertoId);
-            notify(t("Concierto eliminado correctamente"), "success", 3000);
+            notify(t("Concierto desactivado correctamente"), "success", 3000);
             cargarDatos();
         } catch (error) {
-            logError(`Fallo al eliminar el concierto ID: ${conciertoId}`, error);
-            notify(error.message || t("Error al eliminar el concierto"), "error", 5000);
+            logError(`Fallo al desactivar el concierto ID: ${conciertoId}`, error);
+            notify(error.message || t("Error al desactivar el concierto"), "error", 5000);
         }
     };
 
@@ -217,7 +235,7 @@ const Conciertos = () => {
                                 rowAlternationEnabled={true}
                                 showRowLines={true}
                                 showColumnLines={true}
-                                onRowDblClick={(e) => setSelectedConcierto(e.data)}
+                                onRowDblClick={(e) => abrirFicha(e.data)}
                             >
                                 <Scrolling mode="standard" showScrollbar="always" />
                                 <Paging defaultPageSize={25} />
@@ -270,14 +288,14 @@ const Conciertos = () => {
                                         <div className="ficha-row-actions">
                                             <i 
                                                 className="ri-edit-line edit-icon" 
-                                                onClick={(e) => { e.stopPropagation(); setSelectedConcierto(cellData.data); }} 
+                                                onClick={(e) => { e.stopPropagation(); abrirFicha(cellData.data); }} 
                                                 title={t('Editar')} 
                                             />
                                             <i 
                                                 className="ri-delete-bin-line delete-icon" 
                                                 style={{ marginLeft: '8px' }} 
                                                 onClick={(e) => { e.stopPropagation(); handleEliminar(cellData.data.conciertoId); }} 
-                                                title={t('Eliminar ICG07')} 
+                                                title={t('Desactivar concierto')} 
                                             />
                                         </div>
                                     )}

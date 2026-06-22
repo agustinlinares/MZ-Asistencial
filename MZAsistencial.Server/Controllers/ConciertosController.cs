@@ -153,11 +153,14 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-               var exito = await _service.EliminarConciertoCompletoAsync(id);
+                var usuarioId = ObtenerUsuarioIdActual();
+
+                var exito = await _service.EliminarConciertoCompletoAsync(id, usuarioId);
                 
                 if (!exito)
                 {
@@ -217,6 +220,7 @@ namespace MZAsistencial.Server.Controllers
 
         // Subida física mediante multipart/form-data
         [HttpPost("{id}/Documentos/Upload")]
+        [Authorize]
         public async Task<ActionResult<ConciertosDocumentoDTO>> UploadDocumento(int id, [FromForm] DocumentoUploadRequest request)
         {
             // Validación de nulidad
@@ -234,6 +238,8 @@ namespace MZAsistencial.Server.Controllers
 
             try
             {
+                var usuarioId = ObtenerUsuarioIdActual();
+
                 // Procesamiento en el servicio
                 using (var stream = request.File.OpenReadStream())
                 {
@@ -242,7 +248,8 @@ namespace MZAsistencial.Server.Controllers
                         request.Titulo ?? string.Empty, 
                         request.Observaciones ?? string.Empty, 
                         request.File.FileName, 
-                        stream
+                        stream,
+                        usuarioId
                     );
                     
                     return Ok(dtoDocumento);
@@ -255,11 +262,14 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpDelete("Documentos/{documentoId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteDocumento(int documentoId)
         {
             try
             {
-                var eliminado = await _service.DeleteDocumentoAsync(documentoId);
+                var usuarioId = ObtenerUsuarioIdActual();
+
+                var eliminado = await _service.DeleteDocumentoAsync(documentoId, usuarioId);
                 if (!eliminado)
                 {
                     return NotFound($"No se encontró el registro documental indexado con el ID {documentoId}.");
@@ -359,6 +369,7 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpPost("{id}/Ambitos")]
+        [Authorize]
         public async Task<ActionResult<ConciertosAmbitoCoberturaDTO>> AddAmbito(int id, [FromBody] ConciertosAmbitoCoberturaCreateDTO dto)
         {
             try
@@ -375,11 +386,14 @@ namespace MZAsistencial.Server.Controllers
         }
 
         [HttpDelete("{id}/Ambitos/{ambitoId}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAmbito(int id, int ambitoId)
         {
             try
             {
-                var exito = await _service.DeleteAmbitoAsync(id, ambitoId);
+                var usuarioId = ObtenerUsuarioIdActual();
+
+                var exito = await _service.DeleteAmbitoAsync(id, ambitoId, usuarioId);
                 
                 if (!exito)
                 {
@@ -395,27 +409,16 @@ namespace MZAsistencial.Server.Controllers
             }
         }
 
-        [HttpPost("{id}/log-pestana")]
-        [Authorize]
-        public async Task<IActionResult> LogCambioPestana(int id, [FromBody] LogPestanaRequest request)
+        /// <summary>
+        /// Lee el Id del usuario autenticado desde los claims del token (NameIdentifier o 'sub').
+        /// Devuelve null si no se puede determinar (p.ej. token sin ese claim).
+        /// </summary>
+        private int? ObtenerUsuarioIdActual()
         {
-            try
-            {
-                var userIdStr = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                                ?? HttpContext.User.FindFirst("sub")?.Value;
+            var userIdStr = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? HttpContext.User.FindFirst("sub")?.Value;
 
-                if (!int.TryParse(userIdStr, out int usuarioId))
-                {
-                    return Unauthorized("No se pudo identificar al usuario para registrar la navegación.");
-                }
-
-                await _service.RegistrarCambioPestanaAsync(id, request.NombrePestana, usuarioId);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error al registrar el cambio de pestaña: {ex.Message}");
-            }
+            return int.TryParse(userIdStr, out int usuarioId) ? usuarioId : (int?)null;
         }
 
         /// <summary>
@@ -461,10 +464,5 @@ namespace MZAsistencial.Server.Controllers
 
             return (true, mutuaIdUsuario);
         }
-    }
-
-    public class LogPestanaRequest
-    {
-        public string NombrePestana { get; set; } = string.Empty;
     }
 }

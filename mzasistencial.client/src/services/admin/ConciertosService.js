@@ -11,8 +11,9 @@ const getHeaders = (isFormData = false) => {
 
 export const conciertosService = {
     // --- PRINCIPALES ---
-    obtenerTodos: async () => {
-        const res = await fetch(API_URL, { headers: getHeaders() });
+    obtenerTodos: async (mutuaId) => {
+        const url = mutuaId ? `${API_URL}?mutuaId=${mutuaId}` : API_URL;
+        const res = await fetch(url, { headers: getHeaders() });
         if (!res.ok) throw new Error("Error al obtener los conciertos");
         return await res.json();
     },
@@ -25,6 +26,9 @@ export const conciertosService = {
 
     obtenerPorId: async (id) => {
         const res = await fetch(`${API_URL}/${id}`, { headers: getHeaders() });
+        if (res.status === 403) {
+            throw new Error("No tienes permiso para acceder a este concierto.");
+        }
         if (!res.ok) throw new Error("Error al obtener el concierto");
         return await res.json();
     },
@@ -68,8 +72,11 @@ export const conciertosService = {
         return await res.json();
     },
 
-    obtenerCentrosAdhesion: async () => {
-        const res = await fetch(`${API_URL}/centros-adhesion`, { headers: getHeaders() });
+    obtenerCentrosAdhesion: async (excluirConciertoId) => {
+        const url = excluirConciertoId 
+            ? `${API_URL}/centros-adhesion?excluirConciertoId=${excluirConciertoId}` 
+            : `${API_URL}/centros-adhesion`;
+        const res = await fetch(url, { headers: getHeaders() });
         if (!res.ok) return [];
         return await res.json();
     },
@@ -127,5 +134,19 @@ export const conciertosService = {
         const res = await fetch(`${API_URL}/Documentos/${docId}`, { method: "DELETE", headers: getHeaders() });
         if (!res.ok) throw new Error("Error al eliminar documento físico");
         return true;
+    },
+
+    // --- AUDITORÍA ---
+    registrarCambioPestana: async (id, nombrePestana) => {
+        // No bloqueante: si falla el log de actividad, no debe interrumpir la navegación del usuario
+        try {
+            await fetch(`${API_URL}/${id}/log-pestana`, {
+                method: "POST",
+                headers: getHeaders(),
+                body: JSON.stringify({ nombrePestana })
+            });
+        } catch (error) {
+            console.error("No se pudo registrar el cambio de pestaña:", error);
+        }
     }
 };

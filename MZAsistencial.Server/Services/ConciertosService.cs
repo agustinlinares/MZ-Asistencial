@@ -11,19 +11,19 @@ using System.Threading.Tasks;
 
 namespace MZAsistencial.Server.Services
 {
-        public class ConciertosService : IConciertosService
-        {
-            private readonly MZAsistencialContext _context;
-            private readonly string _storagePath;
-            private readonly IRegistrosActividadService _registroActividadService;
+    public class ConciertosService : IConciertosService
+    {
+        private readonly MZAsistencialContext _context;
+        private readonly string _storagePath;
+        private readonly IRegistrosActividadService _registroActividadService;
 
-            public ConciertosService(MZAsistencialContext context, IConfiguration configuration, IRegistrosActividadService registroActividadService)
-            {
-                _context = context;
-                // Se lee la ruta raíz de almacenamiento físico desde la configuración de la app (appsettings.json)
-                _storagePath = configuration["FileStorage:ConciertosPath"] ?? Path.Combine(AppContext.BaseDirectory, "Uploads");
-                _registroActividadService = registroActividadService;
-            }
+        public ConciertosService(MZAsistencialContext context, IConfiguration configuration, IRegistrosActividadService registroActividadService)
+        {
+            _context = context;
+            // Se lee la ruta raíz de almacenamiento físico desde la configuración de la app (appsettings.json)
+            _storagePath = configuration["FileStorage:ConciertosPath"] ?? Path.Combine(AppContext.BaseDirectory, "Uploads");
+            _registroActividadService = registroActividadService;
+        }
 
         public async Task<IEnumerable<ConciertoResponseDTO>> GetAllAsync(int? mutuaId = null)
         {
@@ -31,6 +31,7 @@ namespace MZAsistencial.Server.Services
             // Para resolverlo de forma segura ante datos inconsistentes, realizamos Joins con CentrosConcertados
             var baseQuery = from c in _context.Conciertos
                         join centro in _context.CentrosConcertados on c.CentroId equals centro.CentroId
+                        where c.FechaBaja == null
                         select new { c, centro };
 
             if (mutuaId.HasValue)
@@ -141,6 +142,13 @@ namespace MZAsistencial.Server.Services
             _context.Conciertos.Add(nuevoConcierto);
             await _context.SaveChangesAsync();
 
+            // Registro de actividad: alta de concierto (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"INSERT INTO Conciertos (MutuaId, CentroId, CodigoCasa, CodigoMz) VALUES ({nuevoConcierto.MutuaId}, {nuevoConcierto.CentroId}, '{nuevoConcierto.CodigoCasa}', '{nuevoConcierto.CodigoMz}') -- Concierto_id={nuevoConcierto.ConciertoId}",
+                dto.UsuarioAltaId ?? 0,
+                $"ALTA Concierto {nuevoConcierto.ConciertoId}"
+            );
+
             // Mapeo a respuesta final devolviendo la ID generada e incluyendo el Localizador provisional
             return new ConciertoResponseDTO
             {
@@ -184,6 +192,14 @@ namespace MZAsistencial.Server.Services
             concierto.UsuarioModificacionId = dto.UsuarioModificacionId;
 
             await _context.SaveChangesAsync();
+
+            // Registro de actividad: modificación de concierto (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"UPDATE Conciertos SET CodigoCasa='{concierto.CodigoCasa}', Autorizado={concierto.Autorizado} WHERE Concierto_id={id}",
+                dto.UsuarioModificacionId ?? 0,
+                $"MODIFICACION Concierto {id}"
+            );
+
             return true;
         }
 
@@ -207,30 +223,26 @@ namespace MZAsistencial.Server.Services
             return true;
         } */
 
-        public async Task<bool> EliminarConciertoCompletoAsync(int conciertoId)
+        public async Task<bool> EliminarConciertoCompletoAsync(int conciertoId, int? usuarioId = null)
         {
             var concierto = await _context.Conciertos.FindAsync(conciertoId);
             if (concierto == null) return false;
 
-            var documentos = await _context.ConciertosDocumentos
-                .Where(d => d.ConciertoId == conciertoId)
-                .ToListAsync();
+            // Baja lógica: NO se borra el registro ni los documentos físicos asociados,
+            // para conservar la trazabilidad y el histórico (decisión de José Manuel, 22/06).
+            // Queda la puerta abierta a un borrado físico definitivo más adelante si se decide.
+            concierto.FechaBaja = DateTime.Now;
+            concierto.UsuarioBajaId = usuarioId;
 
-            foreach (var doc in documentos)
-            {
-                if (!string.IsNullOrEmpty(doc.Documento))
-                {
-                    string rutaCompleta = Path.Combine(_storagePath, doc.Documento);
-                    if (File.Exists(rutaCompleta))
-                    {
-                        File.Delete(rutaCompleta);
-                    }
-                }
-            }
-
-            _context.Conciertos.Remove(concierto);
-            
             await _context.SaveChangesAsync();
+
+            // Registro de actividad: baja lógica de concierto (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"UPDATE Conciertos SET FechaBaja='{concierto.FechaBaja}' WHERE Concierto_id={conciertoId}",
+                usuarioId ?? 0,
+                $"BAJA Concierto {conciertoId}"
+            );
+
             return true;
         }
 
@@ -258,7 +270,7 @@ namespace MZAsistencial.Server.Services
                 .ToListAsync();
         }
 
-        public async Task<ConciertosDocumentoDTO> UploadDocumentoAsync(int conciertoId, string titulo, string observaciones, string nombreOriginal, Stream archivoStream)
+        public async Task<ConciertosDocumentoDTO> UploadDocumentoAsync(int conciertoId, string titulo, string observaciones, string nombreOriginal, Stream archivoStream, int? usuarioId = null)
         {
             if (!Directory.Exists(_storagePath))
             {
@@ -293,6 +305,13 @@ namespace MZAsistencial.Server.Services
             _context.ConciertosDocumentos.Update(nuevoDoc);
             await _context.SaveChangesAsync();
 
+            // Registro de actividad: alta de documento (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"INSERT INTO ConciertosDocumentos (ConciertoId, Titulo, Documento) VALUES ({nuevoDoc.ConciertoId}, '{nuevoDoc.Titulo}', '{nuevoDoc.Documento}') -- Documento_id={nuevoDoc.DocumentoId}",
+                usuarioId ?? 0,
+                $"ALTA Documento Concierto {conciertoId}"
+            );
+
             return new ConciertosDocumentoDTO
             {
                 DocumentoId = nuevoDoc.DocumentoId,
@@ -304,7 +323,7 @@ namespace MZAsistencial.Server.Services
             };
         }
 
-        public async Task<bool> DeleteDocumentoAsync(int documentoId)
+        public async Task<bool> DeleteDocumentoAsync(int documentoId, int? usuarioId = null)
         {
             var documento = await _context.ConciertosDocumentos.FindAsync(documentoId);
             if (documento == null) return false;
@@ -319,9 +338,18 @@ namespace MZAsistencial.Server.Services
                 }
             }
 
+            int? conciertoId = documento.ConciertoId;
+
             // Elimina el registro lógico de la base de datos de manera síncrona
             _context.ConciertosDocumentos.Remove(documento);
             await _context.SaveChangesAsync();
+
+            // Registro de actividad: baja de documento (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"DELETE FROM ConciertosDocumentos WHERE Documento_id={documentoId}",
+                usuarioId ?? 0,
+                $"BAJA Documento Concierto {conciertoId}"
+            );
 
             return true;
         }
@@ -340,6 +368,13 @@ namespace MZAsistencial.Server.Services
 
             _context.ConciertosDocumentos.Update(documento);
             await _context.SaveChangesAsync();
+
+            // Registro de actividad: modificación de documento (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"UPDATE ConciertosDocumentos SET Titulo='{documento.Titulo}' WHERE Documento_id={documentoId}",
+                dto.UsuarioModificacionId ?? 0,
+                $"MODIFICACION Documento Concierto {documento.ConciertoId}"
+            );
             
             return true;
         }
@@ -347,7 +382,7 @@ namespace MZAsistencial.Server.Services
         public async Task<IEnumerable<ConciertoResponseDTO>> GetSinAutorizarAsync(int? usuarioIdParaPerfil3 = null)
         {
             var query = _context.Conciertos
-                .Where(c => c.Autorizado == false || c.Autorizado == null);
+                .Where(c => (c.Autorizado == false || c.Autorizado == null) && c.FechaBaja == null);
 
             // Restricción adicional para perfil 3 (solo ve sus centros asignados)
             if (usuarioIdParaPerfil3.HasValue)
@@ -442,6 +477,13 @@ namespace MZAsistencial.Server.Services
             _context.ConciertosAmbitoCoberturas.Add(nuevoAmbito);
             await _context.SaveChangesAsync();
 
+            // Registro de actividad: alta de ámbito de cobertura (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"INSERT INTO ConciertosAmbitoCobertura (ConciertoId, AmbitoId, PoblacionId, Cp) VALUES ({conciertoId}, {nuevoAmbito.AmbitoId}, {nuevoAmbito.PoblacionId}, '{nuevoAmbito.Cp}') -- Id={nuevoAmbito.Id}",
+                dto.UsuarioAltaId ?? 0,
+                $"ALTA Ambito Concierto {conciertoId}"
+            );
+
             // Devuelve el DTO con el Id primario autogenerado
             return new ConciertosAmbitoCoberturaDTO
             {
@@ -453,7 +495,7 @@ namespace MZAsistencial.Server.Services
             };
         }
 
-        public async Task<bool> DeleteAmbitoAsync(int conciertoId, int ambitoId)
+        public async Task<bool> DeleteAmbitoAsync(int conciertoId, int ambitoId, int? usuarioId = null)
         {
             // Restricción de seguridad: verifica ambas claves para evitar borrados cruzados
             var ambito = await _context.ConciertosAmbitoCoberturas
@@ -463,6 +505,13 @@ namespace MZAsistencial.Server.Services
 
             _context.ConciertosAmbitoCoberturas.Remove(ambito);
             await _context.SaveChangesAsync();
+
+            // Registro de actividad: baja de ámbito de cobertura (operación de escritura real)
+            await _registroActividadService.InsertarRegistroActividad(
+                $"DELETE FROM ConciertosAmbitoCobertura WHERE Id={ambitoId} AND ConciertoId={conciertoId}",
+                usuarioId ?? 0,
+                $"BAJA Ambito Concierto {conciertoId}"
+            );
 
             return true;
         }
@@ -474,16 +523,5 @@ namespace MZAsistencial.Server.Services
             return await _context.Usuarios
                 .AnyAsync(u => u.UsuarioId == usuarioId && u.CentroId == centroId);
         }
-
-        public async Task RegistrarCambioPestanaAsync(int conciertoId, string nombrePestana, int usuarioId)
-        {
-            // Registra la navegación entre pestañas de la ficha de concierto en el log de actividad,
-            // siguiendo el mismo patrón que ya usa FincaRegistralService.
-            await _registroActividadService.InsertarRegistroActividad(
-                $"SELECT * FROM Conciertos WHERE Concierto_id={conciertoId} -- Navegación a pestaña '{nombrePestana}'",
-                usuarioId,
-                $"NAVEGACION Concierto {conciertoId} (pestaña: {nombrePestana})"
-            );
-        }
-            }
-        }
+    }
+}

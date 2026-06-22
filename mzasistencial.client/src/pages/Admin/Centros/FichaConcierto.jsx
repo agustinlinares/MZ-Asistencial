@@ -19,6 +19,10 @@ const parseDateForInput = (dateStr) => {
 const FichaConcierto = ({ concierto, onClose, onSave }) => {
     const logError = useLogError("Ficha Concierto");
     const [activeTab, setActiveTab] = useState('general');
+
+    const cambiarPestana = (nombrePestana) => {
+        setActiveTab(nombrePestana);
+    };
     
     // Lectura de sesión
     const getUsuarioSesion = () => {
@@ -66,7 +70,7 @@ const FichaConcierto = ({ concierto, onClose, onSave }) => {
         const cargarMaestros = async () => {
             try {
                 const tiposAsistencia = await conciertosService.obtenerTiposAsistencia(anioSesion);
-                const centrosAdhesion = await conciertosService.obtenerCentrosAdhesion();
+                const centrosAdhesion = await conciertosService.obtenerCentrosAdhesion(form.conciertoId);
                 
                 const mutuasRes = await fetch('/api/Mutuas', { headers: { 'Authorization': `Bearer ${AuthService.getToken()}` } });
                 const mutuas = await mutuasRes.json();
@@ -77,6 +81,7 @@ const FichaConcierto = ({ concierto, onClose, onSave }) => {
             }
         };
         cargarMaestros();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [anioSesion, logError]);
 
     useEffect(() => {
@@ -192,13 +197,13 @@ const FichaConcierto = ({ concierto, onClose, onSave }) => {
                 </div>
 
                 <div className="ficha-tabs">
-                    <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>Datos Generales</button>
+                    <button className={`ficha-tab ${activeTab === 'general' ? 'active' : ''}`} onClick={() => cambiarPestana('general', form.conciertoId)}>Datos Generales</button>
                     {!esNuevo && (
                         <>
-                            <button className={`ficha-tab ${activeTab === 'ambitos' ? 'active' : ''}`} onClick={() => setActiveTab('ambitos')}>Ámbitos de cobertura</button>
-                            <button className={`ficha-tab ${activeTab === 'documentos' ? 'active' : ''}`} onClick={() => setActiveTab('documentos')}>Documentos</button>
-                            <button className={`ficha-tab ${activeTab === 'icg' ? 'active' : ''}`} onClick={() => setActiveTab('icg')}>Registros ICG</button>
-                            <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => setActiveTab('especialidades')}>Especialidades</button>
+                            <button className={`ficha-tab ${activeTab === 'ambitos' ? 'active' : ''}`} onClick={() => cambiarPestana('ambitos', form.conciertoId)}>Ámbitos de cobertura</button>
+                            <button className={`ficha-tab ${activeTab === 'documentos' ? 'active' : ''}`} onClick={() => cambiarPestana('documentos', form.conciertoId)}>Documentos</button>
+                            <button className={`ficha-tab ${activeTab === 'icg' ? 'active' : ''}`} onClick={() => cambiarPestana('icg', form.conciertoId)}>Registros ICG</button>
+                            <button className={`ficha-tab ${activeTab === 'especialidades' ? 'active' : ''}`} onClick={() => cambiarPestana('especialidades', form.conciertoId)}>Especialidades</button>
                         </>
                     )}
                 </div>
@@ -286,12 +291,10 @@ const FichaConcierto = ({ concierto, onClose, onSave }) => {
                                     disabled={!esPerfil1o4}
                                 >
                                     <option value="">— Sin Adhesión —</option>
-                                    {combos.centrosAdhesion
-                                        .filter(c => c.conciertoId !== form.conciertoId)
-                                        .map((c, index) => (
-                                            <option key={`adhesion-${index}`} value={c.conciertoId}>
-                                                {c.codigoCasa} - {c.centroNombre}
-                                            </option>
+                                    {combos.centrosAdhesion.map((c, index) => (
+                                        <option key={`adhesion-${index}`} value={c.conciertoId}>
+                                            {c.codigoCasa} - {c.centroNombre}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
